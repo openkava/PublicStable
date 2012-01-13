@@ -64,6 +64,7 @@ namespace Fabric
         void const *srcKeyData = immutableKeyData( node );
         void const *srcValueData = immutableValueData( node );
         m_valueImpl->setData( srcValueData, getMutable( dstData, srcKeyData ) );
+        node = node->bitsNextNode;
       }
     }
     
@@ -513,6 +514,24 @@ namespace Fabric
     {
       FABRIC_ASSERT(false);
       return true;
+    }
+
+    size_t DictImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>( data );
+      size_t total = bits->bucketCount * sizeof( bucket_t );
+      for ( size_t i=0; i<bits->bucketCount; ++i )
+      {
+        node_t const *node = bits->buckets[i].firstNode;
+        while ( node )
+        {
+          total += sizeof( node )
+            + m_keyImpl->getAllocSize() + m_keyImpl->getIndirectMemoryUsage( immutableKeyData( node ) )
+            + m_valueImpl->getAllocSize() + m_valueImpl->getIndirectMemoryUsage( immutableValueData( node ) );
+          node = node->bucketNextNode;
+        }
+      }
+      return total;
     }
   };
 };

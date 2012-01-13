@@ -6,4 +6,4 @@ node.setData( "foo", [6,4,7,2,1] );
 console.log( node.getDataSize( "foo", 0 ) );
 console.log( node.getDataElement( "foo", 0, 3 ) );
 
-FABRIC.flush();
+FABRIC.close();

@@ -20,4 +20,4 @@ catch (e) {
   console.log( e );
 }
 
-FABRIC.flush();
+FABRIC.close();

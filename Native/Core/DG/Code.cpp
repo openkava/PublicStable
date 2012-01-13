@@ -19,8 +19,8 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/Function.h>
+#include <Fabric/Core/MT/Impl.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
@@ -138,7 +138,7 @@ namespace Fabric
       {
         RC::Handle<CG::Manager> cgManager = context->getCGManager();
         RC::Handle<CG::Context> cgContext = CG::Context::Create();
-        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
+        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "Fabric", cgContext->getLLVMContext() ) );
         CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get(), m_compileOptions );
 #if defined(FABRIC_MODULE_OPENCL)
         OCL::llvmPrepareModule( moduleBuilder, context->getRTManager() );
@@ -241,7 +241,15 @@ namespace Fabric
       if ( !optimize )
       {
         retain();
-        MT::IdleTaskQueue::Instance()->submit( &Code::CompileOptimizedAST, this );
+        MT::ThreadPool::Instance()->executeParallelAsync(
+          context->getLogCollector(),
+          1,
+          &Code::CompileOptimizedAST,
+          this,
+          MT::ThreadPool::Idle,
+          0,
+          0
+          );
       }
     }
     

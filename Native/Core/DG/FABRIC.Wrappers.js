@@ -799,12 +799,20 @@ function (fabricClient, logCallback, debugLogCallback) {
         if ('bindings' in diff)
           result.bindings.patch(diff.bindings);
       };
+      
+      var evaluateAsyncFinishedSerial = 0;
+      var evaluateAsyncFinishedCallbacks = {};
 
       var parentRoute = result.route;
       result.route = function(src, cmd, arg) {
         if (src.length == 1 && src[0] == 'bindings') {
           src.shift();
           result.bindings.route(src, cmd, arg);
+        }
+        else if (cmd == "evaluateAsyncFinished") {
+          var callback = evaluateAsyncFinishedCallbacks[arg];
+          delete evaluateAsyncFinishedCallbacks[arg];
+          callback();
         }
         else
           parentRoute(src, cmd, arg);
@@ -871,6 +879,13 @@ function (fabricClient, logCallback, debugLogCallback) {
 
       result.pub.evaluate = function() {
         result.queueCommand('evaluate');
+        executeQueuedCommands();
+      };
+
+      result.pub.evaluateAsync = function(callback) {
+        var serial = evaluateAsyncFinishedSerial++;
+        evaluateAsyncFinishedCallbacks[serial] = callback;
+        result.queueCommand('evaluateAsync', serial);
         executeQueuedCommands();
       };
 
@@ -1488,6 +1503,743 @@ function (fabricClient, logCallback, debugLogCallback) {
     if ('contextID' in diff)
       state.contextID = diff.contextID;
   };
+  
+  var GC = (function (namespace) {
+    var nextID = 0;
+    var objects = {};
+    
+    return {
+      createObject: function (namespace) {
+        var id = "GC_" + nextID++;
+        
+        var result = {
+          id: id,
+          nextCallbackID: 0,
+          callbacks: {},
+          queueCommand: function (cmd, arg, unwind, callback) {
+            if (!this.id)
+              throw "GC object has already been disposed";
+            queueCommand([namespace, this.id], cmd, arg, unwind, callback);
+          },
+          registerCallback: function (callback) {
+            var callbackID = this.nextCallbackID++;
+            this.callbacks[callbackID] = callback;
+            return callbackID;
+          },
+          route: function(src, cmd, arg) {
+            var callback = this.callbacks[arg.serial];
+            delete this.callbacks[arg.serial];
+            callback(arg.result);
+          },
+          pub: {
+          }
+        };
+        
+        result.pub.getID = function () {
+          return result.id;
+        };
+        
+        result.pub.dispose = function () {
+          result.queueCommand('dispose');
+          delete objects[id];
+          delete result.id;
+        };
+        
+        objects[id] = result;
+        
+        return result;
+      },
+      
+      route: function (src, cmd, arg) {
+        var id = src.shift();
+        var object = objects[id];
+        object.route(src, cmd, arg);
+      }
+    };
+  })();
+
+  var KLC = (function() {
+    var KLC = {
+    };
+
+    var populateFunction = function (function_) {
+      function_.pub.getDiagnostics = function () {
+        var diagnostics;
+        function_.queueCommand('getDiagnostics', null, null, function (result) {
+          diagnostics = result;
+        });
+        executeQueuedCommands();
+        return diagnostics;
+      };
+
+      function_.pub.toJSON = function () {
+        var json;
+        function_.queueCommand('toJSON', null, null, function (result) {
+          json = result;
+        });
+        executeQueuedCommands();
+        return json;
+      };
+    };
+
+    var populateOperator = function (operator) {
+      populateFunction(operator);
+    };
+
+    var populateArrayMapOperator = function (operator) {
+      populateOperator(operator);
+    };
+
+    var populateArrayGeneratorOperator = function (arrayGeneratorOperator) {
+      populateOperator(arrayGeneratorOperator);
+    };
+
+    var populateValueGeneratorOperator = function (operator) {
+      populateOperator(operator);
+    };
+
+    var populateValueMapOperator = function (operator) {
+      populateOperator(operator);
+    };
+
+    var populateValueTransformOperator = function (operator) {
+      populateOperator(operator);
+    };
+
+    var populateReduceOperator = function (reduceOperator) {
+      populateOperator(reduceOperator);
+    };
+
+    var populateExecutable = function (executable) {
+      executable.pub.getAST = function () {
+        var ast;
+        executable.queueCommand('getAST', null, null, function (result) {
+          ast = result;
+        });
+        executeQueuedCommands();
+        return ast;
+      };
+      
+      executable.pub.getDiagnostics = function () {
+        var diagnostics;
+        executable.queueCommand('getDiagnostics', null, null, function (result) {
+          diagnostics = result;
+        });
+        executeQueuedCommands();
+        return diagnostics;
+      };
+      
+      executable.pub.resolveArrayMapOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateMapOperator(operator);
+        executable.queueCommand('resolveArrayMapOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveReduceOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateReduceOperator(operator);
+        executable.queueCommand('resolveReduceOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveArrayGeneratorOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateArrayGeneratorOperator(operator);
+        executable.queueCommand('resolveArrayGeneratorOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveValueGeneratorOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateValueGeneratorOperator(operator);
+        executable.queueCommand('resolveValueGeneratorOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveValueMapOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateValueMapOperator(operator);
+        executable.queueCommand('resolveValueMapOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveValueTransformOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateValueTransformOperator(operator);
+        executable.queueCommand('resolveValueTransformOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveArrayTransformOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateArrayTransformOperator(operator);
+        executable.queueCommand('resolveArrayTransformOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+    };
+    
+    KLC.pub = {
+      createCompilation: function (sourceName, sourceCode) {
+        var compilation = GC.createObject('KLC');
+        
+        compilation.sourceCodes = {
+        };
+        
+        compilation.pub.addSource = function (sourceName, sourceCode) {
+          var oldSourceCode = compilation.sourceCodes[sourceName];
+          compilation.sourceCodes[sourceName] = sourceCode;
+          compilation.queueCommand('addSource', {
+            sourceName: sourceName,
+            sourceCode: sourceCode
+          }, function () {
+            compilation.sourceCodes[sourceName] = oldSourceCode;
+          });
+        };
+        
+        compilation.pub.removeSource = function (sourceName) {
+          var oldSourceCode = compilation.sourceCodes[sourceName];
+          delete compilation.sourceCodes[sourceName];
+          compilation.queueCommand('removeSource', {
+            sourceName: sourceName,
+          }, function () {
+            compilation.sourceCodes[sourceName] = oldSourceCode;
+          });
+        };
+        
+        compilation.pub.getSources = function (sourceName, sourceCode) {
+          var sources;
+          compilation.queueCommand('getSources', null, null, function (result) {
+            sources = result;
+          });
+          executeQueuedCommands();
+          return sources;
+        };
+        
+        compilation.pub.run = function () {
+          var executable = GC.createObject('KLC');
+          
+          populateExecutable(executable);
+          
+          compilation.queueCommand('run', {
+            id: executable.id
+          }, function () {
+            delete executable.id;
+          });
+          
+          return executable.pub;
+        };
+        
+        var arg = {
+          id: compilation.id
+        };
+        if (sourceName != undefined)
+          arg.sourceName = sourceName;
+        if (sourceCode != undefined)
+          arg.sourceCode = sourceCode;
+        
+        queueCommand(['KLC'],'createCompilation', arg, function () {
+          delete compilation['id'];
+        });
+        
+        return compilation.pub;
+      },
+      
+      createExecutable: function (sourceName, sourceCode) {
+        var executable = GC.createObject('KLC');
+          
+        populateExecutable(executable);
+          
+        var arg = {
+          id: executable.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode
+        };
+        
+        queueCommand(['KLC'],'createExecutable', arg, function () {
+          delete executable['id'];
+        });
+        
+        return executable.pub;
+      },
+      
+      createArrayMapOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateArrayMapOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createArrayMapOperator', arg, function () {
+          delete operator['id'];
+        });
+        
+        return operator.pub;
+      },
+      
+      createArrayGeneratorOperator: function (sourceName, sourceCode, operatorName) {
+        var arrayGeneratorOperator = GC.createObject('KLC');
+          
+        populateArrayGeneratorOperator(arrayGeneratorOperator);
+          
+        var arg = {
+          id: arrayGeneratorOperator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createArrayGeneratorOperator', arg, function () {
+          delete arrayGeneratorOperator['id'];
+        });
+        
+        return arrayGeneratorOperator.pub;
+      },
+      
+      createValueGeneratorOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateValueGeneratorOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createValueGeneratorOperator', arg, function () {
+          delete operator.id;
+        });
+        
+        return operator.pub;
+      },
+      
+      createValueMapOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateValueMapOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createValueMapOperator', arg, function () {
+          delete operator.id;
+        });
+        
+        return operator.pub;
+      },
+      
+      createValueTransformOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateValueTransformOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createValueTransformOperator', arg, function () {
+          delete operator.id;
+        });
+        
+        return operator.pub;
+      },
+      
+      createArrayTransformOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateArrayMapOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createArrayTransformOperator', arg, function () {
+          delete operator.id;
+        });
+        
+        return operator.pub;
+      },
+      
+      createReduceOperator: function (sourceName, sourceCode, operatorName) {
+        var reduceOperator = GC.createObject('KLC');
+          
+        populateReduceOperator(reduceOperator);
+          
+        var arg = {
+          id: reduceOperator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createReduceOperator', arg, function () {
+          delete reduceOperator['id'];
+        });
+        
+        return reduceOperator.pub;
+      },
+    };
+
+    return KLC;
+  })();
+
+  var MR = (function() {
+    var MR = {
+    };
+    
+    var populateProducer = function (producer) {
+      producer.pub.toJSON = function () {
+        var jsonDesc;
+        producer.queueCommand('toJSON', null, null, function (result) {
+          jsonDesc = result;
+        });
+        executeQueuedCommands();
+        return jsonDesc;
+      };
+    };
+    
+    var populateValueProducer = function (valueProducer) {
+      populateProducer(valueProducer);
+      
+      valueProducer.pub.produce = function () {
+        var result;
+        valueProducer.queueCommand('produce', null, null, function (_) {
+          result = _;
+        });
+        executeQueuedCommands();
+        return result;
+      };
+      
+      valueProducer.pub.produceAsync = function (callback) {
+        valueProducer.queueCommand('produceAsync', valueProducer.registerCallback(callback));
+        executeQueuedCommands();
+      };
+    };
+
+    var populateConstValue = function (constValue) {
+      populateValueProducer(constValue);
+    };
+    
+    var populateReduce = function (reduce) {
+      populateValueProducer(reduce);
+    };
+    
+    var populateValueGenerator = function (valueGenerator) {
+      populateValueProducer(valueGenerator);
+    };
+    
+    var populateValueGenerator = function (valueGenerator) {
+      populateValueProducer(valueGenerator);
+    };
+    
+    var populateValueMap = function (valueMap) {
+      populateValueProducer(valueMap);
+    };
+    
+    var populateValueTransform = function (valueTransform) {
+      populateValueProducer(valueTransform);
+    };
+    
+    var populateArrayProducer = function (arrayProducer) {
+      populateProducer(arrayProducer);
+      
+      arrayProducer.pub.getCount = function () {
+        var count;
+        arrayProducer.queueCommand('getCount', null, null, function (result) {
+          count = result;
+        });
+        executeQueuedCommands();
+        return count;
+      };
+      
+      arrayProducer.pub.produce = function (index, count) {
+        var result;
+        
+        var arg = {};
+        if (index !== undefined) {
+          if (count !== undefined)
+            arg.count = count;
+          arg.index = index;
+        }
+        arrayProducer.queueCommand('produce', arg, null, function (_) {
+          result = _;
+        });
+        executeQueuedCommands();
+        return result;
+      };
+      
+      arrayProducer.pub.produceAsync = function () {
+        var arg = {};
+        var callback;
+        switch (arguments.length) {
+          case 1:
+            callback = arguments[0];
+            break;
+          case 2:
+            arg.index = arguments[0];
+            callback = arguments[1];
+            break;
+          case 3:
+            arg.index = arguments[0];
+            arg.count = arguments[1];
+            callback = arguments[2];
+            break;
+          default:
+            throw "produceAsync: invalid arguments";
+        }
+        arg.serial = arrayProducer.registerCallback(callback);
+        arrayProducer.queueCommand('produceAsync', arg);
+        executeQueuedCommands();
+      };
+    };
+    
+    var populateConstArray = function (constArray) {
+      populateArrayProducer(constArray);
+    };
+    
+    var populateArrayGenerator = function (arrayGenerator) {
+      populateArrayProducer(arrayGenerator);
+    };
+    
+    var populateArrayMap = function (object) {
+      populateArrayProducer(object);
+    };
+    
+    var populateArrayTransform = function (object) {
+      populateArrayProducer(object);
+    };
+
+    MR.pub = {
+      createArrayMap: function(input, operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateArrayMap(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createArrayMap', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createReduce: function(inputArrayProducer, reduceOperator, sharedValueProducer) {
+        var reduce = GC.createObject('MR');
+        
+        populateReduce(reduce);
+        
+        var arg = {
+          id: reduce.id,
+          inputArrayProducerID: inputArrayProducer.getID(),
+          reduceOperatorID: reduceOperator.getID()
+        };
+        if (sharedValueProducer)
+          arg.sharedValueProducerID = sharedValueProducer.getID();
+        
+        queueCommand(['MR'], 'createReduce', arg, function () {
+          delete reduce.id;
+        });
+        return reduce.pub;
+      },
+      
+      createValueGenerator: function(operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateValueGenerator(result);
+        
+        var arg = {
+          id: result.id,
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createValueGenerator', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createValueMap: function(input, operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateValueMap(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createValueMap', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createValueTransform: function(input, operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateValueTransform(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createValueTransform', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createArrayTransform: function(input, operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateArrayTransform(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createArrayTransform', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createArrayGenerator: function(count, operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateArrayGenerator(result);
+        
+        var arg = {
+          id: result.id,
+          countID: count.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createArrayGenerator', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createConstArray: function(elementType, data) {
+        var constArray = GC.createObject('MR');
+        
+        populateConstArray(constArray);
+        
+        var arg = {
+          id: constArray.id
+        };
+        if (typeof elementType === "string") {
+          arg.elementType = elementType;
+          arg.data = data;
+        }
+        else if (typeof elementType === "object") {
+          var inputArg = elementType;
+          arg.elementType = inputArg.elementType;
+          if (inputArg.data)
+            arg.data = inputArg.data;
+          if (inputArg.jsonData)
+            arg.jsonData = inputArg.jsonData;
+        }
+        else throw "createConstArray: first argumenet must be string or object";
+        
+        queueCommand(['MR'], 'createConstArray', arg, function () {
+          delete constArray.id;
+        });
+        return constArray.pub;
+      },
+      
+      createConstValue: function(valueType, data) {
+        var constValue = GC.createObject('MR');
+        
+        populateConstValue(constValue);
+        
+        queueCommand(['MR'], 'createConstValue', {
+          id: constValue.id,
+          valueType: valueType,
+          data: data
+        }, function () {
+          delete constValue.id;
+        });
+        return constValue.pub;
+      }
+    };
+
+    return MR;
+  })();
 
   var createVP = function() {
     var VP = {
@@ -1677,6 +2429,9 @@ function (fabricClient, logCallback, debugLogCallback) {
         case 'VP':
           VP.route(src, cmd, arg);
           break;
+        case 'GC':
+          GC.route(src, cmd, arg);
+          break;
         default:
           throw 'unroutable';
       }
@@ -1713,6 +2468,8 @@ function (fabricClient, logCallback, debugLogCallback) {
     EX: EX.pub,
     IO: IO.pub,
     DependencyGraph: DG.pub,
+    KLC: KLC.pub,
+    MR: MR.pub,
     VP: VP.pub,
     getLicenses: function() {
       return state.licenses;
@@ -1723,8 +2480,17 @@ function (fabricClient, logCallback, debugLogCallback) {
     flush: function() {
       executeQueuedCommands();
     },
-    dispose: function() {
-      fabricClient.dispose();
+    close: function() {
+      fabricClient.close();
+    },
+    getMemoryUsage: function() {
+      var memoryUsage;
+      queueCommand([], "getMemoryUsage", null, function () {
+      }, function (result) {
+        memoryUsage = result;
+      });
+      executeQueuedCommands();
+      return memoryUsage;
     }
   };
 }

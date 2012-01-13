@@ -1,0 +1,33 @@
+operator multByTwo(
+  io Integer value
+  )
+{
+  value *= 2;
+}
+
+operator multByShared(
+  io Integer value,
+  Integer shared
+  )
+{
+  value *= shared;
+}
+
+operator entry() {
+  ValueProducer<Integer> vp;
+  
+  vp = createValueTransform(
+    createConstValue( 42 ),
+    multByTwo
+    );
+  report vp;
+  report vp.produce();
+
+  vp = createValueTransform(
+    createConstValue( 2 ),
+    multByShared,
+    createConstValue( 3 )
+    );
+  report vp;
+  report vp.produce();
+}

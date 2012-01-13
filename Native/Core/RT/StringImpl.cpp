@@ -137,5 +137,14 @@ namespace Fabric
       }
       else return cmp;
     }
+
+    size_t StringImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      bits_t const *bits = *static_cast<bits_t const * const *>( data );
+      size_t total = 0;
+      if ( bits )
+        total += sizeof( *bits ) + bits->allocSize;
+      return total;
+    }
   };
 };

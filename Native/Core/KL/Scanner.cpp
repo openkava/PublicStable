@@ -477,6 +477,43 @@ namespace Fabric
         
         case 9:
           break;
+          
+        case 12:
+          if ( string == "createReduce" )
+            return createToken( TOKEN_CREATE_REDUCE, sourceRange );
+          break;
+          
+        case 13:
+          if ( string == "ValueProducer" )
+            return createToken( TOKEN_VALUE_PRODUCER, sourceRange );
+          if ( string == "ArrayProducer" )
+            return createToken( TOKEN_ARRAY_PRODUCER, sourceRange );
+          break;
+        
+        case 14:
+          if ( string == "createValueMap" )
+            return createToken( TOKEN_CREATE_VALUE_MAP, sourceRange );
+          if ( string == "createArrayMap" )
+            return createToken( TOKEN_CREATE_ARRAY_MAP, sourceRange );
+          break;
+        
+        case 16:
+          if ( string == "createConstValue" )
+            return createToken( TOKEN_CREATE_CONST_VALUE, sourceRange );
+          if ( string == "createConstArray" )
+            return createToken( TOKEN_CREATE_CONST_ARRAY, sourceRange );
+          break;
+        
+        case 20:
+          if ( string == "createArrayGenerator" )
+            return createToken( TOKEN_CREATE_ARRAY_GENERATOR, sourceRange );
+          if ( string == "createArrayTransform" )
+            return createToken( TOKEN_CREATE_ARRAY_TRANSFORM, sourceRange );
+          if ( string == "createValueGenerator" )
+            return createToken( TOKEN_CREATE_VALUE_GENERATOR, sourceRange );
+          if ( string == "createValueTransform" )
+            return createToken( TOKEN_CREATE_VALUE_TRANSFORM, sourceRange );
+          break;
       }
 
       return createToken( TOKEN_IDENTIFIER, sourceRange );

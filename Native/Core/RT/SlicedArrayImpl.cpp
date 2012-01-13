@@ -181,5 +181,13 @@ namespace Fabric
       m_variableArrayImpl->setNumMembers( &bits->rcva->varArray, numMembers, defaultMemberData );
       bits->size = numMembers;
     }
+
+    size_t SlicedArrayImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      if ( bits->rcva )
+        return sizeof( *bits->rcva ) + m_variableArrayImpl->getIndirectMemoryUsage( &bits->rcva->varArray );
+      else return 0;
+    }
   };
 };
