@@ -32,6 +32,7 @@ namespace Fabric
     
     RC::Handle<IO::Stream> IOManager::createStream(
       std::string const &url,
+      bool asFile,
       IO::Stream::DataCallback dataCallback,
       IO::Stream::EndCallback endCallback,
       IO::Stream::FailureCallback failureCallback,
@@ -39,7 +40,7 @@ namespace Fabric
       void *userData
       ) const
     {
-      return IOStream::Create( m_npp, url, dataCallback, endCallback, failureCallback, target, userData );
+      return IOStream::Create( m_npp, url, asFile, dataCallback, endCallback, failureCallback, target, userData );
     }
   
     NPError IOManager::nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype )
@@ -64,6 +65,12 @@ namespace Fabric
     {
       FABRIC_ASSERT( npp == m_npp );
       return static_cast<IOStream *>( stream->notifyData )->nppDestroyStream( npp, stream, reason );
+    }
+
+    NPError IOManager::nppStreamAsFile( NPP npp, NPStream *stream, const char* fname )
+    {
+      FABRIC_ASSERT( npp == m_npp );
+      return static_cast<IOStream *>( stream->notifyData )->nppStreamAsFile( npp, stream, fname );
     }
 
     std::string IOManager::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) const

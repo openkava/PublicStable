@@ -368,7 +368,13 @@ namespace Fabric
       FABRIC_ASSERT( npp == m_npp );
       return m_context->getIOManager()->nppDestroyStream( npp, stream, reason );
     }
-      
+
+    NPError Interface::nppStreamAsFile( NPP npp, NPStream *stream, const char* fname )
+    {
+      FABRIC_ASSERT( npp == m_npp );
+      return m_context->getIOManager()->nppStreamAsFile( npp, stream, fname );
+    }
+
     void Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength, Util::JSONGenerator &resultJG )
     {
       if ( m_viewPort )

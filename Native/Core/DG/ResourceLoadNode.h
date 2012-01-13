@@ -43,10 +43,10 @@ namespace Fabric
         RC::Handle<ResourceLoadNode>::StaticCast(target)->streamData( url, mimeType, totalsize, offset, size, data, userData );
       }
 
-      void streamEnd( std::string const &url, std::string const &mimeType, void *userData );
-      static void StreamEnd( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target, void *userData )
+      void streamEnd( std::string const &url, std::string const &mimeType, std::string const *fileName, void *userData );
+      static void StreamEnd( std::string const &url, std::string const &mimeType, std::string const *fileName, RC::Handle<RC::Object> const &target, void *userData )
       {
-        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamEnd( url, mimeType, userData );
+        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamEnd( url, mimeType, fileName, userData );
       }
       
       void streamFailure( std::string const &url, std::string const &errorDesc, void *userData );
@@ -55,7 +55,7 @@ namespace Fabric
         RC::Handle<ResourceLoadNode>::StaticCast(target)->streamFailure( url, errorDesc, userData );
       }
 
-      void setResourceData( std::string const *errorDesc, bool notify );
+      void setResourceData( std::string const *errorDesc, bool notify, std::string const *fileName = NULL );
 
       void evaluateResource();
       static void EvaluateResource( void *userData, size_t index )
@@ -70,6 +70,7 @@ namespace Fabric
       FabricResourceWrapper m_fabricResourceStreamData;
       bool m_firstEvalAfterLoad;
       bool m_keepMemoryCache;
+      bool m_asFile;
       size_t m_streamGeneration;
 
       size_t m_nbStreamed;
