@@ -9,6 +9,7 @@
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/Util/Mutex.h>
+#include <Fabric/Core/Util/TLS.h>
 
 #include <string>
 #include <llvm/ADT/OwningPtr.h>
@@ -65,8 +66,7 @@ namespace Fabric
       RC::Handle<CG::Context> m_cgContext;
       llvm::OwningPtr<llvm::ExecutionEngine> m_llvmExecutionEngine;
       
-      static Util::Mutex s_currentContextMutex;
-      static RC::ConstHandle<Context> s_currentContext;
+      static Util::TLSVar< RC::ConstHandle<Context> > s_currentContext;
     };
   };
 };

@@ -20,4 +20,4 @@ console.log(JSON.stringify(node.getSliceBulkData(0)));
 console.log(JSON.stringify(node.getSliceBulkData(1)));
 console.log(JSON.stringify(node.getSlicesBulkData([1,0,1])));
 
-FABRIC.flush();
+FABRIC.close();

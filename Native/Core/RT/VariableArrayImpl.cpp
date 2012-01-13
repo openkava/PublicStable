@@ -290,5 +290,14 @@ namespace Fabric
       }
       //FABRIC_LOG( "VariableArrayImpl::setNumMembers: %fms", ft.getElapsedMS() );
     }
+
+    size_t VariableArrayImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      size_t total = bits->allocNumMembers * m_memberImpl->getAllocSize();
+      for ( size_t i=0; i<bits->numMembers; ++i )
+        total += m_memberImpl->getIndirectMemoryUsage( getImmutableMemberData_NoCheck( data, i ) );
+      return total;
+    }
   };
 };

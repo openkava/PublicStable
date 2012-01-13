@@ -1,6 +1,2 @@
 [ 'binding 0: operator \'op\': operator takes incorrect number of parameters (expected 2, actual 1)' ]
-
-node.js:207
-        throw e; // process.nextTick error, or 'error' event on first tick
-              ^
 Fabric core exception: DG.node.evaluate(): command 'evaluate': cannot execute because of errors

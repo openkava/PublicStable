@@ -3,7 +3,6 @@
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/Core/MT/Impl.h>
-#include <Fabric/Core/MT/IdleTaskQueue.h>
 
 #include <npapi/npapi.h>
 #include <npapi/npfunctions.h>
@@ -86,7 +85,6 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Shutdown()
 {
   Fabric::MT::ThreadPool::Instance()->terminate();
-  Fabric::MT::IdleTaskQueue::Instance()->terminate();
 
   llvm::llvm_stop_multithreaded();
   
