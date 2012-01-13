@@ -21,7 +21,9 @@ namespace Fabric
     
     ArrayProducer::ComputeState::ComputeState( RC::ConstHandle<ArrayProducer> const &arrayProducer )
       : m_arrayProducer( arrayProducer )
-      , m_count( arrayProducer->getCount() )
+#if defined(FABRIC_DEBUG)      
+      , m_count( 0xDEADBEEF )
+#endif
     {
     }
       

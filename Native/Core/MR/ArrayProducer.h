@@ -68,6 +68,11 @@ namespace Fabric
       protected:
       
         ComputeState( RC::ConstHandle<ArrayProducer> const &arrayProducer );
+
+        virtual void setCount( size_t count )
+        {
+          m_count = count;
+        }
     
         static void ProduceJSONAsyncCallback_0(
           void *userdata,
@@ -93,7 +98,6 @@ namespace Fabric
     public:
       
       virtual RC::ConstHandle<RT::Desc> getElementDesc() const = 0;
-      virtual size_t getCount() const = 0;
       virtual const RC::Handle<ComputeState> createComputeState() const = 0;
     
     protected:
