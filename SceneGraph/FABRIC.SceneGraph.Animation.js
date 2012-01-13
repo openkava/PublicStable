@@ -23,6 +23,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     var keyframeType = options.keyframetype;
     var keyframeTrackType = options.keyframetype+'Track';
     var keyframeTrackSetType = options.keyframetype+'TrackSet';
+    var keyframeTrackSetBindingsType = options.keyframetype+'TrackSetBindings';
     var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
     if (!rTypes[options.keyframetype]) {
       throw ('Type "' + options.keyframetype + '" is not registered. Load the RT file.');
@@ -32,6 +33,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     }
     if (!rTypes[keyframeTrackSetType]) {
       throw ('Type "' + keyframeTrackSetType + '" is not registered. Load the RT file.');
+    }
+    if (!rTypes[keyframeTrackSetBindingsType]) {
+      throw ('Type "' + keyframeTrackSetBindingsType + '" is not registered. Load the RT file.');
     }
     
     var defaultKeyframeValue = rTypes[options.keyframetype].defaultValue;
@@ -45,19 +49,24 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     var animationLibraryNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = animationLibraryNode.constructDGNode('DGNode');
     dgnode.addMember('trackSet', keyframeTrackSetType);
-    dgnode.addMember('bindings', 'KeyframeTrackBindings');
+    dgnode.addMember('bindings', keyframeTrackSetBindingsType);
     
     var firstTrackAdded = false;
-    animationLibraryNode.pub.addTrackSet = function(trackset) {
+    animationLibraryNode.pub.addTrackSet = function(trackset, bindings) {
+      var trackSetId;
       if(!firstTrackAdded){
-        // Nodes default to having 1 slice, so we use up the first slot here. 
-        dgnode.setData('trackSet', 0, trackset);
+        // Nodes default to having 1 slice, so we use up the first slot here.
+        trackSetId = 0;
         firstTrackAdded = true;
-        return 0;
       }
-      var trackSetId = dgnode.getCount();
-      dgnode.setCount(trackSetId+1);
+      else{
+        trackSetId = dgnode.getCount();
+        dgnode.setCount(trackSetId+1);
+      }
       dgnode.setData('trackSet', trackSetId, trackset);
+      if(bindings){
+        dgnode.setData('bindings', trackSetId, bindings);
+      }
       return trackSetId;
     };
     animationLibraryNode.pub.getTimeRange = function(trackSetId) {
@@ -133,7 +142,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       animationLibraryNode.pub.setTrackSet(m_trackSet, m_trackSetId);
       animationLibraryNode.pub.fireEvent('valuechanged', {});
     }
-    
+    /*
     var paramsdgnode;
     animationLibraryNode.pub.bindToRig = function(rigNode, trackSetName){
       if (!rigNode.isTypeOf('CharacterRig')) {
@@ -155,7 +164,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         binding = [];
         trackSet.addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,1,0), binding);
         trackBindings.addScalarBinding(i, binding[0]);
-        */
+        * /
         trackSet.addScalarTrack("ScalarTrack"+i, undefined, trackBindings, i);
       }
       for (i = 0; i < variables.vec3Values.length; i++) {
@@ -166,7 +175,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         trackSet.addTrack("Vec3Track"+i+".y", FABRIC.RT.rgb(0, 1, 0), binding);
         trackSet.addTrack("Vec3Track"+i+".z", FABRIC.RT.rgb(0, 0, 1), binding);
         trackBindings.addVec3Binding(i, binding);
-        */
+        * /
         trackSet.addVec3Track("Vec3Track"+i, undefined, trackBindings, i);
       }
       for (i = 0; i < variables.quatValues.length; i++) {
@@ -177,7 +186,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         trackSet.addTrack("QuatTrack"+i+".v.z", FABRIC.RT.rgb(0, 0, 1), binding);
         trackSet.addTrack("QuatTrack"+i+".w", FABRIC.RT.rgb(1, 1, 0), binding);
         trackBindings.addQuatBinding(i, binding);
-        */
+        * /
         trackSet.addQuatTrack("QuatTrack"+i, undefined, trackBindings, i);
       }
       
@@ -193,7 +202,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         trackSet.addTrack("XfoTrack"+i+".ori.v.z", FABRIC.RT.rgb(0, 0, 1), binding); 
         trackSet.addTrack("XfoTrack"+i+".ori.w", FABRIC.RT.rgb(1, 1, 0), binding);
         trackBindings.addXfoBinding(i, binding);
-        */
+        * /
       //  trackBindings.addXfoBinding(i, trackSet.addXfoTrack("XfoTrack"+i));
         trackSet.addQuatTrack("XfoTrack"+i, undefined, trackBindings, i);
       }
@@ -244,7 +253,8 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       return trackBindings;
     }
-
+        */
+        
     animationLibraryNode.getEvaluateCurveOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluate'+options.keyframetype+'Curve',

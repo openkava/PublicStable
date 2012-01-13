@@ -4,6 +4,7 @@ use Vec3, Quat, Xfo;
 use LinearKeyframe;
 use LinearKeyframeTrack;
 use LinearKeyframeTrackSet;
+use LinearKeyframeTrackSetBindings;
 use PoseVariables;
 use CharacterControllerParams;
 use DebugGeometry;
@@ -108,7 +109,7 @@ operator evaluateLocomotionPoseVariables(
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[][],
   io FootStepTrack footStepTracksLibrary<>[],
-  io KeyframeTrackBindings bindingsLibrary<>,
+  io LinearKeyframeTrackSetBindings bindingsLibrary<>,
   
   io Hub hubs[],
   io Limb legs[],
@@ -197,9 +198,9 @@ operator evaluateLocomotionPoseVariables(
     );
   }
 
-  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
+  LinearKeyframeTrackSetBindings trackSet = animationLibrary[trackcontroller.activeTrackSet];
   FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
-  KeyframeTrackBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
+  LinearKeyframeTrackSetBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
   
   Xfo invcontrollerXfo = controllerXfo.inverse();
   Vec2 timeRange = trackSet.timeRange;

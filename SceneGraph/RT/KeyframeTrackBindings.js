@@ -32,10 +32,55 @@ FABRIC.RT.KeyframeTrackBindings.prototype = {
   },
   addXfoBinding: function(varId, trackIds){
     this.xfoBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackIds));
+  },
+  setValue: function(trackSetId, time, value, index, animationLibraryNode){
+    var type = (typeof value == 'number') ? 'Number' : value.getType();
+    var findBinding = function(bindingsList){
+      for(var i=0; i<bindingsList.length; i++){
+        if(bindingsList[i].varId == index){
+          return bindingsList[i];
+        }
+      }
+      throw "Binding not found";
+    }
+    var binding, values;
+    switch(type){
+    case 'Number':
+      binding = findBinding(this.scalarBindings);
+      values = [value];
+      break;
+    case 'FABRIC.RT.Vec3':
+      binding = findBinding(this.vec3Bindings);
+      values = [value.x, value.y, value.z];
+      break;
+    case 'FABRIC.RT.Quat':
+      binding = findBinding(this.quatBindings);
+      if(binding.trackIds.length == 3){
+        var euler = new FABRIC.RT.Euler();
+        euler.setFromQuat(value);
+        values = [euler.x, euler.y, euler.z];
+      }else if(binding.trackIds.length == 4){
+        values = [value.w, value.x, value.y, value.z];
+      }
+      break;
+    case 'FABRIC.RT.Xfo':
+      binding = findBinding(this.xfoBindings);
+      if(binding.trackIds.length == 6){
+        var euler = new FABRIC.RT.Euler();
+        euler.setFromQuat(value.ori);
+        values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
+      }else if(binding.trackIds.length == 7){
+        values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
+      }
+      break;
+    default:
+      throw 'Unhandled type:' + val;
+    }
+    animationLibraryNode.pub.setValues(trackSetId, time, binding.trackIds, values);
   }
 };
 
-
+/*
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('KeyframeTrackBindings', {
     members: {
@@ -51,4 +96,5 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+*/
 
