@@ -417,27 +417,40 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       initImage: false,
       glRepeat: false
     });
-    var transferFunctionImageDGNode = transferFunctionImageNode.getUniformsDGNode();
+    var transferFunctionImageUniformsDGNode = transferFunctionImageNode.getUniformsDGNode();
+    var transferFunctionImagePixelsDGNode = transferFunctionImageNode.getPixelsDGNode();
     
-    transferFunctionImageDGNode.addMember('minOpacity', 'Scalar', options.minOpacity);
-    transferFunctionImageDGNode.addMember('maxOpacity', 'Scalar', options.maxOpacity);
-    volumeNode.addMemberInterface(transferFunctionImageDGNode, 'minOpacity', true);
-    volumeNode.addMemberInterface(transferFunctionImageDGNode, 'maxOpacity', true);
+    transferFunctionImageUniformsDGNode.addMember('minOpacity', 'Scalar', options.minOpacity);
+    transferFunctionImageUniformsDGNode.addMember('maxOpacity', 'Scalar', options.maxOpacity);
+    volumeNode.addMemberInterface(transferFunctionImageUniformsDGNode, 'minOpacity', true);
+    volumeNode.addMemberInterface(transferFunctionImageUniformsDGNode, 'maxOpacity', true);
     
     if(options.opacityFactorsNode && options.opacityColorsNode){
       var opacityFactorsNode = scene.getPrivateInterface(options.opacityFactorsNode);
-      transferFunctionImageDGNode.setDependency(opacityFactorsNode.getDGNode(), 'opacityFactors');
+      transferFunctionImagePixelsDGNode.setDependency(opacityFactorsNode.getDGNode(), 'opacityFactors');
       var opacityColorsNode = scene.getPrivateInterface(options.opacityColorsNode);
-      transferFunctionImageDGNode.setDependency(opacityColorsNode.getDGNode(), 'opacityColors');
+      transferFunctionImagePixelsDGNode.setDependency(opacityColorsNode.getDGNode(), 'opacityColors');
       
-      transferFunctionImageDGNode.bindings.append(scene.constructOperator({
+      transferFunctionImagePixelsDGNode.bindings.append(scene.constructOperator({
+        operatorName: 'resizeImageColor',
+        parameterLayout: [
+          'uniforms.width',
+          'uniforms.height',
+          'self.newCount'
+        ],
+        preProcessorDefinitions: { PIXELFORMAT: 'Color' },
+        entryFunctionName: 'resizeImageColor',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
+      }));
+        
+      transferFunctionImagePixelsDGNode.bindings.append(scene.constructOperator({
         operatorName: 'updateTransferFunctionImage',
         parameterLayout: [
-          'self.minOpacity',
-          'self.maxOpacity',
+          'uniforms.minOpacity',
+          'uniforms.maxOpacity',
           'opacityFactors.values',
           'opacityColors.values',
-          'self.pixels'
+          'self.pixels<>'
         ],
         entryFunctionName: 'updateTransferFunctionImage',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
@@ -595,7 +608,7 @@ FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
     options.format = 'RGBA';
     options.createResourceLoadNode = false;
     options.createLoadTextureEventHandler = true;
-    options.initImage = true;
+  //  options.initImage = true;
     
     var rectangleImageNode = scene.constructNode('Image2D', options);
 
