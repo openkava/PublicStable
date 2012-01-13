@@ -29,6 +29,7 @@ namespace Fabric
   namespace CG
   {
     class Adapter;
+    class ArrayProducerAdapter;
     class BooleanAdapter;
     class ByteAdapter;
     class ConstStringAdapter;
@@ -39,6 +40,7 @@ namespace Fabric
     class StructAdapter;
     class FixedArrayAdapter;
     class VariableArrayAdapter;
+    class ValueProducerAdapter;
     class SlicedArrayAdapter;
     class OpaqueAdapter;
     class ModuleBuilder;
@@ -71,6 +73,8 @@ namespace Fabric
       RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<SlicedArrayAdapter> getSlicedArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<FixedArrayAdapter> getFixedArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t length ) const;
+      RC::ConstHandle<ValueProducerAdapter> getValueProducerOf( RC::ConstHandle<Adapter> const &adapter ) const;
+      RC::ConstHandle<ArrayProducerAdapter> getArrayProducerOf( RC::ConstHandle<Adapter> const &adapter ) const;
       
       RC::ConstHandle<StructAdapter> registerStruct( std::string const &name, RT::StructMemberInfoVector const &structMemberInfoVector );
       RC::ConstHandle<Adapter> registerAlias( std::string const &name, RC::ConstHandle<Adapter> const &adapter );

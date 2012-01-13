@@ -88,4 +88,4 @@ node.putResourceToFile("resource", path7);
 var body4 = FABRIC.IO.getTextFile(path7);
 console.log(body4);
 
-FABRIC.flush();
+FABRIC.close();

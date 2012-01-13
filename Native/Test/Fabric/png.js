@@ -44,4 +44,4 @@ if (node.getErrors().length > 0 )
   printDeep(node.getErrors());
 node.evaluate();
 
-FABRIC.flush();
+FABRIC.close();

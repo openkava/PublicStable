@@ -1,0 +1,8 @@
+operator gen(io String output, Size index) {
+  output = "Hello, " + index + " !";
+}
+
+operator entry() {
+  ArrayProducer<String> vp = createArrayGenerator(createConstValue(Size(2)), gen);
+  report vp.produce(Size(1));
+}

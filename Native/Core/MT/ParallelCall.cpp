@@ -11,7 +11,13 @@ namespace Fabric
 {
   namespace MT
   {
-    ParallelCall::ParallelCall( RC::ConstHandle<Function> const &function, size_t paramCount, std::string const &debugDesc )
+    Util::TLSVar<void *> ParallelCall::s_userdataTLS;
+    
+    ParallelCall::ParallelCall(
+      RC::ConstHandle<Function> const &function,
+      size_t paramCount,
+      std::string const &debugDesc
+      )
       : m_function( function )
       , m_paramCount( paramCount )
       , m_totalParallelCalls( 1 )

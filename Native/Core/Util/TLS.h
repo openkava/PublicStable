@@ -66,6 +66,28 @@ namespace Fabric
         return *this;
       }
       
+      class Setter
+      {
+      public:
+      
+        Setter( TLSVar &tlsVar, T const &newValue )
+          : m_tlsVar( tlsVar )
+        {
+          m_oldValue = m_tlsVar;
+          m_tlsVar = newValue;
+        }
+        
+        ~Setter()
+        {
+          m_tlsVar = m_oldValue;
+        }
+      
+      private:
+      
+        TLSVar &m_tlsVar;
+        T m_oldValue;
+      };
+      
     protected:
     
       T *valuePtrForThread() const

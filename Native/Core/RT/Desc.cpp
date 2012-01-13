@@ -123,5 +123,10 @@ namespace Fabric
       Util::JSONGenerator defaultValueJG = resultJOG.makeMember( "defaultValue" );
       generateJSON( getDefaultData(), defaultValueJG );
     }
+
+    size_t Desc::getIndirectMemoryUsage( void const *data ) const
+    {
+      return m_impl->getIndirectMemoryUsage( data );
+    }
   };
 };

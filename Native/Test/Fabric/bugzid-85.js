@@ -28,7 +28,7 @@ F = require('Fabric').createClient();
   operatorInit2.setSourceCode(
     'operator initiate2(in Size count, io Size a<>[]) {\n'+
     '  for (Size i=0; i<count; ++i)\n'+
-    '    a[i].push(2*i);\n'+
+    '    a[i].push(Size(2*i));\n'+
     '}\n');
   operatorInit2.setEntryFunctionName('initiate2');
   operatorInit2.setMainThreadOnly(true);
@@ -69,4 +69,4 @@ operator reportValues(io Size a<>[]) {\n\
   e.appendEventHandler(eh);
   e.fire();
 
-F.flush();
+F.close();

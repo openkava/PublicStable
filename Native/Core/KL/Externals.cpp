@@ -3,6 +3,30 @@
  */
 
 #include <Fabric/Core/KL/Externals.h>
+#include <Fabric/Core/CG/ArrayProducerAdapter.h>
+#include <Fabric/Core/CG/ArrayAdapter.h>
+#include <Fabric/Core/CG/SizeAdapter.h>
+#include <Fabric/Core/CG/ValueProducerAdapter.h>
+#include <Fabric/Core/MR/ArrayGenerator.h>
+#include <Fabric/Core/MR/ArrayGeneratorOperator.h>
+#include <Fabric/Core/MR/ArrayMap.h>
+#include <Fabric/Core/MR/ArrayMapOperator.h>
+#include <Fabric/Core/MR/ArrayTransform.h>
+#include <Fabric/Core/MR/ArrayTransformOperator.h>
+#include <Fabric/Core/MR/ConstArray.h>
+#include <Fabric/Core/MR/ConstValue.h>
+#include <Fabric/Core/MR/Reduce.h>
+#include <Fabric/Core/MR/ReduceOperator.h>
+#include <Fabric/Core/MR/ValueGenerator.h>
+#include <Fabric/Core/MR/ValueGeneratorOperator.h>
+#include <Fabric/Core/MR/ValueMap.h>
+#include <Fabric/Core/MR/ValueMapOperator.h>
+#include <Fabric/Core/MR/ValueTransform.h>
+#include <Fabric/Core/MR/ValueTransformOperator.h>
+#include <Fabric/Core/RT/ArrayDesc.h>
+#include <Fabric/Core/RT/ArrayProducerDesc.h>
+#include <Fabric/Core/RT/ValueProducerDesc.h>
+#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/Config.h>
 
 #include <string>
@@ -91,6 +115,346 @@ static double fp64_atan2( double x, double y )
 
 namespace Fabric
 {
+  static void MRCreateConstValue(
+    CG::ValueProducerAdapter *valueProducerAdapter,
+    void const *data,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::ConstValue::Create(
+      valueProducerAdapter->getRTManager(),
+      RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( valueProducerAdapter->getDesc() )->getValueDesc(),
+      data
+      ).take();
+  }
+
+  static void MRCreateValueTransform1(
+    void (*operator_)(...),
+    MR::ValueProducer *&input,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::ValueTransform::Create(
+      input,
+      MR::ValueTransformOperator::Create(
+        operator_,
+        1,
+        input->getValueDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateValueTransform2(
+    void (*operator_)(...),
+    MR::ValueProducer *&input,
+    MR::ValueProducer *&shared,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::ValueTransform::Create(
+      input,
+      MR::ValueTransformOperator::Create(
+        operator_,
+        2,
+        input->getValueDesc(),
+        shared->getValueDesc()
+        ),
+      shared
+      ).take();
+  }
+
+  static void MRCreateValueMap2(
+    void (*operator_)(...),
+    MR::ValueProducer *&input,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::ValueMap::Create(
+      input,
+      MR::ValueMapOperator::Create(
+        operator_,
+        2,
+        input->getValueDesc(),
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateValueMap3(
+    void (*operator_)(...),
+    MR::ValueProducer *&input,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer *&shared,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::ValueMap::Create(
+      input,
+      MR::ValueMapOperator::Create(
+        operator_,
+        3,
+        input->getValueDesc(),
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        shared->getValueDesc()
+        ),
+      shared
+      ).take();
+  }
+
+  static void MRCreateArrayGenerator3(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ValueProducer *&countValueProducer,
+    CG::ArrayProducerAdapter *outputArrayProducerAdapter,
+    MR::ArrayProducer const *&outputArrayProducer
+    )
+  {
+    if ( outputArrayProducer )
+      outputArrayProducer->release();
+    outputArrayProducer = MR::ArrayGenerator::Create(
+      countValueProducer,
+      MR::ArrayGeneratorOperator::Create(
+        operator_,
+        numParams,
+        RC::ConstHandle<RT::ArrayProducerDesc>::StaticCast( outputArrayProducerAdapter->getDesc() )->getElementDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateArrayGenerator4(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ValueProducer *&countValueProducer,
+    MR::ValueProducer *&sharedValueProducer,
+    CG::ArrayProducerAdapter *outputArrayProducerAdapter,
+    MR::ArrayProducer const *&outputArrayProducer
+    )
+  {
+    if ( outputArrayProducer )
+      outputArrayProducer->release();
+    outputArrayProducer = MR::ArrayGenerator::Create(
+      countValueProducer,
+      MR::ArrayGeneratorOperator::Create(
+        operator_,
+        numParams,
+        RC::ConstHandle<RT::ArrayProducerDesc>::StaticCast( outputArrayProducerAdapter->getDesc() )->getElementDesc(),
+        sharedValueProducer->getValueDesc()
+        ),
+      sharedValueProducer
+      ).take();
+  }
+
+  static void MRCreateValueGenerator1(
+    void (*operator_)(...),
+    size_t numParams,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer const *&outputValueProducer
+    )
+  {
+    if ( outputValueProducer )
+      outputValueProducer->release();
+    outputValueProducer = MR::ValueGenerator::Create(
+      MR::ValueGeneratorOperator::Create(
+        operator_,
+        numParams,
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateValueGenerator2(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ValueProducer *&sharedValueProducer,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer const *&outputValueProducer
+    )
+  {
+    if ( outputValueProducer )
+      outputValueProducer->release();
+    outputValueProducer = MR::ValueGenerator::Create(
+      MR::ValueGeneratorOperator::Create(
+        operator_,
+        numParams,
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        sharedValueProducer->getValueDesc()
+        ),
+      sharedValueProducer
+      ).take();
+  }
+
+  static void MRCreateConstArray(
+    CG::ArrayAdapter *arrayAdapter,
+    void const *arrayData,
+    CG::ArrayProducerAdapter *arrayProducerAdapter,
+    MR::ArrayProducer const *&arrayProducer
+    )
+  {
+    if ( arrayProducer )
+      arrayProducer->release();
+    arrayProducer = MR::ConstArray::Create(
+      arrayProducerAdapter->getRTManager(),
+      RC::ConstHandle<RT::ArrayDesc>::StaticCast( arrayAdapter->getDesc() ),
+      arrayData
+      ).take();
+  }
+
+  static void MRCreateArrayMap4(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ArrayProducer *&inputArrayProducer,
+    CG::ArrayProducerAdapter *outputArrayProducerAdapter,
+    MR::ArrayProducer const *&arrayProducer
+    )
+  {
+    if ( arrayProducer )
+      arrayProducer->release();
+    arrayProducer = MR::ArrayMap::Create(
+      inputArrayProducer,
+      MR::ArrayMapOperator::Create(
+        operator_,
+        numParams,
+        inputArrayProducer->getElementDesc(),
+        RC::ConstHandle<RT::ArrayProducerDesc>::StaticCast( outputArrayProducerAdapter->getDesc() )->getElementDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateArrayMap5(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ArrayProducer *&inputArrayProducer,
+    CG::ArrayProducerAdapter *outputArrayProducerAdapter,
+    MR::ValueProducer *&sharedValueProducer,
+    MR::ArrayProducer const *&arrayProducer
+    )
+  {
+    if ( arrayProducer )
+      arrayProducer->release();
+    arrayProducer = MR::ArrayMap::Create(
+      inputArrayProducer,
+      MR::ArrayMapOperator::Create(
+        operator_,
+        numParams,
+        inputArrayProducer->getElementDesc(),
+        RC::ConstHandle<RT::ArrayProducerDesc>::StaticCast( outputArrayProducerAdapter->getDesc() )->getElementDesc(),
+        sharedValueProducer->getValueDesc()
+        ),
+      sharedValueProducer
+      ).take();
+  }
+
+  static void MRCreateArrayTransform3(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ArrayProducer *&ioArrayProducer,
+    MR::ArrayProducer const *&arrayProducer
+    )
+  {
+    if ( arrayProducer )
+      arrayProducer->release();
+    arrayProducer = MR::ArrayTransform::Create(
+      ioArrayProducer,
+      MR::ArrayTransformOperator::Create(
+        operator_,
+        numParams,
+        ioArrayProducer->getElementDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateArrayTransform4	(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ArrayProducer *&ioArrayProducer,
+    MR::ValueProducer *&sharedValueProducer,
+    MR::ArrayProducer const *&arrayProducer
+    )
+  {
+    if ( arrayProducer )
+      arrayProducer->release();
+    arrayProducer = MR::ArrayTransform::Create(
+      ioArrayProducer,
+      MR::ArrayTransformOperator::Create(
+        operator_,
+        numParams,
+        ioArrayProducer->getElementDesc(),
+        sharedValueProducer->getValueDesc()
+        ),
+      sharedValueProducer
+      ).take();
+  }
+
+  static void MRCreateReduce4(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ArrayProducer *&inputArrayProducer,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::Reduce::Create(
+      inputArrayProducer,
+      MR::ReduceOperator::Create(
+        operator_,
+        numParams,
+        inputArrayProducer->getElementDesc(),
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateReduce5(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ArrayProducer *&inputArrayProducer,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer *&sharedValueProducer,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::Reduce::Create(
+      inputArrayProducer,
+      MR::ReduceOperator::Create(
+        operator_,
+        numParams,
+        inputArrayProducer->getElementDesc(),
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        sharedValueProducer->getValueDesc()
+        ),
+      sharedValueProducer
+      ).take();
+  }
+
   namespace KL
   {
     typedef std::map<std::string, void *> SymbolNameToAddressMap;
@@ -163,6 +527,22 @@ namespace Fabric
 #if defined(FABRIC_OS_WINDOWS)
         symbolNameToAddressMap["_chkstk"] = (void *)&_chkstk;
 #endif
+        symbolNameToAddressMap["__MR_CreateConstValue"] = (void *)&MRCreateConstValue;
+        symbolNameToAddressMap["__MR_CreateValueGenerator_1"] = (void *)&MRCreateValueGenerator1;
+        symbolNameToAddressMap["__MR_CreateValueGenerator_2"] = (void *)&MRCreateValueGenerator2;
+        symbolNameToAddressMap["__MR_CreateValueMap_2"] = (void *)&MRCreateValueMap2;
+        symbolNameToAddressMap["__MR_CreateValueMap_3"] = (void *)&MRCreateValueMap3;
+        symbolNameToAddressMap["__MR_CreateValueTransform_1"] = (void *)&MRCreateValueTransform1;
+        symbolNameToAddressMap["__MR_CreateValueTransform_2"] = (void *)&MRCreateValueTransform2;
+        symbolNameToAddressMap["__MR_CreateConstArray"] = (void *)&MRCreateConstArray;
+        symbolNameToAddressMap["__MR_CreateArrayGenerator_3"] = (void *)&MRCreateArrayGenerator3;
+        symbolNameToAddressMap["__MR_CreateArrayGenerator_4"] = (void *)&MRCreateArrayGenerator4;
+        symbolNameToAddressMap["__MR_CreateArrayMap_4"] = (void *)&MRCreateArrayMap4;
+        symbolNameToAddressMap["__MR_CreateArrayMap_5"] = (void *)&MRCreateArrayMap5;
+        symbolNameToAddressMap["__MR_CreateArrayTransform_3"] = (void *)&MRCreateArrayTransform3;
+        symbolNameToAddressMap["__MR_CreateArrayTransform_4"] = (void *)&MRCreateArrayTransform4;
+        symbolNameToAddressMap["__MR_CreateReduce_4"] = (void *)&MRCreateReduce4;
+        symbolNameToAddressMap["__MR_CreateReduce_5"] = (void *)&MRCreateReduce5;
       }
       SymbolNameToAddressMap::const_iterator it = symbolNameToAddressMap.find( functionName );
       if ( it != symbolNameToAddressMap.end() )

@@ -6,12 +6,14 @@
 #define _FABRIC_DG_CONTEXT_H
 
 #include <Fabric/Core/JSON/CommandChannel.h>
+#include <Fabric/Core/MR/Interface.h>
+#include <Fabric/Core/KLC/Interface.h>
 #include <Fabric/Core/CG/CompileOptions.h>
-#include <Fabric/Base/RC/WeakHandleSet.h>
-#include <Fabric/Base/Util/AtomicSize.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Mutex.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
+#include <Fabric/Base/RC/WeakHandleSet.h>
+#include <Fabric/Base/Util/AtomicSize.h>
 
 #include <vector>
 
@@ -144,6 +146,15 @@ namespace Fabric
       
       static EDK::Callbacks GetCallbackStruct();
 
+      void acquireMutex()
+      {
+        m_mutex.acquire();
+      }
+      void releaseMutex()
+      {
+        m_mutex.release();
+      }
+      
     protected:
     
       Context(
@@ -155,12 +166,16 @@ namespace Fabric
       ~Context();
 
       void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      void jsonExecGetMemoryUsage( Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonDGGetMemoryUsage( Util::JSONGenerator &jg ) const;
       
     private:
     
+      static Util::Mutex s_contextMapMutex;
       static ContextMap s_contextMap;
-      ContextMap::iterator m_contextMapIterator;
+      std::string m_contextID;
     
+      Util::Mutex m_mutex;
       RC::Handle<MT::LogCollector> m_logCollector;
       RC::Handle<RT::Manager> m_rtManager;
       RC::Handle<IO::Manager> m_ioManager;
@@ -170,6 +185,7 @@ namespace Fabric
       
       mutable NamedObjectMap m_namedObjectRegistry;
       
+      Util::Mutex m_clientsMutex;
       Clients m_clients;
       
       Util::AtomicSize m_notificationBracketCount;
@@ -179,6 +195,10 @@ namespace Fabric
       Util::JSONArrayGenerator *m_pendingNotificationsJSONArrayGenerator;
       
       static std::string const s_wrapFabricClientJSSource;
+      
+      GC::Container m_gcContainer;
+      MR::Interface m_mrInterface;
+      KLC::Interface m_klcInterface;
     };
   };
 };
