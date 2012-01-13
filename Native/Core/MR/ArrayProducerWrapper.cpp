@@ -44,7 +44,7 @@ namespace Fabric
       )
     {
       Util::JSONGenerator jg = resultJAG.makeElement();
-      jg.makeInteger( getUnwrapped()->getCount() );
+      jg.makeInteger( getUnwrapped()->createComputeState()->getCount() );
     }
     
     void ArrayProducerWrapper::jsonExecProduce(

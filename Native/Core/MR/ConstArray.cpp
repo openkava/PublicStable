@@ -48,6 +48,7 @@ namespace Fabric
         void const *data
       )
     {
+    
       RC::ConstHandle<RT::Desc> elementDesc = arrayDesc->getMemberDesc();
       size_t count = arrayDesc->getNumMembers( data );
 
@@ -66,11 +67,6 @@ namespace Fabric
     {
       return m_fixedArrayDesc->getMemberDesc();
     }
-    
-    size_t ConstArray::getCount() const
-    {
-      return m_fixedArrayDesc->getNumMembers();
-    }
       
     const RC::Handle<ArrayProducer::ComputeState> ConstArray::createComputeState() const
     {
@@ -86,6 +82,7 @@ namespace Fabric
       : ArrayProducer::ComputeState( constArray )
       , m_constArray( constArray )
     {
+      setCount( m_constArray->m_fixedArrayDesc->getNumMembers() );
     }
     
     void ConstArray::ComputeState::produce( size_t index, void *data ) const

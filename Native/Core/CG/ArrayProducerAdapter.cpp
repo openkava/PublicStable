@@ -237,7 +237,7 @@ namespace Fabric
     {
       MR::ArrayProducer *arrayProducer = *static_cast<MR::ArrayProducer * const *>( arrayProducerRValue );
       if ( arrayProducer )
-        return arrayProducer->getCount();
+        return arrayProducer->createComputeState()->getCount();
       else return 0;
     }
     

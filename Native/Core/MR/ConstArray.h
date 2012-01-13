@@ -47,7 +47,6 @@ namespace Fabric
     public:
       
       virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
-      virtual size_t getCount() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
 
       RC::ConstHandle<RT::ArrayDesc> getArrayDesc() const;
