@@ -972,13 +972,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
       }
       
-      var trackSetID = animationLibrary.addTrackSet(trackSet);
+      var trackSetID = animationLibrary.addTrackSet(trackSet, trackBindings);
       var variablesNode = rigNode.getVariablesNode();
       if(!variablesNode){
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID, trackBindings);
+      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID);
       
     }
   }
