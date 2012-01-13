@@ -218,14 +218,14 @@ function Boolean decodeRGBAImageData(
   return true;
 }
 
-function decodeColorImageData(
+function Boolean decodeColorImageData(
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
   io Color bitmap[]
 ) {
   if(resource.data.size() == 0)
-    return;
+    return false;
   String ext = resource.extension ? resource.extension : resource.mimeType;
   switch (ext) {
     case'hdr':
@@ -238,7 +238,12 @@ function decodeColorImageData(
       FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
+    default:
+      report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
+      resource.data.resize(0);
+      return false;
   }
+  return true;
 }
 
 function decodeRGBImageData(
