@@ -1550,7 +1550,6 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       url: undefined
     });
     
-    
     var fileName = options.url.split('/').pop();
     var baseName = fileName.split('.')[0];
     if(!options.name){
@@ -1560,7 +1559,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     var onloadSuccessCallbacks = [];
     var onloadProgressCallbacks = [];
     var onloadFailureCallbacks = [];
-    lastLoadCallbackURL = '';
+    var lastLoadCallbackURL = '';
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
@@ -1572,7 +1571,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     if(options.blockRedrawingTillResourceIsLoaded && options.url){
       incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
     }
-
+    
     var onLoadCallbackFunction = function(callbacks) {
       var i;
       for (i = 0; i < callbacks.length; i++) {
@@ -1589,12 +1588,11 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       }
     }
     
-    var resourceLoaded = false;
-    var reseourceLoadFailed = false;
     var onLoadSuccessCallbackFunction = function(node) {
+      lastLoadCallbackURL = resourceLoadNode.pub.getUrl();
       onLoadCallbackFunction(onloadSuccessCallbacks);
-      resourceLoaded = true;
     }
+    
     var onLoadProgressCallbackFunction = function(node, progress) {
       prevRemainingTaskWeight = remainingTaskWeight;
       //TaskWeight = 1 + size/100KB
@@ -1602,13 +1600,12 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       if(incrementLoadProgressBar)
         incrementLoadProgressBar(false, remainingTaskWeight-prevRemainingTaskWeight);
 
-      var i;
-      for (i = 0; i < onloadProgressCallbacks.length; i++) {
+      for (var i = 0; i < onloadProgressCallbacks.length; i++) {
         onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
       }
     }
+    
     var onLoadFailureCallbackFunction = function(node) {
-      reseourceLoadFailed = true;
       onLoadCallbackFunction(onloadFailureCallbacks);
     }
 
@@ -1617,13 +1614,13 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
 
     resourceLoadNode.pub.isLoaded = function() {
-      return resourceLoaded;
+      return lastLoadCallbackURL !== '' && lastLoadCallbackURL === resourceLoadNode.pub.getUrl();
     }
 
     resourceLoadNode.pub.addOnLoadProgressCallback = function(callback) {
       //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
       //make sure the callback is only fired when the 'next' resource is loaded.
-      if (resourceLoaded) {
+      if (resourceLoadNode.pub.isLoaded()) {
         callback.call();
       } else {
         onloadProgressCallbacks.push(callback);
@@ -1646,20 +1643,14 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     
     resourceLoadNode.pub.setUrl = function(url, forceLoad) {
       if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ url, remainingTaskWeight);
       }
       dgnode.setData('url', 0, url);
-      if(forceLoad!= false){
+      if(forceLoad != false){
         dgnode.evaluate();
       }
     };
 
-    resourceLoadNode.pub.getDGLoadNode = function() {
-      return dgnode;
-    };
-    
-    
-    
     var parentWriteData = resourceLoadNode.writeData;
     resourceLoadNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.url = options.url;
