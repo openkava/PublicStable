@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Background Texture</title> 
+    <title>FABRIC - Secure Storage</title> 
         
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -39,6 +39,8 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
     
 <script type="text/javascript">
 
@@ -57,10 +59,43 @@ s.parentNode.insertBefore(ga, s);
 
 </script>
 
-<script type="text/javascript">
+<style type="text/css">
+#sidebar {
+  width:300px;
+}  
+#viewer {
+  right:300px;
+}
+</style>
 
+<script type="text/javascript">
+/*
+FABRIC.SceneGraph.registerNodeType('MixedDataNode', {
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    
+    var mixedDataNode = scene.constructNode('SceneGraphNode');
+    
+    var dgnodes = {};
+    dgnodes['uniforms'] = mixedDataNode.constructDGNode('UniformsDGNode');
+    dgnodes['attributes'] = mixedDataNode.constructDGNode('AttributesDGNode');
+    dgnodes['attributes'].setCount(12);
+    
+    for(var name in dgnodes) {
+      dgnodes[name].addMember("integers","Integer[]",[10,11,12]);
+      dgnodes[name].addMember("sizes","Size[]",[10,11,12]);
+      dgnodes[name].addMember("string","String","four");
+    }
+    
+    return mixedDataNode;
+  }
+});
+*/
 
 $(document).ready(function() {
+
+  $('#saveResource').button()
 
   var scene = FABRIC.SceneGraph.createScene({ preDraw:false, postDraw:false });
   var viewport = scene.constructNode('Viewport', {
@@ -69,9 +104,73 @@ $(document).ready(function() {
   });
 
 viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
-    url: 'Resources/tomatoes_960_640.png'
+    url: 'Resources/fabric-demo-gradient.png'
   }));
 
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      nearDistance: 1,
+      farDistance: 300,
+      target: new FABRIC.RT.Vec3(0,0,0),
+      position: new FABRIC.RT.Vec3(15,5,1).multiplyScalar(1.5)
+    });
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+  
+  // create a light
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  
+  
+  var modelName = 'cow';
+  var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
+   splitMaterials: true
+  });
+  var instances = [];
+  objResource.addEventListener('objparsesuccess', function(evt){
+    
+    for(var name in evt.loadedGeometries){
+       var material = scene.constructNode('PhongMaterial', {
+         diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+         lightNode: light
+       });
+      var instance = scene.constructNode('Instance', {
+        geometryNode: evt.loadedGeometries[name],
+        materialNode: material,
+        transformNode: scene.constructNode('Transform', {
+          hierarchical: false,
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+        }),
+      });
+      instances.push(instance);
+    }
+    
+    viewport.redraw();
+  });
+  
+  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
+  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
+  var nodeMap = presetLoader.load(storage);
+  
+  
+  $('#saveResource').button()
+    .click(function() {
+     
+      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
+      
+      var presetSaver = scene.constructManager('SceneSerializer',{
+        typeRemappings: { ObjTriangles: 'Triangles' } 
+      });
+      
+      for(var i=0; i<instances.length; i++){
+        presetSaver.addNode(instances[i]);
+      }
+      
+      presetSaver.save(storage);
+      // log the generated JSON files to the console.
+      storage.log();
+      
+    });
+  
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -81,10 +180,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
     if (nbRemaining===0) {
       $('#loadingDialog').dialog('close');
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
       viewport.redraw();
       return true;
     }
@@ -118,9 +213,21 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Background Texture.<br>
-              This very basic sample shows the use of a background texture that is filtered through OpenGL. Have a look
-              at the source code of this page to see how this is set up.
+              Secure Storage.<br>
+              This very basic sample shows how to load and save data into the so called SecureStorage node,
+              a ResourceLoadNode which utilizes the FabricSECURE extension. The data is zipped and encrypted
+              using a secure key, and can only be retrieved using the same key. Furthermore the data is using
+              the Fabric memory layout directly, so it is much faster to load fez data than any other format.<br><br>
+              The left cow model used in this demo is using an OBJ parser, size 326773 bytes.<br>
+              The right cow model uses the fez SecureStorage, encrypted size 72776.<br><br>
+              Click the button below to save a copy of the fez file to your disk. The data is encrypted though,
+              so you won't be able to read the file.
+            </div><!--content-->
+          </div><!--box-->
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <button id="saveResource" style="margin-top:10px;">Save Secure Resource</button>
             </div><!--content-->
           </div><!--box-->
             

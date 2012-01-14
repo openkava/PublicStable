@@ -25,11 +25,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
         enabled: true
       });
 
-    if (!options.targetNode) {
-      throw ('Camera not specified');
-    }
-
-    var cameraNode = options.targetNode;
+    var cameraNode;
     var cameraManipulatorNode = scene.constructNode('SceneGraphNode', options);
     scene.addEventHandlingFunctions(cameraManipulatorNode);
 
@@ -63,7 +59,6 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       evt.viewportNode.redraw();
       evt.stopPropagation();
     }
-    cameraNode.addEventListener('mousewheel', mouseWheelZoomFn);
 
     var cameraPos, cameraTarget, cameraOffset, cameraXfo, upaxis, swaxis, focalDist;
     var mouseDownScreenPos, viewportNode;
@@ -99,7 +94,17 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
         document.addEventListener('mouseup', releaseZoomFn, false);
       }
     }
-    cameraNode.addEventListener('mousedown', mouseDownFn);
+    
+    cameraManipulatorNode.addReferenceInterface('Camera', 'Camera',
+      function(nodePrivate, member){
+        if(cameraNode){
+          cameraNode.removeEventListener('mousedown', mouseDownFn);
+          cameraNode.removeEventListener('mousewheel', mouseWheelZoomFn);
+        }
+        cameraNode = nodePrivate.pub;
+        cameraNode.addEventListener('mousedown', mouseDownFn);
+        cameraNode.addEventListener('mousewheel', mouseWheelZoomFn);
+      });
 
     var dragOrbitFn = function(evt) {
       if(!enabled){
@@ -179,6 +184,12 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       document.removeEventListener('mouseup', releaseZoomFn, false);
       evt.stopPropagation();
     }
+    
+    
+    if (options.targetNode) {
+      cameraManipulatorNode.pub.setCameraNode(options.targetNode);
+    }
+
 
     return cameraManipulatorNode;
   }});
@@ -231,6 +242,7 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
     // propagates down the tree it collects scopes and fires operators.
     // The operators us the collected scopes to calculate the ray.
     paintEvent = paintManipulatorNode.constructEventNode('Event');
+    paintEvent.setSelectType('CollectedPoints');
     paintEvent.appendEventHandler(paintEventHandler);
     
     var brushMaterial = scene.constructNode('FlatScreenSpaceMaterial', { color: FABRIC.RT.rgb(0.8, 0, 0) });
@@ -250,7 +262,7 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
       paintEventHandler.setData('cameraMatrix', cameraMatrix);
       paintEventHandler.setData('projectionMatrix', projectionMatrix);
       paintEventHandler.setData('aspectRatio', aspectRatio);
-      return paintEvent.select('CollectedPoints');
+      return paintEvent.select();
     };
     
     paintManipulatorNode.pub.setBrushSize = function(val){
@@ -356,56 +368,55 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
       document.removeEventListener('mouseup', releasePaintFn, false);
     }
     
+    paintManipulatorNode.addReferenceListInterface('Paintable', 'Instance',
+      function(nodePrivate){
+        var paintInstanceEventHandler,
+          instanceNode = nodePrivate,
+          geometryNode = scene.getPrivateInterface(instanceNode.pub.getGeometryNode()),
+          transformNode = scene.getPrivateInterface(instanceNode.pub.getTransformNode()),
+          paintOperator;
+  
+        paintInstanceEventHandler = paintManipulatorNode.constructEventHandlerNode('Paint' + instanceNode.pub.getName());
+        paintInstanceEventHandler.setScope('geometryattributes', geometryNode.getAttributesDGNode());
+        paintInstanceEventHandler.setScope('geometryuniforms', geometryNode.getAttributesDGNode());
+        paintInstanceEventHandler.setScope('transform', transformNode.getDGNode());
+        paintInstanceEventHandler.setScope('instance', instanceNode.getDGNode());
+  
+        // The selector will return the node bound with the given binding name.
+        var paintingOpDef = options.paintingOpDef;
+        if(!paintingOpDef){
+          paintingOpDef = {
+            operatorName: 'collectPointsInsideBrush',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/collectPointsInsideVolume.kl',
+            entryFunctionName: 'collectPointsInsideBrush',
+            parameterLayout: [
+              'paintData.cameraMatrix',
+              'paintData.projectionMatrix',
+              'paintData.aspectRatio',
     
-    paintManipulatorNode.pub.addPaintableNode = function(node) {
-      if (!node.isTypeOf || !node.isTypeOf('Instance')) {
-        throw ('Incorrect type. Must assign a Instance');
-      }
-
-      var paintInstanceEventHandler,
-        instanceNode = scene.getPrivateInterface(node),
-        geometryNode = scene.getPrivateInterface(instanceNode.pub.getGeometryNode()),
-        transformNode = scene.getPrivateInterface(instanceNode.pub.getTransformNode()),
-        paintOperator;
-
-      paintInstanceEventHandler = paintManipulatorNode.constructEventHandlerNode('Paint' + node.getName());
-      paintInstanceEventHandler.setScope('geometryattributes', geometryNode.getAttributesDGNode());
-      paintInstanceEventHandler.setScope('geometryuniforms', geometryNode.getAttributesDGNode());
-      paintInstanceEventHandler.setScope('transform', transformNode.getDGNode());
-      paintInstanceEventHandler.setScope('instance', instanceNode.getDGNode());
-
-      // The selector will return the node bound with the given binding name.
-      var paintingOpDef = options.paintingOpDef;
-      if(!paintingOpDef){
-        paintingOpDef = {
-          operatorName: 'collectPointsInsideBrush',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/collectPointsInsideVolume.kl',
-          entryFunctionName: 'collectPointsInsideBrush',
-          parameterLayout: [
-            'paintData.cameraMatrix',
-            'paintData.projectionMatrix',
-            'paintData.aspectRatio',
+              'paintData.brushPos',
+              'paintData.brushSize',
+    
+              'transform.' + instanceNode.pub.getTransformNodeMember(),
+              'geometryattributes.positions<>',
+              'geometryattributes.normals<>'
+            ],
+            async: false
+          };
+        }
+        // At this moment, the operators bindings are checked and the binding with the
+        // given name is searched for. (instance). This is why the operator must be
+        // constructed synchronously.
+        paintInstanceEventHandler.setSelector('instance', scene.constructOperator(paintingOpDef));
+        
+        paintEventHandler.appendChildEventHandler(paintInstanceEventHandler);
   
-            'paintData.brushPos',
-            'paintData.brushSize',
-  
-            'transform.' + instanceNode.pub.getTransformNodeMember(),
-            'geometryattributes.positions<>',
-            'geometryattributes.normals<>'
-          ],
-          async: false
-        };
-      }
-      // At this moment, the operators bindings are checked and the binding with the
-      // given name is searched for. (instance). This is why the operator must be
-      // constructed synchronously.
-      paintInstanceEventHandler.setSelector('instance', scene.constructOperator(paintingOpDef));
-      
-      paintEventHandler.appendChildEventHandler(paintInstanceEventHandler);
-
-      paintableNodes.push(instanceNode);
-      paintableNodePaintHandlers.push(paintInstanceEventHandler);
-    };
+        paintableNodes.push(instanceNode);
+        paintableNodePaintHandlers.push(paintInstanceEventHandler);
+      },
+      function(nodePrivate, index){
+        // TODO: remove paintable node
+      });
 
     paintManipulatorNode.pub.enable = function(){
       enabled = true;
@@ -452,14 +463,13 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       manipulating = false,
       material = manipulatorNode.pub.getMaterialNode(),
       highlightColor = options.highlightcolor;
-      
-      
+    
     if(!material){
       material = scene.pub.constructNode('FlatMaterial', {
         color: options.color,
         drawOverlaid: options.drawOverlaid
       });
-      manipulatorNode.pub.setMaterialNode(material);
+      manipulatorNode.pub.addMaterialNode(material);
     }
     var color = material.getColor();
       
@@ -508,20 +518,26 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       document.removeEventListener('mousemove', dragFn, false);
       document.removeEventListener('mouseup', releaseFn, false);
       evt.stopPropagation();
+      scene.pub.fireEvent('endmanipulation', {
+        manipulatorNode: manipulatorNode.pub
+      });
       viewportNode.redraw();
     }
     manipulatorNode.pub.addEventListener('mousedown_geom', function(evt) {
-        manipulating = true;
-        manipulatorGlobals.manipulating = true;
-        highlightNode();
-        viewportNode = evt.viewportNode;
-        evt.mouseDownScreenPos = mouseDownScreenPos = evt.mouseScreenPos;
-        manipulatorNode.pub.fireEvent('dragstart', evt);
-        document.addEventListener('mousemove', dragFn, false);
-        document.addEventListener('mouseup', releaseFn, false);
-        evt.stopPropagation();
-        viewportNode.redraw();
+      scene.pub.fireEvent('beginmanipulation', {
+        manipulatorNode: manipulatorNode.pub
       });
+      manipulating = true;
+      manipulatorGlobals.manipulating = true;
+      highlightNode();
+      viewportNode = evt.viewportNode;
+      evt.mouseDownScreenPos = mouseDownScreenPos = evt.mouseScreenPos;
+      manipulatorNode.pub.fireEvent('dragstart', evt);
+      document.addEventListener('mousemove', dragFn, false);
+      document.addEventListener('mouseup', releaseFn, false);
+      evt.stopPropagation();
+      viewportNode.redraw();
+    });
     
     return manipulatorNode;
   }});
@@ -534,7 +550,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
   },
-  manipulating: false,
+  manipulating: false, // Note: PT 06-01-12 I don't think we need these manipulation globals now that we disable raycasting during manipulation.
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {
@@ -566,7 +582,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
       localXfo: options.localXfo
     });
     
-    options.transformNode = transformNode;
+    options.transformNode = transformNode.pub;
     var manipulatorNode = scene.constructNode('Manipulator', options );
     
     // take care of undo
@@ -586,7 +602,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
           node: targetNode,
           member: targetMember,
           value: manipulatorNode.getTargetXfoCached().clone(),
-          prevValue: prevXfo.clone(),
+          prevValue: prevXfo.clone()
         });  
       });
     }
@@ -878,13 +894,14 @@ FABRIC.SceneGraph.registerNodeType('ScreenTranslationManipulator', {
     scene.assignDefaults(options, {
         radius: 0.5,
         name: 'ScreenTranslationManipulator',
-        drawOverlaid: true
+        drawOverlaid: true,
+        baseManipulatorType: 'XfoManipulator'
       });
 
     if (!options.geometryNode) {
       options.geometryNode = scene.pub.constructNode('Sphere', { radius: options.radius, detail: 8.0 });
     }
-    var manipulatorNode = scene.constructNode('XfoManipulator', options);
+    var manipulatorNode = scene.constructNode(options.baseManipulatorType, options);
 
     var viewportNode;
     var dragStartXFo, vec1, ray1, ray2, planePoint, planeNormal, hitPoint1, hitPoint2;
@@ -1290,18 +1307,14 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
     manipulatorNode.pub.addEventListener('drag', dragFn);
     manipulatorNode.pub.addEventListener('dragend', dragendFn);
     
-    manipulatorNode.setParentManipulatorNode = function(node) {
-      if (!node.isTypeOf('BoneManipulator')) {
-        throw ('Incorrect type assignment. Must assign a BoneManipulator');
-      }
-      parentManipulator = scene.getPrivateInterface(node);
-    };
-    manipulatorNode.setChildManipulatorNode = function(node) {
-      if (!node.isTypeOf('BoneManipulator')) {
-        throw ('Incorrect type assignment. Must assign a BoneManipulator');
-      }
-      childManipulator = scene.getPrivateInterface(node);
-    };
+    manipulatorNode.addReferenceInterface('ParentManipulator', 'BoneManipulator',
+      function(nodePrivate){
+        parentManipulator = nodePrivate;
+      });
+    manipulatorNode.addReferenceInterface('ChildManipulator', 'BoneManipulator',
+      function(nodePrivate){
+        childManipulator = nodePrivate;
+      });
     manipulatorNode.getBoneLength = function() {
       return options.length;
     }

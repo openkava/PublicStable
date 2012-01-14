@@ -69,7 +69,7 @@ s.parentNode.insertBefore(ga, s);
 FABRIC.SceneGraph.registerNodeType('ThickGlassMaterial', {
   factoryFn: function(options, scene) {
     options = scene.assignDefaults(options, {
-        color:FABRIC.RT.rgba(0.6,0.3,0,1),
+        color: FABRIC.RT.rgba(0.6,0.3,0,1),
         sigma: 0.5
       });
     
@@ -103,6 +103,7 @@ void main(){\n\
   float fresnel = 1.0 - texture2D(u_fboTexture, texCoord).g; \n\
   float intensity = fresnel * exp(-u_sigma * thickness);\n\
   gl_FragColor = intensity * u_color;\n\
+  gl_FragColor.a = 1.0;\n\
 }\
       ',
       shaderUniforms: {
@@ -190,7 +191,7 @@ $(document).ready(function() {
   });
   
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -214,16 +215,19 @@ $(document).ready(function() {
       sigma: 0.6
     });
   
-  var assets = scene.importAssetFile('../BasicDemos/Models/beethovan.obj');//, { scaleFactor:0.01 } );
+  var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/beethovan.obj');
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    scene.constructNode('Instance', {
+        transformNode: scene.constructNode('Transform', {
+            hierarchical: false,
+            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
+          }),
+        geometryNode: evt.loadedGeometries['beethovan'],
+        materialNode: thickGlassMaterial
+      });
+   });
   
-  scene.constructNode('Instance', {
-      transformNode: scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
-        }),
-      geometryNode: assets['beethovan'],
-      materialNode: thickGlassMaterial
-    });
+  
   
   $('#loadingDialog').dialog({
     modal: true
