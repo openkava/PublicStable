@@ -19,18 +19,19 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
   var windowHeight = rootDomNode.clientHeight;
-  var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationLibrary');
+  var isBezier = animationLibraryNode.getKeyframeType() == 'BezierKeyframe';
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
   if(options.volumerenderdemohack){
     svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
   }
 
-  var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).color(FABRIC.rgb(0.5, 0.5, 0.5));
+  var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).addClass('EventCatcher');
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);
   var curvesHolderGroup = graphCenterGroup.createGroup().id('curvesHolderGroup');
   svgRoot.svgRoot = svgRoot;
   svgRoot.state = 'Normal';
+  
   
   var containmentRect;
   if(!fitEditorToKeyRanges){
@@ -40,8 +41,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     containmentRect.attr('stroke-width', 2);
   }
   ///////////////
-  tracksData = animationLibraryNode.getTrackSet(trackSetId);
-  var trackCount = tracksData.tracks.length;
+  var tracksData = animationLibraryNode.getTracks(trackSetId);
+  var trackCount = tracksData.length;
   var yRange = new FABRIC.Vec2(0, 0);
   var curvesData = [];
   var trackGroups = [];
@@ -68,7 +69,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         timeRange = new FABRIC.Vec2(0, 0);
         for (var i = 0; i < trackCount; i++) {
           if(!trackDisplayed[i]) continue;
-          var keys = tracksData.tracks[i].keys;
+          var keys = tracksData[i].keys;
           if(keys.length < 2){
             continue;
           }
@@ -146,10 +147,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       var currDomElement = $('#keyframeTracks');
       currDomElement.empty();
       for (var i = 0; i < trackCount; i++) {
-        var trackData = tracksData.tracks[i];
+        var trackData = tracksData[i];
         
         if(!trackGroups[i]){
-          trackGroups[i] = curvesHolderGroup.createGroup().id(tracksData.tracks[i].name);
+          trackGroups[i] = curvesHolderGroup.createGroup().id(tracksData[i].name);
         }
         if(trackFilters.length > 0){
           trackDisplayed[i] = true;
@@ -185,11 +186,11 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         li.append(branchName);
         el.append(li);
         if(typeof treedata == 'number'){
-          checkbox.attr('id', tracksData.tracks[trackId].name);
+          checkbox.attr('id', tracksData[trackId].name);
           checkbox.attr('checked', true);
           checkbox.data('displayed', true);
           checkbox.data('trackId', trackId)
-          var trackData = tracksData.tracks[trackId];
+          var trackData = tracksData[trackId];
           
           trackId++;
         }else{
@@ -207,7 +208,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     else{
       trackDisplayed.length = trackCount;
       for (var j = 0; j < trackCount; j++) {
-        trackDisplayed[trackId] = true;
+        trackDisplayed[j] = true;
+        if(!trackGroups[j]){
+          trackGroups[j] = curvesHolderGroup.createGroup().id(tracksData[j].name);
+        }
       }
     }
   
@@ -218,7 +222,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     screenXfo.fitToScreen();
   
     var drawTrackCurve = function(trackId) {
-      var trackData = tracksData.tracks[trackId];
+      var trackData = tracksData[trackId];
       var trackGroup = trackGroups[trackId];
       trackGroup.removeAllChildren();
       var path = trackGroup.createPath().addClass('CurvePath').stroke(trackData.color);
@@ -292,8 +296,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
             .addOnDragCallback(
               function(evt) {
                 var keyGsVal = screenXfo.toGraphSpace(evt.localPos);
-                tracksData.tracks[trackId].moveKey(keyIndex, keyGsVal.x, keyGsVal.y);
-                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                tracksData[trackId].moveKey(keyIndex, keyGsVal.x, keyGsVal.y);
+                animationLibraryNode.setTrack(trackData, trackId, trackSetId);
                 updateCurve();
                 updateDrawnKeys();
                 scene.redrawAllViewports();
@@ -314,15 +318,15 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               .addOnDragCallback(
                 function(evt) {
                   var keyInTanGsVal = screenXfo.toGraphSpace(evt.localPos, true);
-                  tracksData.tracks[trackId].setInTangentValue(keyIndex, keyInTanGsVal, evt.altKey);
-                  animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  trackData.setInTangentValue(keyIndex, keyInTanGsVal, evt.altKey);
+                  animationLibraryNode.setTrack(trackData, trackId, trackSetId);
                   updateCurve();
                   updateDrawnKeys();
                   scene.redrawAllViewports();
                 });
             drawnKeys[keyIndex].intan = inTanNode;
             drawnKeys[keyIndex].intanline = inTanLineNode;
-            
+
             ///////////////////////////////////////////////
             // Out Tangent
             var outTanSsVal = screenXfo.toScreenSpace(keyData.outtangent, true);
@@ -336,8 +340,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               .addOnDragCallback(
                 function(evt) {
                   var keyOutTanGsVal = screenXfo.toGraphSpace(evt.localPos, true);
-                  tracksData.tracks[trackId].setOutTangentValue(keyIndex, keyOutTanGsVal, evt.altKey);
-                  animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  trackData.setOutTangentValue(keyIndex, keyOutTanGsVal, evt.altKey);
+                  animationLibraryNode.setTrack(trackData, trackId, trackSetId);
                   updateCurve();
                   updateDrawnKeys();
                   scene.redrawAllViewports();
@@ -348,7 +352,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         }
       }
       if (options.drawKeys) {
-        var trackData = tracksData.tracks[trackId];
+        var trackData = tracksData[trackId];
         for (var i = 0; i < trackData.keys.length; i++) {
           drawKey(i, trackData.keys[i]);
         }

@@ -249,3 +249,24 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('BezierKeyframeTrackSetBindings', {
+    members: {
+      scalarBindings: 'KeyframeTrackBinding[]',
+      vec3Bindings: 'KeyframeTrackBinding[]',
+      quatBindings: 'KeyframeTrackBinding[]',
+      xfoBindings: 'KeyframeTrackBinding[]'
+    },
+    constructor: FABRIC.RT.KeyframeTrackBindings,
+    klBindings: {
+      filename: 'KeyframeTrackBindings.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrackBindings.kl'), {
+          KEYFRAMEDATATYPE:'Scalar',
+          KEYFRAMETYPE: 'BezierKeyframe'
+        })
+    }
+  });
+});

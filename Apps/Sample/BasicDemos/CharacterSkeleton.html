@@ -33,8 +33,8 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -110,7 +110,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     rigHierarchyRootNodeName: 'Biped_Nulls_UpperBody'
   });
 
-  var animationLibrary = assetNodes.AnimationLibrary;
+  var animationLibrary = assetNodes.LinearKeyAnimationLibrary;
 
   
   // Get the rig from the list of returned assets.

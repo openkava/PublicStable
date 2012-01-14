@@ -354,6 +354,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
     dgnode.addMember('poseVariables', 'PoseVariables', options.poseVariables);
+    dgnode.addMember('keyIndices', 'Integer[]');
+    dgnode.addMember('trackSetId', 'Integer', -1);
+    dgnode.addMember('enableTrackEvaluation', 'Boolean', true);
+      
+    characterVariablesNode.addMemberInterface(dgnode, 'enableTrackEvaluation', true);
+    characterVariablesNode.addMemberInterface(dgnode, 'trackSetId', true);
+    
     // extend the private interface
     characterVariablesNode.setVariables = function(poseVariables) {
       dgnode.setData('poseVariables', 0, poseVariables);
@@ -363,66 +370,59 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       return dgnode.getData('poseVariables');
     };
     
-    var animationLibrary;
+  //  characterVariablesNode.setBindings = function(bindings){
+  //    dgnode.setData('bindings', 0, bindings);
+  //  }
+  
+      
+    scene.pub.addEventListener('beginmanipulation', function(evt){
+      characterVariablesNode.pub.setEnableTrackEvaluation(false);
+      m_animationLibraryNode.beginManipulation(trackSetId);
+      
+    });
+    scene.pub.addEventListener('endmanipulation', function(evt){
+      m_animationLibraryNode.endManipulation();
+      characterVariablesNode.pub.setEnableTrackEvaluation(true);
+    });
     
-    characterVariablesNode.setBindings = function(bindings){
-      if(dgnode.getMembers().bindings){
-        dgnode.setData('bindings', 0, bindings);
-      }
-      else{
-        dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
-      }
-    }
-    var boundToAnimationTracks = false;
     var m_animationLibraryNode;
     var m_animationControllerNode;
     var m_trackSetId;
     var m_keyframeTrackBindings;
-    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, keyframeTrackBindings){
+    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId){
       if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
       if (!animationControllerNode.isTypeOf('AnimationController')) {
         throw ('Incorrect type assignment. Must assign a AnimationController');
       }
-      animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
-      animationControllerNode = scene.getPrivateInterface(animationControllerNode);
-      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-      dgnode.setDependency(animationControllerNode.getDGNode(), 'controller');
-      if(boundToAnimationTracks){
-        dgnode.setData('trackSetId', 0, trackSetId);
-        return;
-      }
-      
-      dgnode.addMember('keyIndices', 'Integer[]');
-      dgnode.addMember('trackSetId', 'Integer', trackSetId);
-      dgnode.addMember('enableTrackEvaluation', 'Boolean', true);
-      
-      characterVariablesNode.addMemberInterface(dgnode, 'enableTrackEvaluation', true);
-    
-      characterVariablesNode.setBindings(keyframeTrackBindings);
-      m_animationLibraryNode = animationLibraryNode;
-      m_animationControllerNode = animationControllerNode;
-      m_keyframeTrackBindings = keyframeTrackBindings;
+      m_animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
+      m_animationControllerNode = scene.getPrivateInterface(animationControllerNode);
       m_trackSetId = trackSetId;
+      
+      dgnode.setDependency(m_animationLibraryNode.getDGNode(), 'animationlibrary');
+      dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
+      dgnode.setData('trackSetId', 0, m_trackSetId);
+      
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'evaluatePoseTracks',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
         preProcessorDefinitions: {
-          KEYFRAMETRACKSETTYPE: animationLibraryNode.getTrackSetType()
+          KEYFRAMETRACKSETTYPE: m_animationLibraryNode.getTrackSetType()
         },
         entryFunctionName: 'evaluatePoseTracks',
         parameterLayout: [
           'animationlibrary.trackSet<>',
+          'animationlibrary.bindings<>',
           'controller.localTime',
           'self.trackSetId',
-          'self.bindings',
           'self.keyIndices',
           'self.poseVariables',
           'self.enableTrackEvaluation'
         ]
       }));
+      
       characterVariablesNode.pub.setBoundTrack = function(trackSetId){
         m_trackSetId = trackSetId;
         dgnode.setData('trackSetId', 0, trackSetId);
