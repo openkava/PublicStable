@@ -124,13 +124,13 @@ $(document).ready(function() {
   });
 
   var material = scene.constructNode('PhongBumpReflectSkinningMaterial', {
-    diffuseTextureNode: scene.constructNode('Image', { url: 'Resources/tuscany_d.png' }),
-    specularTextureNode: scene.constructNode('Image', { url: 'Resources/tuscany_s.png' }),
-    normalTextureNode: scene.constructNode('Image', { url: 'Resources/tuscany_n.png' }),
+    diffuseTextureNode: scene.constructNode('Image2D', { url: 'Resources/tuscany_d.png' }),
+    specularTextureNode: scene.constructNode('Image2D', { url: 'Resources/tuscany_s.png' }),
+    normalTextureNode: scene.constructNode('Image2D', { url: 'Resources/tuscany_n.png' }),
     lightNode: light,
     numBones: skeleton.getNumBones()
   });
-  assets.tuscanyCharacterInstance.setMaterialNode(material);
+  assets.tuscanyCharacterInstance.addMaterialNode(material);
 
   var debug = scene.constructNode('CharacterSkeletonDebug', {
     characterRigNode: assets.tuscanyCharacterRig,

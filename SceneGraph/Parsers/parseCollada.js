@@ -868,7 +868,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             
             // now let's reformat the linear data
             var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
-            var key = FABRIC.RT.linearKeyframe;
+            var key = function(t, v){ return new FABRIC.RT.LinearKeyframe(t, v); }
             for (var j = 0; j < keytimes.length; j++) {
               track.keys.push(key(keytimes[j], keyvalues[j] * scaleFactor));
             }

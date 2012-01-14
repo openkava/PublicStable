@@ -128,7 +128,7 @@ function KEYFRAMETYPETrackSet.clearTracks(
   }
 }
 
-
+/*
 function KEYFRAMETYPETrackSet.evaluate(
   in Scalar time,
   in KeyframeTrackBindings bindings,
@@ -282,3 +282,5 @@ function KEYFRAMETYPETrackSet.setPoseValues(
     }
   }
 }
+
+*/

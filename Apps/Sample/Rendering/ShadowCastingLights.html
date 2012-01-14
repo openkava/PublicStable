@@ -70,7 +70,7 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.1, 0.1, 0.1)
   });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
   
@@ -83,28 +83,40 @@ $(document).ready(function() {
   scene.constructNode("CameraManipulator", { targetNode:camera } );
   viewport.setCameraNode(camera);
 
-  var spotLightNode = scene.constructNode('SpotLight', {
+  
+  var lightNode = scene.constructNode('SpotLight', {
     position: new FABRIC.RT.Vec3(10, 20, 5),
     target: new FABRIC.RT.Vec3(0, 2, -6),
+    direction: (new FABRIC.RT.Vec3(0, 2, -6)).subtract(new FABRIC.RT.Vec3(10, 20, 5)).unit(),
     coneAngle: Math.degToRad(80.0),
     farDistance: 60,
     resolution: 2048,
     castShadows: true,
-    displayShadowDebug: true,
-    display: true
+    display: true,
   });
-
-  var lightTrManip = scene.constructNode('3AxisTranslationManipulator', { parentNode: spotLightNode.getTransformNode(), size: 4 });
-  var lightOriManip = scene.constructNode('3AxisRotationManipulator', { parentNode: spotLightNode.getTransformNode(), radius: 3 });
+  /*
+  var lightNode = scene.constructNode('DirectionalLight', {
+    position: new FABRIC.RT.Vec3(10, 20, 5),
+    target: new FABRIC.RT.Vec3(0, 2, -6),
+    direction: (new FABRIC.RT.Vec3(0, 2, -6)).subtract(new FABRIC.RT.Vec3(10, 20, 5)).unit(),
+    farDistance: 60,
+    resolution: 2048,
+    castShadows: true,
+    display: true,
+    size: 80
+  });
+  */
+  var lightTrManip = scene.constructNode('3AxisTranslationManipulator', { parentNode: lightNode.getTransformNode(), size: 4 });
+  var lightOriManip = scene.constructNode('3AxisRotationManipulator', { parentNode: lightNode.getTransformNode(), radius: 3 });
 
   var shadowMapMaterial = scene.constructNode('ShadowMaterial');
   var bluePhongMaterial = scene.constructNode('PhongMaterial', {
     diffuseColor: FABRIC.RT.rgb(0, 0, 0.8),
-    lightNode: spotLightNode
+    lightNode: lightNode
     });
   var greenPhongMaterial = scene.constructNode('ShadowReceivingPhongMaterial', {
     diffuseColor: FABRIC.RT.rgb(0.3, 0.9, 0.3),
-    lightNode: spotLightNode
+    lightNode: lightNode
   });
   
   scene.constructNode('Instance', {
@@ -114,8 +126,8 @@ $(document).ready(function() {
       }),
       geometryNode: scene.constructNode('Teapot', { size: 4 }),
     })
-  .setMaterialNode(shadowMapMaterial)
-  .setMaterialNode(bluePhongMaterial);
+  .addMaterialNode(shadowMapMaterial)
+  .addMaterialNode(bluePhongMaterial);
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
@@ -128,8 +140,8 @@ $(document).ready(function() {
         height: 16
       })
     })
-  .setMaterialNode(shadowMapMaterial)
-  .setMaterialNode(bluePhongMaterial);
+  .addMaterialNode(shadowMapMaterial)
+  .addMaterialNode(bluePhongMaterial);
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
@@ -138,7 +150,7 @@ $(document).ready(function() {
       }),
       geometryNode: scene.constructNode('Plane', { length: 50, width: 50, doubleSided: false })
     })
-  .setMaterialNode(greenPhongMaterial);
+  .addMaterialNode(greenPhongMaterial);
 
   $('#loadingDialog').dialog({
     modal: true

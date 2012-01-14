@@ -68,7 +68,7 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
   });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/tomatoes_960_640.png'
   }));
 
@@ -81,6 +81,10 @@ $(document).ready(function() {
     });
     if (nbRemaining===0) {
       $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
       viewport.redraw();
       return true;
     }
