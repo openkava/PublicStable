@@ -33,10 +33,10 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -153,12 +153,13 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     var animationAssetNodes = scene.importAssetFile(file, {
       scaleFactor: scaleFactor,
       constructScene: false,
-      loadAnimationUsingRig: fkrigNode,
+      loadAnimationUsingRig: true,
+      rigNode: fkrigNode,
       animationLibrary: libraryFKAnimations,
       animationController: animationController
     });
     if(!libraryFKAnimations){
-      libraryFKAnimations = animationAssetNodes.AnimationLibrary;
+      libraryFKAnimations = animationAssetNodes.LinearKeyAnimationLibrary;
       animationController = animationAssetNodes.AnimationController;
     }
     
