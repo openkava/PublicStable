@@ -229,7 +229,10 @@ $(document).ready(function() {
       }),
     materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
       diffuseColor: FABRIC.RT.rgb(0.6, 0.6, 0.6),
-      transformTextureNode: streetSlicedTransform.getTransformTexture(false),
+      transformTextureNode: scene.constructNode('TransformTexture', {
+        transformNode: streetSlicedTransform,
+        dynamic: false
+      }),
       specularFactor: 0.1
     }),
     transformNode: streetSlicedTransform
@@ -323,15 +326,17 @@ $(document).ready(function() {
   ////////// Car geometry
   var carSlicedTransform = scene.constructNode("Transform", { name:"CarsTransform" } );
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
-  
-  
-  var resourceLoadNode = scene.importAssetFile('Models/carmod2.obj', { loadMultipleGeometries: false });
+    
+  var resourceLoadNode = scene.importAssetFile('Models/carmod2.obj');
   resourceLoadNode.addEventListener('objparsesuccess', function(evt){
     scene.constructNode('Instance', {
-      geometryNode: evt.loadedGeometry,//Note: already scaled according to carLength, carHeight, carWidth
+      geometryNode: evt.loadedGeometries['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
       materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
         diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
-        transformTextureNode: carSlicedTransform.getTransformTexture(true),
+        transformTextureNode: scene.constructNode('TransformTexture', {
+          transformNode: carSlicedTransform,
+          dynamic: true
+        }),
         specularFactor: 1.0
       }),
       transformNode: carSlicedTransform
@@ -368,7 +373,10 @@ $(document).ready(function() {
       lightCosCutoffStart: carLightCosCutoffStart,
       lightDistCutoff: carLightConeLength,
       lightDistCutoffStart: carLightConeLength*0.66,
-      transformTextureNode: carLightSlicedTransform.getTransformTexture(true)
+      transformTextureNode: scene.constructNode('TransformTexture', {
+        transformNode: carLightSlicedTransform,
+        dynamic: true
+      })
     }),
     transformNode: carLightSlicedTransform
   });
@@ -396,7 +404,10 @@ $(document).ready(function() {
       }),
       materialNode: deferredRenderer.addForwardRenderMaterial('FlatInstancingExtMaterial', {
         color: FABRIC.RT.rgb255(245,245,255),
-        transformTextureNode: carFrontLightSlicedTransform.getTransformTexture(true)
+        transformTextureNode: scene.constructNode('TransformTexture', {
+          transformNode: carFrontLightSlicedTransform,
+          dynamic: true
+        })
       }),
       transformNode: carFrontLightSlicedTransform
     });
@@ -422,7 +433,10 @@ $(document).ready(function() {
       }),
       materialNode: deferredRenderer.addForwardRenderMaterial('FlatInstancingExtMaterial', {
         color: FABRIC.RT.rgb255(255,20,20),
-        transformTextureNode: carBackLightSlicedTransform.getTransformTexture(true)
+        transformTextureNode: scene.constructNode('TransformTexture', {
+          transformNode: carBackLightSlicedTransform,
+          dynamic: true
+        })
       }),
       transformNode: carBackLightSlicedTransform
     });
@@ -502,7 +516,10 @@ $(document).ready(function() {
       lightCosCutoffStart: streetLightCosCutoffStart,
       lightDistCutoff: streetLightConeLength*1.5,
       lightDistCutoffStart: streetLightConeLength*1.5,
-      transformTextureNode: streetLightSlicedTransform.getTransformTexture(true)
+      transformTextureNode: scene.constructNode('TransformTexture', {
+        transformNode: streetLightSlicedTransform,
+        dynamic: false
+      })
     }),
     transformNode: streetLightSlicedTransform
   });
@@ -522,7 +539,10 @@ $(document).ready(function() {
         diffuseColor: FABRIC.RT.rgb255(200,200,200),
         ambientColor: FABRIC.RT.rgb255(80,80,80),
         lightNode: light,
-        transformTextureNode: streetLightConeSlicedTransform.getTransformTexture(false)
+        transformTextureNode: scene.constructNode('TransformTexture', {
+          transformNode: streetLightConeSlicedTransform,
+          dynamic: false
+        })
       }),
       transformNode: streetLightConeSlicedTransform
     });
@@ -538,7 +558,10 @@ $(document).ready(function() {
       }),
       materialNode: deferredRenderer.addForwardRenderMaterial('FlatInstancingExtMaterial', {
         color: FABRIC.RT.rgb255(255,230,200),
-        transformTextureNode: streetLightBulbSlicedTransform.getTransformTexture(false)
+        transformTextureNode: scene.constructNode('TransformTexture', {
+          transformNode: streetLightBulbSlicedTransform,
+          dynamic: false
+        })
       }),
       transformNode: streetLightBulbSlicedTransform
     });

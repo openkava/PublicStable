@@ -79,7 +79,7 @@ $(document).ready(function() {
         console.log($(this).val());
       var assets = scene.importAssetFile($(this).val());
       for (i in assets) {
-        assets[i].setMaterialNode(redMaterial);
+        assets[i].addMaterialNode(redMaterial);
         drawNode.setGeometryNode(assets[i]);
       }
 
@@ -92,7 +92,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -120,7 +120,7 @@ $(document).ready(function() {
     viewport.setCameraNode(assets.frog.getParsedNodes()['/CameraXfo/Camera']);
 
     var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
-      diffuseTextureNode: scene.constructNode('Image', { url: 'Models/frog_diffuse.png' }),
+      diffuseTextureNode: scene.constructNode('Image2D', { url: 'Models/frog_diffuse.png' }),
       lightNode: scene.constructNode('PointLight', {
         position: new FABRIC.RT.Vec3(100, 100, 0)
       }),

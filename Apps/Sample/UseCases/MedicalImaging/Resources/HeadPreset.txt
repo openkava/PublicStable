@@ -1,4 +1,6 @@
-[
+{
+"metadata": {},
+"sceneGraphNodes":[
   {
     "name":"AimTransform",
     "type":"AimTransform",
@@ -36,3 +38,4 @@
     "data":{"url":"Resources/HeadHigh.nrrd"}
   }
 ]
+}

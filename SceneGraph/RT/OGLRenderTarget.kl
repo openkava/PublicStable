@@ -173,8 +173,8 @@ function OGLRenderTarget.bindFbo(Boolean clearDepth) {
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);
-  glViewport(0,0, this.width, this.height);
   glPushAttrib(GL_VIEWPORT_BIT | GL_TEXTURE_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+  glViewport(0,0, this.width, this.height);
   glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
   if(this.hasDepthBufferTexture && clearDepth)
     glClear(GL_DEPTH_BUFFER_BIT);

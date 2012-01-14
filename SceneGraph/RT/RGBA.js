@@ -69,8 +69,8 @@ FABRIC.RT.RGBA.prototype = {
   setFromScalarColor: function( color ) {
     this.r = Math.floor(color.r*256);
     this.g = Math.floor(color.g*256);
-    this.b = Math.floor(color.g*256);
-    this.a = Math.floor(color.g*256);
+    this.b = Math.floor(color.b*256);
+    this.a = Math.floor(color.a*256);
     this.clampRGBAValues();
   },
 

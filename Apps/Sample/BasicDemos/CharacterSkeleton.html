@@ -94,7 +94,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -106,7 +106,8 @@ $(document).ready(function() {
   });
 
   var assetNodes = scene.importAssetFile('Models/mocap_01.dae', {
-    constructRigFromHierarchy: 'Biped_Nulls_UpperBody'
+    constructRigFromHierarchy: true,
+    rigHierarchyRootNodeName: 'Biped_Nulls_UpperBody'
   });
 
   var animationLibrary = assetNodes.AnimationLibrary;

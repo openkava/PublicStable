@@ -9,7 +9,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
+  
+  // Load animations in the collada file into an animation library using an existing rig.
+  if(options.loadAnimationUsingRig == undefined) options.loadAnimationUsingRig = false;
+  if(options.loadPoseOntoRig == undefined) options.loadPoseOntoRig = false;
+  if(options.constructRigFromHierarchy == undefined) options.constructRigFromHierarchy = false;
+  
+  // options.rigNode;
+  // options.rigHierarchyRootNodeName;
   if(options.flipUVs == undefined) options.flipUVs = true;
+  var animationLibrary = options.animationLibrary;
+  var controllerNode = options.controllerNode;
   
   
 
@@ -526,10 +536,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         }
         case 'matrix':
           nodeData.xfo.setFromMat44(parseMatrix(child));
-          if(nodeData.xfo.sc.length() > 1.01 && options.logWarnings){
-            console.warn("collada file contains non uniform scaling in its matrices.");
-          }
-          nodeData.xfo.sc.set(1,1,1);
           break;
         case 'instance_geometry':
           nodeData.instance_geometry = parseInstanceGeometry(child);
@@ -777,7 +783,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         }
         var processedData = processGeometryData(meshData, polygons);
         processedData.constructionOptions.name = name;
-        var geometryNode = scene.constructNode('polygons', processedData.constructionOptions);
+        var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
         if(processedData.geometryData.vertexColors){
           geometryNode.addVertexAttributeValue('vertexColors', 'Color', {
             genVBO:true
@@ -805,14 +811,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return geometryNodes;
   }
 
-  var libraryAnimations = options.animationLibrary;
-  var controllerNode = options.controllerNode;
   
   var loadRigAnimation = function(rigNode){
     if(colladaData.libraryAnimations){
-      if(!libraryAnimations){
-        libraryAnimations = scene.constructNode('LinearKeyAnimationLibrary');
-        assetNodes[libraryAnimations.getName()] = libraryAnimations;
+      if(!animationLibrary){
+        animationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
+        assetNodes[animationLibrary.getName()] = animationLibrary;
       }
       if(!controllerNode){
         controllerNode = scene.constructNode('AnimationController');
@@ -864,7 +868,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             
             // now let's reformat the linear data
             var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
-            var key = FABRIC.RT.linearKeyframe;
+            var key = function(t, v){ return new FABRIC.RT.LinearKeyframe(t, v); }
             for (var j = 0; j < keytimes.length; j++) {
               track.keys.push(key(keytimes[j], keyvalues[j] * scaleFactor));
             }
@@ -968,13 +972,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
       }
       
-      var trackSetID = libraryAnimations.addTrackSet(trackSet);
+      var trackSetID = animationLibrary.addTrackSet(trackSet);
       var variablesNode = rigNode.getVariablesNode();
       if(!variablesNode){
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
+      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID, trackBindings);
       
     }
   }
@@ -992,6 +996,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     
     // recurse on the hierarchy
     var boneIndicesMap = {};
+    var globalXfos = [];
     var bones = [];
     var traverseChildren = function(nodeData, parentName) {
       var boneOptions = { name: nodeData.name, parent: -1, length: 0 };
@@ -1002,11 +1007,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       boneOptions.referenceLocalPose = nodeData.xfo;
       if (boneOptions.parent !== -1) {
         boneOptions.referencePose = bones[boneOptions.parent].referencePose.multiply(nodeData.xfo);
-
+        
         // set the length of the parent bone based on the child bone local offset.
-        if(nodeData.xfo.tr.x > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
-          nodeData.xfo.tr.x > bones[boneOptions.parent].length) {
-          bones[boneOptions.parent].length = nodeData.xfo.tr.x;
+        if(Math.abs(nodeData.xfo.tr.x) > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
+           Math.abs(nodeData.xfo.tr.x) > Math.abs(bones[boneOptions.parent].length)) {
+          bones[boneOptions.parent].length = nodeData.xfo.tr.x;// * bones[boneOptions.parent].referencePose.sc.x;
         }
       }
       else {
@@ -1029,7 +1034,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         // shorten the bone till it touches the floor.
         var downVec = new FABRIC.RT.Vec3(0, -1, 0);
         var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
-        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
+        if(bones[i].referencePose.tr.y > 0 && boneVec.dot(downVec) > bones[i].referencePose.tr.y){
           bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
         }
       }
@@ -1065,6 +1070,28 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     libraryRigs[rootNodeName] = rigData;
     return rigData;
   }
+
+
+  var loadPoseOntoRig = function(sceneData, rigNode, rootNodeName){
+    // recurse on the hierarchy
+    var pose = [];
+    var traverseChildren = function(nodeData, parentXfo) {
+      var xfo = nodeData.xfo;
+      if (parentXfo) {
+        xfo = parentXfo.multiply(xfo);
+      }
+      pose.push(xfo);
+      if (nodeData.children) {
+        for (var i = 0; i < nodeData.children.length; i++) {
+          traverseChildren(nodeData.children[i], xfo);
+        }
+      }
+    };
+    traverseChildren(sceneData.nodeLibrary[rootNodeName]);
+    
+    rigNode.setPose(pose);
+  }
+
 
     
   var libraryControllers = {};
@@ -1190,7 +1217,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     var constructSkinnedGeometry = function(polygons){
       var name = geometryData.name;
       if(polygons.material != null){
-        name += triangles.material;
+        name += polygons.material;
       }
       var processedData = processGeometryData(geometryData.mesh, polygons);
       
@@ -1325,13 +1352,16 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       
       // The file may contain a hierarchy that can be used to generate a skeleton
       if (options.constructRigFromHierarchy) {
-        constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
+        constructRigFromHierarchy(sceneData, options.rigHierarchyRootNodeName);
       }
     }
     else{
       
       if (options.loadAnimationUsingRig) {
-        loadRigAnimation(options.loadAnimationUsingRig);
+        loadRigAnimation(options.rigNode);
+      }
+      if (options.loadPoseOntoRig) {
+        loadPoseOntoRig(sceneData, options.rigNode, options.rigHierarchyRootNodeName);
       }
     }
   }

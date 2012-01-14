@@ -255,7 +255,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -286,20 +286,21 @@ $(document).ready(function() {
   var assetNodes = scene.importAssetFile('../BasicDemos/Models/envelope.dae', { bindToGlobalTime: true });
   
   var rigNode = assetNodes.polymshCharacterRig;
-  var rigInstanceNode = assetNodes.polymshCharacterInstance;
+  var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
+  var characterMesh = assetNodes.geometries_0Scene_Material;
 
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(0.3, 0.45, 1.0, 1.0),
       numBones: rigNode.getSkeletonNode().getNumBones()
     });
-  rigInstanceNode.setMaterialNode(materialNode);
+  rigInstanceNode.addMaterialNode(materialNode);
 
   assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 5));
 
   var hairGeometry = scene.constructNode('Hair', {
-      characterMeshNode: assetNodes.geometries_0,
-      characterRigNode: assetNodes.polymshCharacterRig,
+      characterMeshNode: characterMesh,
+      characterRigNode: rigNode,
       segments: 5,
       length: new FABRIC.RT.Vec2(0.5,1),
       stiffness: new FABRIC.RT.Vec2(0.75,1.5),

@@ -76,7 +76,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
   
@@ -96,8 +96,8 @@ $(document).ready(function() {
   // load our custom shader
   FABRIC.SceneGraph.defineEffectFromFile('ElephantMaterial', 'ElephantShader.xml');
 
-  var occlusionTexture = scene.constructNode('Image', { url: 'Models/samplehold_elephant_ambocc.png' });
-  var normalTexture = scene.constructNode('Image', { url: 'Models/samplehold_elephant_normalM.png' });
+  var occlusionTexture = scene.constructNode('Image2D', { url: 'Models/samplehold_elephant_ambocc.png' });
+  var normalTexture = scene.constructNode('Image2D', { url: 'Models/samplehold_elephant_normalM.png' });
 
   var elephantMaterial = scene.constructNode('ElephantMaterial', {
     diffuseTextureNode: occlusionTexture,

@@ -80,15 +80,24 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       return calcTimeRange(dgnode.getData('trackSet', trackSetId ? trackSetId : 0));
     };
 
-    // extend the public interface
-    animationLibraryNode.pub.getKeyframeType = function() {
-      return options.keyframetype;
+    animationLibraryNode.getKeyframeType = function() {
+      return keyframeType;
     };
+    animationLibraryNode.getTrackType = function() {
+      return keyframeTrackType;
+    };
+    animationLibraryNode.getTrackSetType = function() {
+      return keyframeTrackSetType;
+    };
+    
     animationLibraryNode.pub.getValueType = function(trackid) {
       // To determing what kind of data this evaluator should evaluate to,
       // we look up the keyframe type in the type manager, and request the
       // default value, which when is created on demand, enables us to call the valueType
       return defaultKeyframeValue.valueType;
+    };
+    animationLibraryNode.newTrackSet = function(trackSetName) {
+      return new FABRIC.RT[keyframeTrackSetType](trackSetName);
     };
     
     animationLibraryNode.pub.getTrackSetCount = function() {
@@ -103,9 +112,30 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;
     };
+    // Because we store all tracks in a track set, getting and setting the
+    // tracks causes significant performance issues. So the solution for
+    // now is to disable track evaluation while manipulating, and only store
+    // the tracks once manipulaiton is complete. 
+    var m_trackSet, m_trackSetId;
+    animationLibraryNode.pub.setValues = function(trackSetId, time, trackIds, values) {
+    //  var trackSet = this.getTrackSet(trackSetId);
+    //  trackSet.setValues(time, trackIds, values);
+    //  this.setTrackSet(trackSet, trackSetId);
+    //  animationLibraryNode.pub.fireEvent('valuechanged', {});
+    
+      m_trackSet.setValues(time, trackIds, values);
+    };
+    animationLibraryNode.beginManipulation = function(trackSetId) {
+      m_trackSetId = trackSetId;
+      m_trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+    }
+    animationLibraryNode.endManipulation = function() {
+      animationLibraryNode.pub.setTrackSet(m_trackSet, m_trackSetId);
+      animationLibraryNode.pub.fireEvent('valuechanged', {});
+    }
     
     var paramsdgnode;
-    animationLibraryNode.pub.bindToRig = function(rigNode, name){
+    animationLibraryNode.pub.bindToRig = function(rigNode, trackSetName){
       if (!rigNode.isTypeOf('CharacterRig')) {
         throw ('Incorrect type. Must be a CharacterRig');
       }
@@ -113,50 +143,59 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       rigNode = scene.getPrivateInterface(rigNode);
       
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var trackSet = new FABRIC.RT.KeyframeTrackSet(name);
+      var trackSet = new FABRIC.RT.KeyframeTrackSet(trackSetName);
       var variables = rigNode.getVariables();
       
       // generate the bindings.
       // TODO: look up the solver that uses a particular binding,
-      // and generate a name for the track.
+      // and generate a trackName for the track.
       var i, binding;
-      var addTrack = function(name, color, bindings){
-        trackSet.tracks.push(new FABRIC.RT.KeyframeTrack(name, color));
-        bindings.push(trackSet.tracks.length - 1);
-      }
       for (i = 0; i < variables.scalarValues.length; i++) {
+        /*
         binding = [];
-        addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,1,0), binding);
+        trackSet.addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,1,0), binding);
         trackBindings.addScalarBinding(i, binding[0]);
+        */
+        trackSet.addScalarTrack("ScalarTrack"+i, undefined, trackBindings, i);
       }
       for (i = 0; i < variables.vec3Values.length; i++) {
+        /*
         binding = [];
-        addTrack("Vec3Track"+i, FABRIC.RT.rgb(1,0,0), binding);
-        addTrack("Vec3Track"+i+".x", FABRIC.RT.rgb(1, 0, 0), binding);
-        addTrack("Vec3Track"+i+".y", FABRIC.RT.rgb(0, 1, 0), binding);
-        addTrack("Vec3Track"+i+".z", FABRIC.RT.rgb(0, 0, 1), binding);
+        trackSet.addTrack("Vec3Track"+i, FABRIC.RT.rgb(1,0,0), binding);
+        trackSet.addTrack("Vec3Track"+i+".x", FABRIC.RT.rgb(1, 0, 0), binding);
+        trackSet.addTrack("Vec3Track"+i+".y", FABRIC.RT.rgb(0, 1, 0), binding);
+        trackSet.addTrack("Vec3Track"+i+".z", FABRIC.RT.rgb(0, 0, 1), binding);
         trackBindings.addVec3Binding(i, binding);
+        */
+        trackSet.addVec3Track("Vec3Track"+i, undefined, trackBindings, i);
       }
       for (i = 0; i < variables.quatValues.length; i++) {
+        /*
         binding = [];
-        addTrack("QuatTrack"+i+".v.x", FABRIC.RT.rgb(1, 0, 0), binding);
-        addTrack("QuatTrack"+i+".v.y", FABRIC.RT.rgb(0, 1, 0), binding);
-        addTrack("QuatTrack"+i+".v.z", FABRIC.RT.rgb(0, 0, 1), binding);
-        addTrack("QuatTrack"+i+".w", FABRIC.RT.rgb(1, 1, 0), binding);
+        trackSet.addTrack("QuatTrack"+i+".v.x", FABRIC.RT.rgb(1, 0, 0), binding);
+        trackSet.addTrack("QuatTrack"+i+".v.y", FABRIC.RT.rgb(0, 1, 0), binding);
+        trackSet.addTrack("QuatTrack"+i+".v.z", FABRIC.RT.rgb(0, 0, 1), binding);
+        trackSet.addTrack("QuatTrack"+i+".w", FABRIC.RT.rgb(1, 1, 0), binding);
         trackBindings.addQuatBinding(i, binding);
+        */
+        trackSet.addQuatTrack("QuatTrack"+i, undefined, trackBindings, i);
       }
       
       for (i = 0; i < variables.xfoValues.length; i++) {
+        /*
         binding = [];
-        addTrack("XfoTrack"+i+".tr.x", FABRIC.RT.rgb(1, 0, 0), binding);
-        addTrack("XfoTrack"+i+".tr.y", FABRIC.RT.rgb(0, 1, 0), binding);
-        addTrack("XfoTrack"+i+".tr.z", FABRIC.RT.rgb(0, 0, 1), binding);
+        trackSet.addTrack("XfoTrack"+i+".tr.x", FABRIC.RT.rgb(1, 0, 0), binding);
+        trackSet.addTrack("XfoTrack"+i+".tr.y", FABRIC.RT.rgb(0, 1, 0), binding);
+        trackSet.addTrack("XfoTrack"+i+".tr.z", FABRIC.RT.rgb(0, 0, 1), binding);
         
-        addTrack("XfoTrack"+i+".ori.v.x", FABRIC.RT.rgb(1, 0, 0), binding);
-        addTrack("XfoTrack"+i+".ori.v.y", FABRIC.RT.rgb(0, 1, 0), binding);
-        addTrack("XfoTrack"+i+".ori.v.z", FABRIC.RT.rgb(0, 0, 1), binding); 
-        addTrack("XfoTrack"+i+".ori.w", FABRIC.RT.rgb(1, 1, 0), binding);
+        trackSet.addTrack("XfoTrack"+i+".ori.v.x", FABRIC.RT.rgb(1, 0, 0), binding);
+        trackSet.addTrack("XfoTrack"+i+".ori.v.y", FABRIC.RT.rgb(0, 1, 0), binding);
+        trackSet.addTrack("XfoTrack"+i+".ori.v.z", FABRIC.RT.rgb(0, 0, 1), binding); 
+        trackSet.addTrack("XfoTrack"+i+".ori.w", FABRIC.RT.rgb(1, 1, 0), binding);
         trackBindings.addXfoBinding(i, binding);
+        */
+      //  trackBindings.addXfoBinding(i, trackSet.addXfoTrack("XfoTrack"+i));
+        trackSet.addQuatTrack("XfoTrack"+i, undefined, trackBindings, i);
       }
       var trackSetId = animationLibraryNode.pub.addTrackSet(trackSet);
       
@@ -396,16 +435,22 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
     };
     
-    animationLibraryNode.pub.openCurveEditor = function(trackSetId, drawKeys) {
+    animationLibraryNode.pub.openCurveEditor = function(options) {
+      options = options ? options : undefined;
       var curveEditorWindow = window.open(
         FABRIC.processURL('FABRIC_ROOT/SceneGraph/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
         'Fabric Curve Editor:' + options.name,
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
       curveEditorWindow.animationLibraryNode = animationLibraryNode.pub;
-      curveEditorWindow.trackSetId = trackSetId ? trackSetId : 0;
+      curveEditorWindow.trackSetId = options.trackSetId ? options.trackSetId : 0;
+      curveEditorWindow.drawKeys = options.drawKeys ? options.drawKeys : true;
+      curveEditorWindow.trackFilters = options.trackFilters ? options.trackFilters : [];
       curveEditorWindow.scene = scene.pub;
+      return curveEditorWindow;
     }
+    
+    scene.addEventHandlingFunctions(animationLibraryNode);
     
     
     var parentWriteData = animationLibraryNode.writeData;
@@ -493,6 +538,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationController', {
     animationControllerNode.addMemberInterface(dgnode, 'timeRange', true);
 
     // extend public interface
+    animationControllerNode.pub.getTime = function(time) {
+      return dgnode.getData('localTime');
+    };
     animationControllerNode.pub.setTime = function(time) {
       dgnode.setData('localTime', 0, time);
     };
@@ -555,24 +603,20 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
 
     // extend the public interface
-    trackDisplayNode.pub.setAnimationLibraryNode = function(node, trackSetId) {
-      if(animationLibraryNode){
-        throw "Animation Library node already assigned.";
-      }
-      if (!node.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
-      }
-      animationLibraryNode = scene.getPrivateInterface(node);
-      var trackDataType = animationLibraryNode.pub.getValueType();
-      var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
-      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-
-      dgnode.addMember('values', trackDataType+'[]');
-      parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
-      dgnode.setCount(trackSet.tracks.length);
-
-      dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
-    };
+    
+    trackDisplayNode.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
+      function(nodePrivate, trackSetId){
+        animationLibraryNode = nodePrivate;
+        var trackDataType = animationLibraryNode.pub.getValueType();
+        var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+        dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
+  
+        dgnode.addMember('values', trackDataType+'[]');
+        parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
+        dgnode.setCount(trackSet.tracks.length);
+  
+        dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
+      });
     trackDisplayNode.pub.setTimeRange = function(timeRange) {
       parametersdgnode.setData('timeRange', timeRange);
     };
