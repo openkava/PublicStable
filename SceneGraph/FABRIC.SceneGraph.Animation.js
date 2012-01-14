@@ -338,10 +338,10 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     };
     
     animationTrackNode.pub.openCurveEditor = function(options) {
-      options = options ? options : undefined;
+      options = options ? options : {};
       var curveEditorWindow = window.open(
         FABRIC.processURL('FABRIC_ROOT/SceneGraph/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
-        'Fabric Curve Editor:' + options.name,
+        'Fabric Curve Editor:' + (options.name ? options.name : animationTrackNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
       curveEditorWindow.animationTrackNode = animationTrackNode.pub;
@@ -380,7 +380,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     scene.assignDefaults(options, {
         keyframetype: undefined
       });
-
+/*
     if (options.keyframetype == undefined) {
       throw ('Please specify a type of data to interpollate');
     }
@@ -408,10 +408,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
           'valueType that indicates what the keyframes will evaluate to. ' +
           'Normally this is a Scalar, but could be a Vec2, Color or any other value');
     }
+*/
+
     
-    
-    var animationLibraryNode = scene.constructNode('SceneGraphNode', options);
+    var animationLibraryNode = scene.constructNode('Animation', options);
     var dgnode = animationLibraryNode.constructDGNode('DGNode');
+    
+    var keyframeTrackSetType = animationLibraryNode.pub.getKeyframeType()+'TrackSet';
+    var keyframeTrackSetBindingsType = animationLibraryNode.pub.getKeyframeType()+'TrackSetBindings';
+    
     dgnode.addMember('trackSet', keyframeTrackSetType);
     dgnode.addMember('bindings', keyframeTrackSetBindingsType);
     
@@ -452,23 +457,25 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       return calcTimeRange(dgnode.getData('trackSet', trackSetId ? trackSetId : 0));
     };
-
+/*
     animationLibraryNode.pub.getKeyframeType = function() {
       return keyframeType;
     };
     animationLibraryNode.getTrackType = function() {
       return keyframeTrackType;
     };
+*/
     animationLibraryNode.getTrackSetType = function() {
       return keyframeTrackSetType;
     };
-    
+    /*
     animationLibraryNode.pub.getValueType = function(trackid) {
       // To determing what kind of data this evaluator should evaluate to,
       // we look up the keyframe type in the type manager, and request the
       // default value, which when is created on demand, enables us to call the valueType
       return defaultKeyframeValue.valueType;
     };
+    */
     animationLibraryNode.newTrackSet = function(trackSetName) {
       return new FABRIC.RT[keyframeTrackSetType](trackSetName);
     };
@@ -639,10 +646,10 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
           operatorName: 'evaluate'+options.keyframetype+'Curve',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluateKeyframeAnimationTrackSet.kl',
           preProcessorDefinitions: {
-            KEYFRAMETYPE: options.keyframetype,
-            TRACKTYPE: keyframeTrackType,
-            TRACKSETTYPE: keyframeTrackSetType,
-            KEYFRAME_EVALUATEDTYPE: defaultKeyframeValue.valueType
+            KEYFRAMETYPE: animationLibraryNode.pub.getKeyframeType(),
+            TRACKTYPE: animationLibraryNode.getTrackType(),
+            TRACKSETTYPE: animationLibraryNode.getTrackSetType(),
+            KEYFRAME_EVALUATEDTYPE: animationLibraryNode.pub.getValueType()
           },
           entryFunctionName: 'evaluateTrackSetCurve',
           parameterLayout: [
@@ -658,10 +665,10 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     };
     
     animationLibraryNode.pub.openCurveEditor = function(options) {
-      options = options ? options : undefined;
+      options = options ? options : {};
       var curveEditorWindow = window.open(
         FABRIC.processURL('FABRIC_ROOT/SceneGraph/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
-        'Fabric Curve Editor:' + options.name,
+        'Fabric Curve Editor:' + (options.name ? options.name : animationLibraryNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
       curveEditorWindow.animationLibraryNode = animationLibraryNode.pub;
@@ -860,12 +867,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
   
         dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
       });
-    trackDisplayNode.pub.setTimeRange = function(timeRange) {
-      parametersdgnode.setData('timeRange', timeRange);
-    };
-    trackDisplayNode.pub.getTimeRange = function(timeRange) {
-      return parametersdgnode.getData('timeRange');
-    };
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true);
     trackDisplayNode.pub.getCurveData = function() {
       dgnode.evaluate();
       return dgnode.getBulkData();
