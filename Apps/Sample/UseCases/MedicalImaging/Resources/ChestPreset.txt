@@ -14,18 +14,6 @@
     "data":{"transformNodeMember":"globalXfo","transformNode":"AimTransform","nearDistance":0.25,"farDistance":1000,"fovY":1.047197580337524,"focalDistance":3.594705820083618}
   },
   {
-    "name":"AnimationLibrary",
-    "type":"LinearKeyAnimationLibrary",
-    "options":{"name":"AnimationLibrary","keyframetype":"LinearKeyframe"},
-    "data":{"dgnode":{"members":{"trackSet":{"type":"LinearKeyframeTrackSet"}},"sliceCount":1,"data":{"trackSet":[{"name":"LinearPosKeyAnimationTrack","timeRange":{"x":0,"y":0},"tracks":[{"name":"opacityKeyframeTrack","color":{"r":0,"g":1,"b":0,"a":1},"keys":[{"time":0.1000000014901161,"value":0},{"time":0.2000000029802322,"value":0.75},{"time":0.4000000059604645,"value":0.05000000074505806},{"time":0.5,"value":1}]}]}]}}}
-  },
-  {
-    "name":"GradientKeyTrack",
-    "type":"ColorKeyAnimationLibrary",
-    "options":{"name":"GradientKeyTrack","keyframetype":"ColorKeyframe"},
-    "data":{"dgnode":{"members":{"trackSet":{"type":"ColorKeyframeTrackSet"}},"sliceCount":1,"data":{"trackSet":[{"name":"GradientKeyTrack","timeRange":{"x":0,"y":0},"tracks":[{"name":"opacityKeyframeTrack","color":{"r":0,"g":1,"b":0,"a":1},"keys":[{"time":0,"value":{"r":0.699999988079071,"g":0,"b":0,"a":1}},{"time":0.2000000029802322,"value":{"r":0,"g":0.699999988079071,"b":0,"a":1}},{"time":0.25,"value":{"r":0,"g":0.699999988079071,"b":0.699999988079071,"a":1}},{"time":0.300000011920929,"value":{"r":0.699999988079071,"g":0.699999988079071,"b":0,"a":1}},{"time":0.4000000059604645,"value":{"r":0.699999988079071,"g":0,"b":0.699999988079071,"a":1}},{"time":0.5,"value":{"r":0,"g":0,"b":0.699999988079071,"a":1}}]}]}]}}}
-  },
-  {
     "name":"VolumeOpacityInstance",
     "type":"VolumeOpacityInstance",
     "options":{"name":"VolumeOpacityInstance","drawable":true,"createBoundingBoxNode":true},
