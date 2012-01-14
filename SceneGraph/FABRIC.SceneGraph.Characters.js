@@ -377,7 +377,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       
     scene.pub.addEventListener('beginmanipulation', function(evt){
       characterVariablesNode.pub.setEnableTrackEvaluation(false);
-      m_animationLibraryNode.beginManipulation(trackSetId);
+      m_animationLibraryNode.beginManipulation(m_trackSetId);
       
     });
     scene.pub.addEventListener('endmanipulation', function(evt){
@@ -403,7 +403,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.setDependency(m_animationLibraryNode.getDGNode(), 'animationlibrary');
       dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
       dgnode.setData('trackSetId', 0, m_trackSetId);
-      
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'evaluatePoseTracks',
@@ -483,6 +482,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     //  }
     //  else{
       if(m_animationLibraryNode){
+        m_keyframeTrackBindings = m_animationLibraryNode.pub.getBindings(m_trackSetId);
         var findBinding = function(bindingsList){
           for(var i=0; i<bindingsList.length; i++){
             if(bindingsList[i].varId == index){
@@ -814,6 +814,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
           controllerNode = scene.pub.constructNode('AnimationController');
         }
         variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
+        animationLibrary.pub.setBindings(trackBindings);
       }
     }
     characterRigNode.pub.setBoundTrackSet = function(trackSetId){
@@ -1127,7 +1128,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
       maintainInitialXfo: false
     });
     
-    options.transformNode = transformNode;
+    options.transformNode = transformNode.pub;
     options.raycastOverlaid = options.drawOverlaid;
     var manipulatorNode = scene.constructNode('Manipulator', options );
     var xfoIndex = options.xfoIndex;
