@@ -89,7 +89,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
 
@@ -124,7 +124,7 @@ $(document).ready(function() {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
-  rigInstanceNode.setMaterialNode(materialNode);
+  rigInstanceNode.addMaterialNode(materialNode);
   
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:rigNode,

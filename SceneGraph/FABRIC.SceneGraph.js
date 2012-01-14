@@ -248,13 +248,11 @@ FABRIC.SceneGraph = {
     scene.constructEventHandlerNode = function(name) {
       return context.DependencyGraph.createEventHandler(name);
     };
+    scene.constructResourceLoadNode = function(name) {
+      return context.DependencyGraph.createResourceLoadNode(name);
+    };
     scene.constructDependencyGraphNode = function(name, isResourceLoad) {
-      if (isResourceLoad) {
-        return context.DependencyGraph.createResourceLoadNode(name);
-      }
-      else {
-        return context.DependencyGraph.createNode(name);
-      }
+      return context.DependencyGraph.createNode(name);
     };
     
     scene.constructManager = function(type, options) {
@@ -778,6 +776,9 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
     var dgnodes = {};
     var eventnodes = {};
     var eventhandlernodes = {};
+    var memberInterfaces = {};
+    var nodeReferenceInterfaces = {};
+    var nodeReferences = {};
 
     var capitalizeFirstLetter = function(str) {
       return str[0].toUpperCase() + str.substr(1);
@@ -810,61 +811,157 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       },
       addMemberInterface : function(corenode, memberName, defineSetter) {
         var getterName = 'get' + capitalizeFirstLetter(memberName);
-        sceneGraphNode.pub[getterName] = function(sliceIndex){
+        var getterFn = function(sliceIndex){
           return corenode.getData(memberName, sliceIndex);
         }
+        sceneGraphNode.pub[getterName] = getterFn;
         if(defineSetter===true){
           var setterName = 'set' + capitalizeFirstLetter(memberName);
-          sceneGraphNode.pub[setterName] = function(value, sliceIndex){
+          var setterFn = function(value, sliceIndex){
+            var prevalue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
             corenode.setData(memberName, sliceIndex?sliceIndex:0, value);
+            
+            scene.pub.fireEvent('valuechanged', {
+              sgnode: sceneGraphNode.pub,
+              newvalue: value,
+              prevalue: prevalue,
+              sliceIndex: sliceIndex,
+              getterFn: getterFn,
+              setterFn: setterFn
+            });
           }
+          sceneGraphNode.pub[setterName] = setterFn;
+          memberInterfaces[memberName] = { getterFn:getterFn, setterFn:setterFn };
         }
+      },
+      addReferenceInterface : function(referenceName, typeConstraint, setterCallback) {
+        var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
+        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
+        var getterFn = function(){
+          return nodeReferences[referenceName];
+        }
+        var typeConstraints = typeConstraint.split('|');
+        var setterFn = function(node, option){
+          if (node){
+            var matchesType = false;
+            for(var i=0; !matchesType && i<typeConstraints.length; i++){
+              if(node.isTypeOf(typeConstraints[i])) {
+                matchesType = true;
+              }
+            }
+            if(!matchesType){
+              throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+            }
+          }
+          var prevnode = nodeReferences[referenceName];
+          nodeReferences[referenceName] = node;
+          // a reference can be removed by passing in undefined for the value.
+          // the setterFn must handle undefined as a value.
+          setterCallback(node ? scene.getPrivateInterface(node) : undefined, option);
+          
+          scene.pub.fireEvent('referenceassigned', {
+            sgnode: sceneGraphNode.pub,
+            newnode: node,
+            prevnode: prevnode,
+            getterFn: getterFn,
+            setterFn: setterFn
+          });
+          return sceneGraphNode.pub;
+        }
+        sceneGraphNode.pub[getterName] = getterFn;
+        sceneGraphNode.pub[setterName] = setterFn;
+        nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, setterFn:setterFn };
+        return sceneGraphNode.pub[setterName];
+      },
+      addReferenceListInterface : function(referenceName, typeConstraint, adderCallback, removeCallback) {
+        nodeReferences[referenceName] = [];
+        var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
+        var adderName = 'add' + capitalizeFirstLetter(referenceName) + 'Node';
+        var removerName = 'remove' + capitalizeFirstLetter(referenceName) + 'Node';
+        var getterFn = function(index){
+          return nodeReferences[referenceName][index ? index : 0];
+        }
+        var typeConstraints = typeConstraint.split('|');
+        var adderFn = function(node){
+          if (node){
+            for(var i=0; i<typeConstraints.length; i++){
+              if(!node.isTypeOf(typeConstraints[i])) {
+                throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+              }
+            }
+          }
+          var index = nodeReferences[referenceName].indexOf(node);
+          if(index !== -1) return sceneGraphNode.pub;
+          nodeReferences[referenceName].push(node);
+          adderCallback(scene.getPrivateInterface(node));
+          
+          scene.pub.fireEvent('referenceadded', {
+            sgnode: sceneGraphNode.pub,
+            newnode: node,
+            getterFn: getterFn,
+            adderFn: adderFn,
+            removerFn: removerFn
+          });
+          return sceneGraphNode.pub;
+        }
+        var removerFn = function(val){
+          var index = -1;
+          if(typeof val == 'number'){
+            index = val;
+          }else{
+            index = nodeReferences[referenceName].indexOf(val);
+          }
+          if (index === -1) {
+            throw ( typeConstraint + ' not assigned');
+          }
+          var node = nodeReferences[referenceName][index];
+          removeCallback(scene.getPrivateInterface(node), index);
+          nodeReferences[referenceName].splice(index, 1);
+          
+          scene.pub.fireEvent('referenceremoved', {
+            sgnode: sceneGraphNode.pub,
+            prevnode: node,
+            getterFn: getterFn,
+            adderFn: adderFn,
+            removerFn: removerFn
+          });
+          return sceneGraphNode.pub;
+        }
+        sceneGraphNode.pub[getterName] = getterFn;
+        sceneGraphNode.pub[adderName] = adderFn;
+        sceneGraphNode.pub[removerName] = removerFn;
+        nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, adderFn:adderFn, removerFn:removerFn };
+        return sceneGraphNode.pub[adderName];
       },
       constructDGNode: function(dgnodename, isResourceLoad) {
         if(dgnodes[dgnodename]){
           throw "SceneGraphNode already has a " + dgnodename;
         }
-        var dgnode = scene.constructDependencyGraphNode(name + '_' + dgnodename, isResourceLoad);
+        var dgnode;
+        if(isResourceLoad){
+          dgnode = scene.constructResourceLoadNode(name + '_' + dgnodename);
+        }
+        else{
+          dgnode = scene.constructDependencyGraphNode(name + '_' + dgnodename);
+        }
         dgnode.sceneGraphNode = sceneGraphNode;
         sceneGraphNode['get' + dgnodename] = function() {
           return dgnode;
         };
-        sceneGraphNode['add' + dgnodename + 'Member'] = function(
-            memberName,
-            memberType,
-            defaultValue,
-            defineGetter,
-            defineSetter) {
-          dgnode.addMember(memberName, memberType, defaultValue);
-          if(defineGetter){
-            sceneGraphNode.addMemberInterface(dgnode, memberName, defineSetter);
-          };
-        };
         dgnodes[dgnodename] = dgnode;
         return dgnode;
       },
-      getDGNodes: function() {
-        return dgnodes;
-      },
       constructResourceLoadNode: function(dgnodename) {
         return sceneGraphNode.constructDGNode(dgnodename, true);
+      },
+      getDGNodes: function() {
+        return dgnodes;
       },
       constructEventHandlerNode: function(ehname) {
         var eventhandlernode = scene.constructEventHandlerNode(name + '_' + ehname);
         eventhandlernode.sceneGraphNode = sceneGraphNode;
         sceneGraphNode['get' + ehname + 'EventHandler'] = function() {
           return eventhandlernode;
-        };
-        sceneGraphNode['add' + ehname + 'Member'] = function(
-            memberName,
-            memberType,
-            defaultValue,
-            defineGetter,
-            defineSetter){
-          eventhandlernode.addMember(memberName, memberType, defaultValue);
-          if(defineGetter) {
-            sceneGraphNode.addMemberInterface(eventhandlernode, memberName, defineSetter);
-          }
         };
         eventhandlernodes[ehname] = eventhandlernode;
         return eventhandlernode;
@@ -875,34 +972,56 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         eventnodes[eventname] = eventnode;
         return eventnode;
       },
-      
       addDependencies: function(sceneSerializer) {
+        for(var referenceName in nodeReferences){
+          if(typeof nodeReferences[referenceName] == 'object'){
+            sceneSerializer.addNode(nodeReferences[referenceName]);
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              sceneSerializer.addNode(nodeReferences[referenceName]);
+            }
+          }
+        }
       },
       writeData: function(sceneSerializer, constructionOptions, nodeData) {
         constructionOptions.name = name;
-      },
-      writeDGNode: function( dgnode ){
-        var dgnodeData = {};
-        dgnodeData.members = dgnode.getMembers();
-        dgnodeData.sliceCount = dgnode.getCount();
-        dgnodeData.data = dgnode.getBulkData();
-        return dgnodeData;
-      },
-      readData: function(sceneDeserializer, nodeData) {
-      },
-      readDGNode: function( dgnode, dgnodeData ){
-        var members = dgnodeData.members;
-        var defaultMembers = dgnode.getMembers();
-        for(var memberName in members){
-          if(!defaultMembers[memberName]){
-            dgnode.addMember( memberName, members[memberName].type);
+        
+        for(var referenceName in nodeReferences){
+          if(typeof nodeReferences[referenceName] == 'object'){
+            nodeData[referenceName] =  nodeReferences[referenceName].getName();
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            nodeData[referenceName] =  [];
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              nodeData[referenceName].push(nodeReferences[referenceName].getName());
+            }
           }
         }
-        if(dgnodeData.sliceCount){
-          dgnode.setCount(dgnodeData.sliceCount);
+        for(var memberName in memberInterfaces){
+          if(!nodeData[memberName]){
+            nodeData[memberName] = memberInterfaces.getterFn();
+          }
         }
-        if(dgnodeData.data){
-          dgnode.setBulkData(dgnodeData.data);
+      },
+      readData: function(sceneDeserializer, nodeData) {
+        for(var referenceName in nodeReferences){
+          if(typeof nodeData[referenceName] == 'string'){
+            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
+            if(dgnode){
+              nodeReferenceInterfaces.setterFn(dgnode);
+            }
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+              if(dgnode){
+                nodeReferenceInterfaces.adderFn(dgnode);
+              }
+            }
+          }
+        }
+        for(var memberName in memberInterfaces){
+          if(nodeData[memberName]){
+            memberInterfaces[memberName].setterFn(nodeData[memberName]);
+          }
         }
       }
     }
@@ -1013,11 +1132,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
           }
 
-          if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
-            alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
-          }else{
-            viewportNode.pub.show();
-          }
+          viewportNode.pub.show();
           return true;
         }
       });
@@ -1117,101 +1232,84 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
     
     viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
-    viewportNode.pub.setCameraNode = function(node) {
-      if (!node || !node.isTypeOf('Camera')) {
-        throw ('Incorrect type assignment. Must assign a Camera');
-      }
+    viewportNode.addReferenceInterface('Camera', 'Camera',
+      function(nodePrivate){
       // remove the child event handler first
-      if(cameraNode != undefined) {
-        propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
-      }
-      cameraNode = scene.getPrivateInterface(node);
-      propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
-      if (viewPortRayCastDgNode) {
-        viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
-      }
-    };
-    viewportNode.pub.getCameraNode = function() {
-      return cameraNode.pub;
-    };
-    viewportNode.pub.startLoadMode = startLoadMode;
-    viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
-      if (textureStub.postDescendBindings.getLength() == 0) {
-        textureStub.setScopeName('textureStub');
-        textureStub.addMember('textureUnit', 'Integer', 0);
-        textureStub.addMember('program', 'Integer', 0);
-        textureStub.postDescendBindings.append(
-          scene.constructOperator({
-              operatorName: 'drawTextureFullScreen',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
-              entryFunctionName: 'drawTextureFullScreen',
-              parameterLayout: [
-                'self.textureUnit',
-                'self.program'
-              ]
-            }
-         ));
-      }
-      if (!textureNode.isTypeOf('Texture')) {
-        throw ('Incorrect type assignment. Must assign a Texture');
-      }
-      if (backgroundTextureNode) {
-        textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
-      }
-      backgroundTextureNode = scene.getPrivateInterface(textureNode);
-      textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
-    };
+        if(cameraNode != undefined) {
+          propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
+        }
+        cameraNode = nodePrivate;
+        propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
+        if (viewPortRayCastDgNode) {
+          viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
+        }
+      });
     
-    viewportNode.pub.addPostProcessEffectShader = function(postProcessEffect) {
-      if (!postProcessEffect.isTypeOf('PostProcessEffect')) {
-        throw 'Object is not a PostProcessEffect node.';
-      }
-      postProcessEffect = scene.getPrivateInterface(postProcessEffect);
-
-      var parentEventHandler;
-      if (postProcessEffects.length > 0) {
-        parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
-      }
-      else {
-        parentEventHandler = redrawEventHandler;
-      }
-      parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
-      parentEventHandler.appendChildEventHandler(postProcessEffect.getRedrawEventHandler());
-
-      postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
-      postProcessEffects.push(postProcessEffect);
-    };
     
-    viewportNode.pub.removePostProcessEffectShader = function(postProcessEffect) {
-      postProcessEffect = scene.getPrivateInterface(postProcessEffect);
-      var filterIndex = postProcessEffects.indexOf(postProcessEffect);
-      if (filterIndex == -1) {
-        throw ('Filter not applied: ' + postProcessEffect.name);
-      }
-      var parentEventHandler, childEventHandler;
-      postProcessEffects.splice(filterIndex, 1);
-      if(filterIndex < postProcessEffects.length){
-        childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
-      }
-      else{
-        childEventHandler = propagationRedrawEventHandler;
-      }
-      postProcessEffect.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
-      
-      if (filterIndex > 0) {
-        parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
-      }
-      else {
-        parentEventHandler = redrawEventHandler;
-      }
-      parentEventHandler.removeChildEventHandler(postProcessEffect.getRedrawEventHandler());
-      if (filterIndex < postProcessEffects.length) {
-        parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
-      }
-      else {
-        parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
-      }
-    };
+    viewportNode.addReferenceInterface('BackgroundTexture', 'Image2D',
+      function(nodePrivate){
+        if (textureStub.postDescendBindings.getLength() == 0) {
+          textureStub.setScopeName('textureStub');
+          textureStub.addMember('textureUnit', 'Integer', 0);
+          textureStub.addMember('program', 'Integer', 0);
+          textureStub.postDescendBindings.append(
+            scene.constructOperator({
+                operatorName: 'drawTextureFullScreen',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
+                entryFunctionName: 'drawTextureFullScreen',
+                parameterLayout: [
+                  'self.textureUnit',
+                  'self.program'
+                ]
+              }
+           ));
+        }
+        if (backgroundTextureNode) {
+          textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+        }
+        backgroundTextureNode = nodePrivate;
+        textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+      });
+    viewportNode.addReferenceListInterface('PostProcessEffect', 'PostProcessEffect',
+      function(nodePrivate, index){
+        var parentEventHandler;
+        if (postProcessEffects.length > 0) {
+          parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
+        parentEventHandler.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+  
+        nodePrivate.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
+        postProcessEffects.push(nodePrivate);
+      },
+      function(nodePrivate, index) {
+        var parentEventHandler, childEventHandler;
+        postProcessEffects.splice(index, 1);
+        if(filterIndex < postProcessEffects.length){
+          childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
+        }
+        else{
+          childEventHandler = propagationRedrawEventHandler;
+        }
+        nodePrivate.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
+        
+        if (filterIndex > 0) {
+          parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(nodePrivate.getRedrawEventHandler());
+        if (filterIndex < postProcessEffects.length) {
+          parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
+        }
+        else {
+          parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
+        }
+      });
     
     viewportNode.pub.rayCast = function(evt, options) {
       var result = {
@@ -1489,7 +1587,6 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       url: undefined
     });
     
-    
     var fileName = options.url.split('/').pop();
     var baseName = fileName.split('.')[0];
     if(!options.name){
@@ -1499,7 +1596,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     var onloadSuccessCallbacks = [];
     var onloadProgressCallbacks = [];
     var onloadFailureCallbacks = [];
-    lastLoadCallbackURL = '';
+    var lastLoadCallbackURL = '';
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
     var dgnode;
@@ -1519,7 +1616,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     if(options.blockRedrawingTillResourceIsLoaded && options.url && !options.localPath){
       incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
     }
-
+    
     var onLoadCallbackFunction = function(callbacks) {
       var i;
       for (i = 0; i < callbacks.length; i++) {
@@ -1536,12 +1633,11 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       }
     }
     
-    var resourceLoaded = false;
-    var reseourceLoadFailed = false;
     var onLoadSuccessCallbackFunction = function(node) {
+      lastLoadCallbackURL = resourceLoadNode.pub.getUrl();
       onLoadCallbackFunction(onloadSuccessCallbacks);
-      resourceLoaded = true;
     }
+    
     var onLoadProgressCallbackFunction = function(node, progress) {
       prevRemainingTaskWeight = remainingTaskWeight;
       //TaskWeight = 1 + size/100KB
@@ -1549,13 +1645,12 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       if(incrementLoadProgressBar)
         incrementLoadProgressBar(false, remainingTaskWeight-prevRemainingTaskWeight);
 
-      var i;
-      for (i = 0; i < onloadProgressCallbacks.length; i++) {
+      for (var i = 0; i < onloadProgressCallbacks.length; i++) {
         onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
       }
     }
+    
     var onLoadFailureCallbackFunction = function(node) {
-      reseourceLoadFailed = true;
       onLoadCallbackFunction(onloadFailureCallbacks);
     }
 
@@ -1566,13 +1661,13 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     }
 
     resourceLoadNode.pub.isLoaded = function() {
-      return resourceLoaded;
+      return lastLoadCallbackURL !== '' && lastLoadCallbackURL === resourceLoadNode.pub.getUrl();
     }
 
     resourceLoadNode.pub.addOnLoadProgressCallback = function(callback) {
       //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
       //make sure the callback is only fired when the 'next' resource is loaded.
-      if (resourceLoaded) {
+      if (resourceLoadNode.pub.isLoaded()) {
         callback.call();
       } else {
         onloadProgressCallbacks.push(callback);
@@ -1619,12 +1714,6 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       }
     };
 
-    resourceLoadNode.pub.getDGLoadNode = function() {
-      return dgnode;
-    };
-    
-    
-    
     var parentWriteData = resourceLoadNode.writeData;
     resourceLoadNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.url = options.url;

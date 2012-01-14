@@ -314,22 +314,10 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         var lightStub = materialNode.constructEventHandlerNode('Draw_' + lightName);
         redrawEventHandler.appendChildEventHandler(lightStub);
         
-        var lightNode;
-        var getLightNodeFn = function() {
-          return lightNode.pub;
-        };
-        var setLightNodeFn = function(node) {
-          if (!node.isTypeOf(lightDef.type)) {
-            throw ('Incorrect type assignment. Must assign a ' + lightDef.type);
-          }
-          lightNode = scene.getPrivateInterface(node);
-          lightStub.appendChildEventHandler(lightNode.getRedrawEventHandler());
-        };
-        materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node'] = getLightNodeFn;
-        materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'] = setLightNodeFn;
-        if (lightDef.node !== undefined) {
-          setLightNodeFn(lightDef.node);
-        }
+        var setLightNodeFn = materialNode.addReferenceInterface(lightName, lightDef.type,
+          function(nodePrivate){
+            lightStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+          });
       };
       for (i in options.lights) {
         addLightInterface(i, options.lights[i]);
@@ -356,28 +344,11 @@ FABRIC.SceneGraph.registerNodeType('Material', {
             'self.textureUnit'
           ]
         }));
-        var textureNode;
-        // Now add a method to assign the texture to the material
-        var setTextureRedrawEventHandlerFn = function(handler) {
-          textureStub.appendChildEventHandler(handler);
-        };
-        var getTextureFn = function() {
-          return textureNode.pub;
-        };
-        var setTextureFn = function(node) {
-          if (!node.isTypeOf('Texture')) {
-            throw ('Incorrect type assignment. Must assign a Texture');
-          }
-          textureNode = scene.getPrivateInterface(node);
-          setTextureRedrawEventHandlerFn(textureNode.getRedrawEventHandler());
-        };
-        materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node'] = getTextureFn;
-        materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
-        materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
-
-        if (textureDef.node !== undefined) {
-          setTextureFn(textureDef.node);
-        }
+        
+        materialNode.addReferenceInterface(textureName, 'Image',
+          function(nodePrivate){
+            textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+          });
       };
       var textureUnit = 0;
       for (i in options.textures) {
@@ -393,6 +364,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         operatorName: 'unbindTextures',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
         entryFunctionName: 'unbindTextures',
+        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         parameterLayout: [
           'self.numTextures'
         ]

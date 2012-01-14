@@ -255,7 +255,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -294,7 +294,7 @@ $(document).ready(function() {
       diffuseColor: FABRIC.RT.rgba(0.3, 0.45, 1.0, 1.0),
       numBones: rigNode.getSkeletonNode().getNumBones()
     });
-  rigInstanceNode.setMaterialNode(materialNode);
+  rigInstanceNode.addMaterialNode(materialNode);
 
   assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 5));
 
