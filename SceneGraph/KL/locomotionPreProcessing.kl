@@ -4,7 +4,7 @@
 //
 use Math;
 use Vec2, Vec3, Quat, Xfo, Ray;
-use PoseVariables, KeyframeTrackBindings;
+use PoseVariables, LinearKeyframeTrackSetBindings;
 use DebugGeometry;
 
 
@@ -16,7 +16,7 @@ function Boolean detectFootSteps(
   io Scalar movementThreshold,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  in LinearKeyframeTrackSetBindings bindings,
   
   io LinearKeyframeTrackSet trackSet,
   io Vec3 footSteps[][],
@@ -217,15 +217,15 @@ function Boolean generateCOMTracks(
   in Integer numSamples,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  in LinearKeyframeTrackSetBindings bindings,
   
   in Integer leadingFoot,
   io LinearKeyframeTrackSet trackSet,
   in Vec3 footSteps[][],
   in FootStepTrack footStepTracks[],
   
-  in KeyframeTrackBindings comParamBindings,
-  in KeyframeTrackBindings comXfoBindings,
+  in LinearKeyframeTrackSetBindings comParamBindings,
+  in LinearKeyframeTrackSetBindings comXfoBindings,
   
   io DebugGeometry debugGeometry
 ){
@@ -334,12 +334,12 @@ function Boolean modifyHubAndFootTracks(
   in Integer numSamples,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  in LinearKeyframeTrackSetBindings bindings,
   
   io LinearKeyframeTrackSet trackSet,
   
-  in KeyframeTrackBindings comParamBindings,
-  in KeyframeTrackBindings comXfoBindings,
+  in LinearKeyframeTrackSetBindings comParamBindings,
+  in LinearKeyframeTrackSetBindings comXfoBindings,
   
   io DebugGeometry debugGeometry
 ){
@@ -352,8 +352,8 @@ function Boolean modifyHubAndFootTracks(
   // Finally, modify the hub and foot motions
   Boolean drawFootMotionDebugging = false;
   LinearKeyframeTrackSet sourceTrackSet = trackSet;//sourceAnimationLibrary[index];
-  KeyframeTrackBindings hubValueBindings;
-  KeyframeTrackBindings limbValueBindings;
+  LinearKeyframeTrackSetBindings hubValueBindings;
+  LinearKeyframeTrackSetBindings limbValueBindings;
   PoseVariables comVariables = poseVariables;
   Integer comKeyCache[];
   
@@ -458,13 +458,13 @@ function Boolean addLocomotionMarkers(
   in Vec2 timeRange,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  in LinearKeyframeTrackSetBindings bindings,
   
   in LinearKeyframeTrackSet trackSet,
   in FootStepTrack footStepTracks[],
   io LocomotionMarker locomotionMarkers[][],
   
-  in KeyframeTrackBindings comParamBindings,
+  in LinearKeyframeTrackSetBindings comParamBindings,
   
   io DebugGeometry debugGeometry
 ){
@@ -541,7 +541,7 @@ function Boolean addLocomotionMarkers(
 
 function Boolean addStationaryMarkers(
   in Vec2 timeRange,
-  in KeyframeTrackBindings comParamBindings,
+  in LinearKeyframeTrackSetBindings comParamBindings,
   in FootStepTrack footStepTracks[],
   io LocomotionMarker locomotionMarkers[][]
 ){
@@ -566,7 +566,7 @@ function Boolean addStationaryMarkers(
 operator locomotionPreProcessing(
   io LinearKeyframeTrackSet sourceAnimationLibrary<>,
   io PoseVariables referenceVariables,
-  io KeyframeTrackBindings referenceBindings,
+  io LinearKeyframeTrackSetBindings referenceBindings,
   
   io Bone bones[],
   io Hub hubs[],
@@ -578,7 +578,7 @@ operator locomotionPreProcessing(
   io Scalar movementThreshold,
   
   io LinearKeyframeTrackSet trackSet,
-  io KeyframeTrackBindings bindings,
+  io LinearKeyframeTrackSetBindings bindings,
   
   io LocomotionMarker locomotionMarkers[][],
   io FootStepTrack footStepTracks[],
@@ -611,8 +611,8 @@ operator locomotionPreProcessing(
   
   ///////////////////////////////////////////////////
   // COM Bindings
-  KeyframeTrackBindings comParamBindings;
-  KeyframeTrackBindings comXfoBindings;
+  LinearKeyframeTrackSetBindings comParamBindings;
+  LinearKeyframeTrackSetBindings comXfoBindings;
   KeyframeTrackBinding comXfoBinding;
   for(Integer i=0; i < bindings.xfoBindings.size; i++){
     if(bindings.xfoBindings[i].varId == com.xfoId){
