@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Xfo;
+use Xfo, DebugGeometry;
 
 operator solveHubRigs(
   io Xfo controllerXfoSlices<>,
@@ -17,44 +17,65 @@ operator solveHubRigs(
   PoseVariables poseVariables = poseVariableSlices[index];
   for(Integer i=0; i < hubs.size; i++){
     Hub hub = hubs[i];
-  //  pose[hub.boneId] = hubCOM * poseVariables.xfoValues[hub.xfoId];
     
-    
-    if(hub.inSpineBoneIds.size > 0){
-      if(hub.hubParentSpaceId == -1)
-        pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
-      else
+    if(hub.spineBoneIds.size > 0){
+      if(hub.hubParentSpaceId == -1){
+        Xfo parentXfo = pose[bones[hub.spineBoneIds[0]].parent];
+        pose[hub.boneId] = parentXfo * poseVariables.xfoValues[hub.xfoId];
+      }
+      else{
         pose[hub.boneId] = pose[hub.hubParentSpaceId] * poseVariables.xfoValues[hub.xfoId];
+      }
     }
     else{
-      // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
-    //  if (bones[hub.boneId].parent == -1) 
+      if (bones[hub.boneId].parent == -1) 
         pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
-   //   else 
-   //     pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
+      else 
+        pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
     }
-    if(hub.inSpineBoneIds.size > 0){
-      for(Integer j=0; j < hub.inSpineBoneIds.size; j++){
-        Integer spineBoneId = hub.inSpineBoneIds[j];
+    
+    if(hub.spineBoneIds.size > 0){
+      // Solve the spine in FK
+      for(Integer j=0; j < hub.spineBoneIds.size; j++){
+        Integer spineBoneId = hub.spineBoneIds[j];
         if(bones[spineBoneId].parent >= 0){
-          pose[spineBoneId] = pose[bones[spineBoneId].parent] * poseVariables.xfoValues[hub.inSpineBoneXfoId[j]];
+          pose[spineBoneId] = pose[bones[spineBoneId].parent] * poseVariables.xfoValues[hub.spineBoneXfoId[j]];
         }else{
-          pose[spineBoneId] = poseVariables.xfoValues[hub.inSpineBoneXfoId[j]];
+          pose[spineBoneId] = poseVariables.xfoValues[hub.spineBoneXfoId[j]];
         }
       }
-      /*
-      Xfo spineError =  pose[hub.inSpineBoneIds[hub.inSpineBoneIds.size-1]].inverse() * pose[hub.boneId];
       
-      for(Integer j=0; j < hub.inSpineBoneIds.size; j++){
-        Integer spineBoneId = hub.inSpineBoneIds[j];
-        Quat spineBoneError = spineError.ori;
+      // Apply the interpollated rotation offset to blend towards the hub.
+      Quat spineOriError = (pose[hub.boneId] * pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].inverse()).ori;
+      for(Integer j=0; j < hub.spineBoneIds.size; j++){
+        Integer spineBoneId = hub.spineBoneIds[j];
         
-        pose[spineBoneId].ori = spineBoneError * pose[spineBoneId].ori;
+        Scalar weight = 1.0 - Scalar(j)/Scalar(hub.spineBoneIds.size);
+        Quat adjustment = spineOriError.sphericalLinearInterpolate(Quat(0.0, 0.0, 0.0, 1.0), weight);
+        pose[spineBoneId].ori = adjustment * pose[spineBoneId].ori;
         if(j > 0){
-          pose[spineBoneId].tr = pose[bones[spineBoneId].parent].transformVector(bones[spineBoneId].referencePose.tr);
+          pose[spineBoneId].tr = pose[hub.spineBoneIds[j-1]].transformVector(poseVariables.xfoValues[hub.spineBoneXfoId[j]].tr);
         }
       }
-      */
+      
+      // calculate the delta translation, and apply that to correct the error.
+      Vec3 hubTr = pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].transformVector(bones[hub.boneId].referenceLocalPose.tr);
+    
+    
+      Xfo spineBaseXfo = pose[bones[hub.spineBoneIds[0]].parent];
+      Quat spineTrErrorCorrection;
+      spineTrErrorCorrection.setFrom2Vectors((hubTr - spineBaseXfo.tr).unit(), (pose[hub.boneId].tr - spineBaseXfo.tr).unit());
+      for(Integer j=0; j < hub.spineBoneIds.size; j++){
+        Integer spineBoneId = hub.spineBoneIds[j];;
+        Scalar spineRatio  = Scalar(j+1)/Scalar(hub.spineBoneIds.size+1);
+        Scalar weight = (cos(spineRatio * TWO_PI) * -1.0) + 1.0;
+        Quat adjustment = Quat(0.0, 0.0, 0.0, 1.0).sphericalLinearInterpolate(spineTrErrorCorrection, weight);
+        pose[spineBoneId].ori = adjustment * pose[spineBoneId].ori;
+        if(j > 0){
+          pose[spineBoneId].tr = pose[hub.spineBoneIds[j-1]].transformVector(poseVariables.xfoValues[hub.spineBoneXfoId[j]].tr);
+        }
+      }
+      pose[hub.boneId].tr = pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].transformVector(bones[hub.boneId].referenceLocalPose.tr);
     }
   }
 }
@@ -69,7 +90,7 @@ operator invertHubRigs(
 ) {
   for(Integer i=0; i < hubs.size; i++){
     Hub hub = hubs[i];
-    if(hub.inSpineBoneIds.size > 0){
+    if(hub.spineBoneIds.size > 0){
       if(hub.hubParentSpaceId == -1)
         poseVariables.xfoValues[hub.xfoId] = pose[hub.boneId];
       else
@@ -82,12 +103,54 @@ operator invertHubRigs(
    //   else
    //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
     }
-    for (var Integer j = 0; j < hub.inSpineBoneIds.size; j++) {
-      if (bones[hub.inSpineBoneIds[j]].parent == - 1)
-        poseVariables.xfoValues[hub.inSpineBoneXfoId[j]] = pose[hub.inSpineBoneIds[j]];
+    for (var Integer j = 0; j < hub.spineBoneIds.size; j++) {
+      if (bones[hub.spineBoneIds[j]].parent == - 1)
+        poseVariables.xfoValues[hub.spineBoneXfoId[j]] = pose[hub.spineBoneIds[j]];
       else
-        poseVariables.xfoValues[hub.inSpineBoneXfoId[j]] = pose[bones[hub.inSpineBoneIds[j]].parent].inverse() * pose[hub.inSpineBoneIds[j]];
+        poseVariables.xfoValues[hub.spineBoneXfoId[j]] = pose[bones[hub.spineBoneIds[j]].parent].inverse() * pose[hub.spineBoneIds[j]];
     }
   }
 }
+
+
+operator calcHubManipulatorAttachmentXfo(
+  io Bone bones[],
+  io Hub hubs[],
+  io Xfo pose[],
+  io Xfo controllerXfo,
+  io PoseVariables poseVariables,
+  io Size hubIndex,
+  io Xfo localXfo,
+  io Xfo parentXfo,
+  io Xfo targetXfo,
+  io Xfo globalXfo
+) {
+  Hub hub = hubs[hubIndex];
+  
+  if(hub.spineBoneIds.size > 0){
+    if(hub.hubParentSpaceId == -1){
+      if(hub.spineBoneIds.size > 0){
+        parentXfo = pose[bones[hub.spineBoneIds[0]].parent];
+      }
+      else{
+        if (bones[hub.boneId].parent == -1) 
+          parentXfo = controllerXfo;
+        else 
+          parentXfo = pose[bones[hub.boneId].parent];
+      }
+    }
+    else{
+      parentXfo = pose[hub.hubParentSpaceId];
+    }
+  }
+  else{
+    if (bones[hub.boneId].parent == -1) 
+      parentXfo = controllerXfo;
+    else 
+      globalXfo = pose[bones[hub.boneId].parent];
+  }
+  targetXfo = parentXfo * poseVariables.xfoValues[hub.xfoId];
+  globalXfo = targetXfo * localXfo;
+}
+
 

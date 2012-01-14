@@ -8,7 +8,7 @@ use FabricTEEM;
 use Mat44;
 
 function decode3DImageUShortData(
-  in FabricResource resource,
+  io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
   io Size imageDepth,
@@ -22,7 +22,8 @@ function decode3DImageUShortData(
   switch (ext) {
     case'nrrd':
       FabricTeemNRRDLoadUShort(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat);
-    break;
+      //resource.data.resize(0); Medical Imaging use case: for some reason, load3DImageUShortData is called twice and xfoMat is not set properly
+      break;
     default:
       report "Unsupported 3D image format: " + ext;
   }

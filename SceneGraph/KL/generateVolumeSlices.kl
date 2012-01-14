@@ -635,15 +635,9 @@ operator updateTransferFunctionImage(
   io Scalar maxOpacity,
   io Scalar opacityFactors[],
   io Color opacityColors[],
-  io Color pixels[]
+  io Color pixels<>
 ){
-  if(opacityFactors.size != 1024 && opacityColors.size != 1024){
-    report("ERROR in updateTransferFunctionImage: opacityFactors.size != 1024 || opacityColors.size != 1024" );
-    return;
-  }
-  pixels.resize(1024);
-  Size i;
-  for(i = 0; i < 1024; ++i) {
+  for(Size i = 0; i < pixels.size(); ++i) {
     pixels[i].r = opacityColors[i].r;
     pixels[i].g = opacityColors[i].g;
     pixels[i].b = opacityColors[i].b;
@@ -653,7 +647,7 @@ operator updateTransferFunctionImage(
     //We bake it with an ease-in and ease-out curve to reduce visual artifacts (aliasing)
     Scalar rampFactor = 0.05;//Arbitrary: should be an option.
 
-    Scalar X = Scalar(i)/Scalar(1023);
+    Scalar X = Scalar(i)/Scalar(pixels.size()-1);
     Scalar clampFactor = 1.0;
     if(X < minOpacity-rampFactor || X > maxOpacity+rampFactor)
       clampFactor = 0.0;

@@ -67,7 +67,7 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -98,7 +98,7 @@ $(document).ready(function() {
     materialNode: flatMaterial
   });
 
-  inst.setMaterialNode( scene.constructNode('WireframeMaterial', {
+  inst.addMaterialNode( scene.constructNode('WireframeMaterial', {
     color: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1)
   }));
   
@@ -119,7 +119,7 @@ $(document).ready(function() {
 
   // Flat Textured Shader
   var flatTexturedMaterial = scene.constructNode('FlatTextureMaterial', {
-    textureNode: scene.constructNode('Image', { url: 'Resources/earth.png' })
+    textureNode: scene.constructNode('Image2D', { url: 'Resources/earth.png' })
   });
   scene.constructNode('Instance', {
     transformNode: scene.constructNode('Transform', {
@@ -132,9 +132,9 @@ $(document).ready(function() {
 
   // Normal Mapped Shader
   var phongBumpReflectMaterial = scene.constructNode('PhongBumpReflectMaterial', {
-    diffuseTextureNode: scene.constructNode('Image', { url: 'Resources/brick_d.png' }),
-    specularTextureNode: scene.constructNode('Image', { url: 'Resources/brick_s.png' }),
-    normalTextureNode: scene.constructNode('Image', { url: 'Resources/brick_n.png' }),
+    diffuseTextureNode: scene.constructNode('Image2D', { url: 'Resources/brick_d.png' }),
+    specularTextureNode: scene.constructNode('Image2D', { url: 'Resources/brick_s.png' }),
+    normalTextureNode: scene.constructNode('Image2D', { url: 'Resources/brick_n.png' }),
     lightNode: light
   });
 

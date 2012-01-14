@@ -31,6 +31,8 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
+    
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
@@ -80,7 +82,7 @@ $(document).ready(function() {
       windowElement: document.getElementById('FabricContainer')
     });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -362,7 +364,7 @@ $(document).ready(function() {
 	      <div>Global Time:</div>
 	      <div id="globalTime"></div>
 	      <button id="curveEditor" style="margin-top:10px;">Open Curve Editor</button>
-	      </div><!--content-->
+	    </div><!--content-->
 	  </div><!--box-->
     
         </div><!--sidebar-->

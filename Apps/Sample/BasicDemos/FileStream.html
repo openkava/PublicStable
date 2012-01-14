@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Secure Storage</title> 
+    <title>FABRIC - FileStream</title> 
         
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -39,7 +39,6 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Secure.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
     
 <script type="text/javascript">
@@ -70,27 +69,102 @@ s.parentNode.insertBefore(ga, s);
 
 <script type="text/javascript">
 
-FABRIC.SceneGraph.registerNodeType('MixedDataNode', {
-  optionsDesc: {
-  },
+FABRIC.SceneGraph.registerNodeType('TrianglesIONode', {
   factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      filepath: undefined
+    });
+
+    var sgnode = scene.constructNode('SceneGraphNode', options);
+    var dgnode = sgnode.constructDGNode('DGNode');
+    dgnode.addMember('path','String', options.filepath);
+    dgnode.addMember('stream','FabricFileStream');
+    dgnode.addMember('objectNames','String[]', []);
+    dgnode.addMember('seekOffsets','Size[]', []);
     
-    var mixedDataNode = scene.constructNode('SceneGraphNode');
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'initFileStreamFromString',
+      srcFile: 'KL/fileStream.kl',
+      parameterLayout: [
+        "self.path",
+        "self.stream",
+        "self.objectNames",
+        "self.seekOffsets",
+      ],
+      entryFunctionName: 'initFileStreamFromString',
+      async: false
+    }));
     
-    var dgnodes = {};
-    dgnodes['uniforms'] = mixedDataNode.constructDGNode('UniformsDGNode');
-    dgnodes['attributes'] = mixedDataNode.constructDGNode('AttributesDGNode');
-    dgnodes['attributes'].setCount(12);
-    
-    for(var name in dgnodes) {
-      dgnodes[name].addMember("integers","Integer[]",[10,11,12]);
-      dgnodes[name].addMember("sizes","Size[]",[10,11,12]);
-      dgnodes[name].addMember("string","String","four");
-    }
-    
-    return mixedDataNode;
-  }
-});
+    sgnode.pub.addTrianglesNode = function(trianglesNodePublic) {
+      var trianglesNode = scene.getPrivateInterface(trianglesNodePublic);
+      var attributesdgnode = trianglesNode.getAttributesDGNode();
+      var uniformsdgnode = trianglesNode.getUniformsDGNode();
+      var name = trianglesNodePublic.getName();
+      var names = dgnode.getData('objectNames',0);
+      names.push(name);
+      dgnode.setData('objectNames',0,names);
+
+      uniformsdgnode.addMember("streamName","String",name);
+      attributesdgnode.setDependency(dgnode,'streamsaver');
+
+      attributesdgnode.bindings.append(scene.constructOperator({
+        operatorName: 'saveTrianglesToStream',
+        srcFile: 'KL/fileStream.kl',
+        parameterLayout: [
+          "streamsaver.path",
+          "streamsaver.stream",
+          "streamsaver.objectNames",
+          "streamsaver.seekOffsets",
+          "uniforms.streamName",
+          "self.positions<>",
+          "self.normals<>",
+          "uniforms.indices"
+        ],
+        entryFunctionName: 'saveTrianglesToStream',
+        mainThreadOnly: true,
+        async: false
+      }));
+      
+      // create a triangles node to load from this
+      var newTrianglesNode = scene.constructNode('Triangles');
+      var newAttributesdgnode = newTrianglesNode.getAttributesDGNode();
+      var newUniformsdgnode = newTrianglesNode.getUniformsDGNode();
+      newUniformsdgnode.addMember("stream","FabricFileStream");
+      newUniformsdgnode.addMember("path","String",options.filepath);
+      newUniformsdgnode.addMember("objectName","String",name);
+      newUniformsdgnode.setDependency(attributesdgnode,'savedAttributes');
+      newAttributesdgnode.bindings.append(scene.constructOperator({
+        operatorName: 'resizeTrianglesFromStream',
+        srcFile: 'KL/fileStream.kl',
+        parameterLayout: [
+          "uniforms.path",
+          "uniforms.stream",
+          "uniforms.objectName",
+          "self.newCount"
+        ],
+        entryFunctionName: 'resizeTrianglesFromStream',
+        mainThreadOnly: true,
+        async: false
+      }));
+      newAttributesdgnode.bindings.append(scene.constructOperator({
+        operatorName: 'loadTrianglesFromStream',
+        srcFile: 'KL/fileStream.kl',
+        parameterLayout: [
+          "uniforms.stream",
+          "self.positions<>",
+          "self.normals<>",
+          "uniforms.indices"
+        ],
+        entryFunctionName: 'loadTrianglesFromStream',
+        mainThreadOnly: true,
+        async: false
+      }));
+      
+      return newTrianglesNode.pub;
+    };
+
+    return sgnode;
+  }});    
 
 $(document).ready(function() {
 
@@ -105,89 +179,51 @@ $(document).ready(function() {
   viewport.setBackgroundTextureImage(scene.constructNode('Image', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
-
-  // Create a camera to draw the scene from
-  var camera = scene.constructNode('TargetCamera', {
+  
+ camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 300,
-      target: new FABRIC.RT.Vec3(0,0,0),
-      position: new FABRIC.RT.Vec3(15,5,1).multiplyScalar(1.5)
+      target: new FABRIC.RT.Vec3(-10, -1.2, -10),
+      position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
     });
+
   scene.constructNode('CameraManipulator', { targetNode: camera });
+
   viewport.setCameraNode(camera);
-  
-  // create a light
+
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-
-  // open a secure archive
-  var secureLoadNode = scene.importAssetFile('Models/cow.fez', {secureKey: 'secureKey'});
-  secureLoadNode.addOnLoadSuccessCallback(function(){
-    
-    // once the archive is loaded, construct a Triangles node from it
-    var fezNode = secureLoadNode.constructNode('Triangles', {uvSets: 1});
-    var material = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(255/255,6/255,6/255),
-      lightNode: light
-    });
-    var instance = scene.constructNode('Instance', {
-      geometryNode: fezNode,
-      materialNode: material,
-      transformNode: scene.constructNode('Transform', {
-        hierarchical: false,
-        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
-      }),
-    });
+  var material = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+    lightNode: light
   });
 
-  var modelName = 'cow';
-  var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
-   splitMaterials: false
+  var fsNode = scene.constructNode('TrianglesIONode', {
+    filepath: '/tmp/meshes.bin'
   });
-  objResource.addEventListener('objparsesuccess', function(evt){
-    
-    // once we have parsed the OBJ file, create a SecureStorageNode
-    // to save the Triangles node.
-    var secureSaveNode = scene.constructNode('SecureStorageNode', {dependentNode: viewport, secureKey: 'secureKey'});
-    for(var name in evt.loadedGeometries){
-      var material = scene.constructNode('PhongMaterial', {
-        diffuseColor: FABRIC.RT.rgb(255/255,183/255,48/255),
-        lightNode: light
-      });
-      var instance = scene.constructNode('Instance', {
+
+  var resourceLoadNode = scene.importAssetFile('Models/cow.obj');
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    for(var name in evt.loadedGeometries) {
+      scene.constructNode('Instance', {
         geometryNode: evt.loadedGeometries[name],
         materialNode: material,
         transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
         }),
       });
-      setTimeout(function() {
-        viewport.redraw();
-        
-        // after a small time treshold,
-        // for the first redraw, let's store the triangles node.
-        // we specify the DGNode names to store, since we want to avoid
-        // to store the bbox DGNode.
-        secureSaveNode.storeNode({
-          node: evt.loadedGeometries[name],
-          dgnodeNames: ['UniformsDGNode', 'AttributesDGNode']
-        });
-        
-        // also store the mixed data node,
-        // for testing purposes
-        secureSaveNode.storeNode({
-          node: scene.constructNode('MixedDataNode')
-        });
-        viewport.redraw();
-        $('#saveResource').button()
-          .click(function() {
-            var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
-            secureSaveNode.putResourceToFile('resource',path);
-          });
-      }, 1000);
+      var persistedTrianglesNode = fsNode.addTrianglesNode(evt.loadedGeometries[name]);
+      scene.constructNode('Instance', {
+        geometryNode: persistedTrianglesNode,
+        materialNode: material,
+        transformNode: scene.constructNode('Transform', {
+          hierarchical: false,
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, -10) })
+        }),
+      });
     }
   });
-  
+    
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -230,24 +266,16 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Secure Storage.<br>
-              This very basic sample shows how to load and save data into the so called SecureStorage node,
-              a ResourceLoadNode which utilizes the FabricSECURE extension. The data is zipped and encrypted
-              using a secure key, and can only be retrieved using the same key. Furthermore the data is using
-              the Fabric memory layout directly, so it is much faster to load fez data than any other format.<br><br>
-              The left cow model used in this demo is using an OBJ parser, size 326773 bytes.<br>
-              The right cow model uses the fez SecureStorage, encrypted size 72776.<br><br>
-              Click the button below to save a copy of the fez file to your disk. The data is encrypted though,
-              so you won't be able to read the file.
+              FileStream in KL.<br>
+              This sample shows how to utilize the FileStream type in KL to access a local
+              storage with high performance. The application requires the optional filesystem
+              extension.<br>
+              You can get the <a href='http://github.com/fabric-engine/JSSceneGraph/wiki/Installing-the-filesystem-extension' target=_NEW>FabricFILESYSTEM extension here</a>.<br>
+              In KL, we persist a file called <i>/tmp/meshes.bin</i> ( you will have to change it for windows), using the FileStream. We use an offset technique, by utilizing
+              the seek features of the filestream type. This allows to search the file without loading all of the data to memory. Then, we load the same file onto a new node.
+              This demonstrates the full IO pipeline including saving and loading.
             </div><!--content-->
           </div><!--box-->
-          <div class="box">
-            <h2>CONTROLS</h2>
-            <div class="content">
-              <button id="saveResource" style="margin-top:10px;">Save Secure Resource</button>
-            </div><!--content-->
-          </div><!--box-->
-            
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
