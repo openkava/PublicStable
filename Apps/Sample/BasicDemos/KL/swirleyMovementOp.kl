@@ -8,7 +8,7 @@ operator swirleyMovementOp(io Scalar ms, io Integer id, io Xfo baseXfo, io Xfo x
   
   xfo.tr = baseXfo.tr + Vec3(sin((ms * 5) + (id * 0.2)) * 3.0, cos(ms * 1.30) * 3.0, 0.0);
   
-  // The following line will log te message to the console.
+  // The following line will log a message to the console.
   //  report("swirleyMovementOp :" + xfo.tr);
 }
 

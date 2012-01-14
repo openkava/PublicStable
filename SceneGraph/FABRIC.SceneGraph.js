@@ -84,7 +84,7 @@ FABRIC.SceneGraph = {
     
     var assignDefaults = function(options, defaults, force) {
       if (!options) options = {};
-      for (i in defaults) {
+      for (var i in defaults) {
         if (options[i] === undefined || force) options[i] = defaults[i];
       }
       return options;
@@ -216,18 +216,19 @@ FABRIC.SceneGraph = {
     };
     scene.assignDefaults = assignDefaults;
     
-    scene.cloneObj = function(obj) {
-      var newobj = {};
+    scene.cloneObj = function(obj, assignedValues) {
+      var i, clonedobj = {};
       for (i in obj) {
-        if (typeof obj[i] == 'object') {
-          newobj[i] = this.cloneObj(obj[i]);
-        }
-        else {
-          newobj[i] = obj[i];
+        clonedobj[i] = obj[i];
+      }
+      if(assignedValues){
+        for (i in assignedValues) {
+          clonedobj[i] = assignedValues[i];
         }
       }
-      return newobj;
+      return clonedobj;
     };
+    
     scene.loadResourceURL = function(url, mimeType, callback) {
       return FABRIC.loadResourceURL(url, mimeType, callback);
     };
@@ -247,13 +248,11 @@ FABRIC.SceneGraph = {
     scene.constructEventHandlerNode = function(name) {
       return context.DependencyGraph.createEventHandler(name);
     };
+    scene.constructResourceLoadNode = function(name) {
+      return context.DependencyGraph.createResourceLoadNode(name);
+    };
     scene.constructDependencyGraphNode = function(name, isResourceLoad) {
-      if (isResourceLoad) {
-        return context.DependencyGraph.createResourceLoadNode(name);
-      }
-      else {
-        return context.DependencyGraph.createNode(name);
-      }
+      return context.DependencyGraph.createNode(name);
     };
     
     scene.constructManager = function(type, options) {
@@ -513,7 +512,10 @@ FABRIC.SceneGraph = {
       return sceneGraphNodes;
     };
     scene.pub.getSceneGraphNode = function(name) {
-      return sceneGraphNodes[name];
+      if(sceneGraphNodes[name]){
+        return sceneGraphNodes[name].pub;
+      }
+      return undefined;
     };
     scene.setSceneGraphNode = function(name,node) {
       return sceneGraphNodes[name] = node;
@@ -598,6 +600,10 @@ FABRIC.SceneGraph = {
     };
 
     scene.addEventHandlingFunctions(scene);
+    
+    window.addEventListener('unload', function(){
+      scene.pub.fireEvent('unloading');
+    }, false);
 
     ///////////////////////////////////////////////////////////////////
     // Create the root transform node.
@@ -665,35 +671,48 @@ FABRIC.SceneGraph = {
         }));
         
         var isPlaying = false, time = 0;
-        var prevTime, onAdvanceCallback;
+        var onAdvanceCallback;
         var setTime = function(t, redraw) {
           time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
           globalsNode.setData('time', 0, time);
           if( onAdvanceCallback){
             onAdvanceCallback.call();
           }
+          scene.pub.fireEvent('timechanged', { time: time, playing: isPlaying });
           if(redraw !== false){
             scene.pub.redrawAllViewports(true);
           }
         }
+        var timeStepMS = sceneOptions.timeStep * 1000.0;
+        var prevTime, prevFrameDuration = 0;
+      //  var frameStartTime, frameRate = 0;
         var advanceTime = function() {
-          var currTime = (new Date).getTime();
-          var deltaTime = (currTime - prevTime)/1000;
-          prevTime = currTime;
-          // The computer will attempt to play back
-          // at exactly the given frame rate. If the frame rate cannot be achieved
-          // it plays as fast as possible.
-          // The time step as used throughout the graph will always be fixed at the
-          // given rate.
           var t = time + sceneOptions.timeStep;
-          if(deltaTime < sceneOptions.timeStep){
-            var delay = (sceneOptions.timeStep - deltaTime)*1000;
+          
+          // The computer will attempt to play back
+          // at exactly the given frame rate. If the
+          // frame rate cannot be achieved it plays 
+          // as fast as possible. The time step as
+          // used throughout the graph will always 
+          // be fixed at the given rate.
+          var currTime = (new Date).getTime();
+          var prevFrameDuration = (currTime - prevTime);
+          
+          // Measuring the frame time using JavaScript gives
+          // garbage results, and I'm not sure why. 
+        //  frameRate = (currTime - frameStartTime);
+        //  console.log("frameRate:"+frameRate);
+        //  frameStartTime = currTime;
+          if(prevFrameDuration < timeStepMS){
+            var delay = (timeStepMS - prevFrameDuration);
             setTimeout(function(){
+                prevTime = currTime + delay;
                 setTime(t);
               },
               delay
             );
           }else{
+            prevTime = currTime;
             setTime(t);
           }
         }
@@ -709,10 +728,9 @@ FABRIC.SceneGraph = {
           getTimeStep:function() {
             return sceneOptions.timeStep;
           },
-          play: function(callback) {
+          play: function() {
             prevTime = (new Date).getTime();
             isPlaying = true;
-            onAdvanceCallback = callback;
             // Note: this is a big ugly hack to work arround the fact that
             // we have zero or more windows. What happens when we have
             // multiple viewports? Should the 'play' controls be moved to
@@ -720,9 +738,6 @@ FABRIC.SceneGraph = {
               prevTime = (new Date).getTime();
               scene.getContext().VP.viewPort.setRedrawFinishedCallback(advanceTime);
               scene.getContext().VP.viewPort.needsRedraw();
-          },
-          isPlaying: function(){
-            return isPlaying;
           },
           pause: function() {
             isPlaying = false;
@@ -737,7 +752,9 @@ FABRIC.SceneGraph = {
             advanceTime();
           }
         };
-
+        scene.isPlaying = function(){
+          return isPlaying;
+        }
       }
     }
 
@@ -759,6 +776,9 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
     var dgnodes = {};
     var eventnodes = {};
     var eventhandlernodes = {};
+    var memberInterfaces = {};
+    var nodeReferenceInterfaces = {};
+    var nodeReferences = {};
 
     var capitalizeFirstLetter = function(str) {
       return str[0].toUpperCase() + str.substr(1);
@@ -791,61 +811,157 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       },
       addMemberInterface : function(corenode, memberName, defineSetter) {
         var getterName = 'get' + capitalizeFirstLetter(memberName);
-        sceneGraphNode.pub[getterName] = function(sliceIndex){
+        var getterFn = function(sliceIndex){
           return corenode.getData(memberName, sliceIndex);
         }
+        sceneGraphNode.pub[getterName] = getterFn;
         if(defineSetter===true){
           var setterName = 'set' + capitalizeFirstLetter(memberName);
-          sceneGraphNode.pub[setterName] = function(value, sliceIndex){
+          var setterFn = function(value, sliceIndex){
+            var prevalue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
             corenode.setData(memberName, sliceIndex?sliceIndex:0, value);
+            
+            scene.pub.fireEvent('valuechanged', {
+              sgnode: sceneGraphNode.pub,
+              newvalue: value,
+              prevalue: prevalue,
+              sliceIndex: sliceIndex,
+              getterFn: getterFn,
+              setterFn: setterFn
+            });
           }
+          sceneGraphNode.pub[setterName] = setterFn;
+          memberInterfaces[memberName] = { getterFn:getterFn, setterFn:setterFn };
         }
+      },
+      addReferenceInterface : function(referenceName, typeConstraint, setterCallback) {
+        var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
+        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
+        var getterFn = function(){
+          return nodeReferences[referenceName];
+        }
+        var typeConstraints = typeConstraint.split('|');
+        var setterFn = function(node, option){
+          if (node){
+            var matchesType = false;
+            for(var i=0; !matchesType && i<typeConstraints.length; i++){
+              if(node.isTypeOf(typeConstraints[i])) {
+                matchesType = true;
+              }
+            }
+            if(!matchesType){
+              throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+            }
+          }
+          var prevnode = nodeReferences[referenceName];
+          nodeReferences[referenceName] = node;
+          // a reference can be removed by passing in undefined for the value.
+          // the setterFn must handle undefined as a value.
+          setterCallback(node ? scene.getPrivateInterface(node) : undefined, option);
+          
+          scene.pub.fireEvent('referenceassigned', {
+            sgnode: sceneGraphNode.pub,
+            newnode: node,
+            prevnode: prevnode,
+            getterFn: getterFn,
+            setterFn: setterFn
+          });
+          return sceneGraphNode.pub;
+        }
+        sceneGraphNode.pub[getterName] = getterFn;
+        sceneGraphNode.pub[setterName] = setterFn;
+        nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, setterFn:setterFn };
+        return sceneGraphNode.pub[setterName];
+      },
+      addReferenceListInterface : function(referenceName, typeConstraint, adderCallback, removeCallback) {
+        nodeReferences[referenceName] = [];
+        var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
+        var adderName = 'add' + capitalizeFirstLetter(referenceName) + 'Node';
+        var removerName = 'remove' + capitalizeFirstLetter(referenceName) + 'Node';
+        var getterFn = function(index){
+          return nodeReferences[referenceName][index ? index : 0];
+        }
+        var typeConstraints = typeConstraint.split('|');
+        var adderFn = function(node){
+          if (node){
+            for(var i=0; i<typeConstraints.length; i++){
+              if(!node.isTypeOf(typeConstraints[i])) {
+                throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+              }
+            }
+          }
+          var index = nodeReferences[referenceName].indexOf(node);
+          if(index !== -1) return sceneGraphNode.pub;
+          nodeReferences[referenceName].push(node);
+          adderCallback(scene.getPrivateInterface(node));
+          
+          scene.pub.fireEvent('referenceadded', {
+            sgnode: sceneGraphNode.pub,
+            newnode: node,
+            getterFn: getterFn,
+            adderFn: adderFn,
+            removerFn: removerFn
+          });
+          return sceneGraphNode.pub;
+        }
+        var removerFn = function(val){
+          var index = -1;
+          if(typeof val == 'number'){
+            index = val;
+          }else{
+            index = nodeReferences[referenceName].indexOf(val);
+          }
+          if (index === -1) {
+            throw ( typeConstraint + ' not assigned');
+          }
+          var node = nodeReferences[referenceName][index];
+          removeCallback(scene.getPrivateInterface(node), index);
+          nodeReferences[referenceName].splice(index, 1);
+          
+          scene.pub.fireEvent('referenceremoved', {
+            sgnode: sceneGraphNode.pub,
+            prevnode: node,
+            getterFn: getterFn,
+            adderFn: adderFn,
+            removerFn: removerFn
+          });
+          return sceneGraphNode.pub;
+        }
+        sceneGraphNode.pub[getterName] = getterFn;
+        sceneGraphNode.pub[adderName] = adderFn;
+        sceneGraphNode.pub[removerName] = removerFn;
+        nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, adderFn:adderFn, removerFn:removerFn };
+        return sceneGraphNode.pub[adderName];
       },
       constructDGNode: function(dgnodename, isResourceLoad) {
         if(dgnodes[dgnodename]){
           throw "SceneGraphNode already has a " + dgnodename;
         }
-        var dgnode = scene.constructDependencyGraphNode(name + '_' + dgnodename, isResourceLoad);
+        var dgnode;
+        if(isResourceLoad){
+          dgnode = scene.constructResourceLoadNode(name + '_' + dgnodename);
+        }
+        else{
+          dgnode = scene.constructDependencyGraphNode(name + '_' + dgnodename);
+        }
         dgnode.sceneGraphNode = sceneGraphNode;
         sceneGraphNode['get' + dgnodename] = function() {
           return dgnode;
         };
-        sceneGraphNode['add' + dgnodename + 'Member'] = function(
-            memberName,
-            memberType,
-            defaultValue,
-            defineGetter,
-            defineSetter) {
-          dgnode.addMember(memberName, memberType, defaultValue);
-          if(defineGetter){
-            sceneGraphNode.addMemberInterface(dgnode, memberName, defineSetter);
-          };
-        };
         dgnodes[dgnodename] = dgnode;
         return dgnode;
       },
-      getDGNodes: function() {
-        return dgnodes;
-      },
       constructResourceLoadNode: function(dgnodename) {
         return sceneGraphNode.constructDGNode(dgnodename, true);
+      },
+      getDGNodes: function() {
+        return dgnodes;
       },
       constructEventHandlerNode: function(ehname) {
         var eventhandlernode = scene.constructEventHandlerNode(name + '_' + ehname);
         eventhandlernode.sceneGraphNode = sceneGraphNode;
         sceneGraphNode['get' + ehname + 'EventHandler'] = function() {
           return eventhandlernode;
-        };
-        sceneGraphNode['add' + ehname + 'Member'] = function(
-            memberName,
-            memberType,
-            defaultValue,
-            defineGetter,
-            defineSetter){
-          eventhandlernode.addMember(memberName, memberType, defaultValue);
-          if(defineGetter) {
-            sceneGraphNode.addMemberInterface(eventhandlernode, memberName, defineSetter);
-          }
         };
         eventhandlernodes[ehname] = eventhandlernode;
         return eventhandlernode;
@@ -856,32 +972,56 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         eventnodes[eventname] = eventnode;
         return eventnode;
       },
-      
-      writeData: function(sceneSerializer, constructionOptions, nodeData) {
-        constructionOptions.name = name;
-      },
-      writeDGNode: function( dgnode ){
-        var dgnodeData = {};
-        dgnodeData.members = dgnode.getMembers();
-        dgnodeData.sliceCount = dgnode.getCount();
-        dgnodeData.data = dgnode.getBulkData();
-        return dgnodeData;
-      },
-      readData: function(sceneDeserializer, nodeData) {
-      },
-      readDGNode: function( dgnode, dgnodeData ){
-        var members = dgnodeData.members;
-        var defaultMembers = dgnode.getMembers();
-        for(var memberName in members){
-          if(!defaultMembers[memberName]){
-            dgnode.addMember( memberName, members[memberName].type);
+      addDependencies: function(sceneSerializer) {
+        for(var referenceName in nodeReferences){
+          if(typeof nodeReferences[referenceName] == 'object'){
+            sceneSerializer.addNode(nodeReferences[referenceName]);
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              sceneSerializer.addNode(nodeReferences[referenceName]);
+            }
           }
         }
-        if(dgnodeData.sliceCount){
-          dgnode.setCount(dgnodeData.sliceCount);
+      },
+      writeData: function(sceneSerializer, constructionOptions, nodeData) {
+        constructionOptions.name = name;
+        
+        for(var referenceName in nodeReferences){
+          if(typeof nodeReferences[referenceName] == 'object'){
+            nodeData[referenceName] =  nodeReferences[referenceName].getName();
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            nodeData[referenceName] =  [];
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              nodeData[referenceName].push(nodeReferences[referenceName].getName());
+            }
+          }
         }
-        if(dgnodeData.data){
-          dgnode.setBulkData(dgnodeData.data);
+        for(var memberName in memberInterfaces){
+          if(!nodeData[memberName]){
+            nodeData[memberName] = memberInterfaces.getterFn();
+          }
+        }
+      },
+      readData: function(sceneDeserializer, nodeData) {
+        for(var referenceName in nodeReferences){
+          if(typeof nodeData[referenceName] == 'string'){
+            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
+            if(dgnode){
+              nodeReferenceInterfaces.setterFn(dgnode);
+            }
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+              if(dgnode){
+                nodeReferenceInterfaces.adderFn(dgnode);
+              }
+            }
+          }
+        }
+        for(var memberName in memberInterfaces){
+          if(nodeData[memberName]){
+            memberInterfaces[memberName].setterFn(nodeData[memberName]);
+          }
         }
       }
     }
@@ -922,7 +1062,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         mouseMoveEvents: true,
         backgroundColor: FABRIC.RT.rgb(0.5, 0.5, 0.5),
         postProcessEffect: undefined,
-        rayIntersectionThreshold: 0.2,
+        rayIntersectionThreshold: 0.1,
         checkOpenGL2Support: true
       });
 
@@ -992,11 +1132,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
           }
 
-          if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
-            alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
-          }else{
-            viewportNode.pub.show();
-          }
+          viewportNode.pub.show();
           return true;
         }
       });
@@ -1018,7 +1154,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     var viewPortRaycastEvent, viewPortRaycastEventHandler, viewPortRayCastDgNode;
     var raycastingConstructed = false;
 
-    var enableRaycasting = function() {
+    viewportNode.pub.enableRaycasting = function() {
       if( !raycastingEnabled && scene.getSceneRaycastEventHandler() ) {
         raycastingEnabled = true;
         if( !raycastingConstructed ) {
@@ -1056,21 +1192,20 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           // propagates down the tree it collects scopes and fires operators.
           // The operators us the collected scopes to calculate the ray.
           viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
+          
+          // During load we do not connect up the event tree,
+          // the registered callback will make the connection
+          if( !loading )
+            viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
         }
-        if( !loading )
-          viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
       }
     };
 
-    var disableRaycasting = function() {
+    viewportNode.pub.disableRaycasting = function() {
       if( raycastingEnabled ) {
         raycastingEnabled = false;
-        viewPortRaycastEventHandler.removeChildEventHandler(scene.getSceneRaycastEventHandler());
       }
     };
-
-    if (options.enableRaycasting)
-      enableRaycasting();
 
     var getElementCoords = function(evt) {
       var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
@@ -1084,8 +1219,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
       throw("Unsupported Browser");
     }
-
-    // private interface
     
     viewportNode.getElementCoords = function(evt) {
       return getElementCoords(evt);
@@ -1097,105 +1230,87 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.getFabricWindowObject = function() {
       return fabricwindow;
     };
-
-    // public interface
     
     viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
-    viewportNode.pub.setCameraNode = function(node) {
-      if (!node || !node.isTypeOf('Camera')) {
-        throw ('Incorrect type assignment. Must assign a Camera');
-      }
+    viewportNode.addReferenceInterface('Camera', 'Camera',
+      function(nodePrivate){
       // remove the child event handler first
-      if(cameraNode != undefined) {
-        propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
-      }
-      cameraNode = scene.getPrivateInterface(node);
-      propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
-      if (viewPortRayCastDgNode) {
-        viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
-      }
-    };
-    viewportNode.pub.getCameraNode = function() {
-      return cameraNode.pub;
-    };
-    viewportNode.pub.startLoadMode = startLoadMode;
-    viewportNode.pub.disableRaycasting = disableRaycasting;
-    viewportNode.pub.enableRaycasting = enableRaycasting;
-    viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
-      if (textureStub.postDescendBindings.getLength() == 0) {
-        textureStub.setScopeName('textureStub');
-        textureStub.addMember('textureUnit', 'Integer', 0);
-        textureStub.addMember('program', 'Integer', 0);
-        textureStub.postDescendBindings.append(
-          scene.constructOperator({
-              operatorName: 'drawTextureFullScreen',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
-              entryFunctionName: 'drawTextureFullScreen',
-              parameterLayout: [
-                'self.textureUnit',
-                'self.program'
-              ]
-            }
-         ));
-      }
-      if (!textureNode.isTypeOf('Texture')) {
-        throw ('Incorrect type assignment. Must assign a Texture');
-      }
-      if (backgroundTextureNode) {
-        textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
-      }
-      backgroundTextureNode = scene.getPrivateInterface(textureNode);
-      textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
-    };
-    viewportNode.pub.addPostProcessEffectShader = function(postProcessEffect) {
-      if (!postProcessEffect.isTypeOf('PostProcessEffect')) {
-        throw 'Object is not a PostProcessEffect node.';
-      }
-      postProcessEffect = scene.getPrivateInterface(postProcessEffect);
-
-      var parentEventHandler;
-      if (postProcessEffects.length > 0) {
-        parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
-      }
-      else {
-        parentEventHandler = redrawEventHandler;
-      }
-      parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
-      parentEventHandler.appendChildEventHandler(postProcessEffect.getRedrawEventHandler());
-
-      postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
-      postProcessEffects.push(postProcessEffect);
-    };
-    viewportNode.pub.removePostProcessEffectShader = function(postProcessEffect) {
-      postProcessEffect = scene.getPrivateInterface(postProcessEffect);
-      var filterIndex = postProcessEffects.indexOf(postProcessEffect);
-      if (filterIndex == -1) {
-        throw ('Filter not applied: ' + postProcessEffect.name);
-      }
-      var parentEventHandler, childEventHandler;
-      postProcessEffects.splice(filterIndex, 1);
-      if(filterIndex < postProcessEffects.length){
-        childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
-      }
-      else{
-        childEventHandler = propagationRedrawEventHandler;
-      }
-      postProcessEffect.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
-      
-      if (filterIndex > 0) {
-        parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
-      }
-      else {
-        parentEventHandler = redrawEventHandler;
-      }
-      parentEventHandler.removeChildEventHandler(postProcessEffect.getRedrawEventHandler());
-      if (filterIndex < postProcessEffects.length) {
-        parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
-      }
-      else {
-        parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
-      }
-    };
+        if(cameraNode != undefined) {
+          propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
+        }
+        cameraNode = nodePrivate;
+        propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
+        if (viewPortRayCastDgNode) {
+          viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
+        }
+      });
+    
+    
+    viewportNode.addReferenceInterface('BackgroundTexture', 'Image2D',
+      function(nodePrivate){
+        if (textureStub.postDescendBindings.getLength() == 0) {
+          textureStub.setScopeName('textureStub');
+          textureStub.addMember('textureUnit', 'Integer', 0);
+          textureStub.addMember('program', 'Integer', 0);
+          textureStub.postDescendBindings.append(
+            scene.constructOperator({
+                operatorName: 'drawTextureFullScreen',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
+                entryFunctionName: 'drawTextureFullScreen',
+                parameterLayout: [
+                  'self.textureUnit',
+                  'self.program'
+                ]
+              }
+           ));
+        }
+        if (backgroundTextureNode) {
+          textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+        }
+        backgroundTextureNode = nodePrivate;
+        textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+      });
+    viewportNode.addReferenceListInterface('PostProcessEffect', 'PostProcessEffect',
+      function(nodePrivate, index){
+        var parentEventHandler;
+        if (postProcessEffects.length > 0) {
+          parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
+        parentEventHandler.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+  
+        nodePrivate.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
+        postProcessEffects.push(nodePrivate);
+      },
+      function(nodePrivate, index) {
+        var parentEventHandler, childEventHandler;
+        postProcessEffects.splice(index, 1);
+        if(filterIndex < postProcessEffects.length){
+          childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
+        }
+        else{
+          childEventHandler = propagationRedrawEventHandler;
+        }
+        nodePrivate.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
+        
+        if (filterIndex > 0) {
+          parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(nodePrivate.getRedrawEventHandler());
+        if (filterIndex < postProcessEffects.length) {
+          parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
+        }
+        else {
+          parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
+        }
+      });
+    
     viewportNode.pub.rayCast = function(evt, options) {
       var result = {
         rayData: undefined
@@ -1222,6 +1337,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
       return result;
     };
+    
     viewportNode.pub.calcRayFromMouseEvent = function(evt) {
       var elementCoords = getElementCoords(evt);
       viewPortRayCastDgNode.setData('x', elementCoords.x);
@@ -1230,13 +1346,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       var ray = viewPortRayCastDgNode.getData('ray');
       return ray;
     };
+    
     viewportNode.pub.redraw = function(force) {
       if(!visible){
         return;
       }
-      if(scene.pub.animation.isPlaying()){
-        if(force)
+      if(scene.isPlaying()){
+        if(force){
           fabricwindow.needsRedraw();
+        }
       }else{
         // If we give the browser a millisecond pause, then the redraw will
         // occur. Otherwist this message gets lost, causing a blank screen when
@@ -1246,19 +1364,25 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         }, 1);
       }
     };
+    
     viewportNode.pub.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.camera = cameraNode.getName();
     };
+    
     viewportNode.pub.readData = function(sceneDeserializer, nodeData) {
       if (nodeData.camera) {
         this.setCameraNode(sceneDeserializer.getNode(nodeData.camera));
       }
     };
+    
     viewportNode.pub.getFPS = function() {
       // TODO: once we have support for multiple viewports, we should
       // re-write this function.
       return scene.getContext().VP.viewPort.getFPS();
     };
+    
+    if (options.enableRaycasting)
+      viewportNode.pub.enableRaycasting();
 
     if (options.postProcessEffect) {
       viewportNode.pub.addPostProcessEffectShader(options.postProcessEffect);
@@ -1306,7 +1430,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         if (propagateEvent) scene.pub.fireEvent(name, evt);
       }
 
+      var mouseMoveTime;
       var mouseMoveFn = function(evt) {
+        mouseMoveTime = (new Date).getTime();
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseMoveEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
@@ -1341,8 +1467,13 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           fireEvent('mousemove', evt);
         }
       };
-
+      var mouseDownTime;
       var mouseDownFn = function(evt) {
+        if(((new Date).getTime() - mouseDownTime) < 200){
+          // generate a double-click if the mouse goes down 2x in less than 200ms.
+          mouseDblClickFn(evt);
+          return;
+        }
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
@@ -1356,6 +1487,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         if(propagateEvent){
           fireEvent('mousedown', evt);
         }
+        mouseDownTime = (new Date).getTime();
       };
 
       var mouseUpFn = function(evt) {
@@ -1373,11 +1505,33 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           fireEvent('mouseup', evt);
         }
       };
+      
+      var mouseDblClickFn = function(evt) {
+        propagateEvent = true;
+        if (cameraNode && viewPortRayCastDgNode) {
+          var raycastResult = viewportNode.pub.rayCast(evt);
+          if (raycastResult.closestNode) {
+            var hitNode = raycastResult.closestNode.node.sceneGraphNode;
+            evt.rayData = raycastResult.rayData;
+            evt.hitData = raycastResult.closestNode.value;
+            fireGeomEvent('mousedblclick_geom', evt, hitNode);
+          }
+        }
+      };
+
 
       // In cases wehre mouse events cost a lot, we can restrict firing to mouse down and moue up.
       windowElement.addEventListener('mousemove', mouseMoveFn, false);
       windowElement.addEventListener('mousedown', mouseDownFn, false);
       windowElement.addEventListener('mouseup', mouseUpFn, false);
+      
+      scene.pub.addEventListener('beginmanipulation', function(evt){
+        // During manipulation we disable raycasting
+        viewportNode.pub.disableRaycasting();
+      });
+      scene.pub.addEventListener('endmanipulation', function(evt){
+        viewportNode.pub.enableRaycasting();
+      });
 
       // Mouse Wheel event trapping.
       // Mouse wheel events are sent to the document, not the element,
@@ -1429,26 +1583,40 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
-      redrawOnLoad: true
+      redrawOnLoad: true,
+      url: undefined
     });
+    
+    var fileName = options.url.split('/').pop();
+    var baseName = fileName.split('.')[0];
+    if(!options.name){
+      options.name = baseName;
+    }
 
     var onloadSuccessCallbacks = [];
     var onloadProgressCallbacks = [];
     var onloadFailureCallbacks = [];
-    lastLoadCallbackURL = '';
+    var lastLoadCallbackURL = '';
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
-    var dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
+    var dgnode;
+    if(options.localPath)
+    {
+      dgnode = resourceLoadNode.constructDGNode('DGLoadNode');
+      dgnode.addMember('url','String');
+      dgnode.addMember('resource','FabricResource');
+    }
+    else
+      dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
 
     resourceLoadNode.addMemberInterface(dgnode, 'url');
-    resourceLoadNode.addMemberInterface(dgnode, 'resource');
     
     var remainingTaskWeight = 1.0;
     var incrementLoadProgressBar;
-    if(options.blockRedrawingTillResourceIsLoaded && options.url){
+    if(options.blockRedrawingTillResourceIsLoaded && options.url && !options.localPath){
       incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
     }
-
+    
     var onLoadCallbackFunction = function(callbacks) {
       var i;
       for (i = 0; i < callbacks.length; i++) {
@@ -1464,11 +1632,12 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
         scene.pub.redrawAllViewports();
       }
     }
-
+    
     var onLoadSuccessCallbackFunction = function(node) {
       lastLoadCallbackURL = resourceLoadNode.pub.getUrl();
       onLoadCallbackFunction(onloadSuccessCallbacks);
     }
+    
     var onLoadProgressCallbackFunction = function(node, progress) {
       prevRemainingTaskWeight = remainingTaskWeight;
       //TaskWeight = 1 + size/100KB
@@ -1476,18 +1645,20 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       if(incrementLoadProgressBar)
         incrementLoadProgressBar(false, remainingTaskWeight-prevRemainingTaskWeight);
 
-      var i;
-      for (i = 0; i < onloadProgressCallbacks.length; i++) {
+      for (var i = 0; i < onloadProgressCallbacks.length; i++) {
         onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
       }
     }
+    
     var onLoadFailureCallbackFunction = function(node) {
       onLoadCallbackFunction(onloadFailureCallbacks);
     }
 
-    dgnode.addOnLoadSuccessCallback(onLoadSuccessCallbackFunction);
-    dgnode.addOnLoadProgressCallback(onLoadProgressCallbackFunction);
-    dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
+    if(!options.localPath) {
+      dgnode.addOnLoadSuccessCallback(onLoadSuccessCallbackFunction);
+      dgnode.addOnLoadProgressCallback(onLoadProgressCallbackFunction);
+      dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
+    }
 
     resourceLoadNode.pub.isLoaded = function() {
       return lastLoadCallbackURL !== '' && lastLoadCallbackURL === resourceLoadNode.pub.getUrl();
@@ -1497,7 +1668,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
       //make sure the callback is only fired when the 'next' resource is loaded.
       if (resourceLoadNode.pub.isLoaded()) {
-        callback.call(); //Already loaded. Todo: we don't keep track of success/failure state, which is wrong.
+        callback.call();
       } else {
         onloadProgressCallbacks.push(callback);
       }
@@ -1518,17 +1689,35 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     };
     
     resourceLoadNode.pub.setUrl = function(url, forceLoad) {
-      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+      if(options.localPath) {
+        dgnode.setData('url', 0, url);
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'loadStorageResource',
+          parameterLayout: [
+            'self.resource',
+            'self.url'
+          ],
+          entryFunctionName: 'loadStorageResource',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/localStorage.kl',
+          async: false
+        }));
+        dgnode.evaluate();
+        return;
+      } else {
+        if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+          incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+        }
+        dgnode.setData('url', 0, url);
       }
-      dgnode.setData('url', 0, url);
       if(forceLoad!= false){
         dgnode.evaluate();
       }
     };
 
-    resourceLoadNode.pub.getDGLoadNode = function() {
-      return dgnode;
+    var parentWriteData = resourceLoadNode.writeData;
+    resourceLoadNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      constructionOptions.url = options.url;
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     
     scene.addEventHandlingFunctions(resourceLoadNode);

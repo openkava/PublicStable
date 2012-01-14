@@ -32,10 +32,10 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -286,7 +286,7 @@ $(document).ready(function() {
       var floorInstance = assetNodes.Plane001;
       var floorMesh = assetNodes.Plane001Mesh;
       
-      floorInstance.setMaterialNode(phongMaterial);
+      floorInstance.addMaterialNode(phongMaterial);
 
       bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
       
@@ -395,26 +395,31 @@ $(document).ready(function() {
     break;
   }
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
-  var storage = new FABRIC.SceneGraph.URLReader(rigFile);
-  var nodeMap = rigLoader.load(storage);
-  
+  var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
+  rigLoader.load(storage, function(nodeMap){
+    
   var ikrig = nodeMap.IKRig;
 //  var characterMesh =  nodeMap.characterMesh;
 
   var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
-  var storage = new FABRIC.SceneGraph.URLReader(animationLibraryFile);
-  var nodeMap = animationLoader.load(storage);
-  var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
-  
-  ikrig.setControllerNode(locomotionControllerNode);
-  
-  var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    characterRigNode: ikrig,
-    bulletWorldNode: bulletWorldNode,
-    minFrequency: minFrequency
+  var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+  animationLoader.load(storage, function(animationLoaderNodeMap){
+    var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
+    
+    ikrig.setControllerNode(locomotionControllerNode);
+    
+    var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+      characterRigNode: ikrig,
+      bulletWorldNode: bulletWorldNode,
+      minFrequency: minFrequency
+    });
+    locomotionVariables.setAnimationLibrary(libraryAnimations);
+    ikrig.setVariablesNode(locomotionVariables);
   });
-  locomotionVariables.setAnimationLibrary(libraryAnimations);
-  ikrig.setVariablesNode(locomotionVariables);
+    
+    
+  });
+  
 
 
   /*

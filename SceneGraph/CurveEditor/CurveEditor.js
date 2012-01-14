@@ -9,6 +9,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
   options.drawKeys = options.drawKeys!=undefined ? options.drawKeys : true; 
   trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
+  trackFilters = options.trackFilters!=undefined ? options.trackFilters : [];
   
   var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
   var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
@@ -18,7 +19,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
   var windowHeight = rootDomNode.clientHeight;
-  var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationLibrary');
+  var isBezier = animationLibraryNode.getKeyframeType() == 'BezierKeyframe';
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
   if(options.volumerenderdemohack){
@@ -31,6 +32,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   svgRoot.svgRoot = svgRoot;
   svgRoot.state = 'Normal';
   
+  
   var containmentRect;
   if(!fitEditorToKeyRanges){
     containmentRect = graphCenterGroup.createRect().size(windowWidth, windowHeight).translate(0, windowHeight * -0.5);;
@@ -39,77 +41,26 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     containmentRect.attr('stroke-width', 2);
   }
   ///////////////
-  tracksData = animationLibraryNode.getTrackSet(trackSetId);
-  var trackCount = tracksData.tracks.length;
+  var tracksData = animationLibraryNode.getTracks(trackSetId);
+  var trackCount = tracksData.length;
   var yRange = new FABRIC.Vec2(0, 0);
   var curvesData = [];
   var trackGroups = [];
-  trackDisplayNode = scene.constructNode('TrackDisplay', {
+  var trackDisplayed = [];
+  
+  trackDisplayNode = scene.getSceneGraphNode(animationLibraryNode.getName()+'TrackDisplay');
+  if(!trackDisplayNode){
+    trackDisplayNode = scene.constructNode('TrackDisplay', {
+      name:animationLibraryNode.getName()+'TrackDisplay',
       animationLibraryNode: animationLibraryNode,
       trackSetId: trackSetId
     });
-  
-  if(displayTrackNames){
-    ///////////////
-    // Build the tree
-    var tree = {};
-    var currDomElement = $('#keyframeTracks');
-    for (var i = 0; i < trackCount; i++) {
-      var trackData = tracksData.tracks[i];
-      var namePath = trackData.name.split('.');
-      var currBranch = tree;
-      for (var j = 0; j < namePath.length; j++) {
-        if(!currBranch[namePath[j]]){
-          if(j<(namePath.length-1)){
-            currBranch[namePath[j]] = {};
-          }else{
-            // set the track id as the leaf value
-            currBranch[namePath[j]] = i;
-          }
-        }
-        currBranch = currBranch[namePath[j]];
-      }
-    }
-    var trackDisplayed = [];
-    var buildTree = function(el, branchName, treedata){
-      var li = $(document.createElement('li'));
-      var checkbox = $(document.createElement('input')).attr('type', "checkbox");
-      li.append(checkbox);
-      li.append(branchName);
-      el.append(li);
-      if(typeof treedata == 'number'){
-        var trackId = treedata;
-        checkbox.attr('id', tracksData.tracks[trackId].name);
-        checkbox.attr('checked', true);
-        checkbox.data('displayed', true);
-        checkbox.data('trackId', trackId)
-        var trackData = tracksData.tracks[trackId];
-        
-        trackGroups[trackId] = curvesHolderGroup.createGroup().id('curveGroup');
-        trackDisplayed[trackId] = true;
-      }else{
-        var ul = $(document.createElement('ul'));
-        li.append(ul);
-        for(var subBranchName in treedata){
-          buildTree(ul, subBranchName, treedata[subBranchName]);
-        }
-      }
-    }
-    for(var branchName in tree){
-      buildTree($('#keyframeTracks'), branchName, tree[branchName]);
-    }
   }
   else{
-    trackDisplayed.length = trackCount;
-    for (var j = 0; j < trackCount; j++) {
-      trackDisplayed[trackId] = true;
-    }
+    trackDisplayNode.setTrackSetId(trackSetId);
   }
-
-  if(!fitEditorToKeyRanges){
-    yRange = valueRange;
-  }
-
+  
+  
   var screenXfo = {
     tr: new FABRIC.Vec2(0, 0),
     sc: new FABRIC.Vec2(1, 1),
@@ -117,8 +68,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       if(fitEditorToKeyRanges){
         timeRange = new FABRIC.Vec2(0, 0);
         for (var i = 0; i < trackCount; i++) {
-          var keys = tracksData.tracks[i].keys;
-          if(keys.length <= 1){
+          if(!trackDisplayed[i]) continue;
+          var keys = tracksData[i].keys;
+          if(keys.length < 2){
             continue;
           }
           if (timeRange.x > keys[0].time) {
@@ -130,18 +82,17 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         }
         trackDisplayNode.setTimeRange(timeRange);
       }
-      var getCurveYRange = function(curveData) {
-        for (var i = 1; i < curveData.length; i++) {
-          if (yRange.x > curveData[i]) {
-            yRange.x = curveData[i];
+      var getCurveYRange = function(curveValues) {
+        for (var i = 1; i < curveValues.length; i++) {
+          if (yRange.x > curveValues[i]) {
+            yRange.x = curveValues[i];
           }
-          if (yRange.y < curveData[i]) {
-            yRange.y = curveData[i];
+          if (yRange.y < curveValues[i]) {
+            yRange.y = curveValues[i];
           }
         }
       }
       
-      curvesData = trackDisplayNode.getCurveData();
       if(!fitEditorToKeyRanges){
         yRange = valueRange;
       }
@@ -149,14 +100,21 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         yRange = new FABRIC.Vec2(0, 0);
         for (var i = 0; i < trackCount; i++) {
           if(!trackDisplayed[i]) continue;
-          getCurveYRange(curvesData.values[i]);
+          getCurveYRange(trackDisplayNode.getCurveData(i));
         }
       }
+      var vscale;
       if(!fitEditorToKeyRanges){
-        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight) / (yRange.y - yRange.x));
+        vscale = -(windowHeight) / (yRange.y - yRange.x);
       }else{
-        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
+        vscale = -(windowHeight - 40) / (yRange.y - yRange.x);
       }
+      
+      var hscale = windowWidth;
+      if(timeRange.y > timeRange.x){
+        hscale = windowWidth/(timeRange.y - timeRange.x);
+      }
+      this.sc = new FABRIC.Vec2(hscale, vscale);
       this.tr = new FABRIC.Vec2(-timeRange.x, (yRange.y + yRange.x) * -0.5);
     },
     update: function(){
@@ -177,258 +135,278 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       }
     }
   }
-  screenXfo.fitToScreen();
-
-  var drawTrackCurve = function(trackId) {
-    var trackData = tracksData.tracks[trackId];
-    var trackGroup = trackGroups[trackId];
-    trackGroup.removeAllChildren();
-    var path = trackGroup.createPath().addClass('CurvePath').stroke(trackData.color);
-    var setPathCurveValues = function(curveData) {
-      var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
-      var pathValues = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
-      try{
-      for (var i = 0; i < curveData.length; i++) {
-        var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
-        val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
-        pathValues[(i * 2) + 4] = val.x;
-        pathValues[(i * 2) + 5] = val.y;
-      }
-      path.attr('d', pathValues.join(' '));
-      }
-      catch(e){
-        console.warn("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveData));
-      }
-    }
-    setPathCurveValues(curvesData.values[trackId]);
-
-    var updateCurve = function() {
-      curvesData = trackDisplayNode.getCurveData();
-      setPathCurveValues(curvesData.values[trackId]);
-    }
-
-    var drawKey = function(keyIndex, keyData) {
-      
-      if(isBezier ? ((keyData.time + keyData.intangent.x) < timeRange.y &&
-         (keyData.time + keyData.outtangent.x) >= timeRange.x) :
-         keyData.time <= timeRange.y && keyData.time >= timeRange.x ){
-        ///////////////////////////////////////////////
-        // Key
-        var keySsVal = screenXfo.toScreenSpace(new FABRIC.Vec2(keyData.time, keyData.value));
-        // When keyframes are manipulated, we can maintain the tangent lengths
-        // by storing the relative lengths, and gradients. Then, during manipulation
-        // we maintain these relative lengths and gradients. This simplifies the
-        // keyframes, by moving the complexity into the manipulation system.
-        var prevKey = trackData.keys[keyIndex-1],
-            nextKey = trackData.keys[keyIndex+1],
-            tangentNormalizedValues = [];
-        var keyGroupNode = trackGroup.createGroup().translate(keySsVal)
-          .draggable({ mouseButton: 0, containment:containmentRect })
-          .addOnDragBeginCallback(
-            function(evt){
-              var deltat, i=0;
-              if(keyIndex > 0){
-                deltat = keyData.time - prevKey.time;
-                if(isBezier) {
-                  tangentNormalizedValues[i++] = prevKey.outtangent.x / deltat;
-                  tangentNormalizedValues[i++] = prevKey.outtangent.y / prevKey.outtangent.x;
-                  tangentNormalizedValues[i++] = keyData.intangent.x / deltat;
-                  tangentNormalizedValues[i++] = keyData.intangent.y / keyData.intangent.x;
-                }
-              }
-              if(keyIndex < trackData.keys.length-1){;
-                deltat = nextKey.time - keyData.time;
-                if(isBezier) {
-                  tangentNormalizedValues[i++] = keyData.outtangent.x / deltat;
-                  tangentNormalizedValues[i++] = keyData.outtangent.y / keyData.outtangent.x;
-                  tangentNormalizedValues[i++] = nextKey.intangent.x / deltat;
-                  tangentNormalizedValues[i++] = nextKey.intangent.y / nextKey.intangent.x;
-                }
-              }
-          })
-          .addOnDragCallback(
-            function(evt) {
-              var keyGsVal = screenXfo.toGraphSpace(evt.localPos);
-              keyData.time = keyGsVal.x;
-              keyData.value = keyGsVal.y;
-              var deltat, i=0;
-              if(keyIndex > 0){
-                deltat = keyData.time - prevKey.time;
-                if(isBezier) {
-                  prevKey.outtangent.x = deltat * tangentNormalizedValues[i++];
-                  prevKey.outtangent.y = prevKey.outtangent.x * tangentNormalizedValues[i++];
-                  keyData.intangent.x = deltat * tangentNormalizedValues[i++];
-                  keyData.intangent.y = keyData.intangent.x * tangentNormalizedValues[i++];
-                  prevKey.setOutTan(prevKey.outtangent, true);
-                  keyData.setInTan(keyData.intangent);
-                }
-              }
-              if(keyIndex < trackData.keys.length-1){
-                deltat = nextKey.time - keyData.time;
-                if(isBezier) {
-                  keyData.outtangent.x = deltat * tangentNormalizedValues[i++];
-                  keyData.outtangent.y = keyData.outtangent.x * tangentNormalizedValues[i++];
-                  nextKey.intangent.x = deltat * tangentNormalizedValues[i++];
-                  nextKey.intangent.y = nextKey.intangent.x * tangentNormalizedValues[i++];
-                  keyData.setOutTan(keyData.outtangent);
-                  nextKey.setInTan(nextKey.intangent, true);
-                }
-              }
-              tracksData.tracks[trackId].keys[keyIndex] = keyData;
-              animationLibraryNode.setTrackSet(tracksData, trackSetId);
-              updateCurve();
-              scene.redrawAllViewports();
-            });
-        var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(keyColor);
+  
+  var clearTrackCurves, drawTrackCurves;
+  var buildCurveEditor = function(){
+    
+    if(displayTrackNames){
+      ///////////////
+      // Build the tree
+      var tree = {};
+      trackDisplayed = [];
+      var currDomElement = $('#keyframeTracks');
+      currDomElement.empty();
+      for (var i = 0; i < trackCount; i++) {
+        var trackData = tracksData[i];
         
-        if(isBezier) {
+        if(!trackGroups[i]){
+          trackGroups[i] = curvesHolderGroup.createGroup().id(tracksData[i].name);
+        }
+        if(trackFilters.length > 0){
+          trackDisplayed[i] = true;
+          for (var j = 0; j < trackFilters.length; j++) {
+            if(trackData.name.indexOf(trackFilters[j])===-1){
+              trackDisplayed[i] = false;
+            }
+          }
+          if(!trackDisplayed[i]){
+            continue;
+          }
+        }
+        
+        var namePath = trackData.name.split('.');
+        var currBranch = tree;
+        for (var j = 0; j < namePath.length; j++) {
+          if(!currBranch[namePath[j]]){
+            if(j<(namePath.length-1)){
+              currBranch[namePath[j]] = {};
+            }else{
+              // set the track id as the leaf value
+              currBranch[namePath[j]] = i;
+            }
+          }
+          currBranch = currBranch[namePath[j]];
+        }
+      }
+      var trackId = 0;
+      var buildTree = function(el, branchName, treedata){
+        var li = $(document.createElement('li'));
+        var checkbox = $(document.createElement('input')).attr('type', "checkbox");
+        li.append(checkbox);
+        li.append(branchName);
+        el.append(li);
+        if(typeof treedata == 'number'){
+          checkbox.attr('id', tracksData[trackId].name);
+          checkbox.attr('checked', true);
+          checkbox.data('displayed', true);
+          checkbox.data('trackId', trackId)
+          var trackData = tracksData[trackId];
+          
+          trackId++;
+        }else{
+          var ul = $(document.createElement('ul'));
+          li.append(ul);
+          for(var subBranchName in treedata){
+            buildTree(ul, subBranchName, treedata[subBranchName]);
+          }
+        }
+      }
+      for(var branchName in tree){
+        buildTree($('#keyframeTracks'), branchName, tree[branchName]);
+      }
+    }
+    else{
+      trackDisplayed.length = trackCount;
+      for (var j = 0; j < trackCount; j++) {
+        trackDisplayed[j] = true;
+        if(!trackGroups[j]){
+          trackGroups[j] = curvesHolderGroup.createGroup().id(tracksData[j].name);
+        }
+      }
+    }
+  
+    if(!fitEditorToKeyRanges){
+      yRange = valueRange;
+    }
+  
+    screenXfo.fitToScreen();
+  
+    var drawTrackCurve = function(trackId) {
+      var trackData = tracksData[trackId];
+      var trackGroup = trackGroups[trackId];
+      trackGroup.removeAllChildren();
+      var path = trackGroup.createPath().addClass('CurvePath').stroke(trackData.color);
+      var setPathCurveValues = function(curveValues) {
+        try{
+          var pathValues;
+          if(timeRange.y > timeRange.x){
+            var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveValues[0]));
+            pathValues = ['M', val.x, val.y, 'L'];
+            for (var i = 0; i < curveValues.length; i++) {
+              var t = ((i/curveValues.length)*(timeRange.y - timeRange.x))+timeRange.x;
+              val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveValues[i]));
+              pathValues[(i * 2) + 4] = val.x;
+              pathValues[(i * 2) + 5] = val.y;
+            }
+          }
+          else{
+            var val1 = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveValues[0]));
+            var val2 = screenXfo.toScreenSpace(new FABRIC.Vec2(1, curveValues[0]));
+            pathValues = ['M', val1.x, val1.y, 'L', val2.x, val2.y];
+          }
+          path.attr('d', pathValues.join(' '));
+        }
+        catch(e){
+          console.warn("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveValues));
+        }
+      }
+  
+      var updateCurve = function() {
+        setPathCurveValues(trackDisplayNode.getCurveData(trackId));
+      }
+      updateCurve();
+      
+      var updateDrawnKeys = function(){
+        for(var i=0; i<trackData.keys.length; i++){
+          var key = trackData.keys[i];
+          var keySsVal = screenXfo.toScreenSpace(new FABRIC.Vec2(key.time, key.value));
+          drawnKeys[i].key.translate(keySsVal);
+          if(drawnKeys[i].intan){
+            var inTanSsVal = screenXfo.toScreenSpace(key.intangent, true);
+            drawnKeys[i].intan.translate(inTanSsVal.x - 3, inTanSsVal.y - 3)
+            drawnKeys[i].intanline.attr('d', 'M 0 0 L ' + inTanSsVal.x + ' ' + inTanSsVal.y);
+          }
+          if(drawnKeys[i].outtan){
+            var outTanSsVal = screenXfo.toScreenSpace(key.outtangent, true);
+            drawnKeys[i].outtan.translate(outTanSsVal.x - 3, outTanSsVal.y - 3)
+            drawnKeys[i].outtanline.attr('d', 'M 0 0 L ' + outTanSsVal.x + ' ' + outTanSsVal.y);
+          }
+        }
+      }
+      var drawnKeys = [];
+      var drawKey = function(keyIndex, keyData) {
+        
+        if(isBezier ? ((keyData.time + keyData.intangent.x) < timeRange.y &&
+           (keyData.time + keyData.outtangent.x) >= timeRange.x) :
+           keyData.time <= timeRange.y && keyData.time >= timeRange.x ){
           ///////////////////////////////////////////////
-          // In Tangent
-          if(keyData.time > timeRange.x){
+          // Key
+          var keySsVal = screenXfo.toScreenSpace(new FABRIC.Vec2(keyData.time, keyData.value));
+          // When keyframes are manipulated, we can maintain the tangent lengths
+          // by storing the relative lengths, and gradients. Then, during manipulation
+          // we maintain these relative lengths and gradients. This simplifies the
+          // keyframes, by moving the complexity into the manipulation system.
+          var prevKey = trackData.keys[keyIndex-1],
+              nextKey = trackData.keys[keyIndex+1];
+          var keyGroupNode = trackGroup.createGroup().translate(keySsVal)
+            .draggable({ mouseButton: 0, containment:containmentRect })
+            .addOnDragBeginCallback(
+              function(evt){
+            })
+            .addOnDragCallback(
+              function(evt) {
+                var keyGsVal = screenXfo.toGraphSpace(evt.localPos);
+                tracksData[trackId].moveKey(keyIndex, keyGsVal.x, keyGsVal.y);
+                animationLibraryNode.setTrack(trackData, trackId, trackSetId);
+                updateCurve();
+                updateDrawnKeys();
+                scene.redrawAllViewports();
+              });
+          var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(keyColor);
+          drawnKeys[keyIndex] = { key: keyGroupNode };
+          
+          if(isBezier) {
+            ///////////////////////////////////////////////
+            // In Tangent
             var inTanSsVal = screenXfo.toScreenSpace(keyData.intangent, true);
             var inTanLineNode = keyGroupNode.createPath().addClass('KeyframeHandle');
             inTanLineNode.attr('d', 'M 0 0 L ' + inTanSsVal.x + ' ' + inTanSsVal.y);
             var inTanNode = keyGroupNode.createRect()
-                                                .translate(inTanSsVal.x - 3, inTanSsVal.y - 3)
-                                                .size(6, 6).stroke(keyColor);
+                                        .translate(inTanSsVal.x - 3, inTanSsVal.y - 3)
+                                        .size(6, 6).stroke(keyColor);
             inTanNode.draggable({ mouseButton: 0 })
-              .addOnDragBeginCallback(
-                function(evt){
-                })
               .addOnDragCallback(
                 function(evt) {
-                  keyData.intangent = screenXfo.toGraphSpace(evt.localPos, true);
-                  // Clamp the handle lengths > 0 && < deltat
-                  if(!evt.altKey && keyIndex > 0){
-                    var deltat = prevKey.time - keyData.time;
-                    keyData.intangent.x = keyData.intangent.x < deltat ? deltat : keyData.intangent.x;
-                  }
-                  keyData.intangent.x = keyData.intangent.x > -0.1 ? -0.1 : keyData.intangent.x;
-                  
-                  if(!evt.altKey && keyIndex < trackData.keys.length-1){
-                    keyData.outtangent.y = (keyData.intangent.y / keyData.intangent.x) * keyData.outtangent.x;
-                    keyData.setOutTan(keyData.outtangent);
-                  }
-                  keyData.setInTan(keyData.intangent);
-                  tracksData.tracks[trackId].keys[keyIndex] = keyData;
-                  animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  var keyInTanGsVal = screenXfo.toGraphSpace(evt.localPos, true);
+                  trackData.setInTangentValue(keyIndex, keyInTanGsVal, evt.altKey);
+                  animationLibraryNode.setTrack(trackData, trackId, trackSetId);
                   updateCurve();
+                  updateDrawnKeys();
                   scene.redrawAllViewports();
                 });
-          }
-          keyData.setInTan = function(intangent, setKeyData){
-            if(inTanNode){
-              var inTanSsVal = screenXfo.toScreenSpace(intangent, true);
-              inTanNode.translate(inTanSsVal.x - 3, inTanSsVal.y - 3)
-              inTanLineNode.attr('d', 'M 0 0 L ' + inTanSsVal.x + ' ' + inTanSsVal.y);
-            }
-            if(setKeyData){
-              keyData.intangent = intangent;
-              tracksData.tracks[trackId].keys[keyIndex] = keyData;
-              animationLibraryNode.setTrackSet(tracksData, trackSetId);
-            }
-          }
-          ///////////////////////////////////////////////
-          // Out Tangent
-          if(keyData.time < timeRange.y){
+            drawnKeys[keyIndex].intan = inTanNode;
+            drawnKeys[keyIndex].intanline = inTanLineNode;
+
+            ///////////////////////////////////////////////
+            // Out Tangent
             var outTanSsVal = screenXfo.toScreenSpace(keyData.outtangent, true);
             var outTanLineNode = keyGroupNode.createPath().addClass('KeyframeHandle');
             outTanLineNode.attr('d', 'M 0 0 L ' + outTanSsVal.x + ' ' + outTanSsVal.y);
             var outTanNode = keyGroupNode.createRect()
-                                                 .translate(outTanSsVal.x - 3, outTanSsVal.y - 3)
-                                                 .size(6, 6).stroke(keyColor);
+                                          .translate(outTanSsVal.x - 3, outTanSsVal.y - 3)
+                                          .size(6, 6).stroke(keyColor);
     
             outTanNode.draggable({ mouseButton: 0 })
-              .addOnDragBeginCallback(
-                function(evt){
-                })
               .addOnDragCallback(
                 function(evt) {
-                  keyData.outtangent = screenXfo.toGraphSpace(evt.localPos, true);
-                  // Clamp the handle lengths > 0 && < deltat
-                 if(keyIndex < trackData.keys.length-1){
-                    var deltat = nextKey.time - keyData.time;
-                    keyData.outtangent.x = keyData.outtangent.x > deltat ? deltat : keyData.outtangent.x;
-                  }
-                  keyData.outtangent.x = keyData.outtangent.x < 0.1 ? 0.1 : keyData.outtangent.x;
-                  
-                  if(!evt.altKey && keyIndex < trackData.keys.length-1){
-                    keyData.intangent.y = (keyData.outtangent.y / keyData.outtangent.x) * keyData.intangent.x;
-                    keyData.setInTan(keyData.intangent);
-                  }
-                  keyData.setOutTan(keyData.outtangent);
-                  
-                  tracksData.tracks[trackId].keys[keyIndex] = keyData;
-                  animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  var keyOutTanGsVal = screenXfo.toGraphSpace(evt.localPos, true);
+                  trackData.setOutTangentValue(keyIndex, keyOutTanGsVal, evt.altKey);
+                  animationLibraryNode.setTrack(trackData, trackId, trackSetId);
                   updateCurve();
+                  updateDrawnKeys();
                   scene.redrawAllViewports();
                 });
-          }
-          keyData.setOutTan = function(outtangent, setKeyData){
-            if(outTanNode){
-              var outTanSsVal = screenXfo.toScreenSpace(outtangent, true);
-              outTanNode.translate(outTanSsVal.x - 3, outTanSsVal.y - 3)
-              outTanLineNode.attr('d', 'M 0 0 L ' + outTanSsVal.x + ' ' + outTanSsVal.y);
-            }
-            if(setKeyData){
-              keyData.outtangent = outtangent;
-              
-              tracksData.tracks[trackId].keys[keyIndex] = keyData;
-              animationLibraryNode.setTrackSet(tracksData, trackSetId);
-            }
+            drawnKeys[keyIndex].outtan = outTanNode;
+            drawnKeys[keyIndex].outtanline = outTanLineNode;
           }
         }
       }
-    }
-    if (options.drawKeys) {
-      var trackData = tracksData.tracks[trackId];
-      for (var i = 0; i < trackData.keys.length; i++) {
-        drawKey(i, trackData.keys[i]);
-      }
-    }
-  }
-    
-  var drawTrackCurves = function(){
-    for (var i = 0; i < trackCount; i++) {
-      // Note: this array of checkboxes is a bit hackey.
-      // I couldn't get the CSS selectors to work with the 'id' I have used.
-      // (Probably bcause the id contains '.')
-      if(trackDisplayed[i]){
-        drawTrackCurve(i);
-      }
-    }
-  }
-  
-  var clearTrackCurves = function(){
-    for (var i = 0; i < trackCount; i++) {
-      trackGroups[i].removeAllChildren();
-    }
-  }
-    
-  drawTrackCurves();
-  
-  
-  if(displayTrackNames){
-    $('#keyframeTracks').click( function(){
-      $(this).find("input[type='checkbox']").each(function(index, el){
-        if($(el).attr('id') != undefined){
-          var trackId = $(el).data('trackId');
-          if(!$(el).is(':checked')){
-            // remove the curve from display
-            if($(el).data('displayed')){
-              trackGroups[trackId].removeAllChildren();
-              $(el).data('displayed', false);
-            }
-          }else{
-            if(!$(el).data('displayed')){
-              drawTrackCurve(trackId);
-              $(el).data('displayed', true);
-            }
-          }
-          trackDisplayed[trackId] = $(el).is(':checked');
+      if (options.drawKeys) {
+        var trackData = tracksData[trackId];
+        for (var i = 0; i < trackData.keys.length; i++) {
+          drawKey(i, trackData.keys[i]);
         }
+      }
+    }
+      
+    drawTrackCurves = function(){
+      for (var i = 0; i < trackCount; i++) {
+        if(trackDisplayed[i]){
+          drawTrackCurve(i);
+        }else if(trackGroups[i]){
+          trackGroups[i].removeAllChildren();
+        }
+      }
+    }
+    
+    clearTrackCurves = function(){
+      for (var i = 0; i < trackCount; i++) {
+        trackGroups[i].removeAllChildren();
+      }
+    }
+      
+    drawTrackCurves();
+    
+    if(displayTrackNames){
+      $('#keyframeTracks').click( function(){
+        $(this).find("input[type='checkbox']").each(function(index, el){
+          if($(el).attr('id') != undefined){
+            var trackId = $(el).data('trackId');
+            if(!$(el).is(':checked')){
+              // remove the curve from display
+              if($(el).data('displayed')){
+                trackGroups[trackId].removeAllChildren();
+                $(el).data('displayed', false);
+              }
+            }else{
+              if(!$(el).data('displayed')){
+                drawTrackCurve(trackId);
+                $(el).data('displayed', true);
+              }
+            }
+            trackDisplayed[trackId] = $(el).is(':checked');
+          }
+        });
       });
-    });
+    }
+    
+  }
+  buildCurveEditor();
+  
+  var setCurveFilters = function(filters){
+    trackFilters = filters;
+    tracksData = animationLibraryNode.getTracks(trackSetId);
+    buildCurveEditor();
   }
   
   if(options.timeStripe){
@@ -439,14 +417,18 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         function(evt) {
           scene.animation.setTime((evt.localPos.x / screenXfo.sc.x) - screenXfo.tr.x);
         });
-  
-    timeStripeGroupNode.createRect().size(10, windowHeight).addClass('EventCatcher');
+    var timeStripeEventCatcher = timeStripeGroupNode.createRect().size(10, windowHeight).translate(-5, 0).addClass('EventCatcher');
     var timeStripe = timeStripeGroupNode.createPath().addClass('TimeStripePath')
-        .attr('d', 'M 5 0 L 5 ' + windowHeight);
-  
-    window.updateGraphTimeStripe = function() {
+        .attr('d', 'M 0 0 L 0 ' + windowHeight);
+    
+    var updateTimeStripe = function(){
       timeStripeGroupNode.translate((scene.animation.getTime() + screenXfo.tr.x)  * screenXfo.sc.x, windowHeight * -0.5);
     }
+    var risizeTimeStripe = function(){
+      timeStripe.attr('d', 'M 0 0 L 0 ' + windowHeight);
+      timeStripeEventCatcher.size(10, windowHeight)
+    }
+    scene.addEventListener('timechanged', updateTimeStripe);
   }
   
   var updateTimeRange = function(){
@@ -454,7 +436,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     curvesData = trackDisplayNode.getCurveData();
     
     if(options.timeStripe){
-      updateGraphTimeStripe();
+      updateTimeStripe();
     }
     drawTrackCurves();
   }
@@ -473,7 +455,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     }
     graphCenterGroup.translate(0, windowHeight * 0.5);
     graphBGRect.size(windowWidth, windowHeight);
-    timeStripe.attr('d', 'M 5 0 L 5 ' + windowHeight);
+    risizeTimeStripe();
     updateTimeRange();
   }
   
@@ -522,6 +504,22 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     });
   }
   
+  var updateGraph = function(){
+    tracksData = animationLibraryNode.getTracks(trackSetId);
+    updateTimeRange();
+  }
+  
+  var updateGraphEventFn = function(evt){
+    updateGraph();
+  };
+  animationLibraryNode.addEventListener('valuechanged', updateGraphEventFn);
+  window.onunload = function(){
+    animationLibraryNode.removeEventListener('valuechanged', updateGraphEventFn);
+    if(updateTimeStripe){
+      scene.removeEventListener('timechanged', updateTimeStripe);
+    }
+  };
+  
   var resizeIntervalId;
   
   return {
@@ -532,13 +530,15 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         }, 50 );
     },
     redraw: function(){
-      tracksData = animationLibraryNode.getTrackSet(trackSetId);
-      updateTimeRange();
+      updateGraph();
     },
     setKeyDisplayToggle: function(val){
       clearTrackCurves();
       options.drawKeys = val;
       drawTrackCurves();
+    },
+    setCurveFilters: function(filters){
+      setCurveFilters(filters);
     }
   }
 };

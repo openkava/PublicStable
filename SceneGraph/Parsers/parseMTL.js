@@ -105,7 +105,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
       if (!materialNames || materialNames.indexOf(materialName) !== -1) {
         if(!imageLibrary[value]){
         //  console.log(value);
-          imageLibrary[value] = scene.constructNode('Image', {
+          imageLibrary[value] = scene.constructNode('Image2D', {
             name: value,
             url: options.basePath + '/' + value
           });

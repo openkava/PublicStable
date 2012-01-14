@@ -5,7 +5,6 @@
 
 use Xfo;
 use Bone;
-use BezierKeyframe;
 use DebugGeometry;
 use SolverHelperFunctions;
 
@@ -46,8 +45,7 @@ operator solveInsectLegRig(
     if (ikBlend > 0.0) {
     //  debugGeometry.drawAxis(poseVariables.xfoValues[leg.ikGoalXfoId], 3.0, Color(0.0, 1.0, 1.0, 1.0));
       
-      Xfo targetXfo;
-      targetXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId] * leg.ikGoalOffsetXfo;
+      Xfo targetXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId] * leg.ikGoalOffsetXfo;
       
       Scalar maxLineLength = 0.0;
       Integer ikboneIndices[];
@@ -80,7 +78,7 @@ operator solveInsectLegRig(
     Xfo rot90;
     rot90.setIdentity();
     rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
-    debugGeometry.drawSquare(footPlatformXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
+    debugGeometry.drawSquare(footControlXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
     Integer j;
     for (j = 1; j < leg.boneIds.size; j++) {
       debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j].tr, Color(1.0, 1.0, 0.0, 1.0));
@@ -132,9 +130,8 @@ operator solveHumanoidLegRig(
       
     Scalar ikBlend = poseVariables.scalarValues[leg.ikblendId];
     if (ikBlend > 0.0) {
-      Xfo footPlatformXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
-      Xfo targetXfo;
-      targetXfo = footPlatformXfo * leg.ikGoalOffsetXfo;
+      Xfo footControlXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+      Xfo targetXfo = footControlXfo * leg.ikGoalOffsetXfo;
       
       Scalar maxLineLength = 0.0;
       Integer ikboneIndices[];
@@ -146,6 +143,7 @@ operator solveHumanoidLegRig(
       Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
       Integer firstBoneId = leg.boneIds[0];
       Integer lastBoneId = leg.boneIds[leg.boneIds.size-1];
+      
       applyFishingRod(
         targetXfo,
         bones[leg.ankleId].length,
@@ -155,11 +153,15 @@ operator solveHumanoidLegRig(
         0.0,
         Vec2(0.0, 0.0),
         maxLineLength,
-        maxLineLengthSoftening
+        maxLineLengthSoftening,
+        
+        1.0,
+        0.4
       );
-      targetXfo.tr = targetXfo.transformVector(Vec3(-bones[leg.ankleId].length, 0.0, 0.0));
+      Xfo adjustedTargetXfo = targetXfo;
+      adjustedTargetXfo.tr = targetXfo.transformVector(Vec3(-bones[leg.ankleId].length, 0.0, 0.0));
   
-      solveNCFIK(pose, bones, ikboneIndices, targetXfo, debugGeometry);
+      solveNCFIK(pose, bones, ikboneIndices, adjustedTargetXfo, debugGeometry);
       
       pose[leg.ankleId].tr = pose[lastBoneId].transformVector(Vec3(bones[lastBoneId].length, 0.0, 0.0));
       pose[leg.ankleId].ori = targetXfo.ori;
@@ -184,7 +186,7 @@ operator solveHumanoidLegRig(
       Xfo rot90;
       rot90.setIdentity();
       rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
-      debugGeometry.drawSquare(footPlatformXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
+      debugGeometry.drawSquare(footControlXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
       for (Integer j = 1; j <= leg.boneIds.size; j++) {
         debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j].tr, Color(1.0, 1.0, 0.0, 1.0));
       }
@@ -192,7 +194,8 @@ operator solveHumanoidLegRig(
         debugGeometry.drawLine(pose[leg.boneIds[j - 1]].tr, pose[leg.boneIds[j]].tr, Color(0.0, 1.0, 1.0, 1.0));
       }
       debugGeometry.drawLine(pose[leg.boneIds[leg.boneIds.size - 1]].tr, pose[leg.ankleId].tr, Color(0.0, 1.0, 1.0, 1.0));
-      debugGeometry.drawAxis(pose[leg.ankleId], 2.0, Color(0.0, 1.0, 1.0, 1.0));
+      debugGeometry.drawAxis(pose[leg.ankleId], 1.0, Color(0.0, 1.0, 1.0, 1.0));
+      debugGeometry.drawAxis(targetXfo, 1.0, Color(0.0, 1.0, 1.0, 1.0));
       */
     }
   }

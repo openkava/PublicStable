@@ -87,9 +87,9 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
     if(options.supportsColor) {
       
       kinectNode.pub.constructColorTextureNode = function() {
-        var textureNode = scene.constructNode('Image', {
+        var textureNode = scene.constructNode('Image2D', {
           createResourceLoadNode: false,
-          createDgNode: true,
+          createDgNodes: true,
           width: 640,
           height: 480,
           forceRefresh: true
@@ -118,9 +118,9 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
     if(options.supportsDepth) {
       
       kinectNode.pub.constructDepthTextureNode = function() {
-        var textureNode = scene.constructNode('Image', {
+        var textureNode = scene.constructNode('Image2D', {
           createResourceLoadNode: false,
-          createDgNode: true,
+          createDgNodes: true,
           width: 320,
           height: 240,
           forceRefresh: true

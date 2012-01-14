@@ -34,10 +34,10 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -109,7 +109,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../../Sample/BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -154,12 +154,13 @@ $(document).ready(function() {
     var animationAssetNodes = scene.importAssetFile(file, {
       scaleFactor: scaleFactor,
       constructScene: false,
-      loadAnimationUsingRig: fkrigNode,
+      loadAnimationUsingRig: true,
+      rigNode: fkrigNode,
       animationLibrary: libraryFKAnimations,
       animationController: animationController
     });
     if(!libraryFKAnimations){
-      libraryFKAnimations = animationAssetNodes.AnimationLibrary;
+      libraryFKAnimations = animationAssetNodes.LinearKeyAnimationLibrary;
       animationController = animationAssetNodes.AnimationController;
     }
     
@@ -258,7 +259,8 @@ $(document).ready(function() {
     loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
 
   */
-    rigInstances.rig.setMaterialNode(
+    
+    rigInstances.rig.addMaterialNode(
       scene.constructNode('SpiedelShader', {
         lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
         diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
@@ -446,47 +448,47 @@ $(document).ready(function() {
       Skin: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_SkinCharacterInstance
     };
     
-    rigInstances.Cloths.setMaterialNode(
+    rigInstances.Cloths.addMaterialNode(
       scene.constructNode('PhongBumpReflectSkinningMaterial', {
-        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
-        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
-        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
         lightNode: light,
         shininess: 5.0,
         bumpiness: 0.5
       }));
-    rigInstances.Eyes.setMaterialNode(
+    rigInstances.Eyes.addMaterialNode(
       scene.constructNode('PhongBumpReflectSkinningMaterial', {
-        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
-        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
-        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
         lightNode: light,
         shininess: 5.0,
         bumpiness: 0.5
       }));
-    rigInstances.Hair.setMaterialNode(
+    rigInstances.Hair.addMaterialNode(
       scene.constructNode('PhongBumpReflectSkinningMaterial', {
-        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Hair-D.tga' }),
-        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Hair-S.tga' }),
-        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Hair-N.tga' }),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-N.tga' }),
         lightNode: light,
         shininess: 5.0,
         bumpiness: 0.5
       }));
-    rigInstances.Head.setMaterialNode(
+    rigInstances.Head.addMaterialNode(
       scene.constructNode('PhongBumpReflectSkinningMaterial', {
-        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Head-D.tga' }),
-        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Head-S.tga' }),
-        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Head-N.tga' }),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-N.tga' }),
         lightNode: light,
         shininess: 5.0,
         bumpiness: 0.5
       }));
-    rigInstances.Skin.setMaterialNode(
+    rigInstances.Skin.addMaterialNode(
       scene.constructNode('PhongBumpReflectSkinningMaterial', {
-        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
-        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
-        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
         lightNode: light,
         shininess: 5.0,
         bumpiness: 0.5

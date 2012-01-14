@@ -74,7 +74,7 @@ $(document).ready(function() {
       cameraNode: camera
     });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
 
@@ -135,7 +135,7 @@ $(document).ready(function() {
   var mouseUpEventsText = document.getElementById('mouseUpEventsText').childNodes[0];
 
   scene.addEventListener('mouseover_geom', function(evt) {
-      evt.targetNode.setMaterialNode( outlineMaterial );
+      evt.targetNode.addMaterialNode( outlineMaterial );
       mouseOverEventsText.data = 'Mouse Over:' + evt.targetNode.getName();
       viewport.redraw();
     });
