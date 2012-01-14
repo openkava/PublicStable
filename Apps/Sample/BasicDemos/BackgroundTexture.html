@@ -81,6 +81,10 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
     if (nbRemaining===0) {
       $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
       viewport.redraw();
       return true;
     }
