@@ -405,7 +405,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   var setCurveFilters = function(filters){
     trackFilters = filters;
-    tracksData = animationLibraryNode.getTrackSet(trackSetId);
+    tracksData = animationLibraryNode.getTracks(trackSetId);
     buildCurveEditor();
   }
   
@@ -505,7 +505,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
   
   var updateGraph = function(){
-    tracksData = animationLibraryNode.getTrackSet(trackSetId);
+    tracksData = animationLibraryNode.getTracks(trackSetId);
     updateTimeRange();
   }
   
