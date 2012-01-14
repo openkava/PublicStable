@@ -318,9 +318,6 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           function(nodePrivate){
             lightStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
           });
-      //  if (lightDef.node !== undefined) {
-      //    setLightNodeFn(lightDef.node);
-      //  }
       };
       for (i in options.lights) {
         addLightInterface(i, options.lights[i]);
@@ -348,7 +345,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           ]
         }));
         
-        var setTextureFn = materialNode.addReferenceInterface(textureName, 'Image',
+        materialNode.addReferenceInterface(textureName, 'Image',
           function(nodePrivate){
             textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
           });

@@ -839,9 +839,18 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         var getterFn = function(){
           return nodeReferences[referenceName];
         }
+        var typeConstraints = typeConstraint.split('|');
         var setterFn = function(node, option){
-          if (node && !node.isTypeOf(typeConstraint)) {
-            throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+          if (node){
+            var matchesType = false;
+            for(var i=0; !matchesType && i<typeConstraints.length; i++){
+              if(node.isTypeOf(typeConstraints[i])) {
+                matchesType = true;
+              }
+            }
+            if(!matchesType){
+              throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+            }
           }
           var prevnode = nodeReferences[referenceName];
           nodeReferences[referenceName] = node;
@@ -871,9 +880,14 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         var getterFn = function(index){
           return nodeReferences[referenceName][index ? index : 0];
         }
+        var typeConstraints = typeConstraint.split('|');
         var adderFn = function(node){
-          if (node && !node.isTypeOf(typeConstraint)) {
-            throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+          if (node){
+            for(var i=0; i<typeConstraints.length; i++){
+              if(!node.isTypeOf(typeConstraints[i])) {
+                throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+              }
+            }
           }
           var index = nodeReferences[referenceName].indexOf(node);
           if(index !== -1) return sceneGraphNode.pub;
