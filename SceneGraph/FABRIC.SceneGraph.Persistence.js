@@ -159,11 +159,11 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
                     str += ',';
                   }
                   str += '\n        \"'+dgnodename+'\":{';
+                  str += '\n          \"sliceCount\":' + dgnode.getCount();
                   if(dgnodeDataDesc.members){
-                    str += '\n          \"members\":' + JSON.stringify(dgnodeDataDesc.members);
+                    str += ',\n          \"memberData\":' + JSON.stringify(dgnode.getMembersBulkData(dgnodeDataDesc.members));
                   }
                   else{
-                    str += ',\n          \"sliceCount\":' + dgnode.getCount();
                     str += ',\n          \"memberData\":' + JSON.stringify(dgnode.getBulkData());
                   }
                   str += '\n        }';
@@ -269,7 +269,6 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           });
         }
         else{
-          // Note: this won't work no
           var nodeData = sgnodeDataMap[sgnodeName];
           if(!nodeData.dgnodedata){
             console.warn("missing dgnode data for node:" + sgnodeName);
@@ -277,15 +276,16 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           }
           for(var dgnodename in desc){
             var data = nodeData.dgnodedata[dgnodename];
-            desc.dgnode.setCount(data.sliceCount);
-            var members = desc.dgnode.getMembers();
+            var dgnode = desc[dgnodename].dgnode;
+            dgnode.setCount(data.sliceCount);
+            var members = dgnode.getMembers();
             var memberData = {};
             for(var memberName in members){
               if(data.memberData[memberName]){
                 memberData[memberName] = data.memberData[memberName];
               }
             }
-            desc.dgnode.setBulkData(memberData);
+            dgnode.setBulkData(memberData);
           }
         }
       },
@@ -330,7 +330,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                       loadNodeBinaryFileNode.disposeData();
                     });
                   }
-                  callback(constructedNodeMap);
+                  if(callback)
+                    callback(constructedNodeMap);
                 }
               });
             }
@@ -382,9 +383,9 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   
   var path;
   var str = "";
-  this.querySavePath = function(instr) {
+//  this.querySavePath = function(instr) {
     path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
-  }
+//  }
   this.write = function(instr) {
     str = instr;
     scene.IO.putTextFile(str, path);

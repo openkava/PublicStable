@@ -974,49 +974,52 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       },
       addDependencies: function(sceneSerializer) {
         for(var referenceName in nodeReferences){
-          if(typeof nodeReferences[referenceName] == 'object'){
-            sceneSerializer.addNode(nodeReferences[referenceName]);
-          }else if(typeof nodeReferences[referenceName] == 'array'){
+          if(nodeReferences[referenceName].constructor.name == 'Array'){
             for(var i=0; i<nodeReferences[referenceName].length; i++){
-              sceneSerializer.addNode(nodeReferences[referenceName]);
+              sceneSerializer.addNode(nodeReferences[referenceName][i]);
             }
           }
+          else{
+            sceneSerializer.addNode(nodeReferences[referenceName]);
+          } 
         }
       },
       writeData: function(sceneSerializer, constructionOptions, nodeData) {
         constructionOptions.name = name;
         
         for(var referenceName in nodeReferences){
-          if(typeof nodeReferences[referenceName] == 'object'){
-            nodeData[referenceName] =  nodeReferences[referenceName].getName();
-          }else if(typeof nodeReferences[referenceName] == 'array'){
+          if(nodeReferences[referenceName].constructor.name == 'Array'){
             nodeData[referenceName] =  [];
             for(var i=0; i<nodeReferences[referenceName].length; i++){
-              nodeData[referenceName].push(nodeReferences[referenceName].getName());
+              nodeData[referenceName].push(nodeReferences[referenceName][i].getName());
             }
+          }
+          else {
+            nodeData[referenceName] = nodeReferences[referenceName].getName();
           }
         }
         for(var memberName in memberInterfaces){
           if(!nodeData[memberName]){
-            nodeData[memberName] = memberInterfaces.getterFn();
+            nodeData[memberName] = memberInterfaces[memberName].getterFn();
           }
         }
       },
       readData: function(sceneDeserializer, nodeData) {
         for(var referenceName in nodeReferences){
-          if(typeof nodeData[referenceName] == 'string'){
-            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
-            if(dgnode){
-              nodeReferenceInterfaces.setterFn(dgnode);
-            }
-          }else if(typeof nodeReferences[referenceName] == 'array'){
+          if(nodeData[referenceName].constructor.name == 'Array'){
             for(var i=0; i<nodeReferences[referenceName].length; i++){
               var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
               if(dgnode){
-                nodeReferenceInterfaces.adderFn(dgnode);
+                nodeReferenceInterfaces[referenceName].adderFn(dgnode);
               }
             }
           }
+          else if(typeof nodeData[referenceName] == 'string'){
+            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
+            if(dgnode){
+              nodeReferenceInterfaces[referenceName].setterFn(dgnode);
+            }
+          } 
         }
         for(var memberName in memberInterfaces){
           if(nodeData[memberName]){
