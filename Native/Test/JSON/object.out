@@ -1,0 +1,40 @@
+OBJECT
+OBJECT
+  STRING 4 'fred'
+    INTEGER 17
+OBJECT
+  STRING 4 'fred'
+    STRING 3 'joe'
+  STRING 3 'joe'
+    STRING 4 'fred'
+  STRING 3 'foo'
+    NULL
+  STRING 3 'bar'
+    BOOLEAN false
+OBJECT
+  STRING 4 'fred'
+    OBJECT
+      STRING 3 'joe'
+        ARRAY
+          INTEGER 4
+          OBJECT
+            STRING 3 'bar'
+              ARRAY
+                NULL
+                SCALAR 4.5
+            STRING 1 'a'
+              OBJECT
+                STRING 1 '5'
+                  INTEGER 42
+          ARRAY
+            INTEGER 4
+            SCALAR 6.8
+            BOOLEAN true
+  STRING 3 'joe'
+    ARRAY
+      SCALAR 5.6
+      INTEGER 9
+      ARRAY
+        OBJECT
+          STRING 4 'fred'
+            STRING 0 ''
