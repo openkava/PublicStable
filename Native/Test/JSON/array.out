@@ -1,0 +1,10 @@
+ARRAY
+ARRAY
+  INTEGER 43
+  SCALAR 7980
+  STRING 2 '"]'
+  OBJECT
+    STRING 4 'fred'
+      ARRAY
+        INTEGER 5
+        INTEGER 6
