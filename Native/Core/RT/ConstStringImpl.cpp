@@ -60,6 +60,11 @@ namespace Fabric
     {
       throw Exception( "cannot set constant string from a JSON value" );
     }
+    
+    void ConstStringImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    {
+      throw Exception( "cannot set constant string from a JSON value" );
+    }
 
     void ConstStringImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {

@@ -42,6 +42,14 @@ namespace Fabric
           size_t length;
           char shortData[jsonDecoderShortStringMaxLength];
         } string;
+        struct
+        {
+          size_t size;
+        } object;
+        struct
+        {
+          size_t size;
+        } array;
       } value;
       
       JSONEntityInfo()
@@ -86,6 +94,8 @@ namespace Fabric
       
     bool jsonGetEntity( char const *&data, size_t &length, JSONEntityInfo &entityInfo );
 
+    void jsonParseString( JSONEntityInfo const &entityInfo, char *data );
+
     bool jsonEntityStringIsEqual( JSONEntityInfo const &entityInfo, char const *data, size_t length );
     inline bool jsonEntityStringIsEqual( JSONEntityInfo const &entityInfo, char const *cString )
     {
@@ -95,6 +105,27 @@ namespace Fabric
     {
       return jsonEntityStringIsEqual( entityInfo, stdString.data(), stdString.length() );
     }
+    
+    class JSONDecoder
+    {
+    public:
+    
+      JSONDecoder( char const *data, size_t length )
+        : m_data( data )
+        , m_length( length )
+      {
+      }
+      
+      bool getNext( JSONEntityInfo &entityInfo )
+      {
+        return jsonGetEntity( m_data, m_length, entityInfo );
+      }
+      
+    private:
+    
+      char const *m_data;
+      size_t m_length;
+    };
     
     class JSONObjectParser
     {

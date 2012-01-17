@@ -22,6 +22,7 @@
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Core/Util/Parse.h>
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Base/JSON/Decode.h>
@@ -108,38 +109,54 @@ namespace Fabric
         throw "elementType: " + e;
       }
       
-      RC::ConstHandle<JSON::Array> dataJSONArray;
-      try
+      RC::ConstHandle<JSON::Value> dataJSONValue = argObject->maybeGet("data");
+      if ( dataJSONValue )
       {
-        RC::ConstHandle<JSON::Value> dataJSONValue = argObject->maybeGet("data");
-        if ( dataJSONValue )
-          dataJSONArray = dataJSONValue->toArray();
-      }
-      catch ( Exception e )
-      {
-        throw "data: " + e;
-      }
-      try
-      {
-        RC::ConstHandle<JSON::Value> jsonDataJSONValue = argObject->maybeGet("jsonData");
-        if ( jsonDataJSONValue )
+        try
         {
-          RC::ConstHandle<JSON::String> jsonDataJSONString = jsonDataJSONValue->toString();
-          dataJSONArray = JSON::decode( jsonDataJSONString->data(), jsonDataJSONString->length() )->toArray();
+          RC::ConstHandle<JSON::Array> dataJSONArray = dataJSONValue->toArray();
+          
+          ConstArrayWrapper::Create(
+            m_rtManager,
+            elementTypeRTDesc,
+            dataJSONArray
+            )->reg( m_gcContainer, id_ );
+          
+          return;
+        }
+        catch ( Exception e )
+        {
+          throw "data: " + e;
         }
       }
-      catch ( Exception e )
+
+      RC::ConstHandle<JSON::Value> jsonDataJSONValue = argObject->maybeGet("jsonData");
+      if ( jsonDataJSONValue )
       {
-        throw "jsonData: " + e;
+        try
+        {
+          RC::ConstHandle<JSON::String> jsonDataJSONString = jsonDataJSONValue->toString();
+          
+          Util::JSONDecoder jsonDecoder( jsonDataJSONString->data(), jsonDataJSONString->length() );
+          Util::JSONEntityInfo jsonEntityInfo;
+          if ( !jsonDecoder.getNext( jsonEntityInfo ) )
+            throw Exception("missing JSON data");
+          ConstArrayWrapper::Create(
+            m_rtManager,
+            elementTypeRTDesc,
+            jsonEntityInfo
+            )->reg( m_gcContainer, id_ );
+          if ( jsonDecoder.getNext( jsonEntityInfo ) )
+            throw Exception("extra JSON data");
+          return;
+        }
+        catch ( Exception e )
+        {
+          throw "jsonData: " + e;
+        }
       }
-      if ( !dataJSONArray )
-        throw Exception("missing data");
       
-      ConstArrayWrapper::Create(
-        m_rtManager,
-        elementTypeRTDesc,
-        dataJSONArray
-        )->reg( m_gcContainer, id_ );
+      throw Exception( "missing both data and jsonData" );
     }
     
     void Interface::jsonExecCreateArrayMap(

@@ -43,7 +43,7 @@ void displayEntity( Fabric::Util::JSONEntityInfo const &entityInfo, std::string 
       break;
     case Fabric::Util::ET_OBJECT:
     {
-      std::cout << "OBJECT" << std::endl;
+      std::cout << "OBJECT " << entityInfo.value.object.size << std::endl;
       Fabric::Util::JSONObjectParser objectParser( entityInfo );
       Fabric::Util::JSONEntityInfo keyEntityInfo, valueEntityInfo;
       while ( objectParser.getNext( keyEntityInfo, valueEntityInfo ) )
@@ -55,7 +55,7 @@ void displayEntity( Fabric::Util::JSONEntityInfo const &entityInfo, std::string 
     break;
     case Fabric::Util::ET_ARRAY:
     {
-      std::cout << "ARRAY" << std::endl;
+      std::cout << "ARRAY " << entityInfo.value.array.size << std::endl;
       Fabric::Util::JSONArrayParser arrayParser( entityInfo );
       Fabric::Util::JSONEntityInfo elementEntityInfo;
       while ( arrayParser.getNext( elementEntityInfo ) )
@@ -72,23 +72,22 @@ void displayEntity( Fabric::Util::JSONEntityInfo const &entityInfo, std::string 
 void parseJSON( FILE *fp )
 {
   static const size_t maxLength = 16*1024*1024;
-  char *buffer = new char[maxLength];
-  
-  char const *data = buffer;
+  char *data = new char[maxLength];
   size_t length = 0;
   while ( !feof( fp ) )
   {
-    int read = fread( &buffer[length], 1, maxLength - length, fp );
+    int read = fread( &data[length], 1, maxLength - length, fp );
     if ( read <= 0 )
       break;
     length += read;
   }
   
+  Fabric::Util::JSONDecoder decoder( data, length );
   Fabric::Util::JSONEntityInfo entityInfo;
-  while ( Fabric::Util::jsonGetEntity( data, length, entityInfo ) )
+  while ( decoder.getNext( entityInfo ) )
     displayEntity( entityInfo, "" );
     
-  delete [] buffer;
+  delete [] data;
 }
 
 int main( int argc, char **argv )

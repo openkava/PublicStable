@@ -66,6 +66,11 @@ namespace Fabric
     {
       throw Exception( "unable to convert ArrayProducer from JSON" );
     }
+    
+    void ArrayProducerImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    {
+      throw Exception( "unable to convert ArrayProducer from JSON" );
+    }
 
     void ArrayProducerImpl::disposeDatasImpl( void *dst, size_t count, size_t stride ) const
     {
