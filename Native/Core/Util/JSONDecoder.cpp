@@ -421,6 +421,7 @@ namespace Fabric
         case '{':
         {
           entityInfo.type = ET_OBJECT;
+          entityInfo.value.object.size = 0;
           ++data, --length;
           
           size_t nestCount = 1;
@@ -433,6 +434,16 @@ namespace Fabric
               case '{':
                 ++nestCount;
                 ++data, --length;
+                jsonSkipWhitespace( data, length );
+                if ( length == 0 )
+                  throw malformedJSONException;
+                if ( data[0] != '}' )
+                  ++entityInfo.value.object.size;
+                break;
+              
+              case ',':
+                if ( nestCount == 1 )
+                  ++entityInfo.value.object.size;
                 break;
               
               case '}':
@@ -455,6 +466,7 @@ namespace Fabric
         case '[':
         {
           entityInfo.type = ET_ARRAY;
+          entityInfo.value.array.size = 0;
           ++data, --length;
           
           size_t nestCount = 1;
@@ -467,6 +479,16 @@ namespace Fabric
               case '[':
                 ++nestCount;
                 ++data, --length;
+                jsonSkipWhitespace( data, length );
+                if ( length == 0 )
+                  throw malformedJSONException;
+                if ( data[0] != ']' )
+                  ++entityInfo.value.array.size;
+                break;
+              
+              case ',':
+                if ( nestCount == 1 )
+                  ++entityInfo.value.array.size;
                 break;
               
               case ']':
@@ -660,6 +682,87 @@ namespace Fabric
         FABRIC_ASSERT( entityLength == 0 );
       }
       return true;
+    }
+
+    void jsonParseString( JSONEntityInfo const &entityInfo, char *data )
+    {
+      FABRIC_ASSERT( entityInfo.type == ET_STRING );
+      
+      char const *entityData = entityInfo.data;
+      size_t entityLength = entityInfo.length;
+      
+      FABRIC_ASSERT( entityLength > 0 );
+      FABRIC_ASSERT( entityData[0] == '"' );
+      ++entityData, --entityLength;
+      
+      bool done = false;
+      while ( !done )
+      {
+        FABRIC_ASSERT( entityLength > 0 );
+        
+        switch ( entityData[0] )
+        {
+          case '"':
+            done = true;
+            ++entityData, --entityLength;
+            break;
+          
+          case '\\':
+            ++entityData, --entityLength;
+            FABRIC_ASSERT( entityLength > 0 );
+            switch ( entityData[0] )
+            {
+              case '"':
+              case '/':
+              case '\\':
+                *data++ = entityData[0];
+                ++entityData, --entityLength;
+                break;
+              
+              case 'b':
+                *data++ = '\b';
+                ++entityData, --entityLength;
+                break;
+              case 'f':
+                *data++ = '\f';
+                ++entityData, --entityLength;
+                break;
+              case 'n':
+                *data++ = '\n';
+                ++entityData, --entityLength;
+                break;
+              case 'r':
+                *data++ = '\r';
+                ++entityData, --entityLength;
+                break;
+              case 't':
+                *data++ = '\t';
+                ++entityData, --entityLength;
+                break;
+              
+              case 'u':
+              {
+                ++entityData, --entityLength;
+                uint16_t ucs2 = jsonConsumeUCS2( entityData, entityLength );
+                data += jsonUCS2ToUTF8( ucs2, data );
+              }
+              break;
+              
+              default:
+                FABRIC_ASSERT( false );
+                ++entityData, --entityLength;
+                break;
+            }
+            break;
+          
+          default:
+            *data++ = entityData[0];
+            ++entityData, --entityLength;
+            break;
+        }
+      }
+      
+      FABRIC_ASSERT( entityLength == 0 );
     }
   }
 }

@@ -10,6 +10,7 @@
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 
 namespace Fabric
 {
@@ -88,6 +89,35 @@ namespace Fabric
         void *memberData = getMutableMemberData_NoCheck( data, i );
         m_memberImpl->setDataFromJSONValue( jsonArray->get(i), memberData );
       }
+    }
+    
+    void FixedArrayImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    {
+      if ( entityInfo.type != Util::ET_ARRAY )
+        throw Exception("JSON value is not an array");
+        
+      if ( entityInfo.value.array.size != m_length )
+        throw Exception( "JSON array is of wrong size (expected " + _(m_length) + ", actual " + _(entityInfo.value.array.size) + ")" );
+        
+      size_t membersFound = 0;
+      Util::JSONArrayParser arrayDecoder( entityInfo );
+      Util::JSONEntityInfo elementEntity;
+      while ( arrayDecoder.getNext( elementEntity ) )
+      {
+        FABRIC_ASSERT( membersFound < m_length );
+        try
+        {
+          void *memberData = getMutableMemberData_NoCheck( data, membersFound );
+          m_memberImpl->decodeJSON( elementEntity, memberData );
+        }
+        catch ( Exception e )
+        {
+          throw _(membersFound) + ": " + e;
+        }
+        ++membersFound;
+      }
+      
+      FABRIC_ASSERT( membersFound == m_length );
     }
 
     void FixedArrayImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const

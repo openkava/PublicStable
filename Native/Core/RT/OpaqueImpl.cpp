@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Core/Util/Hex.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -55,6 +56,13 @@ namespace Fabric
     void OpaqueImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
     {
       if ( !jsonValue->isNull() )
+        throw Exception("value is not null");
+      memset( dst, 0, getAllocSize() );
+    }
+    
+    void OpaqueImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    {
+      if ( entityInfo.type != Util::ET_NULL )
         throw Exception("value is not null");
       memset( dst, 0, getAllocSize() );
     }

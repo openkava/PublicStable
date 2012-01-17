@@ -10,6 +10,7 @@
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 
 namespace Fabric
 {
@@ -43,11 +44,17 @@ namespace Fabric
 
     void BooleanImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
     {
-
       if ( !jsonValue->isBoolean() )
         throw Exception("value is not boolean");
       RC::ConstHandle<JSON::Boolean> jsonBoolean = RC::ConstHandle<JSON::Boolean>::StaticCast( jsonValue );
       setValue( jsonBoolean->value(), dst );
+    }
+    
+    void BooleanImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    {
+      if ( entityInfo.type != Util::ET_BOOLEAN )
+        throw Exception("value is not boolean");
+      setValue( entityInfo.value.boolean, dst );
     }
     
     std::string BooleanImpl::descData( void const *data ) const
