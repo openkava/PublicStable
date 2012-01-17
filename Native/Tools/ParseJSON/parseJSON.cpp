@@ -71,8 +71,9 @@ void displayEntity( Fabric::Util::JSONEntityInfo const &entityInfo, std::string 
 
 void parseJSON( FILE *fp )
 {
-  static const size_t maxLength = 262144;
-  char buffer[maxLength];
+  static const size_t maxLength = 16*1024*1024;
+  char *buffer = new char[maxLength];
+  
   char const *data = buffer;
   size_t length = 0;
   while ( !feof( fp ) )
@@ -86,6 +87,8 @@ void parseJSON( FILE *fp )
   Fabric::Util::JSONEntityInfo entityInfo;
   while ( Fabric::Util::jsonGetEntity( data, length, entityInfo ) )
     displayEntity( entityInfo, "" );
+    
+  delete [] buffer;
 }
 
 int main( int argc, char **argv )

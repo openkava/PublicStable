@@ -266,7 +266,7 @@ namespace Fabric
             case '9':
               mantissaInt = data[0] - '0';
               ++data; --length;
-              while ( length > 0 && data[0] >= '1' && data[0] <= '9' )
+              while ( length > 0 && data[0] >= '0' && data[0] <= '9' )
               {
                 mantissaInt = 10 * mantissaInt + data[0] - '0';
                 ++data; --length;
