@@ -201,7 +201,11 @@ namespace Fabric
         bits_t *bits = *bitsPtr;
         char *result;
         if ( bits )
+        {
+          bits->length = length;
           result = bits->cStr;
+          result[length] = '\0';
+        }
         else result = 0;
         return result;
       }
