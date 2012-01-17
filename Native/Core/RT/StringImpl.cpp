@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 
 #include <llvm/Intrinsics.h>
 
@@ -63,6 +64,16 @@ namespace Fabric
         throw Exception( "JSON value is not a string" );
       RC::ConstHandle<JSON::String> jsonString = RC::ConstHandle<JSON::String>::StaticCast( jsonValue );
       SetValue( jsonString->data(), jsonString->length(), dst );
+    }
+    
+    void StringImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    {
+      if ( entityInfo.type != Util::ET_STRING )
+        throw Exception("value is not string");
+      if ( entityInfo.value.string.length <= Util::jsonDecoderShortStringMaxLength )
+        SetValue( entityInfo.value.string.shortData, entityInfo.value.string.length, dst );
+      else
+        Util::jsonParseString( entityInfo, GetMutableValueData( dst, entityInfo.value.string.length ) );
     }
 
     void StringImpl::disposeDatasImpl( void *dst, size_t count, size_t stride ) const

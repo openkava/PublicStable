@@ -6,6 +6,7 @@
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
@@ -66,6 +67,36 @@ namespace Fabric
         Util::JSONGenerator jsonGenerator = jsonArrayGenerator.makeElement();
         m_memberImpl->generateJSON( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->rcva->varArray, bits->offset + i ), jsonGenerator );
       }
+    }
+    
+    void SlicedArrayImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    {
+      if ( entityInfo.type != Util::ET_ARRAY )
+        throw Exception("JSON value is not an array");
+        
+      bits_t *dstBits = reinterpret_cast<bits_t *>(data);
+      if ( entityInfo.value.array.size != dstBits->size )
+        throw Exception( "JSON array size must equal sliced array size" );
+        
+      size_t membersFound = 0;
+      Util::JSONArrayParser arrayDecoder( entityInfo );
+      Util::JSONEntityInfo elementEntity;
+      while ( arrayDecoder.getNext( elementEntity ) )
+      {
+        FABRIC_ASSERT( membersFound < entityInfo.value.array.size );
+        try
+        {
+          void *memberData = (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &dstBits->rcva->varArray, dstBits->offset + membersFound );
+          m_memberImpl->decodeJSON( elementEntity, memberData );
+        }
+        catch ( Exception e )
+        {
+          throw _(membersFound) + ": " + e;
+        }
+        ++membersFound;
+      }
+      
+      FABRIC_ASSERT( membersFound == entityInfo.value.array.size );
     }
     
     void SlicedArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const

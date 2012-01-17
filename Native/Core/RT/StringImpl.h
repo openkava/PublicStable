@@ -18,6 +18,7 @@ namespace Fabric
     class StringImpl : public ComparableImpl
     {
       friend class Manager;
+      friend class DictImpl;
       
       struct bits_t
       {
@@ -40,6 +41,7 @@ namespace Fabric
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
       virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
+      virtual void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
 
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const;
       virtual bool isShallow() const;
@@ -187,6 +189,21 @@ namespace Fabric
           bits->length = length;
         }
         else FABRIC_ASSERT( !bits );
+      }
+
+      static char *GetMutableValueData( void *data, size_t length )
+      {
+        FABRIC_ASSERT( data );
+        
+        Prepare( length, false, data );
+        
+        bits_t * const *bitsPtr = static_cast<bits_t * const *>( data );
+        bits_t *bits = *bitsPtr;
+        char *result;
+        if ( bits )
+          result = bits->cStr;
+        else result = 0;
+        return result;
       }
     };
   };

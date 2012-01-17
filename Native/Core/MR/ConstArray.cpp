@@ -7,7 +7,9 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
@@ -20,6 +22,15 @@ namespace Fabric
       )
     {
       return new ConstArray( rtManager, elementDesc, jsonArray );
+    }
+    
+    RC::Handle<ConstArray> ConstArray::Create(
+      RC::ConstHandle<RT::Manager> const &rtManager,
+      RC::ConstHandle<RT::Desc> const &elementDesc,
+      Util::JSONEntityInfo const &entityInfo
+      )
+    {
+      return new ConstArray( rtManager, elementDesc, entityInfo );
     }
     
     RC::Handle<ConstArray> ConstArray::Create(
@@ -40,6 +51,19 @@ namespace Fabric
       m_fixedArrayDesc = rtManager->getFixedArrayOf( elementDesc, jsonArray->size() );
       m_data.resize( m_fixedArrayDesc->getAllocSize(), 0 );
       m_fixedArrayDesc->setDataFromJSONValue( jsonArray, &m_data[0] );
+    }
+    
+    ConstArray::ConstArray(
+      RC::ConstHandle<RT::Manager> const &rtManager,
+      RC::ConstHandle<RT::Desc> const &elementDesc,
+      Util::JSONEntityInfo const &entityInfo
+      )
+    {
+      if ( entityInfo.type != Util::ET_ARRAY )
+        throw Exception( "must be a JSON array" );
+      m_fixedArrayDesc = rtManager->getFixedArrayOf( elementDesc, entityInfo.value.array.size );
+      m_data.resize( m_fixedArrayDesc->getAllocSize(), 0 );
+      m_fixedArrayDesc->decodeJSON( entityInfo, &m_data[0] );
     }
     
     ConstArray::ConstArray(
