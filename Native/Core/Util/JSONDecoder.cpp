@@ -423,6 +423,12 @@ namespace Fabric
           entityInfo.type = ET_OBJECT;
           entityInfo.value.object.size = 0;
           ++data, --length;
+
+          jsonSkipWhitespace( data, length );
+          if ( length == 0 )
+            throw malformedJSONException;
+          if ( data[0] != '}' )
+            ++entityInfo.value.array.size;
           
           size_t nestCount = 1;
           while ( nestCount > 0 )
@@ -431,21 +437,19 @@ namespace Fabric
               throw malformedJSONException;
             switch ( data[0] )
             {
+              case '[':
               case '{':
                 ++nestCount;
                 ++data, --length;
-                jsonSkipWhitespace( data, length );
-                if ( length == 0 )
-                  throw malformedJSONException;
-                if ( data[0] != '}' )
-                  ++entityInfo.value.object.size;
                 break;
               
               case ',':
                 if ( nestCount == 1 )
-                  ++entityInfo.value.object.size;
+                  ++entityInfo.value.array.size;
+                ++data, --length;
                 break;
               
+              case ']':
               case '}':
                 --nestCount;
                 ++data, --length;
@@ -468,6 +472,12 @@ namespace Fabric
           entityInfo.type = ET_ARRAY;
           entityInfo.value.array.size = 0;
           ++data, --length;
+
+          jsonSkipWhitespace( data, length );
+          if ( length == 0 )
+            throw malformedJSONException;
+          if ( data[0] != ']' )
+            ++entityInfo.value.array.size;
           
           size_t nestCount = 1;
           while ( nestCount > 0 )
@@ -477,21 +487,19 @@ namespace Fabric
             switch ( data[0] )
             {
               case '[':
+              case '{':
                 ++nestCount;
                 ++data, --length;
-                jsonSkipWhitespace( data, length );
-                if ( length == 0 )
-                  throw malformedJSONException;
-                if ( data[0] != ']' )
-                  ++entityInfo.value.array.size;
                 break;
               
               case ',':
                 if ( nestCount == 1 )
                   ++entityInfo.value.array.size;
+                ++data, --length;
                 break;
               
               case ']':
+              case '}':
                 --nestCount;
                 ++data, --length;
                 break;
