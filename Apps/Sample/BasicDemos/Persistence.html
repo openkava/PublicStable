@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Secure Storage</title> 
+    <title>FABRIC - Persistence</title> 
         
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -69,29 +69,6 @@ s.parentNode.insertBefore(ga, s);
 </style>
 
 <script type="text/javascript">
-/*
-FABRIC.SceneGraph.registerNodeType('MixedDataNode', {
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-    
-    var mixedDataNode = scene.constructNode('SceneGraphNode');
-    
-    var dgnodes = {};
-    dgnodes['uniforms'] = mixedDataNode.constructDGNode('UniformsDGNode');
-    dgnodes['attributes'] = mixedDataNode.constructDGNode('AttributesDGNode');
-    dgnodes['attributes'].setCount(12);
-    
-    for(var name in dgnodes) {
-      dgnodes[name].addMember("integers","Integer[]",[10,11,12]);
-      dgnodes[name].addMember("sizes","Size[]",[10,11,12]);
-      dgnodes[name].addMember("string","String","four");
-    }
-    
-    return mixedDataNode;
-  }
-});
-*/
 
 $(document).ready(function() {
 
@@ -120,7 +97,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // create a light
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  
   var modelName = 'cow';
   var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
    splitMaterials: true
@@ -147,15 +123,27 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     viewport.redraw();
   });
   
+  
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
   var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
-  var nodeMap = presetLoader.load(storage);
+  presetLoader.load(storage, function(nodeMap){
+    // The node map contains a map of all the nodes constructed from the loaded file.
+    for(var nodeName in nodeMap){
+      console.log("Constructed Node:" + nodeMap[nodeName].getName());
+    }
+  });
   
   
-  $('#saveResource').button()
+  $('#saveResource').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-disk'
+      }
+    })
     .click(function() {
      
-      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
+    //  var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, 'PersistenceDemo', 'cow');
       
       var presetSaver = scene.constructManager('SceneSerializer',{
         typeRemappings: { ObjTriangles: 'Triangles' } 
@@ -213,21 +201,15 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Secure Storage.<br>
-              This very basic sample shows how to load and save data into the so called SecureStorage node,
-              a ResourceLoadNode which utilizes the FabricSECURE extension. The data is zipped and encrypted
-              using a secure key, and can only be retrieved using the same key. Furthermore the data is using
-              the Fabric memory layout directly, so it is much faster to load fez data than any other format.<br><br>
-              The left cow model used in this demo is using an OBJ parser, size 326773 bytes.<br>
-              The right cow model uses the fez SecureStorage, encrypted size 72776.<br><br>
-              Click the button below to save a copy of the fez file to your disk. The data is encrypted though,
-              so you won't be able to read the file.
+              This sample shows how to save and load data using the persistence framework in Fabric.<br>
+              The cow on the right is loaded from an obj file, and the cow on the right is loaded from
+              a persisted JSON representation of the scene. The JSON scene graph persistence can save complete scenes including lights, materials and cameras. The persistence framework can also read and write our binary data files which can store much more data in a compact binary representation.
             </div><!--content-->
           </div><!--box-->
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-              <button id="saveResource" style="margin-top:10px;">Save Secure Resource</button>
+              <button id="saveResource" style="margin-top:10px;">Save</button>
             </div><!--content-->
           </div><!--box-->
             

@@ -58,13 +58,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     var parentReadData = characterMeshNode.readData;
     characterMeshNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
-      characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
+    //  characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
       nodeData.invmatrices = characterMeshNode.getUniformsDGNode().getData('invmatrices');
       nodeData.boneMapping = characterMeshNode.getUniformsDGNode().getData('boneMapping');
     };
     characterMeshNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
+    //  characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
       characterMeshNode.getUniformsDGNode().setData('invmatrices', 0, nodeData.invmatrices);
       characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, nodeData.boneMapping);
     };
@@ -815,6 +815,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         }
         variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
         animationLibrary.pub.setBindings(trackBindings);
+        return trackBindings;
       }
     }
     characterRigNode.pub.setBoundTrackSet = function(trackSetId){

@@ -28,10 +28,10 @@ operator solveHubRigs(
       }
     }
     else{
-      if (bones[hub.boneId].parent == -1) 
+    //  if (bones[hub.boneId].parent == -1) 
         pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
-      else 
-        pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
+    //  else 
+    //    pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
     }
     
     if(hub.spineBoneIds.size > 0){

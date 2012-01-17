@@ -215,7 +215,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     fkrigNode = assetNodes.SpiedelCharacterRig;
     rigInstances.rig = assetNodes.SpiedelMeshCharacterInstance;
 
-    /*
+    
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
       name: 'IKRig',
@@ -258,7 +258,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
     loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
 
-  */
+  
     
     rigInstances.rig.addMaterialNode(
       scene.constructNode('SpiedelShader', {
@@ -545,18 +545,18 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
   */
   
-  /*
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(1.0, 1.0, 0.0, 1.0)
   });
+  
   var riggedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:ikrigNode,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
-  */
+  
   
   /*
   var timeRange = libraryFKAnimations.getTimeRange(0);
@@ -611,7 +611,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         // NOTE: currently the ikrigNode is actually the locomotion rig, because the locomotion rig
         // simply adds 2 solvers to the rig. We should disolve the Locomotion rig and simply add the
         // solvers to the IK rig, clarifying the situation
-        var bindings = libraryIKAnimations.bindToRig(ikrigNode, libraryFKAnimations.getTrackSetName(i));
+      //  var bindings = libraryIKAnimations.bindToRig(ikrigNode, libraryFKAnimations.getTrackSetName(i));
+        var bindings = ikrigNode.generateAnimationTracks(libraryIKAnimations, libraryFKAnimations.getTrackSetName(i), true, controllerNode)
         
         var timeRange = libraryFKAnimations.getTimeRange(i);
         libraryIKAnimations.plotKeyframes(i, timeRange, sampleFrequency);
