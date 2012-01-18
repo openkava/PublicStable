@@ -76,6 +76,11 @@ namespace Fabric
     {
       return new ComputeState( valueTransform );
     }
+
+    void ValueTransform::flush()
+    {
+      (const_cast<ValueProducer *>(m_input.ptr()))->flush();
+    }
     
     ValueTransform::ComputeState::ComputeState( RC::ConstHandle<ValueTransform> const &valueTransform )
       : ValueProducer::ComputeState( valueTransform )

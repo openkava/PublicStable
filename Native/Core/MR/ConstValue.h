@@ -47,6 +47,7 @@ namespace Fabric
       virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
       
       virtual void const *getImmutableData() const;
+      virtual void flush();
             
     protected:
     
@@ -55,7 +56,7 @@ namespace Fabric
       public:
       
         static RC::Handle<ComputeState> Create( RC::ConstHandle<ConstValue> const &valueMap );
-      
+     
         virtual void produce( void *data ) const;
         virtual void produceJSON( Util::JSONGenerator &jg ) const;
       
