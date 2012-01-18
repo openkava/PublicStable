@@ -58,6 +58,10 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void ValueGenerator::flush()
+    {
+    }
     
     RC::Handle<ValueGenerator::ComputeState> ValueGenerator::ComputeState::Create( RC::ConstHandle<ValueGenerator> const &valueTransform )
     {
