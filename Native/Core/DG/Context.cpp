@@ -49,15 +49,17 @@ namespace Fabric
   namespace DG
   {
     Context::ContextMap Context::s_contextMap;
+    static bool s_checkExpiry = true;
     
     RC::Handle<Context> Context::Create(
       RC::Handle<IO::Manager> const &ioManager,
       std::vector<std::string> const &pluginDirs,
       CG::CompileOptions const &compileOptions,
-      bool optimizeSynchronously
+      bool optimizeSynchronously,
+      bool checkExpiry
       )
     {
-       return new Context( ioManager, pluginDirs, compileOptions, optimizeSynchronously );
+       return new Context( ioManager, pluginDirs, compileOptions, optimizeSynchronously, checkExpiry );
     }
     
     RC::Handle<Context> Context::Bind( std::string const &contextID )
@@ -72,7 +74,8 @@ namespace Fabric
       RC::Handle<IO::Manager> const &ioManager,
       std::vector<std::string> const &pluginDirs,
       CG::CompileOptions const &compileOptions,
-      bool optimizeSynchronously
+      bool optimizeSynchronously,
+      bool checkExpiry
       )
       : m_logCollector( LogCollector::Create( this ) )
       , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
@@ -93,6 +96,8 @@ namespace Fabric
       Util::generateSecureRandomBytes( contextIDByteCount, contextIDBytes );
       std::string contextID = Util::encodeBase64( contextIDBytes, contextIDByteCount );
       m_contextMapIterator = s_contextMap.insert( ContextMap::value_type( contextID, this ) ).first;
+      
+      s_checkExpiry = checkExpiry;
     }
     
     Context::~Context()
@@ -332,7 +337,7 @@ namespace Fabric
       if ( !haveIsExpired )
       {
         time_t currentTime = time( NULL );
-        isExpired = currentTime >= buildExpiry;
+        isExpired = s_checkExpiry && currentTime >= buildExpiry;
         haveIsExpired = true;
       }
       return isExpired;
