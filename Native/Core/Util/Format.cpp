@@ -60,7 +60,8 @@ namespace Fabric
               result.push_back('\\');
               result.push_back(quote);
             }
-            else if ( isprint((unsigned char)ch) )
+            else if ( (unsigned char)ch >= (unsigned char)0x80 // utf8
+              || isprint((unsigned char)ch) )
               result.push_back(ch);
             else
             {
