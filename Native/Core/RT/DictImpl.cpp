@@ -205,7 +205,7 @@ namespace Fabric
         FABRIC_ASSERT( (newBucketCount & (newBucketCount - 1)) == 0 );
         bits->bucketCount = newBucketCount;
 
-#if defined(FABRIC_DEBUG)        
+#if defined(FABRIC_BUILD_DEBUG)        
         size_t oldNodeCount = bits->nodeCount;
 #endif
         bits->nodeCount = 0;
