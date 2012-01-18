@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/RT/ComparableImpl.h>
 #include <Fabric/Base/Util/AtomicSize.h>
+#include <Fabric/Base/Util/Bits.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -76,11 +77,11 @@ namespace Fabric
         return result;
       }
 
-      static void SetValue( char const *cStr, size_t length, void *dst )
+      static void SetValue( char const *data, size_t length, void *dst )
       {
         FABRIC_ASSERT( dst );
-        Prepare( length, false, dst );
-        Replace( cStr, length, dst );
+        Prepare( length, length + 1, false, dst );
+        Replace( data, length, dst );
       }
 
       static void Append( void *dst, void const *src )
@@ -95,7 +96,8 @@ namespace Fabric
           if ( dstBits )
           {
             size_t totalLength = dstBits->length + srcBits->length;
-            Prepare( totalLength, true, dst );
+            size_t allocSize = std::max( Util::nextPowerOfTwoMinusOne( totalLength + 1 ), size_t(32) );
+            Prepare( totalLength, allocSize, true, dst );
             memcpy( &dstBits->cStr[dstBits->length], srcBits->cStr, srcBits->length + 1 );
             dstBits->length = totalLength;
           }
@@ -116,6 +118,8 @@ namespace Fabric
         size_t result;
         if ( length < 32 )
           result = 32;
+        else if ( length < 32 )
+          result = 32;
         else if ( length < 64 )
           result = 64;
         else if ( length < 128 )
@@ -126,7 +130,7 @@ namespace Fabric
         return result;
       }
     
-      static void Prepare( size_t length, bool retain, void *dst )
+      static void Prepare( size_t length, size_t allocSize, bool retain, void *dst )
       {
         FABRIC_ASSERT( dst );
         bits_t *&bits = *static_cast<bits_t **>(dst);
@@ -146,7 +150,6 @@ namespace Fabric
           
           if ( !bits )
           {
-            size_t allocSize = AllocSizeForLength( length + 1 );
             bits = (bits_t *)malloc( sizeof( bits_t ) + allocSize );
             bits->refCount.setValue( 1 );
             bits->allocSize = allocSize;
@@ -161,7 +164,6 @@ namespace Fabric
           }
           else if ( length + 1 > bits->allocSize )
           {
-            size_t allocSize = AllocSizeForLength( length + 1 );
             bits = (bits_t *)realloc( bits, sizeof( bits_t ) + allocSize );
             bits->allocSize = allocSize;
           }
@@ -195,7 +197,7 @@ namespace Fabric
       {
         FABRIC_ASSERT( data );
         
-        Prepare( length, false, data );
+        Prepare( length, length + 1, false, data );
         
         bits_t * const *bitsPtr = static_cast<bits_t * const *>( data );
         bits_t *bits = *bitsPtr;

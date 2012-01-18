@@ -141,6 +141,12 @@ namespace Fabric
           Util::JSONEntityInfo jsonEntityInfo;
           if ( !jsonDecoder.getNext( jsonEntityInfo ) )
             throw Exception("missing JSON data");
+          /*
+          jsonEntityInfo.type = Util::ET_ARRAY;
+          jsonEntityInfo.data = "[]";
+          jsonEntityInfo.length = 2;
+          jsonEntityInfo.value.array.size = 0;
+          */
           ConstArrayWrapper::Create(
             m_rtManager,
             elementTypeRTDesc,
