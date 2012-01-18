@@ -74,6 +74,12 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void Reduce::flush()
+    {
+      // FIXME implement arrays
+      //m_inputComputeState->flush();
+    }
     
     RC::Handle<Reduce::ComputeState> Reduce::ComputeState::Create( RC::ConstHandle<Reduce> const &reduce )
     {
