@@ -21,6 +21,7 @@ dirs = [
   'SECURE',
   'TEEM',
   'TGA',
+  'TSYS',
   'VICON',
   'VIDEO'
 ]
