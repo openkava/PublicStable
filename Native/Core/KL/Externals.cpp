@@ -7,6 +7,7 @@
 #include <Fabric/Core/CG/ArrayAdapter.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/CG/ValueProducerAdapter.h>
+#include <Fabric/Core/MR/ArrayCache.h>
 #include <Fabric/Core/MR/ArrayGenerator.h>
 #include <Fabric/Core/MR/ArrayGeneratorOperator.h>
 #include <Fabric/Core/MR/ArrayMap.h>
@@ -124,6 +125,16 @@ namespace Fabric
     if ( valueProducer )
       valueProducer->release();
     valueProducer = MR::ValueCache::Create(input).take();
+  }
+
+  static void MRCreateArrayCache(
+    MR::ArrayProducer *&input,
+    MR::ArrayProducer const *&arrayProducer
+    )
+  {
+    if ( arrayProducer )
+      arrayProducer->release();
+    arrayProducer = MR::ArrayCache::Create(input).take();
   }
 
   static void MRCreateConstValue(
@@ -539,6 +550,7 @@ namespace Fabric
         symbolNameToAddressMap["_chkstk"] = (void *)&_chkstk;
 #endif
         symbolNameToAddressMap["__MR_CreateValueCache"] = (void *)&MRCreateValueCache;
+        symbolNameToAddressMap["__MR_CreateArrayCache"] = (void *)&MRCreateArrayCache;
         symbolNameToAddressMap["__MR_CreateConstValue"] = (void *)&MRCreateConstValue;
         symbolNameToAddressMap["__MR_CreateValueGenerator_1"] = (void *)&MRCreateValueGenerator1;
         symbolNameToAddressMap["__MR_CreateValueGenerator_2"] = (void *)&MRCreateValueGenerator2;
