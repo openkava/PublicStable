@@ -37,26 +37,6 @@ namespace Fabric
       return m_fileHandleManager;
     }
 
-    void Manager::putFile( std::string& handle, size_t size, const void* data, bool append ) const
-    {
-      if( m_fileHandleManager->isReadOnly( handle ) )
-        throw Exception( "File has no write access" );
-
-      if( m_fileHandleManager->isFolder( handle ) )
-        throw Exception( "Handle is a folder; can only write to files" );
-
-      m_fileHandleManager->ensureExists( handle );
-      std::string fullPath = m_fileHandleManager->getPath( handle );
-
-      std::ofstream file( fullPath.c_str(), std::ios::out | (append ? std::ios::app : std::ios::trunc) | std::ios::binary );
-      if( !file.is_open() )
-        throw Exception( "Unable to create file" );
-
-      file.write( (const char*)data, size );
-      if( file.bad() )
-        throw Exception( "Error while writing to file" );
-    }
-
     void Manager::jsonRoute(
       std::vector<std::string> const &dst,
       size_t dstOffset,
@@ -319,8 +299,7 @@ namespace Fabric
       {
         append = val->toBoolean( "'append' must be a Boolean" )->value();
       }
-
-      putFile( handle, content->length(), content->data(), append );
+      m_fileHandleManager->putFile( handle, content->length(), content->data(), append );
     }
 
     void Manager::jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const

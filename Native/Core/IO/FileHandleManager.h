@@ -16,6 +16,7 @@ namespace Fabric
     {
     public:
       static RC::Handle<FileHandleManager> Create();
+      char const * getUrlScheme() const;
 
       //Note: createHandle does no check if the file/folder exists
       virtual std::string createHandle( std::string const &path, bool folder, bool readOnly );
@@ -30,7 +31,8 @@ namespace Fabric
       bool itemExists( std::string const &handle ) const;
       bool ensureExists( std::string const &handle ) const;
 
-      char const * getUrlScheme() const;
+      void putFile( std::string const &handle, size_t size, const void* data, bool append ) const;
+      void copyFile( std::string const &source, std::string const &target ) const;
 
     private:
       struct Data
@@ -47,7 +49,13 @@ namespace Fabric
       typedef std::multimap< std::string, HandleToDataMap::iterator > PathToHandleMap;
 
       FileHandleManager();
+
       Data const &validateHandleAndGetData( std::string const &handle, std::string& relativePathPostfix ) const;
+      std::string getPathInternal( Data const &data, std::string const &relativePathPostfix ) const;
+      bool isReadOnlyInternal( Data const &data, std::string const &relativePathPostfix ) const;
+      bool isFolderInternal( Data const &data, std::string const &relativePathPostfix ) const;
+      bool itemExistsInternal( Data const &data, std::string const &relativePathPostfix ) const;
+      bool ensureExistsInternal( Data const &data, std::string const &relativePathPostfix ) const;
 
       size_t m_encodedHandleLength;
       HandleToDataMap m_handleToData;

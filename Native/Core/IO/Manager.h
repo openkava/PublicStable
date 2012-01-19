@@ -41,8 +41,6 @@ namespace Fabric
       virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
 
-      void putFile( std::string& handle, size_t size, const void* data, bool append ) const;
-
     protected:
       Manager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData );
 
