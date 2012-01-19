@@ -2,6 +2,8 @@ struct FabricFolderHandle {
   Data m_data;
 };
 
+alias String FabricFileHandle;
+
 function FabricFolderHandle_Free( io FabricFolderHandle folder);
 function FabricFolderHandle_SetAbsolutePath( io FabricFolderHandle folder, io String path);
 function FabricFolderHandle_GetAbsolutePath( in FabricFolderHandle folder, io String path);
@@ -60,14 +62,4 @@ function FabricFolderHandle.getSubFolders(io FabricFolderHandle subfolders[]) {
 
 function FabricFolderHandle.getFiles(io FabricFileHandle files[]) {
   FabricFolderHandle_GetFiles(this,files);
-}
-
-function FabricFileHandle.setAbsolutePath(io String path) {
-  FabricFileHandle_SetAbsolutePath(this,path);
-}
-
-function String FabricFileHandle.getAbsolutePath() {
-  String s;
-  FabricFileHandle_GetAbsolutePath(this, s);
-  return s;
 }

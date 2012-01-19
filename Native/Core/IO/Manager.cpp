@@ -185,7 +185,7 @@ namespace Fabric
       Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
 
       bool isFile = false;
-      bool exists = m_fileHandleManager->itemExists( handle );
+      bool exists = m_fileHandleManager->targetExists( handle );
 
       {
         Util::JSONGenerator memberJG = resultJOG.makeMember( "type", 4 );

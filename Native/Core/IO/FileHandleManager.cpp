@@ -90,7 +90,7 @@ namespace Fabric
       return createHandle( data.m_path + relativePathPostfix, folder, data.m_readOnly );
     }
 
-    bool FileHandleManager::isValidHandle( std::string const &handle ) const
+    bool FileHandleManager::isValid( std::string const &handle ) const
     {
       if( handle.length() < m_encodedHandleLength )
         return false;
@@ -171,14 +171,14 @@ namespace Fabric
       return DirExists( fullPath );
     }
 
-    bool FileHandleManager::itemExists( std::string const &handle ) const
+    bool FileHandleManager::targetExists( std::string const &handle ) const
     {
       std::string relativePathPostfix;
       Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
-      return itemExistsInternal( data, relativePathPostfix );
+      return targetExistsInternal( data, relativePathPostfix );
     }
 
-    bool FileHandleManager::itemExistsInternal( Data const &data, std::string const &relativePathPostfix ) const
+    bool FileHandleManager::targetExistsInternal( Data const &data, std::string const &relativePathPostfix ) const
     {
       if( relativePathPostfix.empty() )
       {
@@ -192,16 +192,16 @@ namespace Fabric
       return DirExists( fullPath ) || FileExists( fullPath );
     }
 
-    bool FileHandleManager::ensureExists( std::string const &handle ) const
+    void FileHandleManager::ensureTargetExists( std::string const &handle ) const
     {
       std::string relativePathPostfix;
       Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
-      return ensureExistsInternal( data, relativePathPostfix );
+      ensureTargetExistsInternal( data, relativePathPostfix );
     }
 
-    bool FileHandleManager::ensureExistsInternal( Data const &data, std::string const &relativePathPostfix ) const
+    void FileHandleManager::ensureTargetExistsInternal( Data const &data, std::string const &relativePathPostfix ) const
     {
-      if( !itemExistsInternal( data, relativePathPostfix ) )
+      if( !targetExistsInternal( data, relativePathPostfix ) )
       {
         if( data.m_readOnly )
           throw Exception( "Error: cannot create file or folders flagged as read-only" );
@@ -238,7 +238,7 @@ namespace Fabric
       if( isFolderInternal( data, relativePathPostfix ) )
         throw Exception( "Handle is a folder; must be a file" );
 
-      ensureExistsInternal( data, relativePathPostfix );
+      ensureTargetExistsInternal( data, relativePathPostfix );
       std::string fullPath = getPathInternal( data, relativePathPostfix );
 
       std::ofstream file( fullPath.c_str(), std::ios::out | (append ? std::ios::app : std::ios::trunc) | std::ios::binary );
@@ -269,7 +269,7 @@ namespace Fabric
       std::string sourceRelativePathPostfix;
       Data const &sourceData = validateHandleAndGetData( source, sourceRelativePathPostfix );
 
-      if( !itemExistsInternal( sourceData, sourceRelativePathPostfix ) )
+      if( !targetExistsInternal( sourceData, sourceRelativePathPostfix ) )
         throw Exception( "Source file not found" );
 
       if( isFolderInternal( sourceData, sourceRelativePathPostfix ) )
