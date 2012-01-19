@@ -16,22 +16,27 @@ namespace Fabric
         , m_realloc(NULL)
         , m_free(NULL)
         , m_throwException(NULL)
-        , m_fabricFileHandleCopy(NULL)
-        , m_fabricFileHandleDelete(NULL)
-        , m_fabricFileHandleSetFromPath(NULL)
-        , m_fabricFileHandleGetFullPath(NULL)
-        , m_fabricFileHandleHasReadWriteAccess(NULL)
+        , m_fileHandleCreateFromPath(NULL)
+        , m_fileGetPath(NULL)
+        , m_fileHandleIsValid(NULL)
+        , m_fileHandleIsReadOnly(NULL)
+        , m_fileHandleIsFolder(NULL)
+        , m_fileHandleTargetExists(NULL)
+        , m_fileHandleEnsureTargetExists(NULL)
       {}
 
       void *( *m_malloc )( size_t );
       void *( *m_realloc )( void *, size_t );
       void ( *m_free )( void * );
       void (*m_throwException)( size_t length, char const *data );
-      void ( *m_fabricFileHandleCopy )( void **, void const * );
-      void ( *m_fabricFileHandleDelete )( void ** );
-      bool ( *m_fabricFileHandleSetFromPath )( void **, char const *, size_t, bool );
-      char const *( *m_fabricFileHandleGetFullPath )( void const * );
-      bool ( *m_fabricFileHandleHasReadWriteAccess )( void const * );
+
+      void ( *m_fileHandleCreateFromPath )( void *stringData, char const *filePathCString, bool folder, bool readOnly );
+      void ( *m_fileGetPath )( void const *stringData, void *pathStringData );
+      bool ( *m_fileHandleIsValid )( void const *stringData );
+      bool ( *m_fileHandleIsReadOnly )( void const *stringData );
+      bool ( *m_fileHandleIsFolder )( void const *stringData );
+      bool ( *m_fileHandleTargetExists )( void const *stringData );
+      void ( *m_fileHandleEnsureTargetExists )( void const *stringData );
     };
   };
 };

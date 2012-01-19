@@ -23,13 +23,13 @@ namespace Fabric
       virtual std::string createRelativeHandle( std::string const &handlePlusRelativePath, bool folder );
 
       //Note: the following methods supports handle with relative path postfix when applicable
-      bool isValidHandle( std::string const &handle ) const;
+      bool isValid( std::string const &handle ) const;
       bool hasRelativePath( std::string const &handle ) const;
       std::string getPath( std::string const &handle ) const;
       bool isReadOnly( std::string const &handle ) const;
       bool isFolder( std::string const &handle ) const;
-      bool itemExists( std::string const &handle ) const;
-      bool ensureExists( std::string const &handle ) const;
+      bool targetExists( std::string const &handle ) const;
+      void ensureTargetExists( std::string const &handle ) const;
 
       void putFile( std::string const &handle, size_t size, const void* data, bool append ) const;
       void copyFile( std::string const &source, std::string const &target ) const;
@@ -54,8 +54,8 @@ namespace Fabric
       std::string getPathInternal( Data const &data, std::string const &relativePathPostfix ) const;
       bool isReadOnlyInternal( Data const &data, std::string const &relativePathPostfix ) const;
       bool isFolderInternal( Data const &data, std::string const &relativePathPostfix ) const;
-      bool itemExistsInternal( Data const &data, std::string const &relativePathPostfix ) const;
-      bool ensureExistsInternal( Data const &data, std::string const &relativePathPostfix ) const;
+      bool targetExistsInternal( Data const &data, std::string const &relativePathPostfix ) const;
+      void ensureTargetExistsInternal( Data const &data, std::string const &relativePathPostfix ) const;
 
       size_t m_encodedHandleLength;
       HandleToDataMap m_handleToData;

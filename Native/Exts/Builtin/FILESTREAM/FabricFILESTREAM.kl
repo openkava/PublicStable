@@ -2,6 +2,8 @@ struct FabricFileStream {
   Data m_data;
 };
 
+alias String FabricFileHandle;
+
 function FabricFileStream_Free( io FabricFileStream stream );
 function FabricFileStream_Open( io FabricFileStream stream, in FabricFileHandle file, in String mode );
 function FabricFileStream_CloseOnFullyRead( io FabricFileStream stream, in Boolean close );
