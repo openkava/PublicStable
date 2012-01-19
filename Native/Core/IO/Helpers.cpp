@@ -16,6 +16,7 @@
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <sys/types.h>
+# include <copyfile.h>
 #elif defined(FABRIC_WIN32)
 # include <windows.h>
 #endif 
@@ -315,6 +316,17 @@ namespace Fabric
       ::FindClose( hDir );
 #endif
       return result;
+    }
+
+    void CopyFile( std::string const &sourceFullPath, std::string const &targetFullPath )
+    {
+#if defined(FABRIC_POSIX)
+      if( copyfile( sourceFullPath.c_str(), targetFullPath.c_str(), NULL, COPYFILE_ALL ) < 0 )
+        throw Exception("file copy failed");
+#elif defined(FABRIC_WIN32)
+      if( ::CopyFile( sourceFullPath.c_str(), targetFullPath.c_str(), FALSE ) == FALSE )
+        throw Exception("file copy failed");
+#endif
     }
     
     static inline bool EqInsensitive( std::string const &lhs, std::string const &rhs )

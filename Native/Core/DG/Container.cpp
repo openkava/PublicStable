@@ -892,7 +892,12 @@ namespace Fabric
         throw Exception( "member" + memberName + " is not of type FabricResource" );
 
       FabricResourceWrapper resource( m_context->getRTManager(), member->getMutableElementData( 0 ) );
-      m_context->getIOManager()->putFile( handle, resource.getDataSize(), resource.getDataPtr(), false );
+
+      std::string dataExternalLocation = resource.getDataExternalLocation();
+      if( dataExternalLocation.empty() )
+        m_context->getIOManager()->putFile( handle, resource.getDataSize(), resource.getDataPtr(), false );
+      else
+        m_context->getIOManager()->copyFile( dataExternalLocation, handle );
     }
 
     void Container::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const
