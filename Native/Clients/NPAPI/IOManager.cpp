@@ -9,6 +9,8 @@
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/Util/Assert.h>
+#include <npapi/npapi.h>
+#include "HTTPResourceProvider.h"
 
 namespace Fabric
 {
@@ -18,11 +20,24 @@ namespace Fabric
     {
       return new IOManager( npp );
     }
+
+    void scheduleAsynchCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
+    {
+      NPN_PluginThreadAsyncCall( (NPP)scheduleUserData, callbackFunc, callbackFuncUserData );
+    }
   
     IOManager::IOManager( NPP npp )
-      : m_npp( npp )
+      : IO::Manager( scheduleAsynchCallback, npp )
+      , m_npp( npp )
       , m_context( NULL )
+      , m_httpResourceProvider( HTTPResourceProvider::Create( npp ) )
     {
+      getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( httpResourceProvider ), true );
+    }
+
+    RC::Handle< HTTPResourceProvider > IOManager::getHTTPResourceProvider() const
+    {
+      return ;
     }
 
     void IOManager::setContext( RC::Handle<Context> const &context )

@@ -6,6 +6,7 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/Assert.h>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -130,6 +131,34 @@ namespace Fabric
       return GetExtension( filename, "/" );
     }
     
+    std::string ChangeSeparatorsURLToFile( std::string const &url )
+    {
+      if( s_pathSeparator[0] != '/' )
+      {
+        std::string result( url );
+        for( size_t i = 0; i < result.size(); ++i )
+        {
+          if( result[i] == '/' )
+            result[i] = s_pathSeparator[0];
+        }
+      }
+      return result;
+    }
+
+    std::string ChangeSeparatorsFileToURL( std::string const &filePath )
+    {
+      if( s_pathSeparator[0] != '/' )
+      {
+        std::string result( url );
+        for( size_t i = 0; i < result.size(); ++i )
+        {
+          if( result[i] == s_pathSeparator[0] )
+            result[i] = '/';
+        }
+      }
+      return result;
+    }
+
     /*
     void safeCall( int fd, void (*callback)( int fd ) )
     {
@@ -185,6 +214,27 @@ namespace Fabric
       DWORD dwAttrib = ::GetFileAttributesA( fullPath.c_str() );
       result = (dwAttrib != INVALID_FILE_ATTRIBUTES)
       	&& !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+#endif 
+      return result;
+    }
+
+    size_t GetFileSize( std::string const &fullPath )
+    {
+      size_t result;
+#if defined(FABRIC_POSIX)
+      struct stat st;
+      if( stat( fullPath.c_str(), &st ) != 0 || S_ISDIR(st.st_mode) )
+        throw Exception("File doesn't exist");
+      result = st.st_size;
+#elif defined(FABRIC_WIN32)
+      WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+      if( !GetFileAttributesEx(fileName, GetFileExInfoStandard, (void*)&fileInfo)
+            || fileInfo.dwFileAttributes == INVALID_FILE_ATTRIBUTES
+            || (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
+        throw Exception("Error retrieving file info");
+
+      FABRIC_ASSERT(0 == fileInfo.nFileSizeHigh);//Won't fit in a size_t anyway (for 32 bits OS)
+      result = fileInfo.nFileSizeLow;
 #endif 
       return result;
     }

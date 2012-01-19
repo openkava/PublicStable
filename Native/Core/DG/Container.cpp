@@ -515,14 +515,8 @@ namespace Fabric
         jsonExecGetDataSize( arg, resultJAG );
       else if ( cmd == "getDataElement" )
         jsonExecGetDataElement( arg, resultJAG );
-      else if ( cmd == "putResourceToUserFile" )
-        jsonExecPutResourceToFile( arg, true, resultJAG );
-      else if ( cmd == "getResourceFromUserFile" )
-        jsonExecGetResourceFromFile( arg, true, resultJAG );
       else if ( cmd == "putResourceToFile" )
-        jsonExecPutResourceToFile( arg, false, resultJAG );
-      else if ( cmd == "getResourceFromFile" )
-        jsonExecGetResourceFromFile( arg, false, resultJAG );
+        jsonExecPutResourceToFile( arg, resultJAG );
       else if ( cmd == "setData" )
         jsonExecSetData( arg, resultJAG );
       else if ( cmd == "getBulkData" )
@@ -886,71 +880,19 @@ namespace Fabric
       }
     }
 
-    void *Container::jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName )
+    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
-      try
-      {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
-      }
+      std::string memberName = argJSONObject->get( "memberName" )->toString( "memberName must be a String" )->value();
+      std::string handle = argJSONObject->get( "file" )->toString( "file handle must be a String" )->value();
 
       RC::Handle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if( desc->getUserName() != "FabricResource" )
-      {
         throw Exception( "member" + memberName + " is not of type FabricResource" );
-      }
-      return member->getMutableElementData( 0 );
-    }
 
-    struct FabricResourceByteContainerAdapter : public IO::Manager::ByteContainer
-    {
-      FabricResourceByteContainerAdapter( FabricResourceWrapper& resource )
-        : m_resource(resource)
-      {}
-
-      virtual void* Allocate( size_t size )
-      {
-        m_resource.resizeData( size );
-        return (void*)m_resource.getDataPtr();
-      }
-
-      FabricResourceWrapper& m_resource;
-    };
-
-    void Container::jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG )
-    {
-      std::string memberName;
-      FabricResourceWrapper resourceMember( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
-
-      //Load to a temporary resource then swap to preserve existing resource in case an exception is thrown
-      FabricResourceWrapper tempResource( m_context->getRTManager() );
-      FabricResourceByteContainerAdapter tempResourceAdapter(tempResource);
-
-      std::string filename, extension;
-      if( userFile )
-        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension, resultJAG );
-      else
-        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension, resultJAG );
-
-      tempResource.setExtension( extension );
-      tempResource.setURL( filename );
-      setData( memberName, 0, tempResource.get() );
-    }
-
-    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG )
-    {
-      std::string memberName;
-      FabricResourceWrapper resource( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
-      if( userFile )
-        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str(), resultJAG );
-      else
-        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resultJAG );
+      FabricResourceWrapper resource( m_context->getRTManager(), member->getMutableElementData( 0 ) );
+      m_context->getIOManager()->putFile( handle, resource.getDataSize(), resource.getDataPtr(), false );
     }
 
     void Container::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const
