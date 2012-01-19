@@ -32,7 +32,8 @@ namespace Fabric
     
     ValueCache::~ValueCache()
     {
-      m_valueDesc->disposeData( &m_cacheData[0] );
+      if ( m_cacheData.size() > 0 )
+        m_valueDesc->disposeData( &m_cacheData[0] );
     }
     
     RC::ConstHandle<RT::Desc> ValueCache::getValueDesc() const
@@ -47,9 +48,12 @@ namespace Fabric
 
     void ValueCache::flush()
     {
-      Util::Mutex::Lock mutexLock( m_mutex );
-      m_valueDesc->disposeData( &m_cacheData[0] );
-      m_cacheData.resize(0);
+      if ( m_cacheData.size() > 0 )
+      {
+        Util::Mutex::Lock mutexLock( m_mutex );
+        m_valueDesc->disposeData( &m_cacheData[0] );
+        m_cacheData.resize(0);
+      }
     }
     
     RC::Handle<ValueCache::ComputeState> ValueCache::ComputeState::Create( RC::ConstHandle<ValueCache> const &valueCache )
