@@ -1,0 +1,9 @@
+vp = ValueProducer<String>
+Should run generator
+  Running generator!
+vp.produce() = Hello world!
+Should not run generator (use cache)
+vp.produce() = Hello world!
+Should run generator
+  Running generator!
+vp.produce() = Hello world!
