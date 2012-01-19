@@ -9,10 +9,9 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/Helpers.h>
-#include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/Random.h>
+#include "ResourceManager.h"
 
 #include <fstream>
 
@@ -20,6 +19,44 @@ namespace Fabric
 {
   namespace IO
   {
+    Manager::Manager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData )
+      : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
+      , m_fileHandleManager( FileHandleManager::Create() )
+      , m_fileHandleResourceProvider( FileHandleResourceProvider::Create() )
+    {
+      m_resourceManager->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_fileHandleResourceProvider ) );
+    }
+
+    RC::Handle<ResourceManager> Manager::getResourceManager() const
+    {
+      return m_resourceManager;
+    }
+
+    RC::Handle<FileHandleManager> Manager::getFileHandleManager() const
+    {
+      return m_fileHandleManager;
+    }
+
+    void Manager::putFile( std::string& handle, size_t size, const void* data, bool append ) const
+    {
+      if( m_fileHandleManager->isReadOnly( handle ) )
+        throw Exception( "File has no write access" );
+
+      if( m_fileHandleManager->isFolder( handle ) )
+        throw Exception( "Handle is a folder; can only write to files" );
+
+      m_fileHandleManager->ensureExists( handle );
+      std::string fullPath = m_fileHandleManager->getPath( handle );
+
+      std::ofstream file( fullPath.c_str(), std::ios::out | (append ? std::ios::app : std::ios::trunc) | std::ios::binary );
+      if( !file.is_open() )
+        throw Exception( "Unable to create file" );
+
+      file.write( (const char*)data, size );
+      if( file.bad() )
+        throw Exception( "Error while writing to file" );
+    }
+
     void Manager::jsonRoute(
       std::vector<std::string> const &dst,
       size_t dstOffset,
@@ -36,7 +73,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          throw "command " + _(cmd) + ": " + e;
+          throw Exception( "command " + _(cmd) + ": " + e );
         }
       }
       else throw Exception( "unroutable" );
@@ -48,26 +85,29 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      if ( cmd == "getUserTextFile" )
-        jsonExecGetUserTextFile( arg, resultJAG );
-      else if ( cmd == "putUserTextFile" )
-        jsonExecPutUserTextFile( arg, resultJAG );
+      if ( cmd == "getFileInfo" )
+        jsonExecGetFileInfo( arg, resultJAG );
+      else if ( cmd == "queryUserFileAndFolder" )
+        jsonExecQueryUserFileAndFolder( arg, resultJAG );
+      else if ( cmd == "queryUserFile" )
+        jsonExecQueryUserFile( arg, resultJAG );
+      else if ( cmd == "createFileHandleFromRelativePath" )
+        jsonExecCreateFileHandleFromRelativePath( arg, resultJAG );
+      else if ( cmd == "createFolderHandleFromRelativePath" )
+        jsonExecCreateFolderHandleFromRelativePath( arg, resultJAG );
       else if ( cmd == "getTextFile" )
         jsonExecGetTextFile( arg, resultJAG );
       else if ( cmd == "putTextFile" )
         jsonExecPutTextFile( arg, resultJAG );
-      else if ( cmd == "queryUserFileAndFolder" )
-        jsonExecQueryUserFileAndFolder( arg, resultJAG );
       else
         throw Exception( "unknown command" );
     }
 
-    void Manager::jsonQueryUserFileAndDir(
+    void Manager::jsonQueryUserFile(
       RC::ConstHandle<JSON::Value> const &arg,
       bool *existingFile,
       const char *defaultExtension,
-      RC::ConstHandle<Dir>& dir,
-      std::string& filename,
+      std::string& fullPath,
       bool& writeAccess
       ) const
     {
@@ -154,254 +194,158 @@ namespace Fabric
         if( !(extPos == defaultFilename.size() - extension.size() && extPos > 0 && defaultFilename[ extPos-1 ] == L'.') )
           defaultFilename += '.' + extension;
       }
-      std::string fullPath = queryUserFilePath( existing, title, defaultFilename, extension );
-
-      std::string dirString;
-      IO::SplitPath( fullPath, dirString, filename );
-
-      if( !DirExists( dirString ) )
-        throw Exception("Error: user selected directory not found");//Important: don't display the directory as it is private information
-
-      dir = IO::Dir::Create( dirString, false );
+      fullPath = queryUserFilePath( existing, title, defaultFilename, extension );
     }
 
-    std::string GetSafeDisplayPath( RC::ConstHandle<Dir>& dir, std::string const &filename )
+    void Manager::jsonExecGetFileInfo( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
-      //The root parent directory corresponds to the handle; we don't want to show this as it is private information
-      std::string encodedPath = filename;
-      while( dir->getParentDir() )
-        encodedPath = JoinPath( dir->getEntry(), encodedPath );
-      return JoinPath( "[directoryHandle]", encodedPath );
-    }
-
-    void Manager::putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const
-    {
-      std::string fullPath;
-      if( dir )
-        fullPath = JoinPath( dir->getFullPath(), filename );
-      else
-        fullPath = filename;
-
-      std::ofstream file( fullPath.c_str(), std::ios::out | std::ios::trunc | std::ios::binary );
-      if( !file.is_open() )
-        throw Exception( "Unable to create file " + GetSafeDisplayPath(dir, filename) );
-
-      file.write( (const char*)data, size );
-      if( file.bad() )
-        throw Exception( "Error while writing to file " + GetSafeDisplayPath(dir, filename) );
-    }
-
-    void Manager::getFile( RC::ConstHandle<Dir>& dir, std::string const &filename, bool binary, ByteContainer& bytes ) const
-    {
-      std::string fullPath;
-      if( dir )
-        fullPath = JoinPath( dir->getFullPath(), filename );
-      else
-        fullPath = filename;
-
-      std::ios_base::openmode mode = std::ios::in | std::ios::ate;
-      if ( binary )
-        mode |= std::ios::binary;
-      std::ifstream file( fullPath.c_str(), mode );
-      if( !file.is_open() )
-        throw Exception( "Unable to open file " + GetSafeDisplayPath(dir, filename) );
-
-      size_t size = file.tellg();
-      file.seekg (0, std::ios::beg);
-
-      void* data = bytes.Allocate( size );
-      if( !data && size )
-        throw Exception( "Out of memory while reading file " + GetSafeDisplayPath(dir, filename) );
-
-      file.read( (char*)data, size );
-      if( file.bad() )
-        throw Exception( "Error while reading file " + GetSafeDisplayPath(dir, filename) );
-    }
-
-    void Manager::jsonExecPutUserFile(
-      RC::ConstHandle<JSON::Value> const &arg,
-      size_t size, const void* data,
-      const char* defaultExtension,
-      Util::JSONArrayGenerator &resultJAG
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-
-      bool existingFile = false;
-      bool writeAccess;
-      jsonQueryUserFileAndDir( arg, &existingFile, defaultExtension, dir, filename, writeAccess );
-      putFile( dir, filename, size, data );
-    }
-
-    void Manager::jsonExecGetUserFile(
-      RC::ConstHandle<JSON::Value> const &arg,
-      ByteContainer& bytes, bool binary,
-      std::string& filename,
-      std::string& extension,
-      Util::JSONArrayGenerator &resultJAG
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      bool existingFile = true;
-      bool writeAccess;
-      jsonQueryUserFileAndDir( arg, &existingFile, NULL, dir, filename, writeAccess );
-
-      getFile( dir, filename, binary, bytes );
-      extension = GetExtension( filename );
-    }
-
-    struct StringByteContainerAdapter : public IO::Manager::ByteContainer
-    {
-      virtual void* Allocate( size_t size )
-      {
-        m_string.resize( size, 0 );
-        return (void*)m_string.data();
-      }
-
-      std::string m_string;
-    };
-
-    void Manager::jsonExecGetUserTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
-    {
-      std::string filename, extension;
-      StringByteContainerAdapter stringData;
-      jsonExecGetUserFile( arg, stringData, false, filename, extension, resultJAG );
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( stringData.m_string );
-    }
-
-    void Manager::jsonExecPutUserTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
-    {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      RC::ConstHandle<JSON::String> content  = argJSONObject->get( "content" )->toString( "content must be a string" );
-      jsonExecPutUserFile( arg, content->length(), content->data(), "txt", resultJAG );//"txt": overriden by arg's extension if provided
-    }
-
-    void Manager::jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      bool writeAccess;
-
-      jsonQueryUserFileAndDir( arg, NULL, NULL, dir, filename, writeAccess );
-
-      static const size_t folderIDByteCount = 96;
-      uint8_t folderIDBytes[folderIDByteCount];
-      Util::generateSecureRandomBytes( folderIDByteCount, folderIDBytes );
-      std::string pathHandle = Util::encodeBase64( folderIDBytes, folderIDByteCount );
-
-      DirInfo dirInfo;
-      dirInfo.m_dir = dir;
-      dirInfo.m_writeAccess = writeAccess;
-
-      if( m_handleToDirMap.insert( std::make_pair( pathHandle, dirInfo ) ).second == false )
-        throw Exception( "Unexpected failure" );
+      std::string handle = arg->toString("File or folder handle must be a String")->value();
 
       Util::JSONGenerator resultJG = resultJAG.makeElement();
-      Util::JSONArrayGenerator pathHandleAndFilenameJAG = resultJG.makeArray();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+
+      bool isFile = false;
+      bool exists = m_fileHandleManager->itemExists( handle );
+
       {
-        Util::JSONGenerator pathHandleJG = pathHandleAndFilenameJAG.makeElement();
-        pathHandleJG.makeString( pathHandle );
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "type", 4 );
+        if( m_fileHandleManager->hasRelativePath( handle ) && !exists )
+          memberJG.makeString( "unknown", 7 );
+        else if( m_fileHandleManager->isFolder( handle ) )
+          memberJG.makeString( "folder", 6 );
+        else
+        {
+          memberJG.makeString( "file", 4 );
+          isFile = true;
+        }
       }
+
       {
-        Util::JSONGenerator filenameJG = pathHandleAndFilenameJAG.makeElement();
-        filenameJG.makeString( filename );
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "writeAccess", 11 );
+        memberJG.makeBoolean( !m_fileHandleManager->isReadOnly( handle ) );
+      }
+
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "exists", 6 );
+        memberJG.makeBoolean( exists );
+      }
+
+      if( isFile )
+      {
+        std::string fullPath = m_fileHandleManager->getPath( handle );
+
+        std::string dir, filename;
+        IO::SplitPath( fullPath, dir, filename );
+
+        {
+          Util::JSONGenerator memberJG = resultJOG.makeMember( "fileName", 8 );
+          memberJG.makeString( filename );
+        }
+
+        {
+          Util::JSONGenerator memberJG = resultJOG.makeMember( "fileSize", 8 );
+          memberJG.makeInteger( (int32_t)GetFileSize( fullPath ) );
+        }
       }
     }
 
-    void Manager::jsonGetFileAndDirFromHandlePath(
-      RC::ConstHandle<JSON::Value> const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file
-      ) const
+    void Manager::jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    {
+      std::string fullPath, dir, filename;
+      bool writeAccess;
+
+      jsonQueryUserFile( arg, NULL, NULL, dir, fullPath, writeAccess );
+
+      std::string dir, filename;
+      IO::SplitPath( fullPath, dir, filename );
+
+      std::string dirHandle = m_fileHandleManager->createHandle( dir, true, !writeAccess );
+      std::string fileHandle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
+
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "file", 4 );
+        memberJG.makeString( fileHandle );
+      }
+        
+      {
+        Util::JSONGenerator memberJG = jog.makeMember( "folder", 6 );
+        memberJG.makeInteger( dirHandle );
+      }
+    }
+
+    void Manager::jsonExecQueryUserFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    {
+      std::string fullPath;
+      bool writeAccess;
+
+      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess );
+
+      std::string handle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
+
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( handle );
+    }
+
+    void Manager::jsonExecCreateFileHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    {
+      std::string handle = arg->toString( "Handle must be a String" )->value();
+      std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, false );
+
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( handle );
+    }
+
+    void Manager::jsonExecCreateFolderHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    {
+      std::string handle = arg->toString( "Handle must be a String" )->value();
+      std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, true );
+
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( handle );
+    }
+
+    void Manager::jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      RC::ConstHandle<JSON::Array> pathJSONArray = argJSONObject->get( "path" )->toArray( "path must be an Array" );
+      RC::ConstHandle<JSON::String> content = argJSONObject->get( "content" )->toString( "content must be a String" );
+      std::string handle = argJSONObject->get( "file" )->toString( "file handle must be a String" )->value();
 
-      if( pathJSONArray->size() < 2 )
-        throw Exception( "path must containt at least a directoryHandle and a filename (size >= 2)" );
-
-      const char* pathStringError = "path array must contain strings";
-      const std::string& dirHandle = pathJSONArray->get( 0 )->toString( pathStringError )->value();
-      HandleToDirMap::const_iterator handleIt = m_handleToDirMap.find( dirHandle );
-
-      if( handleIt == m_handleToDirMap.end() )
-        throw Exception( "Unknown directory handle: '" + dirHandle + "'. Valid directory handles can only be obtained through 'IO.queryUserFileAndFolder'." );
-
-      if(!existingFile && !handleIt->second.m_writeAccess)
-        throw Exception( "Directory handle '" + dirHandle + "' was not created with write permission." );
-
-      dir = handleIt->second.m_dir;
-      
-      size_t i;
-      for( i = 1; i < pathJSONArray->size()-1; ++i )
+      bool append = false;
+      val = argJSONObject->maybeGet( "append" );
+      if( val )
       {
-        const std::string& pathElement = pathJSONArray->get( i )->toString( pathStringError )->value();
-        try
-        {
-          dir = Dir::Create( dir, pathElement, !existingFile );//Note: this calls validateEntry(pathElement)
-          std::string fullPath = dir->getFullPath();
-          if( IsLink( fullPath ) )
-            throw Exception("File access through path containing symbolic links is prohibed");
-          if( existingFile && !DirExists( fullPath ) )
-            throw Exception("Directory not found");
-        }
-        catch ( Exception e )
-        {
-          throw Exception("Error accessing path element " + pathElement + ": " + e );
-        }
+        append = val->toBoolean( "'append' must be a Boolean" )->value();
       }
-      file = pathJSONArray->get( pathJSONArray->size()-1 )->toString( pathStringError )->value();
-    }
 
-    void Manager::jsonExecPutFile(
-      RC::ConstHandle<JSON::Value> const &arg,
-      size_t size,
-      const void* data,
-      Util::JSONArrayGenerator &resultJAG
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      jsonGetFileAndDirFromHandlePath( arg, false, dir, filename );
-      putFile( dir, filename, size, data );
-    }
-
-    void Manager::jsonExecGetFile(
-      RC::ConstHandle<JSON::Value> const &arg,
-      ByteContainer& bytes, bool binary,
-      std::string& filename,
-      std::string& extension,
-      Util::JSONArrayGenerator &resultJAG
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      jsonGetFileAndDirFromHandlePath( arg, true, dir, filename );
-
-      getFile( dir, filename, binary, bytes );
-      extension = GetExtension( filename );
+      putFile( handle, content->length(), content->data(), append );
     }
 
     void Manager::jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      jsonGetFileAndDirFromHandlePath( arg, true, dir, filename );
+      std::string handle = arg->toString( "File handle must be a String" )->value();
+      std::string fullPath = m_fileHandleManager->getPath( handle );
 
-      StringByteContainerAdapter stringData;
-      getFile( dir, filename, false, stringData );
+      if( !FileExists( fullPath ) )
+        throw Exception( "Error: file not found" );
+
+      //Note: we don't request file data from ResourceManager beause we need a synchronous response
+      size_t fileSize = GetFileSize( fullPath );
+      std::string content;
+      content.resize( fileSize );
+
+      std::ifstream file( fullPath.c_str(), std::ios::in );
+      if( !file.is_open() )
+        throw Exception( "Unable to open file" );
+
+      file.read( content.data(), fileSize );
+      if( file.bad() )
+        throw Exception( "Error while reading file" );
+
       Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( stringData.m_string );
-    }
-
-    void Manager::jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      jsonGetFileAndDirFromHandlePath( arg, false, dir, filename );
-
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      RC::ConstHandle<JSON::String> content  = argJSONObject->get( "content" )->toString( "content must be a string" );
-      putFile( dir, filename, content->length(), content->data() );
+      resultJG.makeString( content );
     }
   };
 };

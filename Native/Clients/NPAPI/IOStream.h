@@ -11,11 +11,6 @@
 
 namespace Fabric
 {
-  namespace MT
-  {
-    class LogCollector;
-  };
-  
   namespace NPAPI
   {
     class IOStream : public IO::Stream
