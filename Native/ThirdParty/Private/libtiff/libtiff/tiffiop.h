@@ -1,4 +1,4 @@
-/* $Header: /cvsroot/osrs/libtiff/libtiff/tiffiop.h,v 1.9 2003/12/24 22:07:23 dron Exp $ */
+/* $Id: tiffiop.h,v 1.46 2006/03/16 12:22:27 dron Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -29,20 +29,42 @@
 /*
  * ``Library-private'' definitions.
  */
-/*
- * UNIX systems should run the configure script to generate
- * a port.h file that reflects the system capabilities.
- * Doing this obviates all the dreck done in tiffcomp.h.
- */
-#if defined(unix) || defined(__unix)
-#include "port.h"
-#include "tiffconf.h"
-#else
-#include "tiffconf.h"
-#include "tiffcomp.h"
+
+#include "tif_config.h"
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
 #endif
+
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+
+#ifdef HAVE_ASSERT_H
+# include <assert.h>
+#else
+# define assert(x) 
+#endif
+
+#ifdef HAVE_SEARCH_H
+# include <search.h>
+#else
+extern void *lfind(const void *, const void *, size_t *, size_t,
+		   int (*)(const void *, const void *));
+#endif
+
 #include "tiffio.h"
 #include "tif_dir.h"
+
+#ifndef STRIP_SIZE_DEFAULT
+# define STRIP_SIZE_DEFAULT 8192
+#endif
+
+#define    streq(a,b)      (strcmp(a,b) == 0)
 
 #ifndef TRUE
 #define	TRUE	1
@@ -90,6 +112,8 @@ struct tiff {
 #define	TIFF_INSUBIFD		0x2000	/* currently writing a subifd */
 #define	TIFF_UPSAMPLED		0x4000	/* library is doing data up-sampling */ 
 #define	TIFF_STRIPCHOP		0x8000	/* enable strip chopping support */
+#define	TIFF_HEADERONLY		0x10000	/* read header only, do not process */
+					/* the first directory */
 	toff_t		tif_diroff;	/* file offset of current directory */
 	toff_t		tif_nextdiroff;	/* file offset of following directory */
 	toff_t*		tif_dirlist;	/* list of offsets to already seen */
@@ -104,10 +128,9 @@ struct tiff {
 	tstrip_t	tif_curstrip;	/* current strip for read/write */
 	toff_t		tif_curoff;	/* current offset for read/write */
 	toff_t		tif_dataoff;	/* current offset for writing dir */
-#if SUBIFD_SUPPORT
+/* SubIFD support */
 	uint16		tif_nsubifd;	/* remaining subifds to write */
 	toff_t		tif_subifdoff;	/* offset for patching SubIFD link */
-#endif
 /* tiling support */
 	uint32 		tif_col;	/* current column (offset by row too) */
 	ttile_t		tif_curtile;	/* current tile for read/write */
@@ -155,7 +178,8 @@ struct tiff {
 	TIFFPostMethod	tif_postdecode;	/* post decoding routine */
 /* tag support */
 	TIFFFieldInfo**	tif_fieldinfo;	/* sorted table of registered tags */
-	int		tif_nfields;	/* # entries in registered tag table */
+	size_t		tif_nfields;	/* # entries in registered tag table */
+	const TIFFFieldInfo *tif_foundfield;/* cached pointer to already found tag */
         TIFFTagMethods  tif_tagmethods; /* tag get/set/print routines */
         TIFFClientInfoLink *tif_clientinfo; /* extra client information. */
 };
@@ -198,11 +222,14 @@ struct tiff {
 #endif
 
 /* NB: the uint32 casts are to silence certain ANSI-C compilers */
-#define	TIFFhowmany(x, y) ((((uint32)(x))+(((uint32)(y))-1))/((uint32)(y)))
-#define	TIFFroundup(x, y) (TIFFhowmany(x,y)*((uint32)(y)))
+#define TIFFhowmany(x, y) ((((uint32)(x))+(((uint32)(y))-1))/((uint32)(y)))
+#define TIFFhowmany8(x) (((x)&0x07)?((uint32)(x)>>3)+1:(uint32)(x)>>3)
+#define	TIFFroundup(x, y) (TIFFhowmany(x,y)*(y))
 
 #define TIFFmax(A,B) ((A)>(B)?(A):(B))
 #define TIFFmin(A,B) ((A)<(B)?(A):(B))
+
+#define TIFFArrayCount(a) (sizeof (a) / sizeof ((a)[0]))
 
 #if defined(__cplusplus)
 extern "C" {
@@ -218,28 +245,34 @@ extern	void _TIFFNoPostDecode(TIFF*, tidata_t, tsize_t);
 extern  int  _TIFFNoPreCode (TIFF*, tsample_t); 
 extern	int _TIFFNoSeek(TIFF*, uint32);
 extern	void _TIFFSwab16BitData(TIFF*, tidata_t, tsize_t);
+extern	void _TIFFSwab24BitData(TIFF*, tidata_t, tsize_t);
 extern	void _TIFFSwab32BitData(TIFF*, tidata_t, tsize_t);
 extern	void _TIFFSwab64BitData(TIFF*, tidata_t, tsize_t);
 extern	int TIFFFlushData1(TIFF*);
-extern	void TIFFFreeDirectory(TIFF*);
 extern	int TIFFDefaultDirectory(TIFF*);
+extern	void _TIFFSetDefaultCompressionState(TIFF*);
 extern	int TIFFSetCompressionScheme(TIFF*, int);
 extern	int TIFFSetDefaultCompressionState(TIFF*);
 extern	uint32 _TIFFDefaultStripSize(TIFF*, uint32);
 extern	void _TIFFDefaultTileSize(TIFF*, uint32*, uint32*);
+extern	int _TIFFDataSize(TIFFDataType);
 
-extern	void _TIFFsetByteArray(void**, void*, long);
+extern	void _TIFFsetByteArray(void**, void*, uint32);
 extern	void _TIFFsetString(char**, char*);
-extern	void _TIFFsetShortArray(uint16**, uint16*, long);
-extern	void _TIFFsetLongArray(uint32**, uint32*, long);
-extern	void _TIFFsetFloatArray(float**, float*, long);
-extern	void _TIFFsetDoubleArray(double**, double*, long);
+extern	void _TIFFsetShortArray(uint16**, uint16*, uint32);
+extern	void _TIFFsetLongArray(uint32**, uint32*, uint32);
+extern	void _TIFFsetFloatArray(float**, float*, uint32);
+extern	void _TIFFsetDoubleArray(double**, double*, uint32);
 
 extern	void _TIFFprintAscii(FILE*, const char*);
 extern	void _TIFFprintAsciiTag(FILE*, const char*, const char*);
 
-GLOBALDATA(TIFFErrorHandler,_TIFFwarningHandler);
-GLOBALDATA(TIFFErrorHandler,_TIFFerrorHandler);
+extern	TIFFErrorHandler _TIFFwarningHandler;
+extern	TIFFErrorHandler _TIFFerrorHandler;
+extern	TIFFErrorHandlerExt _TIFFwarningHandlerExt;
+extern	TIFFErrorHandlerExt _TIFFerrorHandlerExt;
+
+extern	tdata_t _TIFFCheckMalloc(TIFF*, size_t, size_t, const char*);
 
 extern	int TIFFInitDumpMode(TIFF*, int);
 #ifdef PACKBITS_SUPPORT
@@ -286,3 +319,5 @@ extern	TIFFCodec _TIFFBuiltinCODECS[];
 }
 #endif
 #endif /* _TIFFIOP_ */
+
+/* vim: set ts=8 sts=8 sw=8 noet: */
