@@ -1,19 +1,47 @@
 operator gen(io String output) {
   report "  Running generator!";
-  output = "Hello world!";
+  output = "Hello";
+}
+
+operator multByTwo(
+  io Integer value
+  )
+{
+  report "  Running transform!";
+  value *= 2;
 }
 
 operator entry() {
-  ValueProducer<String> vp = createValueCache(createValueGenerator(gen));
-  report "vp = " + vp;
+  // test caching ValueGenerator
+  ValueProducer<String> vp1 = createValueCache(createValueGenerator(gen));
+  report "vp1 = " + vp1;
 
   report "Should run generator";
-  report "vp.produce() = " + vp.produce();
+  report "vp1.produce() = " + vp1.produce();
 
   report "Should not run generator (use cache)";
-  report "vp.produce() = " + vp.produce();
+  report "vp1.produce() = " + vp1.produce();
 
-  vp.flush();
+  vp1.flush();
   report "Should run generator";
-  report "vp.produce() = " + vp.produce();
+  report "vp1.produce() = " + vp1.produce();
+
+  // test caching ValueTransform
+  ValueProducer<Integer> vp2 = createValueCache(
+    createValueTransform(
+      createConstValue( 42 ),
+      multByTwo
+      )
+    );
+  report "vp2 = " + vp2;
+
+  report "Should run transform";
+  report "vp2.produce() = " + vp2.produce();
+
+  report "Should not run transform (use cache)";
+  report "vp2.produce() = " + vp2.produce();
+
+  vp2.flush();
+  report "Should run transform";
+  report "vp2.produce() = " + vp2.produce();
 }

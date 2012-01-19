@@ -135,7 +135,7 @@ namespace Fabric
         std::string name = methodOverloadName( "flush", this );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_valueAdapter, USAGE_RVALUE ), params );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
