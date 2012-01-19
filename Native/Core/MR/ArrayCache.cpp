@@ -31,6 +31,10 @@ namespace Fabric
         throw Exception("input is invalid");
       m_inputElementDesc = inputElementDesc;
     }
+
+    ArrayCache::~ArrayCache()
+    {
+    }
     
     RC::ConstHandle<RT::Desc> ArrayCache::getElementDesc() const
     {
