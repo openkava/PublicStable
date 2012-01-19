@@ -76,6 +76,11 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void ArrayMap::flush()
+    {
+      (const_cast<ArrayProducer *>(m_inputArrayProducer.ptr()))->flush();
+    }
     
     RC::Handle<ArrayMap::ComputeState> ArrayMap::ComputeState::Create( RC::ConstHandle<ArrayMap> const &arrayMap )
     {

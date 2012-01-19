@@ -69,10 +69,6 @@ namespace Fabric
     {
     }
     
-    ValueCache::ComputeState::~ComputeState()
-    {
-    }
-    
     void ValueCache::ComputeState::produce( void *data ) const
     {
       {

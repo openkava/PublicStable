@@ -48,7 +48,6 @@ namespace Fabric
       protected:
       
         ComputeState( RC::ConstHandle<ValueCache> const &valueMap );
-        ~ComputeState();
         
       private:
       
