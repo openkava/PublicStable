@@ -49,7 +49,7 @@ namespace Fabric
     
     RC::ConstHandle<CG::Adapter> CreateValueCache::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getValueProducerOf( m_input->getType( basicBlockBuilder ) );
+      return m_input->getType( basicBlockBuilder );
     }
     
     CG::ExprValue CreateValueCache::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
