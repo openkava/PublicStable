@@ -44,6 +44,7 @@ namespace Fabric
 
       RC::ConstHandle<Adapter> getValueAdapter() const;
       void llvmProduce( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *dstLValue ) const;
+      void llvmFlush( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue ) const;
 
     protected:
       
@@ -65,6 +66,7 @@ namespace Fabric
       static void Release( void const *rValue );
       static void DefaultAssign( void const *srcRValue, void *dstLValue );
       static void Produce( void const *valueProducerRValue, void *dstLValue );
+      static void Flush( void const *valueProducerRValue );
       
       RC::ConstHandle<RT::ValueProducerDesc> m_valueProducerDesc;
       RC::ConstHandle<Adapter> m_valueAdapter;
