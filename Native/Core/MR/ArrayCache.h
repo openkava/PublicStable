@@ -2,11 +2,12 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_MR_ARRAY_TRANSFORM_H
-#define _FABRIC_MR_ARRAY_TRANSFORM_H
+#ifndef _FABRIC_MR_ARRAY_CACHE_H
+#define _FABRIC_MR_ARRAY_CACHE_H
 
 #include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/MR/ValueProducer.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 #include <stdint.h>
 #include <vector>
@@ -17,14 +18,12 @@ namespace Fabric
   {
     class ArrayOutputOperator;
     
-    class ArrayTransform : public ArrayProducer
+    class ArrayCache : public ArrayProducer
     {
     public:
     
-      static RC::Handle<ArrayTransform> Create(
-        RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<ArrayOutputOperator> const &operator_,
-        RC::ConstHandle<ValueProducer> const &sharedValueProducer
+      static RC::Handle<ArrayCache> Create(
+        RC::ConstHandle<ArrayProducer> const &inputArrayProducer
         );
       
       // Virtual functions: ArrayProducer
@@ -42,35 +41,37 @@ namespace Fabric
       {
       public:
       
-        static RC::Handle<ComputeState> Create( RC::ConstHandle<ArrayTransform> const &arrayTransform );
+        static RC::Handle<ComputeState> Create( RC::ConstHandle<ArrayCache> const &arrayCache );
       
         virtual void produce( size_t index, void *data ) const;
       
       protected:
       
-        ComputeState( RC::ConstHandle<ArrayTransform> const &arrayTransform );
-        ~ComputeState();
+        ComputeState( RC::ConstHandle<ArrayCache> const &arrayCache );
         
       private:
       
-        RC::ConstHandle<ArrayTransform> m_arrayTransform;
+        RC::ConstHandle<ArrayCache> m_arrayCache;
         RC::ConstHandle<ArrayProducer::ComputeState> m_inputArrayProducerComputeState;
-        std::vector<uint8_t> m_sharedData;
+        Util::Mutex m_mutex;
       };
     
-      ArrayTransform(
-        RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<ArrayOutputOperator> const &operator_,
-        RC::ConstHandle<ValueProducer> const &sharedValueProducer
+      ArrayCache(
+        RC::ConstHandle<ArrayProducer> const &inputArrayProducer
         );
+      ~ArrayCache();
     
     private:
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
-      RC::ConstHandle<ArrayOutputOperator> m_operator;
-      RC::ConstHandle<ValueProducer> m_sharedValueProducer;
+
+      RC::ConstHandle<RT::Desc> m_inputElementDesc;
+      mutable std::vector<bool> m_cachedMap;
+      mutable size_t m_cacheCount;
+      mutable std::vector<uint8_t> m_cacheData;
+      Util::Mutex m_mutex;
     };
   };
 };
 
-#endif //_FABRIC_MR_ARRAY_TRANSFORM_H
+#endif //_FABRIC_MR_ARRAY_CACHE_H

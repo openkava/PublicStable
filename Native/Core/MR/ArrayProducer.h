@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/MR/Producer.h>
 
 namespace Fabric
 {
@@ -23,7 +24,7 @@ namespace Fabric
   
   namespace MR
   {
-    class ArrayProducer : public RC::Object
+    class ArrayProducer : public Producer
     {
       // Virtual functions: Object
       
