@@ -9,6 +9,7 @@
 #include <Fabric/Core/MR/ConstArrayWrapper.h>
 #include <Fabric/Core/MR/ConstValueWrapper.h>
 #include <Fabric/Core/MR/ReduceWrapper.h>
+#include <Fabric/Core/MR/ValueCacheWrapper.h>
 #include <Fabric/Core/MR/ValueGeneratorWrapper.h>
 #include <Fabric/Core/MR/ValueMapWrapper.h>
 #include <Fabric/Core/MR/ValueTransformWrapper.h>
@@ -68,6 +69,8 @@ namespace Fabric
         jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createValueTransform" )
         jsonExecCreateValueTransform( arg, resultJAG );
+      else if ( cmd == "createValueCache" )
+        jsonExecCreateValueCache( arg, resultJAG );
       else if ( cmd == "createConstArray" )
         jsonExecCreateConstArray( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
@@ -618,6 +621,40 @@ namespace Fabric
         m_rtManager,
         valueTypeRTDesc,
         dataJSONValue
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueCache(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ValueProducerWrapper> inputWrapper;
+      try
+      {
+        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !inputWrapper )
+          throw "must be a value producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputID: " + e;
+      }
+      
+      ValueCacheWrapper::Create(
+        inputWrapper
         )->reg( m_gcContainer, id_ );
     }
   }

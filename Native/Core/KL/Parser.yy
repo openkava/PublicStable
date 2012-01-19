@@ -89,6 +89,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/CreateConstArray.h>
 #include <Fabric/Core/AST/CreateConstValue.h>
 #include <Fabric/Core/AST/CreateReduce.h>
+#include <Fabric/Core/AST/CreateValueCache.h>
 #include <Fabric/Core/AST/CreateValueGenerator.h>
 #include <Fabric/Core/AST/CreateValueTransform.h>
 #include <Fabric/Core/AST/CreateValueMap.h>
@@ -242,6 +243,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %token TOKEN_CREATE_ARRAY_TRANSFORM "createArrayTransform"
 %token TOKEN_CREATE_VALUE_GENERATOR "createValueGenerator"
 %token TOKEN_CREATE_VALUE_TRANSFORM "createValueTransform"
+%token TOKEN_CREATE_VALUE_CACHE "createValueCache"
 
 %token TOKEN_LBRACE "{"
 %token TOKEN_RBRACE "}"
@@ -1573,6 +1575,11 @@ primary_expression
     $3->release();
     delete $5;
     $7->release();
+  }
+  | TOKEN_CREATE_VALUE_CACHE TOKEN_LPAREN assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueCache::Create( RTLOC, $3 ).take();
+    $3->release();
   }
   | TOKEN_CREATE_CONST_ARRAY TOKEN_LPAREN assignment_expression TOKEN_RPAREN
   {
