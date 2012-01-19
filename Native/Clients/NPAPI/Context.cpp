@@ -77,6 +77,7 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
+      ActiveContextBracket activeContextBracket( this );
       if ( dst.size() - dstOffset >= 1 && dst[dstOffset] == "VP" )
       {
         try

@@ -29,7 +29,7 @@ namespace Fabric
 
     void FileHandleResourceProvider::get( char const *url, bool getAsFile, void* userData )
     {
-      if( !m_fileHandleManager->isFile( url ) || !m_fileHandleManager->itemExists( url ) )
+      if( !m_fileHandleManager->isFile( url ) || !m_fileHandleManager->targetExists( url ) )
       {
           throw Exception( "Error: not a valid FileHandle or not an existing file" );
       }

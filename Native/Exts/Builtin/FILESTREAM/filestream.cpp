@@ -23,15 +23,19 @@ FABRIC_EXT_EXPORT void FabricFileStream_Free(
 
 FABRIC_EXT_EXPORT void FabricFileStream_Open(
   FabricFileStream & stream,
-  KL::FabricFileHandle & file,
+  KL::String & fileHandleString,
   KL::String & mode
 )
 {
   std::string modeStr = mode.data();
   FabricFileStream_Free(stream);
+  FileHandleWrapper file( fileHandleString );
+  if( file.isFolder() )
+    throwException( "Invalid Fabric file handle" );
+
   if(modeStr == "r" || modeStr == "w" || modeStr == "a")
   {
-    std::string str(file.getFullPath());
+    std::string str( file.getPath().data() );
     if(str.empty() || str.length()==0)
       return;
     
@@ -45,7 +49,7 @@ FABRIC_EXT_EXPORT void FabricFileStream_Open(
     }
     else
     {
-      if(!file.hasReadWriteAccess())
+      if(file.isReadOnly())
         return;
       if(!boost::filesystem::exists(path.parent_path()))
         return;
