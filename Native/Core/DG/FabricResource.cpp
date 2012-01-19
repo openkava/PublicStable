@@ -21,6 +21,7 @@ namespace Fabric
       FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX,
       FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX,
       FABRIC_RESOURCE_URL_MEMBER_INDEX,
+      FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX,
       NB_FABRIC_RESOURCE_MEMBERS
     };
 
@@ -38,6 +39,8 @@ namespace Fabric
       memberInfos[FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX].desc = stringDesc;
       memberInfos[FABRIC_RESOURCE_URL_MEMBER_INDEX].name = "url";
       memberInfos[FABRIC_RESOURCE_URL_MEMBER_INDEX].desc = stringDesc;
+      memberInfos[FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX].name = "dataExternalLocation";
+      memberInfos[FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX].desc = stringDesc;
 
       rtManager->registerStruct( "FabricResource", memberInfos );
     }
@@ -135,6 +138,16 @@ namespace Fabric
     void FabricResourceWrapper::setMIMEType( std::string const &value )
     {
       setStringMember( FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX, value );
+    }
+
+    std::string FabricResourceWrapper::getDataExternalLocation() const
+    {
+      return getStringMember( FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX );
+    }
+
+    void FabricResourceWrapper::setDataExternalLocation( std::string const &value )
+    {
+      setStringMember( FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX, value );
     }
 
     void FabricResourceWrapper::resizeData( size_t size )

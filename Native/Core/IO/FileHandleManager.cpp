@@ -79,7 +79,7 @@ namespace Fabric
     std::string FileHandleManager::createRelativeHandle( std::string const &handlePlusRelativePath, bool folder )
     {
       std::string relativePathPostfix;
-      FileHandleManager::Data const &data = validateHandleAndGetData( handlePlusRelativePath, relativePathPostfix );
+      Data const &data = validateHandleAndGetData( handlePlusRelativePath, relativePathPostfix );
       if( relativePathPostfix.empty() )
       {
         if( folder != data.m_isFolder )
@@ -134,21 +134,36 @@ namespace Fabric
     std::string FileHandleManager::getPath( std::string const &handle ) const
     {
       std::string relativePathPostfix;
-      FileHandleManager::Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      return getPathInternal( data, relativePathPostfix );
+    }
+
+    bool FileHandleManager::getPathInternal( Data const &data, std::string const &relativePathPostfix ) const
+    {
       return relativePathPostfix.empty() ? data.m_path : data.m_path + relativePathPostfix;
     }
 
     bool FileHandleManager::isReadOnly( std::string const &handle ) const
     {
       std::string relativePathPostfix;
-      FileHandleManager::Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      return isReadOnlyInternal( data, relativePathPostfix );
+    }
+
+    bool FileHandleManager::isReadOnlyInternal( Data const &data, std::string const &relativePathPostfix ) const
+    {
       return data.m_readOnly;
     }
 
     bool FileHandleManager::isFolder( std::string const &handle ) const
     {
       std::string relativePathPostfix;
-      FileHandleManager::Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      return isFolderInternal( data, relativePathPostfix );
+    }
+
+    bool FileHandleManager::isFolderInternal( Data const &data, std::string const &relativePathPostfix ) const
+    {
       if( relativePathPostfix.empty() )
         return data.m_isFolder;
       FABRIC_ASSERT( data.m_isFolder );//checked by validateHandleAndGetData
@@ -159,7 +174,12 @@ namespace Fabric
     bool FileHandleManager::itemExists( std::string const &handle ) const
     {
       std::string relativePathPostfix;
-      FileHandleManager::Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      return itemExistsInternal( data, relativePathPostfix );
+    }
+
+    bool FileHandleManager::itemExistsInternal( Data const &data, std::string const &relativePathPostfix ) const
+    {
       if( relativePathPostfix.empty() )
       {
         if( data.m_isFolder )
@@ -174,13 +194,18 @@ namespace Fabric
 
     bool FileHandleManager::ensureExists( std::string const &handle ) const
     {
-      if( !itemExists(handle) )
+      std::string relativePathPostfix;
+      Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+      return ensureExistsInternal( data, relativePathPostfix );
+    }
+
+    bool FileHandleManager::ensureExistsInternal( Data const &data, std::string const &relativePathPostfix ) const
+    {
+      if( !itemExistsInternal( data, relativePathPostfix ) )
       {
         if( data.m_readOnly )
           throw Exception( "Error: cannot create file or folders flagged as read-only" );
 
-        std::string relativePathPostfix;
-        FileHandleManager::Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
         if( !relativePathPostfix.empty() )
           throw Exception( "Error: ambiguous: handle's relative path could be a file or a folder; create a relative handle instead" );
 
@@ -200,6 +225,58 @@ namespace Fabric
           }
         }
       }
+    }
+
+    void FileHandleManager::writeFile( std::string const &handle, size_t size, const void* data, bool append ) const
+    {
+      std::string relativePathPostfix;
+      Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
+
+      if( isReadOnlyInternal( data, relativePathPostfix ) )
+        throw Exception( "File has no write access" );
+
+      if( isFolderInternal( data, relativePathPostfix ) )
+        throw Exception( "Handle is a folder; must be a file" );
+
+      ensureExistsInternal( data, relativePathPostfix );
+      std::string fullPath = getPathInternal( data, relativePathPostfix );
+
+      std::ofstream file( fullPath.c_str(), std::ios::out | (append ? std::ios::app : std::ios::trunc) | std::ios::binary );
+      if( !file.is_open() )
+        throw Exception( "Unable to create file" );
+
+      file.write( (const char*)data, size );
+      if( file.bad() )
+        throw Exception( "Error while writing to file" );
+    }
+
+    void FileHandleManager::copyFile( std::string const &source, std::string const &target ) const
+    {
+      if( target == source)
+        return;
+
+      std::string targetRelativePathPostfix;
+      Data const &targetData = validateHandleAndGetData( target, targetRelativePathPostfix );
+
+      if( isReadOnlyInternal( targetData, targetRelativePathPostfix ) )
+        throw Exception( "Target file has no write access" );
+
+      if( isFolderInternal( targetData, targetRelativePathPostfix ) )
+        throw Exception( "Target handle is a folder; must be a file" );
+
+      std::string targetFullPath = getPathInternal( targetData, targetRelativePathPostfix );
+
+      std::string sourceRelativePathPostfix;
+      Data const &sourceData = validateHandleAndGetData( source, sourceRelativePathPostfix );
+
+      if( !itemExistsInternal( sourceData, sourceRelativePathPostfix ) )
+        throw Exception( "Source file not found" );
+
+      if( isFolderInternal( sourceData, sourceRelativePathPostfix ) )
+        throw Exception( "Source handle is a folder; must be a file" );
+
+      std::string sourceFullPath = getPathInternal( sourceData, sourceRelativePathPostfix );
+      CopyFile( sourceFullPath, targetFullPath );
     }
   };
 };
