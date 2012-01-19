@@ -42,15 +42,20 @@ namespace Fabric
     std::string GetExtension( std::string const &filename );
     std::string GetURLExtension( std::string const &url );
 
+    std::string ChangeSeparatorsURLToFile( std::string const &url );
+    std::string ChangeSeparatorsFileToURL( std::string const &filePath );
+
     //void safeCall( void (*callback)( int fd ) );
     
     bool DirExists( std::string const &dirPath );
     bool FileExists( std::string const &fullPath );
+    size_t GetFileSize( std::string const &fullPath );
     bool IsLink( std::string const &fullPath );
     void CreateDir( std::string const &dirPath );
     std::vector<std::string> GetSubDirEntries( std::string const &dirPath, bool followLinks = true );
     
     void GlobDirPaths( std::string const &dirPathSpec, std::vector<std::string> &result );
+
   };
 };
 
