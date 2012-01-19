@@ -17,6 +17,7 @@
 #include <Fabric/Core/MR/ConstValue.h>
 #include <Fabric/Core/MR/Reduce.h>
 #include <Fabric/Core/MR/ReduceOperator.h>
+#include <Fabric/Core/MR/ValueCache.h>
 #include <Fabric/Core/MR/ValueGenerator.h>
 #include <Fabric/Core/MR/ValueGeneratorOperator.h>
 #include <Fabric/Core/MR/ValueMap.h>
@@ -115,6 +116,16 @@ static double fp64_atan2( double x, double y )
 
 namespace Fabric
 {
+  static void MRCreateValueCache(
+    MR::ValueProducer *&input,
+    MR::ValueProducer const *&valueProducer
+    )
+  {
+    if ( valueProducer )
+      valueProducer->release();
+    valueProducer = MR::ValueCache::Create(input).take();
+  }
+
   static void MRCreateConstValue(
     CG::ValueProducerAdapter *valueProducerAdapter,
     void const *data,
@@ -527,6 +538,7 @@ namespace Fabric
 #if defined(FABRIC_OS_WINDOWS)
         symbolNameToAddressMap["_chkstk"] = (void *)&_chkstk;
 #endif
+        symbolNameToAddressMap["__MR_CreateValueCache"] = (void *)&MRCreateValueCache;
         symbolNameToAddressMap["__MR_CreateConstValue"] = (void *)&MRCreateConstValue;
         symbolNameToAddressMap["__MR_CreateValueGenerator_1"] = (void *)&MRCreateValueGenerator1;
         symbolNameToAddressMap["__MR_CreateValueGenerator_2"] = (void *)&MRCreateValueGenerator2;
