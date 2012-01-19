@@ -8,13 +8,32 @@ cimgPluginEnv = extsEnv.Clone()
 sources = Glob('*.cpp')
 
 libtiffRoot = '../../../ThirdParty/Private/libtiff'
-cimgPluginEnv.Append(CPPPATH = [libtiffRoot+'/libtiff'])
 
 if buildOS == 'Windows':
+  libtiffRoot = libtiffRoot + '/windows'
+  cimgPluginEnv.Append(CPPPATH = [libtiffRoot+'/libtiff'])
   cimgPluginEnv['LIBS'].append(['shell32.lib'])
   cimgPluginEnv['CFLAGS'].append(['-DTIF_PLATFORM_CONSOLE=1'])
-  sources.extend(Glob(libtiffRoot + '/libtiff/*.c'))
-  sources.extend(Glob(libtiffRoot + '/port/*.c'))
+  sources.extend([libtiffRoot + '/libtiff/fax3sm_winnt.c'])
+  sources.extend([libtiffRoot + '/port/getopt.c'])
+  libtiffnames = ['aux','close','codec','color','compress','dir','dirinfo','dirread',
+                  'dirwrite','dumpmode','error','fax3','flush','getimage','jpeg','luv',
+                  'lzw','next','ojpeg','open','packbits','pixarlog','predict','print',
+                  'read','strip','swab','thunder','tile','version','warning','win32',
+                  'write','zip','extension']
+  for libtiffname in libtiffnames:
+    sources.extend([libtiffRoot + '/libtiff/tif_'+libtiffname+'.c'])
+elif buildOS == 'Darwin':
+  cimgPluginEnv['CFLAGS'].append(['-DTIF_PLATFORM_CONSOLE=1'])
+  sources.extend([libtiffRoot + '/libtiff/fax3sm_winnt.c'])
+  sources.extend([libtiffRoot + '/port/getopt.c'])
+  libtiffnames = ['aux','close','codec','color','compress','dir','dirinfo','dirread',
+                  'dirwrite','dumpmode','error','fax3','flush','getimage','jpeg','luv',
+                  'lzw','next','ojpeg','open','packbits','pixarlog','predict','print',
+                  'read','strip','swab','thunder','tile','version','warning','win32',
+                  'write','zip','extension']
+  for libtiffname in libtiffnames:
+    sources.extend([libtiffRoot + '/libtiff/tif_'+libtiffname+'.c'])
 else:
   cimgPluginEnv['LIBS'].append(['tiff'])
 

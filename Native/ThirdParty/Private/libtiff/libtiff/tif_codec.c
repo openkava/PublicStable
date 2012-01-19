@@ -1,4 +1,4 @@
-/* $Header: /cvsroot/osrs/libtiff/libtiff/tif_codec.c,v 1.7 2003/12/05 14:10:58 rossf Exp $ */
+/* $Id: tif_codec.c,v 1.10 2005/12/21 12:23:13 joris Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -37,7 +37,7 @@ static	int NotConfigured(TIFF*, int);
 #define	TIFFInitLZW		NotConfigured
 #endif
 #ifndef	PACKBITS_SUPPORT
-#define	TIFFInitPackbits	NotConfigured
+#define	TIFFInitPackBits	NotConfigured
 #endif
 #ifndef	THUNDER_SUPPORT
 #define	TIFFInitThunderScan	NotConfigured
@@ -95,7 +95,7 @@ TIFFCodec _TIFFBuiltinCODECS[] = {
     { "PixarLog",	COMPRESSION_PIXARLOG,	TIFFInitPixarLog },
     { "SGILog",		COMPRESSION_SGILOG,	TIFFInitSGILog },
     { "SGILog24",	COMPRESSION_SGILOG24,	TIFFInitSGILog },
-    { NULL }
+    { NULL,             0,                      NULL }
 };
 
 static int
@@ -103,7 +103,7 @@ _notConfigured(TIFF* tif)
 {
 	const TIFFCodec* c = TIFFFindCODEC(tif->tif_dir.td_compression);
 
-	TIFFError(tif->tif_name,
+	TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 	    "%s compression support is not configured", c->name);
 	return (0);
 }

@@ -1,4 +1,4 @@
-/* $Header: /cvsroot/osrs/libtiff/libtiff/tif_dumpmode.c,v 1.2 2000/01/28 15:08:10 warmerda Exp $ */
+/* $Header: /cvs/maptools/cvsroot/libtiff/libtiff/tif_dumpmode.c,v 1.4 2005/12/21 12:23:13 joris Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -30,7 +30,6 @@
  * "Null" Compression Algorithm Support.
  */
 #include "tiffiop.h"
-#include <assert.h>
 
 /*
  * Encode a hunk of pixels.
@@ -73,7 +72,7 @@ DumpModeDecode(TIFF* tif, tidata_t buf, tsize_t cc, tsample_t s)
 {
 	(void) s;
 	if (tif->tif_rawcc < cc) {
-		TIFFError(tif->tif_name,
+		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 		    "DumpModeDecode: Not enough data for scanline %d",
 		    tif->tif_row);
 		return (0);
