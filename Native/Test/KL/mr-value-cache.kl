@@ -1,0 +1,19 @@
+operator gen(io String output) {
+  report "  Running generator!";
+  output = "Hello world!";
+}
+
+operator entry() {
+  ValueProducer<String> vp = createValueCache(createValueGenerator(gen));
+  report "vp = " + vp;
+
+  report "Should run generator";
+  report "vp.produce() = " + vp.produce();
+
+  report "Should not run generator (use cache)";
+  report "vp.produce() = " + vp.produce();
+
+  vp.flush();
+  report "Should run generator";
+  report "vp.produce() = " + vp.produce();
+}
