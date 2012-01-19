@@ -1966,6 +1966,11 @@ function (fabricClient, logCallback, debugLogCallback) {
         valueProducer.queueCommand('produceAsync', valueProducer.registerCallback(callback));
         executeQueuedCommands();
       };
+
+      valueProducer.pub.flush = function (callback) {
+        valueProducer.queueCommand('flush', valueProducer.registerCallback(callback));
+        executeQueuedCommands();
+      };
     };
 
     var populateConstValue = function (constValue) {
@@ -1990,6 +1995,10 @@ function (fabricClient, logCallback, debugLogCallback) {
     
     var populateValueTransform = function (valueTransform) {
       populateValueProducer(valueTransform);
+    };
+    
+    var populateValueCache = function (valueCache) {
+      populateValueProducer(valueCache);
     };
     
     var populateArrayProducer = function (arrayProducer) {
@@ -2235,6 +2244,22 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete constValue.id;
         });
         return constValue.pub;
+      },
+
+      createValueCache: function(input) {
+        var result = GC.createObject('MR');
+        
+        populateValueCache(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID()
+        };
+        
+        queueCommand(['MR'], 'createValueCache', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
       }
     };
 
