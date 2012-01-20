@@ -110,7 +110,13 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         lightNode: light
       })
     });
-  scene.constructNode('3AxisTranslationManipulator', { targetNode: cube2Draw });
+  scene.constructNode('3AxisTranslationManipulator', {
+    targetNode: cube2Draw,
+    size: 10,
+    linearTranslationManipulators: true,
+    planarTranslationManipulators: true,
+    screenTranslationManipulators: true
+  });
 
   // Screen Space Translation
   var cube2Draw = scene.constructNode('Instance', {
