@@ -49,6 +49,7 @@ namespace Fabric
       void llvmProduce0( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *dstLValue ) const;
       void llvmProduce1( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *indexRValue, llvm::Value *dstLValue ) const;
       void llvmProduce2( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *indexRValue, llvm::Value *countRValue, llvm::Value *dstLValue ) const;
+      void llvmFlush( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue ) const;
 
     protected:
       
@@ -73,6 +74,7 @@ namespace Fabric
       static void Produce0( void const *_adapter, void const *valueProducerRValue, void *dstLValue );
       static void Produce1( void const *valueProducerRValue, size_t indexRValue, void *dstLValue );
       static void Produce2( void const *_adapter, void const *valueProducerRValue, size_t indexRValue, size_t countRValue, void *dstLValue );
+      static void Flush( void const *valueProducerRValue );
       
       RC::ConstHandle<RT::ArrayProducerDesc> m_arrayProducerDesc;
       RC::ConstHandle<Adapter> m_elementAdapter;
