@@ -25,6 +25,7 @@ namespace Fabric
       )
       : m_inputArrayProducer( inputArrayProducer )
       , m_mutex( "ArrayCache" )
+      , m_cacheCountExists( false )
     {
       RC::ConstHandle<RT::Desc> inputElementDesc = inputArrayProducer->getElementDesc();
       if ( !inputElementDesc )
@@ -94,9 +95,12 @@ namespace Fabric
     {
       {
         Util::Mutex::Lock mutexLock( m_mutex );
-        if ( m_arrayCache->m_cacheDataExists.size() > index )
-          if ( m_arrayCache->m_cacheDataExists[ index ] )
-            m_arrayCache->m_inputElementDesc->setData( &m_arrayCache->m_cacheData[ index * m_arrayCache->m_inputElementDesc->getAllocSize() ], data );
+        if ( m_arrayCache->m_cacheDataExists.size() > index &&
+             m_arrayCache->m_cacheDataExists[ index ] )
+        {
+          m_arrayCache->m_inputElementDesc->setData( &m_arrayCache->m_cacheData[ index * m_arrayCache->m_inputElementDesc->getAllocSize() ], data );
+          return;
+        }
       }
 
       m_inputArrayProducerComputeState->produce( index, data );
@@ -109,7 +113,7 @@ namespace Fabric
         if ( m_arrayCache->m_cacheDataExists.size() < 1 )
         {
           m_arrayCache->m_cacheData.resize( allocSize * arraySize, 0 );
-          m_arrayCache->m_cacheDataExists.resize( arraySize );
+          m_arrayCache->m_cacheDataExists.resize( arraySize, 0 );
         }
 
         if ( index < arraySize )
