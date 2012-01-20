@@ -82,4 +82,4 @@ ut.test( "Graph Compilation", function() {
   ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
   ut.expect( "node has one error", node.getErrors().length, 1 );
 } );
-FABRIC.flush();
+FABRIC.close();

@@ -60,4 +60,4 @@ else {
   }
 }
 
-FABRIC.flush();
+FABRIC.close();

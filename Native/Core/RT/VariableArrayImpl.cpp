@@ -13,6 +13,7 @@
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Bits.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 
 #include <algorithm>
 
@@ -86,6 +87,34 @@ namespace Fabric
         Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
         m_memberImpl->generateJSON( memberData, elementJG );
       }
+    }
+    
+    void VariableArrayImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    {
+      if ( entityInfo.type != Util::ET_ARRAY )
+        throw Exception("JSON value is not an array");
+        
+      setNumMembers( data, entityInfo.value.array.size );
+        
+      size_t membersFound = 0;
+      Util::JSONArrayParser arrayDecoder( entityInfo );
+      Util::JSONEntityInfo elementEntity;
+      while ( arrayDecoder.getNext( elementEntity ) )
+      {
+        FABRIC_ASSERT( membersFound < entityInfo.value.array.size );
+        try
+        {
+          void *memberData = getMutableMemberData_NoCheck( data, membersFound );
+          m_memberImpl->decodeJSON( elementEntity, memberData );
+        }
+        catch ( Exception e )
+        {
+          throw _(membersFound) + ": " + e;
+        }
+        ++membersFound;
+      }
+      
+      FABRIC_ASSERT( membersFound == entityInfo.value.array.size );
     }
     
     void VariableArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
@@ -289,6 +318,15 @@ namespace Fabric
         }
       }
       //FABRIC_LOG( "VariableArrayImpl::setNumMembers: %fms", ft.getElapsedMS() );
+    }
+
+    size_t VariableArrayImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      size_t total = bits->allocNumMembers * m_memberImpl->getAllocSize();
+      for ( size_t i=0; i<bits->numMembers; ++i )
+        total += m_memberImpl->getIndirectMemoryUsage( getImmutableMemberData_NoCheck( data, i ) );
+      return total;
     }
   };
 };

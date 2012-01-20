@@ -42,4 +42,4 @@ node.setDependency(rlnode, "loadnode");
 node.bindings.append(binding);
 node.evaluate();
 
-FABRIC.flush();
+FABRIC.close();

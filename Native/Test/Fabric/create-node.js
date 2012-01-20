@@ -6,4 +6,4 @@ console.log( node.getData( "foo" ) );
 node.setData( "foo", 42 );
 console.log( node.getData( "foo" ) );
 
-FABRIC.flush();
+FABRIC.close();

@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/Math.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/Scalar.h>
@@ -70,6 +71,27 @@ namespace Fabric
         if ( Util::isnan( doubleValue ) || Util::isinf( doubleValue ) )
           jsonGenerator.makeNull();
         else jsonGenerator.makeScalar( doubleValue );
+      }
+      
+      void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+      {
+        if ( entityInfo.type == Util::ET_INTEGER )
+        {
+          int32_t int32Value = entityInfo.value.integer;
+          T tValue = T( int32Value );
+          setValue( tValue, dst );
+        }
+        else if ( entityInfo.type == Util::ET_SCALAR )
+        {
+          double doubleValue = entityInfo.value.scalar;
+          T tValue = T( doubleValue );
+          setValue( tValue, dst );
+        }
+        else if ( entityInfo.type == Util::ET_NULL )
+        {
+          setValue( Util::nanValue<T>(), dst );
+        }
+        else throw Exception( "value is not scalar, integer or null" );
       }
       
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const

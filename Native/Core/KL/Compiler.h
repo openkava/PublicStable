@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_KL_CONTEXT_H
-#define _FABRIC_KL_CONTEXT_H
+#ifndef _FABRIC_KL_COMPILER_H
+#define _FABRIC_KL_COMPILER_H
 
 #include <Fabric/Core/RT/Manager.h>
 
@@ -29,4 +29,4 @@ namespace Fabric
   }
 }
 
-#endif //_FABRIC_KL_CONTEXT_H
+#endif //_FABRIC_KL_COMPILER_H
