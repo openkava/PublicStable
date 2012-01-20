@@ -1,10 +1,10 @@
-ARRAY
-ARRAY
+ARRAY 0
+ARRAY 4
   INTEGER 43
   SCALAR 7980
   STRING 2 '"]'
-  OBJECT
+  OBJECT 1
     STRING 4 'fred'
-      ARRAY
+      ARRAY 2
         INTEGER 5
         INTEGER 6
