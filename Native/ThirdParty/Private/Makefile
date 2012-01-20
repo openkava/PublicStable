@@ -11,6 +11,7 @@ BOOST_VERSION := 1.47.0
 HDF5_VERSION := 1.8.7
 ALEMBIC_VERSION := 1.0_2011080800
 TEEM_VERSION := 1.10.0
+TIFF_VERSION := 3.9.5
 
 RSYNC := rsync
 
@@ -46,6 +47,7 @@ endif
   unpack_node patch_node configure_node build_node install_node clean_node \
   unpack_zlib patch_zlib configure_zlib build_zlib install_zlib clean_zlib \
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
+  unpack_tiff patch_tiff configure_tiff build_tiff install_tiff clean_tiff \
   unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
   unpack_boost patch_boost configure_boost build_boost install_boost clean_boost \
   unpack_hdf5 patch_hdf5 configure_hdf5 build_hdf5 install_hdf5 clean_hdf5 \
@@ -55,9 +57,9 @@ endif
 
 all: build
 
-build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit
+build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff
 
-unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit
+unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff
 
 check_env_vars: 
 ifeq ($(BUILD_PLATFORM),Darwin)
@@ -299,6 +301,46 @@ Build/.libedit.unpack:
 		( cd Build && tar jxf ../SourcePackages/libedit-$(LIBEDIT_VERSION).tar.bz2 && mv libedit-$(LIBEDIT_VERSION) libedit-$(LIBEDIT_VERSION)-$$ARCH ); \
 	done
 	touch $@
+
+#####
+
+build_tiff: build_tiff Build/.tiff.build
+
+configure_tiff: Build/.tiff.configure
+
+patch_tiff: Build/.tiff.patch
+
+unpack_tiff: Build/.tiff.unpack
+
+Build/.tiff.build: Build/.tiff.configure
+	for ARCH in $(ARCHS); do \
+		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && make -j2 ); \
+	done
+	touch $@
+
+Build/.tiff.configure: Build/.tiff.patch
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && CFLAGS="-fPIC" ./configure ); \
+	done
+else 
+	for ARCH in $(ARCHS); do \
+		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && CFLAGS="-arch $$ARCH" ./configure ); \
+	done
+endif
+	touch $@
+
+Build/.tiff.patch: Build/.tiff.unpack
+	touch $@
+
+Build/.tiff.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/tiff-$(TIFF_VERSION).tar.bz2 && mv tiff-$(TIFF_VERSION) tiff-$(TIFF_VERSION)-$$ARCH ); \
+	done
+	touch $@
+
+#####
 
 build_gtkglext: build_gtkglext Build/.gtkglext.build
 
@@ -662,7 +704,21 @@ Build/.zlib.unpack:
 	mkdir -p Build
 	touch $@
   
-install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_teem install_node install_libedit install_gtkglext
+install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_teem install_node install_libedit install_gtkglext install_tiff
+
+install_tiff: install_tiff_headers install_tiff_libraries
+
+install_tiff_headers:
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/tiff/libtiff; \
+          cp Build/tiff-$(TIFF_VERSION)-$(FIRST_ARCH)/libtiff/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/tiff/libtiff/; \
+        done
+
+install_tiff_libraries:
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/tiff/; \
+          cp Build/tiff-$(TIFF_VERSION)-$$ARCH/libtiff/.libs/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/tiff/; \
+        done
 
 install_ilmbase: install_ilmbase_headers install_ilmbase_libraries
 
@@ -874,7 +930,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_tiff
 	rm -rf Build
 
 clean_ilmbase:
@@ -918,6 +974,12 @@ clean_teem:
 		rm -rf Build/teem-$(TEEM_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.teem.*
+
+clean_tiff:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/tiff-$(TIFF_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.tiff.*
 
 clean_libedit:
 	for ARCH in $(ARCHS); do \
