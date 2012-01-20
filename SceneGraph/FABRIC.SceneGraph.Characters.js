@@ -802,9 +802,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
           solvers[i].generateTracks(trackSet, trackBindings);
         }
       }
+      var trackSetId = animationLibrary.pub.addTrackSet(trackSet);
       if(bindForPlayback==true){
         
-        var trackSetId = animationLibrary.pub.addTrackSet(trackSet);
         if(!poseVariables){
           characterRigNode.constructVariablesNode('Variables', true);
         }
@@ -815,8 +815,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         }
         variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
         animationLibrary.pub.setBindings(trackBindings);
-        return trackBindings;
       }
+      return trackSetId;
     }
     characterRigNode.pub.setBoundTrackSet = function(trackSetId){
       if(!poseVariables){
