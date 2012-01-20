@@ -176,11 +176,12 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       trackSetId = trackSetId ? trackSetId : 0;
 
       targetnode = scene.getPrivateInterface(targetnode);
-      targetnode.getDGNode().setDependency(dgnode, 'animationlibrary');
+      targetnode.getDGNode().setDependency(dgnode, 'animationTracks');
       targetnode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+      var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
 
       var targetNodeMembers = targetnode.getDGNode().getMembers();
-      var trackDataType = defaultKeyframeValue.valueType;
+      var trackDataType = animationTrackNode.pub.getValueType();
       var operatorName;
       if(targetName){
         operatorName = 'bindKeyframeTracksTo' + targetName;
@@ -188,21 +189,19 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       else{
         operatorName = 'bindKeyframeTracksTo' + JSON.stringify(memberBindings).replace(/[^a-zA-Z 0-9]+/g, '');
       }
-      
+      var operatorBodySrc = '';
       var operatorHeaderSrc = '\nuse Vec3, Euler, Quat, RotationOrder;\n';
-      operatorHeaderSrc += 'use '+keyframeType+';\n';
-      operatorHeaderSrc += 'use '+keyframeTrackType+';\n';
-      operatorHeaderSrc += 'use '+keyframeTrackSetType+';\n';
+      operatorHeaderSrc += 'use '+animationTrackNode.pub.getKeyframeType() +';\n';
+      operatorHeaderSrc += 'use '+animationTrackNode.getTrackType()+';\n';
       operatorHeaderSrc += '\n\noperator ' + operatorName + '(\n';
       operatorHeaderSrc += '  io Scalar time,\n';
-      operatorHeaderSrc += '  io ' + keyframeTrackSetType + ' trackSets<>';
+      operatorHeaderSrc += '  io ' + animationTrackNode.getTrackType() + ' tracks<>';
       var operatorArraySrc = {};
-      var operatorBodySrc = '  '+keyframeTrackSetType + ' trackSet = trackSets['+trackSetId+'];\n';
-      var parameterLayout = ['globals.time', 'animationlibrary.trackSet<>'];
+      var parameterLayout = ['globals.time', 'animationTracks.track<>'];
       var numEvaluatedTracks = 0;
       var addTrackEvaluation = function(trackid){
         numEvaluatedTracks++;
-        return 'trackSet.tracks['+trackid+'].evaluate(time, currKeys['+ (numEvaluatedTracks-1) +'])';
+        return 'tracks['+trackid+'].evaluate(time, currKeys['+ (numEvaluatedTracks-1) +'])';
       }
       var tempVariables = {};
       for (var memberAccessor in memberBindings) {
@@ -344,7 +343,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
         'Fabric Curve Editor:' + (options.name ? options.name : animationTrackNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
-      curveEditorWindow.animationTrackNode = animationTrackNode.pub;
+      curveEditorWindow.animationLibraryNode = animationTrackNode.pub;
       curveEditorWindow.trackSetId = options.trackSetId ? options.trackSetId : 0;
       curveEditorWindow.drawKeys = options.drawKeys ? options.drawKeys : true;
       curveEditorWindow.trackFilters = options.trackFilters ? options.trackFilters : [];
@@ -387,35 +386,6 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     scene.assignDefaults(options, {
         keyframetype: undefined
       });
-/*
-    if (options.keyframetype == undefined) {
-      throw ('Please specify a type of data to interpollate');
-    }
-    var keyframeType = options.keyframetype;
-    var keyframeTrackType = options.keyframetype+'Track';
-    var keyframeTrackSetType = options.keyframetype+'TrackSet';
-    var keyframeTrackSetBindingsType = options.keyframetype+'TrackSetBindings';
-    var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
-    if (!rTypes[options.keyframetype]) {
-      throw ('Type "' + options.keyframetype + '" is not registered. Load the RT file.');
-    }
-    if (!rTypes[keyframeTrackType]) {
-      throw ('Type "' + keyframeTrackType + '" is not registered. Load the RT file.');
-    }
-    if (!rTypes[keyframeTrackSetType]) {
-      throw ('Type "' + keyframeTrackSetType + '" is not registered. Load the RT file.');
-    }
-    if (!rTypes[keyframeTrackSetBindingsType]) {
-      throw ('Type "' + keyframeTrackSetBindingsType + '" is not registered. Load the RT file.');
-    }
-    
-    var defaultKeyframeValue = rTypes[options.keyframetype].defaultValue;
-    if (!defaultKeyframeValue.valueType) {
-      throw ('The keyframe registered type must provide a ' +
-          'valueType that indicates what the keyframes will evaluate to. ' +
-          'Normally this is a Scalar, but could be a Vec2, Color or any other value');
-    }
-*/
 
     
     var animationLibraryNode = scene.constructNode('Animation', options);
@@ -467,25 +437,11 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       return calcTimeRange(dgnode.getData('trackSet', trackSetId ? trackSetId : 0));
     };
-/*
-    animationLibraryNode.pub.getKeyframeType = function() {
-      return keyframeType;
-    };
-    animationLibraryNode.getTrackType = function() {
-      return keyframeTrackType;
-    };
-*/
+
     animationLibraryNode.getTrackSetType = function() {
       return keyframeTrackSetType;
     };
-    /*
-    animationLibraryNode.pub.getValueType = function(trackid) {
-      // To determing what kind of data this evaluator should evaluate to,
-      // we look up the keyframe type in the type manager, and request the
-      // default value, which when is created on demand, enables us to call the valueType
-      return defaultKeyframeValue.valueType;
-    };
-    */
+
     animationLibraryNode.newTrackSet = function(trackSetName) {
       return new FABRIC.RT[keyframeTrackSetType](trackSetName);
     };

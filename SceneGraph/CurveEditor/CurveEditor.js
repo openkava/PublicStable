@@ -152,8 +152,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         if(!trackGroups[i]){
           trackGroups[i] = curvesHolderGroup.createGroup().id(tracksData[i].name);
         }
+        trackDisplayed[i] = true;
         if(trackFilters.length > 0){
-          trackDisplayed[i] = true;
           for (var j = 0; j < trackFilters.length; j++) {
             if(trackData.name.indexOf(trackFilters[j])===-1){
               trackDisplayed[i] = false;
