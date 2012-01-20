@@ -5,10 +5,10 @@
 #ifndef _FABRIC_IO_MANAGER_H
 #define _FABRIC_IO_MANAGER_H
 
-#include <Fabric/Core/IO/Stream.h>
+#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/ConstHandle.h>
 #include <map>
 #include <vector>
-#include <Fabric/Core/IO/Dir.h>
 
 namespace Fabric
 {
@@ -25,10 +25,10 @@ namespace Fabric
 
   namespace IO
   {
-    class Dir;
     class ResourceManager;
     class FileHandleManager;
     class FileHandleResourceProvider;
+    typedef void (*ScheduleAsynchCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
 
     class Manager : public RC::Object
     {

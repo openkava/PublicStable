@@ -10,6 +10,7 @@
 #include <Fabric/Core/DG/FabricResource.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
@@ -895,9 +896,9 @@ namespace Fabric
 
       std::string dataExternalLocation = resource.getDataExternalLocation();
       if( dataExternalLocation.empty() )
-        m_context->getIOManager()->putFile( handle, resource.getDataSize(), resource.getDataPtr(), false );
+        m_context->getIOManager()->getFileHandleManager()->putFile( handle, resource.getDataSize(), resource.getDataPtr(), false );
       else
-        m_context->getIOManager()->copyFile( dataExternalLocation, handle );
+        m_context->getIOManager()->getFileHandleManager()->copyFile( dataExternalLocation, handle );
     }
 
     void Container::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const

@@ -7,8 +7,9 @@
 #include "ResourceManager.h"
 
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Util/Timer.h>
+#include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Base/RC/WeakHandle.h>
 
 namespace Fabric
 {
@@ -26,7 +27,7 @@ namespace Fabric
 
     RC::Handle<ResourceManager> ResourceManager::Create( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds )
     {
-      return new ResourceManager( scheduleFunc, scheduleFuncUserData );
+      return new ResourceManager( scheduleFunc, scheduleFuncUserData, progressMaxFrequencySeconds );
     }
 
     ResourceManager::ResourceManager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds )
@@ -42,24 +43,24 @@ namespace Fabric
       {
         PendingRequestInfo* requestInfo = (PendingRequestInfo*)m_pendingRequests.front();
         //Note: we don't delete the PendingRequestInfo* structs as there might be some pending asynch calls; leak instead of crash in this exceptional race condition.
-        requestInfo->m_client->onFailure( "Resource request for \"" + requestInfo->m_url + "\" failed because of termination", requestInfo->m_clientUserData );
+        requestInfo->m_client->onFailure( ("Resource request for \"" + requestInfo->m_url + "\" failed because of termination").c_str(), requestInfo->m_clientUserData );
         requestInfo->m_client->release();
         m_pendingRequests.pop_front();
       }
     }
 
-    ResourceManager::registerProvider( RC::Handle<ResourceProvider> const &provider, bool setAsDefault )
+    void ResourceManager::registerProvider( RC::Handle<ResourceProvider> const &provider, bool setAsDefault )
     {
       std::string scheme = provider->getUrlScheme();
 
-      pair<SchemeToProviderMap::iterator, bool> result = m_schemeToProvider.insert( std::make_pair(scheme, provider) );
-      if( result.second && result->first != provider )
+      std::pair<SchemeToProviderMap::iterator, bool> result = m_schemeToProvider.insert( std::make_pair(scheme, provider) );
+      if( result.second && result.first->second != provider )
         throw Exception( "Error: another resource provider is already registered for URL scheme " + scheme );
 
       if( setAsDefault )
       {
         if( m_defaultProvider && m_defaultProvider != provider )
-          throw Exception( "Error: there is already another default provider " );
+          throw Exception( "Error: there is already another default provider" );
         m_defaultProvider = provider;
       }
     }
@@ -101,16 +102,16 @@ namespace Fabric
         if( !provider )
           throw Exception( "No suitable provider registered" );
         else
-          provider->get( url, this, getAsFile, requestInfo );
+          provider->get( url, getAsFile, requestInfo );
       }
       //Simplify error handling on client side: turn synch errors into asynch failure callbacks
       catch ( Exception e )
       {
-        onFailureAsynchThreadCall( std::string("Error: " + e, requestInfo );
+        onFailureAsynchThreadCall( "Error: " + e, requestInfo );
       }
       catch ( ... )
       {
-        onFailureAsynchThreadCall( std::string("Unknown error", requestInfo );
+        onFailureAsynchThreadCall( "Unknown error", requestInfo );
       }
     }
 
@@ -130,8 +131,8 @@ namespace Fabric
 
       if( done < total)
       {
-        int deltaMS = (int)requestInfo->m_lastProgressTimer.getElapsedMS(false);
-        if( deltaMS < (int)m_progressMaxFrequencyMS )
+        int deltaMS = (int)(requestInfo->m_lastProgressTimer.getElapsedMS(false));
+        if( deltaMS < requestInfo->m_manager.makeStrong()->m_progressMaxFrequencyMS )
           return;
       }
       requestInfo->m_lastProgressTimer.reset();
@@ -150,7 +151,7 @@ namespace Fabric
       }
 
       if(done == total)
-        requestInfo->m_manager->onCompletedRequest( userData );
+        requestInfo->m_manager.makeStrong()->onCompletedRequest( userData );
     }
 
     void ResourceManager::onData( size_t offset, size_t size, void const *data, void *userData )
@@ -201,7 +202,7 @@ namespace Fabric
 
       try
       {
-        requestInfo->m_client->onFailure( std::string( "Error while processing request for URL \"") + requestInfo->m_url + "\": " + errorDesc, requestInfo->m_clientUserData );
+        requestInfo->m_client->onFailure( ( "Error while processing request for URL \"" + requestInfo->m_url + "\": " + errorDesc).c_str(), requestInfo->m_clientUserData );
       }
       catch ( Exception e )
       {
@@ -212,7 +213,7 @@ namespace Fabric
         FABRIC_LOG( "ResourceManager: error while calling client's onFailure for \"" + requestInfo->m_url + "\"." );
       }
 
-      requestInfo->m_manager->onCompletedRequest( userData );
+      requestInfo->m_manager.makeStrong()->onCompletedRequest( userData );
     }
 
     struct OnProgressCallbackStruct
@@ -223,7 +224,7 @@ namespace Fabric
       void *m_userData;
     };
 
-    void ResourceManager::OnProgressSynchCallback( void *userData )
+    void OnProgressSynchCallback( void *userData )
     {
       OnProgressCallbackStruct* callStruct = (OnProgressCallbackStruct*)userData;
       ResourceManager::onProgress( callStruct->m_mimeType.c_str(), callStruct->m_done, callStruct->m_total, callStruct->m_userData );
@@ -232,12 +233,13 @@ namespace Fabric
 
     void ResourceManager::onProgressAsynchThreadCall( char const *mimeType, size_t done, size_t total, void *userData )
     {
-      OnProgressCallStruct* callStruct = new OnProgressCallbackStruct();
+      OnProgressCallbackStruct* callStruct = new OnProgressCallbackStruct();
       callStruct->m_mimeType = mimeType;
       callStruct->m_done = done;
       callStruct->m_total = total;
       callStruct->m_userData = userData;
-      (*m_scheduleFunc)(m_scheduleFuncUserData, OnProgressSynchCallback, callStruct);
+      RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnProgressSynchCallback, callStruct);
     }
 
     struct OnDataCallbackStruct
@@ -247,7 +249,7 @@ namespace Fabric
       void *m_userData;
     };
 
-    void ResourceManager::OnDataSynchCallback( void *userData )
+    void OnDataSynchCallback( void *userData )
     {
       OnDataCallbackStruct* callStruct = (OnDataCallbackStruct*)userData;
       ResourceManager::onData( callStruct->m_offset, callStruct->m_data.size(), callStruct->m_data.empty() ? NULL : &callStruct->m_data.front(), callStruct->m_userData );
@@ -256,7 +258,7 @@ namespace Fabric
 
     void ResourceManager::onDataAsynchThreadCall( size_t offset, size_t size, void const *data, void *userData )
     {
-      OnDataCallStruct* callStruct = new OnDataCallbackStruct();
+      OnDataCallbackStruct* callStruct = new OnDataCallbackStruct();
       callStruct->m_offset = offset;
       if(size)
       {
@@ -264,7 +266,8 @@ namespace Fabric
         memcpy( &callStruct->m_data.front(), data, size );
       }
       callStruct->m_userData = userData;
-      (*m_scheduleFunc)(m_scheduleFuncUserData, OnDataSynchCallback, callStruct);
+      RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnDataSynchCallback, callStruct);
     }
 
     struct OnStringCallbackStruct
@@ -273,7 +276,7 @@ namespace Fabric
       void *m_userData;
     };
 
-    void ResourceManager::OnFileSynchCallback( void *userData )
+    void OnFileSynchCallback( void *userData )
     {
       OnStringCallbackStruct* callStruct = (OnStringCallbackStruct*)userData;
       ResourceManager::onFile( callStruct->m_string.c_str(), callStruct->m_userData );
@@ -285,10 +288,11 @@ namespace Fabric
       OnStringCallbackStruct* callStruct = new OnStringCallbackStruct();
       callStruct->m_string = fileName;
       callStruct->m_userData = userData;
-      (*m_scheduleFunc)(m_scheduleFuncUserData, OnFileSynchCallback, callStruct);
+      RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnFileSynchCallback, callStruct);
     }
 
-    void ResourceManager::OnFailureSynchCallback( void *userData )
+    void OnFailureSynchCallback( void *userData )
     {
       OnStringCallbackStruct* callStruct = (OnStringCallbackStruct*)userData;
       ResourceManager::onFailure( callStruct->m_string.c_str(), callStruct->m_userData );
@@ -300,6 +304,9 @@ namespace Fabric
       OnStringCallbackStruct* callStruct = new OnStringCallbackStruct();
       callStruct->m_string = errorDesc;
       callStruct->m_userData = userData;
-      (*m_scheduleFunc)(m_scheduleFuncUserData, OnFailureSynchCallback, callStruct);
+      RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnFailureSynchCallback, callStruct);
     }
+
+  };
 };

@@ -5,6 +5,8 @@
 #ifndef _FABRIC_IO_RESOURCEMANAGER_H
 #define _FABRIC_IO_RESOURCEMANAGER_H
 
+#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/ConstHandle.h>
 #include <map>
 #include <list>
 #include <string>

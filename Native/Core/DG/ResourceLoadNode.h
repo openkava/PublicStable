@@ -29,8 +29,10 @@ namespace Fabric
     public:
     
       static RC::Handle<ResourceLoadNode> Create( std::string const &name, RC::Handle<Context> const &context );
-      
       static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
+
+      virtual void retain() const;
+      virtual void release() const;
 
     protected:
     
@@ -46,13 +48,10 @@ namespace Fabric
         RC::Handle<ResourceLoadNode>::StaticCast(userData)->evaluateResource();
       }
 
-      //IO::ResourceClient
       virtual void onProgress( char const *mimeType, size_t done, size_t total, void *userData );
       virtual void onData( size_t offset, size_t size, void const *data, void *userData );
       virtual void onFile( char const *fileName, void *userData );
       virtual void onFailure( char const *errorDesc, void *userData );
-      virtual void retain() const;
-      virtual void release() const;
 
     private:
 
