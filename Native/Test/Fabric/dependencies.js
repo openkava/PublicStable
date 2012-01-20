@@ -37,3 +37,4 @@ ut = new FABRIC.UnitTest;
             ut.expect( "child.getDependencies().parent.eq(parent)", child.getDependencies().parent === parent );
             ut.expect( "child.getDependencies().parentAgain.eq(parent)", child.getDependencies().parentAgain === parent );
           } );
+FABRIC.close();

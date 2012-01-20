@@ -413,38 +413,10 @@ namespace Fabric
     
     void Operator::jsonDescDiagnostics( Util::JSONGenerator &resultJG ) const
     {
-      Util::JSONArrayGenerator resultJAG = resultJG.makeArray();
       if ( m_code )
-      {
-        CG::Diagnostics const &diagnostics = m_code->getDiagnostics();
-        for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
-        {
-          CG::Location const &location = it->first;
-          CG::Diagnostic const &diagnostic = it->second;
-          
-          Util::JSONObjectGenerator resultJOG = resultJAG.makeElement().makeObject();
-          {
-            Util::JSONGenerator memberJG = resultJOG.makeMember( "filename", 8 );
-            memberJG.makeString( location.getFilename() );
-          }
-          {
-            Util::JSONGenerator memberJG = resultJOG.makeMember( "line", 4 );
-            memberJG.makeInteger( location.getLine() );
-          }
-          {
-            Util::JSONGenerator memberJG = resultJOG.makeMember( "column", 6 );
-            memberJG.makeInteger( location.getColumn() );
-          }
-          {
-            Util::JSONGenerator memberJG = resultJOG.makeMember( "level", 5 );
-            memberJG.makeString( diagnostic.getLevelDesc() );
-          }
-          {
-            Util::JSONGenerator memberJG = resultJOG.makeMember( "desc", 4 );
-            memberJG.makeString( diagnostic.getDesc().getData(), diagnostic.getDesc().getLength() );
-          }
-        }
-      }
+        m_code->getDiagnostics().generateJSON( resultJG );
+      else
+        resultJG.makeArray();
     }
     
     void Operator::jsonDescMainThreadOnly( Util::JSONGenerator &resultJG ) const

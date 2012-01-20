@@ -15,7 +15,7 @@ namespace Fabric
   {
     class ComparableImpl;
     
-#define RT_DICT_IMPL_MINIMUM_BUCKET_COUNT size_t(16)
+#define RT_DICT_IMPL_MINIMUM_BUCKET_COUNT size_t(4)
     
     class DictImpl : public Impl
     {
@@ -57,10 +57,12 @@ namespace Fabric
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
       virtual bool equalsData( void const *lhs, void const *rhs ) const;
+      virtual size_t getIndirectMemoryUsage( void const *data ) const;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
       virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
+      virtual void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
       
       virtual bool isShallow() const;
       virtual bool isEquivalentTo( RC::ConstHandle<RT::Impl> const &desc ) const;
@@ -106,7 +108,7 @@ namespace Fabric
       
       static size_t BucketCountForNodeCount( size_t nodeCount )
       {
-        return std::max( RT_DICT_IMPL_MINIMUM_BUCKET_COUNT, Util::nextPowerOfTwoMinusOne( nodeCount ) + 1 );
+        return std::max( RT_DICT_IMPL_MINIMUM_BUCKET_COUNT, Util::nextPowerOfTwoMinusOne( nodeCount / 2 ) + 1 );
       }
       
       void disposeNode( node_t *node ) const;

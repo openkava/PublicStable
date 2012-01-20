@@ -6,4 +6,4 @@ o.setEntryFunctionName("entry");
 console.log(o.getSourceCode());
 console.log(o.getEntryFunctionName());
 
-F.flush();
+F.close();

@@ -17,4 +17,4 @@ var errors = node.getErrors();
 console.log( errors.length );
 console.log( errors[0] );
 
-FABRIC.flush();
+FABRIC.close();

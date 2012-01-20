@@ -30,4 +30,4 @@ childNode.bindings.append(childBinding);
 childNode.evaluate();
 console.log( childNode.getData( 'output', 0 ) );
 
-FABRIC.flush();
+FABRIC.close();

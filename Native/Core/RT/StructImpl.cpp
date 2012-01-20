@@ -10,6 +10,8 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
@@ -122,6 +124,50 @@ namespace Fabric
         memberInfo.desc->setDataFromJSONValue( memberValue, memberData );
       }
     }
+    
+    void StructImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    {
+      if ( entityInfo.type != Util::ET_OBJECT )
+        throw Exception("JSON value is not an object");
+        
+      size_t membersFound = 0;
+      Util::JSONObjectParser objectDecoder( entityInfo );
+      Util::JSONEntityInfo keyEntity, valueEntity;
+      while ( objectDecoder.getNext( keyEntity, valueEntity ) )
+      {
+        FABRIC_ASSERT( keyEntity.type == Util::ET_STRING );
+        
+        std::string name;
+        if ( keyEntity.value.string.length < Util::jsonDecoderShortStringMaxLength )
+        {
+          name = std::string( keyEntity.value.string.shortData, keyEntity.value.string.length );
+        }
+        else
+        {
+          name.reserve( keyEntity.value.string.length );
+          Util::jsonParseString( keyEntity, &name[0] );
+        }
+        
+        try
+        {
+          NameToIndexMap::const_iterator it = m_nameToIndexMap.find( name );
+          if ( it == m_nameToIndexMap.end() )
+            throw Exception("member not found");
+          size_t memberIndex = it->second;
+          void *memberData = static_cast<uint8_t *>(data) + m_memberOffsets[memberIndex];
+          m_memberInfos[memberIndex].desc->decodeJSON( valueEntity, memberData );
+        }
+        catch ( Exception e )
+        {
+          throw _(name) + ": " + e;
+        }
+
+        ++membersFound;
+      }
+      
+      if ( membersFound != m_numMembers )
+        throw Exception( "missing members" );
+    }
 
     void StructImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
@@ -194,6 +240,14 @@ namespace Fabric
         }
         return true;
       }
+    }
+
+    size_t StructImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      size_t total = 0;
+      for ( size_t i=0; i<m_numMembers; ++i )
+        total += m_memberInfos[i].desc->getIndirectMemoryUsage( getMemberData_NoCheck( data, i ) );
+      return total;
     }
   };
 };

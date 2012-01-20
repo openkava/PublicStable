@@ -25,42 +25,29 @@ namespace Fabric
     class Event;
     class EventTaskGroup;
     
-    
-    
     class EventHandlerTask : public MT::Task<EventHandler> 
     {
     public:
       
-      EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback )
-      : MT::Task<EventHandler>( t, executeCallback )
-      {
-        m_shouldSelect = false;
-        m_selectParallelCall = 0;
-      }
-      
-      EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback, RC::Handle<Node> const &node, RC::ConstHandle<RT::Desc> const &selectorType )
-      : MT::Task<EventHandler>( t, executeCallback )
-      , m_selectedNode( node, selectorType )
-      {
-        m_shouldSelect = false;
-        m_selectParallelCall = 0;
-      }
+      EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback );
+      EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback, RC::Handle<Node> const &node, RC::ConstHandle<RT::Desc> const &selectorType );
       
       void add( RC::Handle<MT::ParallelCall> &opParallelCall );
       
       virtual void execute( void *userdata ) const;
       
-      
       std::vector< RC::Handle<MT::ParallelCall> > m_evaluateParallelCallsPerOperator;
       SelectedNode m_selectedNode;
       bool m_shouldSelect;
       RC::Handle<MT::ParallelCall> m_selectParallelCall;
+      Context *m_context;
     };
     
     class EventHandler : public Container
     {
       friend class Node;
       friend class Event;
+      friend class EventHandlerTask;
       
       typedef Util::UnorderedMap< std::string, RC::Handle<Node> > ExternalScopes;
       

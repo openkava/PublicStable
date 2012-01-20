@@ -2,5 +2,5 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-SConscript( dirs=['KL'] )
-Alias( 'tools', ['kl'] )
+SConscript( dirs=['KL', 'ParseJSON'] )
+Alias( 'tools', ['kl', 'parseJSON'] )

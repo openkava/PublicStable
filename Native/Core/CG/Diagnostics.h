@@ -88,6 +88,10 @@ namespace Fabric
       {
       }
       
+      Diagnostics( Diagnostics const &that );
+      
+      void append( Diagnostics const &that );
+      
       void clear()
       {
         m_impl.clear();
@@ -137,6 +141,8 @@ namespace Fabric
       {
         return m_impl.empty();
       }
+      
+      void generateJSON( Util::JSONGenerator &jg ) const;
       
       typedef Impl::const_iterator const_iterator;
       

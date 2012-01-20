@@ -48,12 +48,13 @@ namespace Fabric
       void jsonDesc( Util::JSONGenerator &resultJG ) const;
       virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       virtual void jsonDescType( Util::JSONGenerator &resultJG ) const = 0;
+      virtual void jsonGetMemoryUsage( Util::JSONGenerator &jg ) const;
       
     protected:
     
       NamedObject( std::string const &friendlyName, RC::Handle<Context> const &context );
       
-      void jsonNotify( char const *cmdData, size_t cmdLength, Util::SimpleString const *arg = 0 ) const;
+      void jsonNotify( char const *cmdData, size_t cmdLength, Util::SimpleString const *argJSON = 0 ) const;
       void jsonNotifyDelta( Util::SimpleString const &deltaJSON ) const;
       void jsonNotifyMemberDelta( char const *memberData, size_t memberLength, Util::SimpleString const &memberDeltaJSON ) const;
       virtual void jsonNotifyErrorDelta() const;
