@@ -20,7 +20,7 @@ FABRIC.RT.BezierKeyframe = function(time, value, intan, outtan) {
   this.outtangent = (outtan &&
     outtan.getType &&
     outtan.getType() === 'FABRIC.RT.Vec2') ? outtan : new FABRIC.RT.Vec2(0.333, 0);
-  this.flags = 0;
+  this.flags = (intan || outtan) ? 1 : 0;
 };
 
 FABRIC.RT.BezierKeyframe.prototype = {
@@ -31,6 +31,9 @@ FABRIC.RT.BezierKeyframe.prototype = {
   },
   getType: function() {
     return 'FABRIC.RT.BezierKeyframe';
+  },
+  toString: function() {
+    return 'FABRIC.RT.BezierKeyframe(' + this.time + ',' + this.value + ',' + this.intangent.toString() + ',' + this.outtangent.toString() +')';
   }
 };
 
@@ -175,24 +178,35 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
     }
   },
   moveKey: function(keyIndex, time, value){
+    
     var numKeys = this.keys.length;
-    var key = this.keys[keyIndex];
-    if((keyIndex > 0 && time < this.keys[keyIndex-1].time) ||
-       (keyIndex < numKeys-1 && time > this.keys[keyIndex+1].time)){
-      var newkeyIndex = keyIndex;
-      while(time < this.keys[newkeyIndex-1].time && newkeyIndex>0){
-        newkeyIndex--
-      }
-      while(time > this.keys[newkeyIndex+1].time && newkeyIndex<numKeys-1){
-        newkeyIndex++
-      }
-      this.keys.splice(keyIndex, 1);
-      this.keys.splice(newkeyIndex, 0, key);
-      keyIndex = newkeyIndex;
+    var prevkey, nextkey, key = this.keys[keyIndex];
+    var prevKeyOutTan, inTan, outTan, nextKeyInTan;
+    if(keyIndex > 0){
+      prevkey = this.keys[keyIndex-1];
+      var deltat = (key.time - prevkey.time);
+      prevKeyOutTan = new FABRIC.RT.Vec2(prevkey.outtangent.x / deltat, prevkey.outtangent.y / prevkey.outtangent.x);
+      inTan = new FABRIC.RT.Vec2(key.intangent.x / deltat, key.intangent.y / key.intangent.x);
     }
-    this.keys[keyIndex].time = time;
-    this.keys[keyIndex].value = value;
-    this.autoTangents(keyIndex);
+    if(keyIndex < numKeys-1){
+      nextkey = this.keys[keyIndex+1];
+      var deltat = (nextkey.time - key.time);
+      outTan = new FABRIC.RT.Vec2(key.outtangent.x / deltat, key.intangent.y / key.intangent.x);
+      nextKeyInTan = new FABRIC.RT.Vec2(nextkey.intangent.x / deltat, nextkey.intangent.y / nextkey.intangent.x);
+    }
+    
+    this.__proto__.__proto__.moveKey.apply(this, [keyIndex, time, value]);
+    
+    if(prevkey){
+      var deltat = (key.time - prevkey.time);
+      prevkey.outtangent.set(prevKeyOutTan.x * deltat, prevKeyOutTan.x * deltat * prevKeyOutTan.y);
+      key.intangent.set(inTan.x * deltat, inTan.x * deltat * inTan.y);
+    }
+    if(nextkey){
+      var deltat = (nextkey.time - key.time);
+      key.outtangent.set(outTan.x * deltat, outTan.x * deltat * outTan.y);
+      nextkey.intangent.set(nextKeyInTan.x * deltat, nextKeyInTan.x * deltat * nextKeyInTan.y);
+    }
   }
 }
 

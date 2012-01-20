@@ -131,11 +131,11 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var animationControllerNode = scene.constructNode('AnimationController', {
       timeRange: new FABRIC.RT.Vec2(0, 100)
     });
-  var linearKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
-  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+  var linearKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationTrack');
+  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationTrack');
 
-  var linearkey = FABRIC.RT.linearKeyframe;
-  var bezierkey = FABRIC.RT.bezierKeyframe;
+  var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
+  var bezierkey = function(time, value, intan, outtan){ return new FABRIC.RT.BezierKeyframe(time, value, intan, outtan); };
 
   // Note on bounding values
   // "globalXfo.tr":[-1,0,1]
@@ -145,25 +145,23 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   ///////////////////////////////////////////////
   // LinearKeyAnimationTrack
-  var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
   
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(0, 0), linearkey(50, 0), linearkey(75, 50), linearkey(100, 0)
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(1, 0, 0), [
+  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(1, 0, 0), [
       linearkey(0, 0), linearkey(10, 20), linearkey(20, -5), linearkey(50, -5), linearkey(75, 50), linearkey(100, 0)
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(0, 0), linearkey(50, 0), linearkey(75, 20), linearkey(100, 0)
     ]));
   
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  var trackSetID = linearKeyAnimationLibrary.addTrackSet(trackSet);
   
 
   var linearAnimatedTransformNode = scene.constructNode('Transform', {
@@ -174,8 +172,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   linearKeyAnimationLibrary.bindNodeMembersToTracks(
     linearAnimatedTransformNode, {
       'globalXfo.tr': [0, 1, 2]
-    },
-    trackSetID);
+    });
   
   scene.constructNode('Instance', {
     transformNode: linearAnimatedTransformNode,
@@ -186,17 +183,16 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   ///////////////////////////////////////////////
   // BezierKeyAnimationTrack
-  var trackSet = new FABRIC.RT.KeyframeTrackSet('BezierPosKeyAnimationTrack');
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
+  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
       bezierkey(0, -20, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
       bezierkey(50, 0, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
       bezierkey(75, -20, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
+  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
+  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
       bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(10, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
@@ -204,23 +200,21 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
                        
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(1, 0, 0), [
+  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(1, 0, 0), [
       bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 2, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
       bezierkey(50, 2, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
       bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.y', FABRIC.RT.rgb(0, 1, 0), [
+  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.y', FABRIC.RT.rgb(0, 1, 0), [
       bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
       bezierkey(50, -2, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
       bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.z', FABRIC.RT.rgb(0, 0, 1), [
+  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.z', FABRIC.RT.rgb(0, 0, 1), [
     ]));
-  
-  var trackSetID = bezierKeyAnimationLibrary.addTrackSet(trackSet);
 
   var bezierAnimatedTransformNode = scene.constructNode('Transform', {
     hierarchical: false,
@@ -231,8 +225,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     bezierAnimatedTransformNode, {
       'globalXfo.tr': [0, 1, 2],
       'globalXfo.ori': [3, 4, 5]
-    },
-    trackSetID);
+    });
   scene.constructNode('Instance', {
     transformNode: bezierAnimatedTransformNode,
     geometryNode: cube,

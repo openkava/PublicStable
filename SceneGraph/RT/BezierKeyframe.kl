@@ -23,7 +23,7 @@ function BezierKeyframe(Scalar time, Scalar value) {
 }
 
 function Boolean isZero(Scalar x) {
-  Scalar EQN_EPS = 1e-9;
+  Scalar EQN_EPS = 1e-4;
   return (x > - EQN_EPS && x < EQN_EPS);
 }
 
@@ -124,7 +124,7 @@ function Scalar BezierKeyframe.interpolate(BezierKeyframe key2, Scalar t) {
   Bx = this.time - 2.0 * outvec.x + invec.x;
   Cx = - this.time + outvec.x;
   Dx = this.time - t;
-
+  
   Scalar Ay, By, Cy, Dy;
   Ay = key2.value - this.value - 3.0 * invec.y + 3.0 * outvec.y;
   By = this.value - 2.0 * outvec.y + invec.y;
@@ -139,7 +139,7 @@ function Scalar BezierKeyframe.interpolate(BezierKeyframe key2, Scalar t) {
   c[3] = Ax;
 
   Scalar v;
-  if ((Ax == 0.0) && (Bx == 0.0)) {
+  if (isZero(Ax) && isZero(Bx)) {
     v = u;
   }
   else if (t == this.time) {
