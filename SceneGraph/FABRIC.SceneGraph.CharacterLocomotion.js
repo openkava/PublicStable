@@ -210,7 +210,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
       paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
       
-      paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+    //  paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
       paramsdgnode.addMember('poseVariables', 'PoseVariables', rigNode.getVariables());
       
       dgnode.addMember('debugGeometry', 'DebugGeometry' );
