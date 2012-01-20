@@ -148,6 +148,12 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     viewport.redraw();
   });
   
+  scene.addEventListener('timechanged', function(evt){
+    if(evt.playing){
+      $('#globalTime').slider('value', videoNode.getAnimationController().getLocalTime());
+    }
+  });
+  
   $('#play').button({
     text: true,
     icons: {
@@ -162,10 +168,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
           primary: 'ui-icon-pause'
         }
       });
-      scene.animation.play(function(){
-        $('#globalTime').slider('value',
-          videoNode.getAnimationController().getLocalTime());
-      });
+      scene.animation.play();
     } else {
       $(this).button('option', {
         label: 'Play',
