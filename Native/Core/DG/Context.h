@@ -208,7 +208,6 @@ namespace Fabric
       Util::JSONArrayGenerator *m_pendingNotificationsJSONArrayGenerator;
       
       static std::string const s_wrapFabricClientJSSource;
-      static Context* s_activeContext;
       
       GC::Container m_gcContainer;
       MR::Interface m_mrInterface;

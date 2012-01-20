@@ -5,8 +5,10 @@
 #ifndef _FABRIC_IO_FILEHANDLEMANAGER_H
 #define _FABRIC_IO_FILEHANDLEMANAGER_H
 
-#include <Fabric/Core/IO/Dir.h>
+#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/ConstHandle.h>
 #include <map>
+#include <string>
 
 namespace Fabric
 {

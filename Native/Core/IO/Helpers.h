@@ -53,7 +53,7 @@ namespace Fabric
     bool IsLink( std::string const &fullPath );
     void CreateDir( std::string const &dirPath );
     std::vector<std::string> GetSubDirEntries( std::string const &dirPath, bool followLinks = true );
-    void CopyFile( std::string const &sourceFullPath, std::string const &targetFullPath );
+    void CopyFile_( std::string const &sourceFullPath, std::string const &targetFullPath );
     
     void GlobDirPaths( std::string const &dirPathSpec, std::vector<std::string> &result );
 

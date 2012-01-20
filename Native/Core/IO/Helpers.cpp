@@ -142,22 +142,24 @@ namespace Fabric
           if( result[i] == '/' )
             result[i] = s_pathSeparator[0];
         }
+        return result;
       }
-      return result;
+      return url;
     }
 
     std::string ChangeSeparatorsFileToURL( std::string const &filePath )
     {
       if( s_pathSeparator[0] != '/' )
       {
-        std::string result( url );
+        std::string result( filePath );
         for( size_t i = 0; i < result.size(); ++i )
         {
           if( result[i] == s_pathSeparator[0] )
             result[i] = '/';
         }
+        return result;
       }
-      return result;
+      return filePath;
     }
 
     /*
@@ -229,7 +231,7 @@ namespace Fabric
       result = st.st_size;
 #elif defined(FABRIC_WIN32)
       WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-      if( !GetFileAttributesEx(fileName, GetFileExInfoStandard, (void*)&fileInfo)
+      if( !GetFileAttributesEx(fullPath.c_str(), GetFileExInfoStandard, (void*)&fileInfo)
             || fileInfo.dwFileAttributes == INVALID_FILE_ATTRIBUTES
             || (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
         throw Exception("Error retrieving file info");
@@ -318,7 +320,7 @@ namespace Fabric
       return result;
     }
 
-    void CopyFile( std::string const &sourceFullPath, std::string const &targetFullPath )
+    void CopyFile_( std::string const &sourceFullPath, std::string const &targetFullPath )
     {
 #if defined(FABRIC_POSIX)
       if( copyfile( sourceFullPath.c_str(), targetFullPath.c_str(), NULL, COPYFILE_ALL ) < 0 )

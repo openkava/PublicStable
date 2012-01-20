@@ -4,6 +4,8 @@
 
 #include "FileResourceProvider.h"
 #include "Helpers.h"
+#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Exception.h>
 #include <string.h>
 #include <memory.h>
 
@@ -35,7 +37,7 @@ namespace Fabric
       return "file";
     }
 
-    const int MaxFileReadBufferSize = 1<<19;//512K
+    const size_t MaxFileReadBufferSize = 1<<19;//512K
 
     struct FileStream
     {
@@ -74,18 +76,18 @@ namespace Fabric
     {
       if( failed )
       {
-        ResourceManager::onFailure( "File read operation failed", streamStruct->m_userData );//Don't put filename as it might be private
+        ResourceManager::onFailure( "File read operation failed", fileStream->m_userData );//Don't put filename as it might be private
         delete fileStream;
         return;
       }
       if( nbRead )
       {
-        ResourceManager::onData( offset, nbRead, &streamStruct->m_readBuffer.front(), streamStruct->m_userData );
-        FABRIC_ASSERT( offset == streamStruct->m_nbRead );
-        streamStruct->m_nbRead += nbRead;
+        ResourceManager::onData( offset, nbRead, &fileStream->m_readBuffer.front(), fileStream->m_userData );
+        FABRIC_ASSERT( offset == fileStream->m_nbRead );
+        fileStream->m_nbRead += nbRead;
       }
       ResourceManager::onProgress( fileStream->m_mimeType.c_str(), fileStream->m_nbRead, fileStream->m_totalSize, fileStream->m_userData );
-      if( fileStream->m_nbRead < fileStream->totalSize )
+      if( fileStream->m_nbRead < fileStream->m_totalSize )
         ReadNextData( fileStream );
       else
         delete fileStream;
@@ -125,10 +127,10 @@ namespace Fabric
 
     void ReadNextData( FileStream* fileStream )
     {
-      FABRIC_ASSERT( fileStream->m_nbRead < fileStream->totalSize );
+      FABRIC_ASSERT( fileStream->m_nbRead < fileStream->m_totalSize );
 
-      memset( fileStream->m_readParams, 0, sizeof(fileStream->m_readParams) );
-      size_t nbToRead = std::min( fileStream->m_readBuffer.size(), fileStream->totalSize - fileStream->m_nbRead );
+      memset( &(fileStream->m_readParams), 0, sizeof(fileStream->m_readParams) );
+      size_t nbToRead = std::min( fileStream->m_readBuffer.size(), fileStream->m_totalSize - fileStream->m_nbRead );
       bool readFailed = false;
 
 #if defined(FABRIC_POSIX)
@@ -204,3 +206,4 @@ namespace Fabric
     }
 
   };
+};
