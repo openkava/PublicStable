@@ -112,7 +112,7 @@ namespace Fabric
         size_t arraySize = getCount();
         size_t allocSize = m_arrayCache->m_inputElementDesc->getAllocSize();
 
-        if ( m_arrayCache->m_cacheDataExists.size() < getCount() )
+        if ( m_arrayCache->m_cacheDataExists.size() < arraySize )
         {
           m_arrayCache->m_cacheData.resize( allocSize * arraySize, 0 );
           m_arrayCache->m_cacheDataExists.resize( arraySize, 0 );
