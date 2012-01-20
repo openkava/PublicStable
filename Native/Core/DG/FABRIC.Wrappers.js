@@ -1969,7 +1969,6 @@ function (fabricClient, logCallback, debugLogCallback) {
 
       valueProducer.pub.flush = function () {
         valueProducer.queueCommand('flush');
-        executeQueuedCommands();
       };
     };
 
@@ -2055,7 +2054,6 @@ function (fabricClient, logCallback, debugLogCallback) {
 
       arrayProducer.pub.flush = function () {
         arrayProducer.queueCommand('flush');
-        executeQueuedCommands();
       };
     };
     

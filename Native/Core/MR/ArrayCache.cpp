@@ -53,9 +53,11 @@ namespace Fabric
           return m_cacheCount;
       }
 
+      size_t count = m_inputArrayProducer->getCount();
+
       {
         Util::Mutex::Lock mutexLock( m_mutex );
-        m_cacheCount = m_inputArrayProducer->getCount();
+        m_cacheCount = count;
         m_cacheCountExists = true;
         return m_cacheCount;
       }
@@ -110,7 +112,7 @@ namespace Fabric
         size_t arraySize = getCount();
         size_t allocSize = m_arrayCache->m_inputElementDesc->getAllocSize();
 
-        if ( m_arrayCache->m_cacheDataExists.size() < 1 )
+        if ( m_arrayCache->m_cacheDataExists.size() < getCount() )
         {
           m_arrayCache->m_cacheData.resize( allocSize * arraySize, 0 );
           m_arrayCache->m_cacheDataExists.resize( arraySize, 0 );
