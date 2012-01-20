@@ -1,9 +1,18 @@
-vp = ValueProducer<String>
+vp1 = ValueProducer<String>
 Should run generator
   Running generator!
-vp.produce() = Hello world!
+vp1.produce() = Hello
 Should not run generator (use cache)
-vp.produce() = Hello world!
+vp1.produce() = Hello
 Should run generator
   Running generator!
-vp.produce() = Hello world!
+vp1.produce() = Hello
+vp2 = ValueProducer<Integer>
+Should run transform
+  Running transform!
+vp2.produce() = 84
+Should not run transform (use cache)
+vp2.produce() = 84
+Should run transform
+  Running transform!
+vp2.produce() = 84
