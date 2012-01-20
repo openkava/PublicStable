@@ -1,111 +1,315 @@
+--- Testing Generator Cache
 ArrayProducer<Integer>
- gen.getCount() = 10
+  ap.getCount() = 10
 Should run generator 10x
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-Should not run generator (cached)
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
- gen.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+Should not run generator 10x
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
 Should run generator 10x
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-  Running generator
- gen.produce() = 42
-cap.getCount() = 10
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ 
+--- Testing Transform Cache
 ArrayProducer<Integer>
- tr.getCount() = 10
+  ap.getCount() = 10
 Should run transform 10x
-  Running transform
- tr.produce() = 0
-  Running transform
- tr.produce() = 2
-  Running transform
- tr.produce() = 4
-  Running transform
- tr.produce() = 6
-  Running transform
- tr.produce() = 8
-  Running transform
- tr.produce() = 10
-  Running transform
- tr.produce() = 12
-  Running transform
- tr.produce() = 14
-  Running transform
- tr.produce() = 16
-  Running transform
- tr.produce() = 18
-Should not run transform (cached)
- tr.produce() = 0
- tr.produce() = 2
- tr.produce() = 4
- tr.produce() = 6
- tr.produce() = 8
- tr.produce() = 10
- tr.produce() = 12
- tr.produce() = 14
- tr.produce() = 16
- tr.produce() = 18
+ running transform
+  ap.produce() = 0
+ running transform
+  ap.produce() = 2
+ running transform
+  ap.produce() = 4
+ running transform
+  ap.produce() = 6
+ running transform
+  ap.produce() = 8
+ running transform
+  ap.produce() = 10
+ running transform
+  ap.produce() = 12
+ running transform
+  ap.produce() = 14
+ running transform
+  ap.produce() = 16
+ running transform
+  ap.produce() = 18
+Should not run transform 10x
+  ap.produce() = 0
+  ap.produce() = 2
+  ap.produce() = 4
+  ap.produce() = 6
+  ap.produce() = 8
+  ap.produce() = 10
+  ap.produce() = 12
+  ap.produce() = 14
+  ap.produce() = 16
+  ap.produce() = 18
 Should run transform 10x
-  Running transform
- tr.produce() = 0
-  Running transform
- tr.produce() = 2
-  Running transform
- tr.produce() = 4
-  Running transform
- tr.produce() = 6
-  Running transform
- tr.produce() = 8
-  Running transform
- tr.produce() = 10
-  Running transform
- tr.produce() = 12
-  Running transform
- tr.produce() = 14
-  Running transform
- tr.produce() = 16
-  Running transform
- tr.produce() = 18
+ running transform
+  ap.produce() = 0
+ running transform
+  ap.produce() = 2
+ running transform
+  ap.produce() = 4
+ running transform
+  ap.produce() = 6
+ running transform
+  ap.produce() = 8
+ running transform
+  ap.produce() = 10
+ running transform
+  ap.produce() = 12
+ running transform
+  ap.produce() = 14
+ running transform
+  ap.produce() = 16
+ running transform
+  ap.produce() = 18
+ 
+--- Testing Nested Caches
+ArrayProducer<Integer>
+  ap.getCount() = 10
+Should run generator 10x
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+Should not run generator 10x
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+  ap.produce() = 42
+Should run generator 10x
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ running generator
+  ap.produce() = 42
+ 
+--- Testing Transform flush propagation
+ArrayProducer<Integer>
+  ap.getCount() = 10
+Should run generator 10x
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+Should not run generator 10x
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+ running transform
+  ap.produce() = 84
+Should run generator 10x
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ running generator
+ running transform
+  ap.produce() = 84
+ 
+--- Testing Map flush propagation
+ArrayProducer<Integer>
+  ap.getCount() = 10
+Should run generator 10x
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+Should not run generator 10x
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+  ap.produce() = 2
+Should run generator 10x
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ running generator
+  ap.produce() = 2
+ 
