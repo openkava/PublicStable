@@ -339,7 +339,7 @@ namespace Fabric
               if ( exponentNeg )
                 exponent = -exponent;
               
-              entityInfo.value.scalar = mantissa * pow( 10, exponent );
+              entityInfo.value.scalar = mantissa * pow( 10.0, exponent );
             }
           }
         }
