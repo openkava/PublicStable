@@ -8,7 +8,7 @@
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
-#include <Fabric/Core/IO/Stream.h>
+#include <Fabric/Core/IO/ResourceManager.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
@@ -20,86 +20,73 @@ namespace Fabric
 {
   namespace CLI
   {
-    class IOStream : public IO::Stream
+    class TestSynchronousFileResourceProvider : public IO::ResourceProvider
     {
     public:
 
-      static RC::Handle<IOStream> Create(
-        std::string const &url,
-        DataCallback dataCallback,
-        EndCallback endCallback,
-        FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        )
+      static RC::Handle<TestSynchronousFileResourceProvider> Create()
       {
-        return new IOStream( url, dataCallback, endCallback, failureCallback, target, userData );
+        return new TestSynchronousFileResourceProvider();
       }
-      
-    protected:
 
-      IOStream(
-        std::string const &url,
-        DataCallback dataCallback,
-        EndCallback endCallback,
-        FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        )
-        : IO::Stream( dataCallback, endCallback, failureCallback, target, userData )
-        , m_url( url )
+      virtual char const * getUrlScheme() const
       {
-        size_t colonIndex = m_url.find( ':' );
-        if ( colonIndex == m_url.length() )
-          onFailure( m_url, "malformed URL" );
+        return "testfile";
+      }
+
+      virtual void get( char const *url, bool getAsFile, void* userData )
+      {
+        if( strncmp( "testfile://", url, 11 ) != 0 )
+            throw Exception( "Error: URL not properly formatted for local files" );//Don't put filename as it might be private
+
+        std::string fileWithPath = ChangeSeparatorsURLToFile( std::string( url+11 ) );
+        if( !FileExists( fileWithPath ) )
+            throw Exception( "Error: file doesn't exist" );//Don't put filename as it might be private
+
+        std::string extension = GetExtension( fileWithPath );
+        size_t fileSize = GetFileSize( fileWithPath );
+
+        if( getAsFile )
+        {
+          ResourceManager::onFileAsynchThreadCall( fileWithPath.c_str(), userData );
+          ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
+        }
         else
         {
-          std::string method = m_url.substr( 0, colonIndex );
-          if ( method != "file" )
-            onFailure( m_url, "unsupported method " + _(method) );
-          else
+          FILE *fp = fopen( fileWithPath.c_str(), "rb" );
+          if ( fp == NULL )
+            ResourceManager::onFailureAsynchThreadCall( "Unable to open file", userData );
+
+          static const size_t maxReadSize = 1<<16;//64K buffers
+          uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
+          size_t offset = 0;
+          for (;;)
           {
-            std::string filename = m_url.substr( colonIndex+1, m_url.length() - colonIndex - 1 );
-            if ( filename.length() == 0 )
-              onFailure( m_url, "empty filename" );
-            else
-            {
-              FILE *fp = fopen( filename.c_str(), "rb" );
-              if ( fp == NULL )
-                onFailure( m_url, "unable to open file" );
+            size_t readSize = fread( &data[0], 1, maxReadSize, fp );
+            if ( ferror( fp ) )
+              ResourceManager::onFailureAsynchThreadCall( "Error while reading file", userData );
 
-              fseek(fp, 0, SEEK_END);
-              size_t totalSize = ftell(fp);
-              fseek(fp, 0, SEEK_SET); 
-      
-              static const size_t maxReadSize = 1<<16;//64K buffers
-              uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
-              size_t offset = 0;
-              for (;;)
-              {
-                size_t readSize = fread( &data[0], 1, maxReadSize, fp );
-                if ( ferror( fp ) )
-                  onFailure( m_url, "error while reading file" );
+            ResourceManager::onDataAsynchThreadCall( offset, readSize, data, userData );
+            ResourceManager::onProgressAsynchThreadCall( "text/plain", offset+readSize, fileSize, userData );
 
-                onData( m_url, "text/plain", totalSize, offset, readSize, data );
-
-                if ( readSize < maxReadSize )
-                  break;
-                offset += readSize;
-              }
-              free( data );
-              fclose( fp );
-
-              onEnd( m_url, "text/plain" );
-            }
+            offset += readSize;
+            if ( offset == fileSize )
+              break;
           }
+          free( data );
+          fclose( fp );
         }
       }
-      
-    private:
 
-      std::string m_url;
+    private:
+      TestSynchronousFileResourceProvider(){}
     };
+
+    void ScheduleAsynchCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
+    {
+      //In fact it's not asynch for our unit test purpose...
+      (*callbackFunc)( callbackFuncUserData );
+    }
 
     class IOManager : public IO::Manager
     {
@@ -109,18 +96,6 @@ namespace Fabric
       {
         return new IOManager;
       }
-    
-      virtual RC::Handle<IO::Stream> createStream(
-        std::string const &url,
-        IO::Stream::DataCallback dataCallback,
-        IO::Stream::EndCallback endCallback,
-        IO::Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        ) const
-      {
-        return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
-      }
 
       virtual std::string queryUserFilePath(
         bool existingFile,
@@ -129,6 +104,7 @@ namespace Fabric
         std::string const &extension
         ) const
       {
+        //For unit test purposes only
         if ( !IO::DirExists( "TMP" ) )
 	        IO::CreateDir( "TMP" );
         if(existingFile)
@@ -139,8 +115,9 @@ namespace Fabric
   
     protected:
     
-      IOManager()
+      IOManager() : IO::Manager( ScheduleAsynchCallback, NULL )
       {
+        getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( TestSynchronousFileResourceProvider::Create() ), true );
       }
     };
     
