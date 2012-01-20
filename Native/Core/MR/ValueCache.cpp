@@ -75,7 +75,7 @@ namespace Fabric
         Util::Mutex::Lock mutexLock( m_mutex );
         if ( m_valueCache->m_cacheData.size() > 0 )
         {
-          m_valueCache->m_valueDesc->setData( &m_valueCache->m_cacheData[0], data);
+          m_valueCache->m_valueDesc->setData( &m_valueCache->m_cacheData[0], data );
           return;
         }
       }

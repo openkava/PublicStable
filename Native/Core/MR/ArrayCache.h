@@ -53,7 +53,7 @@ namespace Fabric
       
         RC::ConstHandle<ArrayCache> m_arrayCache;
         RC::ConstHandle<ArrayProducer::ComputeState> m_inputArrayProducerComputeState;
-        Util::Mutex m_mutex;
+        mutable Util::Mutex m_mutex;
       };
     
       ArrayCache(
@@ -66,10 +66,12 @@ namespace Fabric
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
 
       RC::ConstHandle<RT::Desc> m_inputElementDesc;
-      mutable std::vector<bool> m_cachedMap;
+      
       mutable size_t m_cacheCount;
+      mutable bool m_cacheCountExists;
+      mutable std::vector<bool> m_cacheDataExists;
       mutable std::vector<uint8_t> m_cacheData;
-      Util::Mutex m_mutex;
+      mutable Util::Mutex m_mutex;
     };
   };
 };
