@@ -805,12 +805,13 @@ FABRIC.SceneGraph.registerNodeType('LinearTranslationManipulator', {
   parentNodeDesc: 'Manipulator',
   optionsDesc: {
     size: 'The size of the linear translation Manipulator.',
-    name: 'The name of the linear translation Manipulator.',
+    name: 'The name of the linear translation Manipulator.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         size: 20,
         name: 'LinearTranslationManipulator',
+        baseManipulatorType: 'InstanceManipulator',
         xfoFilter: { tr:true }
       });
     if (!options.geometryNode) {
@@ -855,7 +856,8 @@ FABRIC.SceneGraph.registerNodeType('PlanarTranslationManipulator', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         size: 15,
-        name: 'PlanarTranslationManipulator'
+        name: 'PlanarTranslationManipulator',
+        baseManipulatorType: 'InstanceManipulator'
       });
     if (!options.geometryNode) {
       // Draw a simple triangle on the XY plane
@@ -969,40 +971,6 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
     var threeAxisTranslationManipulator = scene.constructNode('SceneGraphNode', options);
     var name = threeAxisTranslationManipulator.pub.getName();
 
-    var lineVector = scene.pub.constructNode('LineVector', {
-      from: new FABRIC.RT.Vec3(0, -options.size, 0),
-      to: new FABRIC.RT.Vec3(0, options.size, 0)
-    });
-  //  var arrowHead = scene.pub.constructNode('Cone', { radius: options.size * 0.04, height: options.size * 0.2 });
-
-    if(options.linearTranslationManipulators){
-      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
-        name: name + '_XAxis',
-        color: FABRIC.RT.rgb(0.8, 0, 0, 1),
-        localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
-          ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
-        })),
-        geometryNode: lineVector,
-        xfoFilter: { tr:{ x: true } }
-      }));
-      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
-        name: name + '_YAxis',
-        color: FABRIC.RT.rgb(0, 0.8, 0),
-        localXfo: options.localXfo,
-        geometryNode: lineVector,
-        xfoFilter: { tr:{ y: true } }
-      }));
-      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
-        name: name + '_ZAxis',
-        color: FABRIC.RT.rgb(0, 0, 0.8),
-        localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
-          ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
-        })),
-        geometryNode: lineVector,
-        xfoFilter: { tr:{ z: true } }
-      }));
-    }
-    
     if(options.planarTranslationManipulators){
     var drawTriangle = scene.pub.constructNode('Triangles');
     var planeSize = options.size * 0.3;
@@ -1043,6 +1011,40 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
         xfoFilter: { tr:{ x: true, y: true } }
       }));
     }
+    
+    if(options.linearTranslationManipulators){
+      var lineVector = scene.pub.constructNode('LineVector', {
+        from: new FABRIC.RT.Vec3(0, -options.size, 0),
+        to: new FABRIC.RT.Vec3(0, options.size, 0)
+      });
+    
+      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
+        name: name + '_XAxis',
+        color: FABRIC.RT.rgb(0.8, 0, 0, 1),
+        localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
+          ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
+        })),
+        geometryNode: lineVector,
+        xfoFilter: { tr:{ x: true } }
+      }));
+      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
+        name: name + '_YAxis',
+        color: FABRIC.RT.rgb(0, 0.8, 0),
+        localXfo: options.localXfo,
+        geometryNode: lineVector,
+        xfoFilter: { tr:{ y: true } }
+      }));
+      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
+        name: name + '_ZAxis',
+        color: FABRIC.RT.rgb(0, 0, 0.8),
+        localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
+          ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
+        })),
+        geometryNode: lineVector,
+        xfoFilter: { tr:{ z: true } }
+      }));
+    }
+    
     if(options.screenTranslationManipulators){
       scene.pub.constructNode('ScreenTranslationManipulator', scene.cloneObj(options, {
         name: name + '_Screen',
