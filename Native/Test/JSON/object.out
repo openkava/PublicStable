@@ -1,8 +1,8 @@
-OBJECT
-OBJECT
+OBJECT 0
+OBJECT 1
   STRING 4 'fred'
     INTEGER 17
-OBJECT
+OBJECT 4
   STRING 4 'fred'
     STRING 3 'joe'
   STRING 3 'joe'
@@ -11,34 +11,34 @@ OBJECT
     NULL
   STRING 3 'bar'
     BOOLEAN false
-OBJECT
+OBJECT 2
   STRING 4 'fred'
-    OBJECT
+    OBJECT 1
       STRING 3 'joe'
-        ARRAY
+        ARRAY 3
           INTEGER 4
-          OBJECT
+          OBJECT 2
             STRING 3 'bar'
-              ARRAY
+              ARRAY 2
                 NULL
                 SCALAR 4.5
             STRING 1 'a'
-              OBJECT
+              OBJECT 1
                 STRING 1 '5'
                   INTEGER 42
-          ARRAY
+          ARRAY 3
             INTEGER 4
             SCALAR 6.8
             BOOLEAN true
   STRING 3 'joe'
-    ARRAY
+    ARRAY 3
       SCALAR 5.6
       INTEGER 9
-      ARRAY
-        OBJECT
+      ARRAY 1
+        OBJECT 1
           STRING 4 'fred'
             STRING 0 ''
-OBJECT
+OBJECT 23
   STRING 7 'vampire'
     INTEGER 1
   STRING 5 'diary'
