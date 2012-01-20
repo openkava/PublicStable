@@ -49,6 +49,8 @@ namespace Fabric
 
     void ArrayCache::flush()
     {
+      (const_cast<ArrayProducer *>(m_inputArrayProducer.ptr()))->flush(); 
+
       if ( m_cacheData.size() > 0 )
       {
         Util::Mutex::Lock mutexLock( m_mutex );
