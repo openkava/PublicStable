@@ -130,6 +130,26 @@ namespace Fabric
             basicBlockBuilder->CreateRet( basicBlockBuilder->CreateLoad( functionScope.llvmGetReturnLValue() ) );
         }
       }
+ 
+      {
+        std::string name = methodOverloadName( "flush", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *rValue = functionBuilder[0];
+
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+
+          llvmFlush( basicBlockBuilder, rValue );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
     }
     
     void ValueProducerAdapter::Retain( void const *rValue )
@@ -163,6 +183,13 @@ namespace Fabric
       }
     }
     
+    void ValueProducerAdapter::Flush( void const *valueProducerRValue )
+    {
+      MR::ValueProducer *valueProducer = *static_cast<MR::ValueProducer * const *>( valueProducerRValue );
+      if ( valueProducer )
+        valueProducer->flush();
+    }
+    
     void ValueProducerAdapter::Produce( void const *valueProducerRValue, void *dstLValue )
     {
       MR::ValueProducer *valueProducer = *static_cast<MR::ValueProducer * const *>( valueProducerRValue );
@@ -180,6 +207,8 @@ namespace Fabric
         return (void *)&ValueProducerAdapter::DefaultAssign;
       else if ( functionName == "__"+getCodeName()+"__Produce" )
         return (void *)&ValueProducerAdapter::Produce;
+      else if ( functionName == "__"+getCodeName()+"__Flush" )
+        return (void *)&ValueProducerAdapter::Flush;
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
@@ -212,6 +241,16 @@ namespace Fabric
       basicBlockBuilder->CreateCall( func, rValue );
     }
     
+    void ValueProducerAdapter::llvmFlush( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *valueProducerRValue ) const
+    {    
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( llvmRType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+      llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Flush", funcType ); 
+      basicBlockBuilder->CreateCall( func, valueProducerRValue );
+    }
+
     void ValueProducerAdapter::llvmProduce( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *valueProducerRValue, llvm::Value *dstLValue ) const
     {    
       RC::Handle<Context> context = basicBlockBuilder.getContext();

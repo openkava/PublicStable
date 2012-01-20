@@ -33,6 +33,7 @@ namespace Fabric
       
       virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
+      virtual void flush();
             
     protected:
     

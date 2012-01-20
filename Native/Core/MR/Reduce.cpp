@@ -74,6 +74,11 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void Reduce::flush()
+    {
+      (const_cast<ArrayProducer *>(m_inputArrayProducer.ptr()))->flush();
+    }
     
     RC::Handle<Reduce::ComputeState> Reduce::ComputeState::Create( RC::ConstHandle<Reduce> const &reduce )
     {

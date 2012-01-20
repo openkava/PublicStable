@@ -32,6 +32,7 @@ namespace Fabric
       
       virtual RC::ConstHandle<RT::Desc> getValueDesc() const;
       virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
+      virtual void flush();
             
     protected:
     

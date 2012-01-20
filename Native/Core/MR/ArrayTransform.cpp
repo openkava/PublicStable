@@ -69,6 +69,11 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void ArrayTransform::flush()
+    {
+      (const_cast<ArrayProducer *>(m_inputArrayProducer.ptr()))->flush();
+    }
     
     RC::Handle<ArrayTransform::ComputeState> ArrayTransform::ComputeState::Create( RC::ConstHandle<ArrayTransform> const &arrayTransform )
     {
