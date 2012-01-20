@@ -13,16 +13,15 @@
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
 #include <Fabric/Core/CG/CompileOptions.h>
-#include <Fabric/Core/RT/OpaqueDesc.h>
-#include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
-#include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Compiler.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Base/JSON/Boolean.h>
 #include <Fabric/Base/JSON/String.h>
@@ -50,7 +49,7 @@ namespace Fabric
   {
     Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
-    Context* s_activeContext = NULL;
+    Context *s_activeContext = NULL;
     
     Context::ActiveContextBracket::ActiveContextBracket( Context* currContext )
       : m_prevContext( s_activeContext )
@@ -715,13 +714,13 @@ namespace Fabric
     void FileHandleCreateFromPath( void *stringData, char const *filePathCString, bool folder, bool readOnly )
     {
       std::string handle = GetActiveContext()->getIOManager()->getFileHandleManager()->createHandle( filePathCString, folder, readOnly );
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       stringDesc->setValue( handle.data(), handle.length(), stringData );
     }
 
     void FileGetPath( void const *stringData, void *pathStringData )
     {
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
       std::string path = GetActiveContext()->getIOManager()->getFileHandleManager()->getPath( handle );
       stringDesc->setValue( path.data(), path.length(), pathStringData );
@@ -729,35 +728,35 @@ namespace Fabric
 
     bool FileHandleIsValid( void const *stringData )
     {
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
       return GetActiveContext()->getIOManager()->getFileHandleManager()->isValid( handle );
     }
 
     bool FileHandleIsReadOnly( void const *stringData )
     {
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
       return GetActiveContext()->getIOManager()->getFileHandleManager()->isReadOnly( handle );
     }
 
     bool FileHandleIsFolder( void const *stringData )
     {
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
       return GetActiveContext()->getIOManager()->getFileHandleManager()->isFolder( handle );
     }
 
     bool FileHandleTargetExists( void const *stringData )
     {
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
       return GetActiveContext()->getIOManager()->getFileHandleManager()->targetExists( handle );
     }
 
     void FileHandleEnsureTargetExists( void const *stringData )
     {
-      RC::ConstHandle<StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
       GetActiveContext()->getIOManager()->getFileHandleManager()->ensureTargetExists( handle );
     }

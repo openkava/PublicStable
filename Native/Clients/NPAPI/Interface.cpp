@@ -9,6 +9,7 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Clients/NPAPI/IOManager.h>
+#include <Fabric/Clients/NPAPI/HTTPResourceProvider.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>

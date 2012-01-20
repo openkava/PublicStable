@@ -7,6 +7,8 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/ImplType.h>
@@ -89,7 +91,7 @@ namespace Fabric
       {
         //Set from m_fabricResourceStreamData
         //[JeromeCG 20110727] Note: if m_asFile, the handle was created as "readOnly", so in theory the data is still valid.
-        setResourceData( 0, false );
+        setResourceData( NULL, false );
         return;
       }
 
@@ -102,7 +104,7 @@ namespace Fabric
       m_fabricResourceStreamData.setDataExternalLocation( "" );
       m_fabricResourceStreamData.resizeData( 0 );
       m_keepMemoryCache = false;
-      setResourceData( 0, false );
+      setResourceData( NULL, false );
 
       m_keepMemoryCache = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "keepMemoryCache", 0 ) );
       m_asFile = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "storeDataAsFile", 0 ) );
@@ -148,7 +150,7 @@ namespace Fabric
       m_fabricResourceStreamData.resizeData( 0 );
       m_fabricResourceStreamData.setDataExternalLocation( "" );
       m_inProgress = false;
-      setResourceData( &errorDesc, true );
+      setResourceData( errorDesc, true );
     }
 
     void ResourceLoadNode::onProgress( char const *mimeType, size_t done, size_t total, void *userData )
@@ -181,7 +183,7 @@ namespace Fabric
       {
         m_fabricResourceStreamData.setMIMEType( mimeType );
         m_inProgress = false;//[JeromeCG 20111221] Important: set m_inProgress to false since setResourceData's notifications can trigger an evaluation
-        setResourceData( 0, true );
+        setResourceData( NULL, true );
       }
     }
 

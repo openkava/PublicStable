@@ -3,6 +3,7 @@
  */
 
 #include "FileHandleManager.h"
+#include <Fabric/Base/Exception.h>
 #include <Fabric/Core/Util/Assert.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
@@ -42,7 +43,7 @@ namespace Fabric
 
       validateEntry( data.m_path );//Check basic syntax, but don't check if exists
 
-      pair< PathToHandleMap::const_iterator, PathToHandleMap::const_iterator > existingRange = m_pathToHandle.equal_range( data.m_path );
+      std::pair< PathToHandleMap::const_iterator, PathToHandleMap::const_iterator > existingRange = m_pathToHandle.equal_range( data.m_path );
       while( existingRange.first != existingRange.second )
       {
         const Data& existingData = existingRange.first->second->second;
@@ -72,8 +73,9 @@ namespace Fabric
         //If we are here, either we are really not lucky, or the random algo is really bad!
       }
 
-      std::pair<bool, HandleToDataMap::iterator> handleToDataIter = m_handleToData.insert( std::make_pair( handle, data ) );
-      m_pathToHandle.insert( std::make_pair( data.m_path, handleToDataIter) );
+      std::pair<HandleToDataMap::iterator, bool> result = m_handleToData.insert( std::make_pair( handle, data ) );
+      m_pathToHandle.insert( std::make_pair( data.m_path, result.first ) );
+      return handle;
     }
 
     std::string FileHandleManager::createRelativeHandle( std::string const &handlePlusRelativePath, bool folder )
@@ -112,7 +114,7 @@ namespace Fabric
       if( handle.length() < m_encodedHandleLength )
         throw Exception( "Invalid FileHandle" );
 
-      HandleToDataMap::const_iterator iter = m_handleToData.find( handle, m_encodedHandleLength );
+      HandleToDataMap::const_iterator iter = m_handleToData.find( handle.substr( 0, m_encodedHandleLength ) );
       if( iter == m_handleToData.end() )
         throw Exception( "Invalid FileHandle" );
 
@@ -138,7 +140,7 @@ namespace Fabric
       return getPathInternal( data, relativePathPostfix );
     }
 
-    bool FileHandleManager::getPathInternal( Data const &data, std::string const &relativePathPostfix ) const
+    std::string FileHandleManager::getPathInternal( Data const &data, std::string const &relativePathPostfix ) const
     {
       return relativePathPostfix.empty() ? data.m_path : data.m_path + relativePathPostfix;
     }
@@ -217,17 +219,17 @@ namespace Fabric
           SplitPath( data.m_path, dir, file );
           if( !DirExists( dir ) )
             CreateDir( dir );
-          if( !FileExists( data.m_path )
+          if( !FileExists( data.m_path ) )
           {
             std::ofstream file( data.m_path.c_str() );
             if( !file.is_open() )
-              throw Exception( "Unable to create file from handle " + std::string(handle) );
+              throw Exception( "Unable to create file" );
           }
         }
       }
     }
 
-    void FileHandleManager::writeFile( std::string const &handle, size_t size, const void* data, bool append ) const
+    void FileHandleManager::putFile( std::string const &handle, size_t size, const void* byteData, bool append ) const
     {
       std::string relativePathPostfix;
       Data const &data = validateHandleAndGetData( handle, relativePathPostfix );
@@ -245,7 +247,7 @@ namespace Fabric
       if( !file.is_open() )
         throw Exception( "Unable to create file" );
 
-      file.write( (const char*)data, size );
+      file.write( (const char*)byteData, size );
       if( file.bad() )
         throw Exception( "Error while writing to file" );
     }
@@ -276,7 +278,7 @@ namespace Fabric
         throw Exception( "Source handle is a folder; must be a file" );
 
       std::string sourceFullPath = getPathInternal( sourceData, sourceRelativePathPostfix );
-      CopyFile( sourceFullPath, targetFullPath );
+      IO::CopyFile_( sourceFullPath, targetFullPath );
     }
   };
 };

@@ -8,10 +8,12 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/IO/FileHandleResourceProvider.h>
+#include <Fabric/Core/IO/ResourceManager.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
-#include "ResourceManager.h"
 
 #include <fstream>
 
@@ -22,8 +24,8 @@ namespace Fabric
     Manager::Manager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData )
       : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
       , m_fileHandleManager( FileHandleManager::Create() )
-      , m_fileHandleResourceProvider( FileHandleResourceProvider::Create() )
     {
+      m_fileHandleResourceProvider = FileHandleResourceProvider::Create( m_fileHandleManager );
       m_resourceManager->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_fileHandleResourceProvider ) );
     }
 
@@ -231,10 +233,9 @@ namespace Fabric
 
     void Manager::jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
-      std::string fullPath, dir, filename;
+      std::string fullPath;
       bool writeAccess;
-
-      jsonQueryUserFile( arg, NULL, NULL, dir, fullPath, writeAccess );
+      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess );
 
       std::string dir, filename;
       IO::SplitPath( fullPath, dir, filename );
@@ -251,8 +252,8 @@ namespace Fabric
       }
         
       {
-        Util::JSONGenerator memberJG = jog.makeMember( "folder", 6 );
-        memberJG.makeInteger( dirHandle );
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "folder", 6 );
+        memberJG.makeInteger( GetFileSize( fullPath ) );
       }
     }
 
@@ -294,7 +295,7 @@ namespace Fabric
       std::string handle = argJSONObject->get( "file" )->toString( "file handle must be a String" )->value();
 
       bool append = false;
-      val = argJSONObject->maybeGet( "append" );
+      RC::ConstHandle<JSON::Value> val = argJSONObject->maybeGet( "append" );
       if( val )
       {
         append = val->toBoolean( "'append' must be a Boolean" )->value();
@@ -319,9 +320,9 @@ namespace Fabric
       if( !file.is_open() )
         throw Exception( "Unable to open file" );
 
-      file.read( content.data(), fileSize );
+      file.read( (char*)content.data(), fileSize );
       if( file.bad() )
-        throw Exception( "Error while reading file" );
+        throw Exception( "Error while reading text file" );
 
       Util::JSONGenerator resultJG = resultJAG.makeElement();
       resultJG.makeString( content );
