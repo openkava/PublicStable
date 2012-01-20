@@ -35,6 +35,7 @@ elif buildOS == 'Darwin':
   for libtiffname in libtiffnames:
     sources.extend([libtiffRoot + '/libtiff/tif_'+libtiffname+'.c'])
 else:
+  cimgPluginEnv.Append(CPPPATH = [libtiffRoot+'/libtiff'])
   cimgPluginEnv['LIBS'].append(['tiff'])
 
 cimgPlugin = cimgPluginEnv.SharedLibrary( ExtSLName('FabricCIMG'), sources ),
