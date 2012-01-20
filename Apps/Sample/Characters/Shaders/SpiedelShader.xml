@@ -17,9 +17,9 @@
     <uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
     <uniform name="u_cameraPos" constant="cameraPosition" type="Vec3" owner="instance"/>
     
-    <!--
+    
     <uniform name="u_samplerCube" constant="cubeMapTexture" type="Integer" owner="cubeMapTexture"/>
-    -->
+    
     <uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
     <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar" owner="geometry"/>
     
@@ -34,11 +34,10 @@
   <lights>
     <light type="Light" binding="light"/>
   </lights>
-  <!--
   <textures>
     <texture binding="cubeMapTexture"/>
   </textures>
-  -->
+  
   <vertexshader>
     <source>
 <![CDATA[
@@ -117,7 +116,7 @@ varying vec3 viewDir;
 varying vec4 vertexColor;
 varying vec3 reflectDir;
 
-//uniform samplerCube u_samplerCube;
+uniform samplerCube u_samplerCube;
 
 
 ]]>
@@ -139,10 +138,10 @@ void main(){
  // vec4 color = mix(vec4(1.0, 0.0, 0.0, 1.0), vec4(0.0, 0.0, 1.0, 1.0), reflectFactor);
 
   // Perform a cube map look up.
-//  vec4 cubeColor = textureCube(u_samplerCube, Rn);
- // cubeColor.a = 1.0;
-//  vec4 color = mix(vertexColor, cubeColor, reflectFactor);
-
+  vec4 cubeColor = textureCube(u_samplerCube, Rn);
+  cubeColor.a = 1.0;
+  vec4 color = mix(vertexColor, cubeColor, reflectFactor);
+/*
   float lightFactor = 1.0;
   gl_FragColor = phong_shading(
     Nn, 
@@ -153,10 +152,12 @@ void main(){
     lightFactor,
     u_lightCosCutoff,
     u_lightColor,
-    vertexColor,
+    color,
     vec4(1.0, 1.0, 1.0, 1.0),
     u_materialShininess,
     vec4(0.0, 0.0, 0.0, 1.0) );
+*/
+	gl_FragColor = color;
 }
 
 ]]>

@@ -175,7 +175,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var sphere = scene.constructNode('Sphere', { radius: 2, detail: 10, needUVs: true, tangentsFromUV: 0 });
   
     // Transparency Shader
-    /*
   var cubeTextureMap = scene.constructNode('CubeMap', {
     urls: [
       'Textures/Teide/posx.png',
@@ -201,8 +200,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     geometryNode: sphere,
     materialNode: reflectionMaterial
   });
-*/
-
+  
   //////////////////////////////////////////////
   //
   var rigName = 'Spiedel';
@@ -265,8 +263,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     rigInstances.rig.addMaterialNode(
       scene.constructNode('SpiedelShader', {
         lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-        diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)/*,
-        cubeMapTextureNode: cubeTextureMap */
+        diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
+        cubeMapTextureNode: cubeTextureMap
       }));
     
     break;
@@ -613,10 +611,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         // NOTE: currently the ikrigNode is actually the locomotion rig, because the locomotion rig
         // simply adds 2 solvers to the rig. We should disolve the Locomotion rig and simply add the
         // solvers to the IK rig, clarifying the situation
-        var trackSetId = ikrigNode.generateAnimationTracks(libraryIKAnimations, libraryFKAnimations.getTrackSetName(i), false);
-        
-        
-        var bindings = libraryIKAnimations.bindToRig(ikrigNode, trackSetId);
+      //  var bindings = libraryIKAnimations.bindToRig(ikrigNode, libraryFKAnimations.getTrackSetName(i));
+        var bindings = ikrigNode.generateAnimationTracks(libraryIKAnimations, libraryFKAnimations.getTrackSetName(i), true, controllerNode)
         
         var timeRange = libraryFKAnimations.getTimeRange(i);
         libraryIKAnimations.plotKeyframes(i, timeRange, sampleFrequency);

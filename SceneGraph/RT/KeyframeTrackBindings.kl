@@ -1,5 +1,4 @@
-use Vec3, Quat, Xfo;
-use KEYFRAMETYPE, KEYFRAMETYPETrack, KEYFRAMETYPETrackSet;
+
 
 function KEYFRAMETYPETrackSetBindings.addScalarBinding(
   in Integer varId,
@@ -25,7 +24,7 @@ function KEYFRAMETYPETrackSetBindings.addXfoBinding(
 function KEYFRAMETYPETrackSetBindings.evaluateTracks(
   in Scalar time,
   io PoseVariables poseVariables,
-  in KEYFRAMETYPETrackSet trackSet,
+  io KEYFRAMETYPETrackSet trackSet,
   io Integer currKeys[]
 ) {
   Integer trackId = 0;

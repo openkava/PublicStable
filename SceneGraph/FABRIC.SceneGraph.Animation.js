@@ -494,15 +494,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       animationLibraryNode.pub.setTrackSet(m_trackSet, m_trackSetId);
       animationLibraryNode.pub.fireEvent('valuechanged', {});
     }
-    
+    /*
     var paramsdgnode;
-    animationLibraryNode.pub.bindToRig = function(rigNode, trackSetId){
+    animationLibraryNode.pub.bindToRig = function(rigNode, trackSetName){
       if (!rigNode.isTypeOf('CharacterRig')) {
         throw ('Incorrect type. Must be a CharacterRig');
       }
       
       rigNode = scene.getPrivateInterface(rigNode);
-      /*
+      
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
       var trackSet = new FABRIC.RT.KeyframeTrackSet(trackSetName);
       var variables = rigNode.getVariables();
@@ -559,8 +559,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         trackSet.addQuatTrack("XfoTrack"+i, undefined, trackBindings, i);
       }
       var trackSetId = animationLibraryNode.pub.addTrackSet(trackSet);
-        */
-        
+      
       if(!paramsdgnode){
         paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
         
@@ -569,7 +568,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }else{
         paramsdgnode.setData('boundTrack', 0, trackSetId);
       }
-    //  dgnode.setData('bindings', trackSetId, trackBindings);
+      dgnode.setData('bindings', trackSetId, trackBindings);
       
       animationLibraryNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
         var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
@@ -604,8 +603,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         dgnode.removeDependency('globals');
         scene.pub.animation.setTime(0, false);
       }
-    //  return trackBindings;
+      return trackBindings;
     }
+        */
         
     animationLibraryNode.getEvaluateCurveOperator = function() {
       return scene.constructOperator({
