@@ -570,7 +570,9 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     if(options.targetNode.isTypeOf("Instance")){
       options.targetNode = options.targetNode.getTransformNode();
     }
-  //  options.raycastOverlaid = options.drawOverlaid;
+    // This option is a bit strange.
+    // If we can manipulate and select objects, then the gizmo must recieve raycasts even if it is behind the selected geometry.
+    options.raycastOverlaid = options.drawOverlaid;
     
     // get the target node (the one we are manipulating)
     var targetNode = options.targetNode;
