@@ -71,6 +71,10 @@ namespace Fabric
     {
       return &m_data[0];
     }
+
+    void ConstValue::flush()
+    {
+    }
     
     RC::Handle<ConstValue::ComputeState> ConstValue::ComputeState::Create( RC::ConstHandle<ConstValue> const &constValue )
     {

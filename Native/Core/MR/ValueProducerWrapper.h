@@ -45,6 +45,11 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
 
+      void jsonExecFlush(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+
     private:
     
       static void JSONExecProduceAsyncFinishedCallback( void *userdata );

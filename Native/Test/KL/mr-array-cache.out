@@ -1,0 +1,111 @@
+ArrayProducer<Integer>
+ gen.getCount() = 10
+Should run generator 10x
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+Should not run generator (cached)
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+ gen.produce() = 42
+Should run generator 10x
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+  Running generator
+ gen.produce() = 42
+cap.getCount() = 10
+ArrayProducer<Integer>
+ tr.getCount() = 10
+Should run transform 10x
+  Running transform
+ tr.produce() = 0
+  Running transform
+ tr.produce() = 2
+  Running transform
+ tr.produce() = 4
+  Running transform
+ tr.produce() = 6
+  Running transform
+ tr.produce() = 8
+  Running transform
+ tr.produce() = 10
+  Running transform
+ tr.produce() = 12
+  Running transform
+ tr.produce() = 14
+  Running transform
+ tr.produce() = 16
+  Running transform
+ tr.produce() = 18
+Should not run transform (cached)
+ tr.produce() = 0
+ tr.produce() = 2
+ tr.produce() = 4
+ tr.produce() = 6
+ tr.produce() = 8
+ tr.produce() = 10
+ tr.produce() = 12
+ tr.produce() = 14
+ tr.produce() = 16
+ tr.produce() = 18
+Should run transform 10x
+  Running transform
+ tr.produce() = 0
+  Running transform
+ tr.produce() = 2
+  Running transform
+ tr.produce() = 4
+  Running transform
+ tr.produce() = 6
+  Running transform
+ tr.produce() = 8
+  Running transform
+ tr.produce() = 10
+  Running transform
+ tr.produce() = 12
+  Running transform
+ tr.produce() = 14
+  Running transform
+ tr.produce() = 16
+  Running transform
+ tr.produce() = 18

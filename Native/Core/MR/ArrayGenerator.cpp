@@ -66,6 +66,10 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void ArrayGenerator::flush()
+    {
+    }
     
     RC::Handle<ArrayGenerator::ComputeState> ArrayGenerator::ComputeState::Create( RC::ConstHandle<ArrayGenerator> const &arrayGenerator )
     {

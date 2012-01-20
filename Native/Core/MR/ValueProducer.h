@@ -8,6 +8,7 @@
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/MR/Producer.h>
 
 namespace Fabric
 {
@@ -24,14 +25,14 @@ namespace Fabric
   
   namespace MR
   {
-    class ValueProducer : public RC::Object
+    class ValueProducer : public Producer
     {
     public:
     
       class ComputeState : public RC::Object
       {
       public:
-      
+     
         virtual void produce( void *data ) const = 0;
         virtual void produceJSON( Util::JSONGenerator &jg ) const;
         void produceJSONAsync(

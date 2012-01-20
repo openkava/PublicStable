@@ -62,6 +62,7 @@ namespace Fabric
 
       RC::ConstHandle<RT::ArrayDesc> getArrayDesc() const;
       void const *getImmutableData() const;
+      virtual void flush();
       
     protected:
     
