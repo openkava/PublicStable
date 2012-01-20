@@ -126,6 +126,15 @@ else:
         libpngFlags['LIBS'] = [archLibs( 'libpng', ['png14'] ), 'z']
 Export( 'libpngFlags' )
 
+tiffFlags = {}
+tiffFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'tiff' ), os.path.join( osArchIncludeBaseDir, 'tiff' )]
+if buildOS == 'Windows':
+  tiffFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
+  tiffFlags['LIBS'] = archLibs( 'tiff', ['tiff','zlib'] )
+else:  
+  tiffFlags['LIBS'] = [archLibs( 'tiff', ['tiff'] ), 'z']
+Export('tiffFlags')
+
 # ffmpeg
 ffmpegFlags = {}
 if buildOS == 'Windows':
