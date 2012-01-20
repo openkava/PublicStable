@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'ExtSLName', 'buildOS' )
+Import( 'extsEnv', 'ExtSLName', 'buildOS', 'tiffFlags' )
 
 cimgPluginEnv = extsEnv.Clone()
 sources = Glob('*.cpp')
@@ -23,21 +23,8 @@ if buildOS == 'Windows':
                   'write','zip','extension']
   for libtiffname in libtiffnames:
     sources.extend([libtiffRoot + '/libtiff/tif_'+libtiffname+'.c'])
-elif buildOS == 'Darwin':
-  cimgPluginEnv.Append(CPPPATH = [libtiffRoot+'/libtiff'])
-  cimgPluginEnv['CFLAGS'].append(['-DTIF_PLATFORM_CONSOLE=1'])
-  sources.extend([libtiffRoot + '/libtiff/fax3sm_winnt.c'])
-  sources.extend([libtiffRoot + '/port/getopt.c'])
-  libtiffnames = ['aux','close','codec','color','compress','dir','dirinfo','dirread',
-                  'dirwrite','dumpmode','error','fax3','flush','getimage','jpeg','luv',
-                  'lzw','next','ojpeg','open','packbits','pixarlog','predict','print',
-                  'read','strip','swab','thunder','tile','version','warning','win32',
-                  'write','zip','extension']
-  for libtiffname in libtiffnames:
-    sources.extend([libtiffRoot + '/libtiff/tif_'+libtiffname+'.c'])
 else:
-  cimgPluginEnv.Append(CPPPATH = [libtiffRoot+'/libtiff'])
-  cimgPluginEnv['LIBS'].append(['tiff'])
+  cimgPluginEnv.MergeFlags(tiffFlags)
 
 cimgPlugin = cimgPluginEnv.SharedLibrary( ExtSLName('FabricCIMG'), sources ),
 cimgManifest = cimgPluginEnv.File('FabricCIMG.fpm.json'),
