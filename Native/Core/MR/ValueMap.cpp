@@ -68,6 +68,11 @@ namespace Fabric
     {
       return ComputeState::Create( this );
     }
+
+    void ValueMap::flush()
+    {
+      (const_cast<ValueProducer *>(m_input.ptr()))->flush();
+    }
     
     RC::Handle<ValueMap::ComputeState> ValueMap::ComputeState::Create( RC::ConstHandle<ValueMap> const &valueMap )
     {

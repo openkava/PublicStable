@@ -1966,6 +1966,10 @@ function (fabricClient, logCallback, debugLogCallback) {
         valueProducer.queueCommand('produceAsync', valueProducer.registerCallback(callback));
         executeQueuedCommands();
       };
+
+      valueProducer.pub.flush = function () {
+        valueProducer.queueCommand('flush');
+      };
     };
 
     var populateConstValue = function (constValue) {
@@ -1990,6 +1994,10 @@ function (fabricClient, logCallback, debugLogCallback) {
     
     var populateValueTransform = function (valueTransform) {
       populateValueProducer(valueTransform);
+    };
+    
+    var populateValueCache = function (valueCache) {
+      populateValueProducer(valueCache);
     };
     
     var populateArrayProducer = function (arrayProducer) {
@@ -2043,6 +2051,10 @@ function (fabricClient, logCallback, debugLogCallback) {
         arrayProducer.queueCommand('produceAsync', arg);
         executeQueuedCommands();
       };
+
+      arrayProducer.pub.flush = function () {
+        arrayProducer.queueCommand('flush');
+      };
     };
     
     var populateConstArray = function (constArray) {
@@ -2061,6 +2073,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateArrayProducer(object);
     };
 
+    var populateArrayCache = function (object) {
+      populateArrayProducer(object);
+    };
+    
     MR.pub = {
       createArrayMap: function(input, operator, shared) {
         var result = GC.createObject('MR');
@@ -2194,6 +2210,22 @@ function (fabricClient, logCallback, debugLogCallback) {
         return result.pub;
       },
       
+      createArrayCache: function(input) {
+        var result = GC.createObject('MR');
+        
+        populateArrayCache(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID()
+        };
+        
+        queueCommand(['MR'], 'createArrayCache', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
       createConstArray: function(elementType, data) {
         var constArray = GC.createObject('MR');
         
@@ -2235,6 +2267,22 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete constValue.id;
         });
         return constValue.pub;
+      },
+
+      createValueCache: function(input) {
+        var result = GC.createObject('MR');
+        
+        populateValueCache(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID()
+        };
+        
+        queueCommand(['MR'], 'createValueCache', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
       }
     };
 

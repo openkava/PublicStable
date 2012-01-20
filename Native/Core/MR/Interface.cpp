@@ -9,6 +9,8 @@
 #include <Fabric/Core/MR/ConstArrayWrapper.h>
 #include <Fabric/Core/MR/ConstValueWrapper.h>
 #include <Fabric/Core/MR/ReduceWrapper.h>
+#include <Fabric/Core/MR/ValueCacheWrapper.h>
+#include <Fabric/Core/MR/ArrayCacheWrapper.h>
 #include <Fabric/Core/MR/ValueGeneratorWrapper.h>
 #include <Fabric/Core/MR/ValueMapWrapper.h>
 #include <Fabric/Core/MR/ValueTransformWrapper.h>
@@ -69,6 +71,8 @@ namespace Fabric
         jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createValueTransform" )
         jsonExecCreateValueTransform( arg, resultJAG );
+      else if ( cmd == "createValueCache" )
+        jsonExecCreateValueCache( arg, resultJAG );
       else if ( cmd == "createConstArray" )
         jsonExecCreateConstArray( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
@@ -77,6 +81,8 @@ namespace Fabric
         jsonExecCreateArrayMap( arg, resultJAG );
       else if ( cmd == "createArrayTransform" )
         jsonExecCreateArrayTransform( arg, resultJAG );
+      else if ( cmd == "createArrayCache" )
+        jsonExecCreateArrayCache( arg, resultJAG );
       else if ( cmd == "createReduce" )
         jsonExecCreateReduce( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
@@ -407,6 +413,38 @@ namespace Fabric
         sharedWrapper
         )->reg( m_gcContainer, id_ );
     }
+ 
+    void Interface::jsonExecCreateArrayCache(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ArrayProducerWrapper> input;
+      try
+      {
+        input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !input )
+          throw "must be an array producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputID: " + e;
+      }
+      
+      ArrayCacheWrapper::Create( input )->reg( m_gcContainer, id_ );
+    }
     
     void Interface::jsonExecCreateArrayTransform(
       RC::ConstHandle<JSON::Value> const &arg,
@@ -641,6 +679,40 @@ namespace Fabric
         m_rtManager,
         valueTypeRTDesc,
         dataJSONValue
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueCache(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ValueProducerWrapper> inputWrapper;
+      try
+      {
+        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !inputWrapper )
+          throw "must be a value producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputID: " + e;
+      }
+      
+      ValueCacheWrapper::Create(
+        inputWrapper
         )->reg( m_gcContainer, id_ );
     }
   }

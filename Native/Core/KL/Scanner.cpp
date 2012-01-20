@@ -502,6 +502,10 @@ namespace Fabric
             return createToken( TOKEN_CREATE_CONST_VALUE, sourceRange );
           if ( string == "createConstArray" )
             return createToken( TOKEN_CREATE_CONST_ARRAY, sourceRange );
+          if ( string == "createValueCache" )
+            return createToken( TOKEN_CREATE_VALUE_CACHE, sourceRange );
+          if ( string == "createArrayCache" )
+            return createToken( TOKEN_CREATE_ARRAY_CACHE, sourceRange );
           break;
         
         case 20:

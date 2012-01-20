@@ -128,5 +128,9 @@ namespace Fabric
     {
       return &m_data[0];
     }
+
+    void ConstArray::flush()
+    {
+    }
   }
 }
