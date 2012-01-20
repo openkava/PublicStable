@@ -2070,6 +2070,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateArrayProducer(object);
     };
 
+    var populateArrayCache = function (object) {
+      populateArrayProducer(object);
+    };
+    
     MR.pub = {
       createArrayMap: function(input, operator, shared) {
         var result = GC.createObject('MR');
@@ -2198,6 +2202,22 @@ function (fabricClient, logCallback, debugLogCallback) {
           arg.sharedID = shared.getID();
         
         queueCommand(['MR'], 'createArrayGenerator', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createArrayCache: function(input) {
+        var result = GC.createObject('MR');
+        
+        populateArrayCache(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID()
+        };
+        
+        queueCommand(['MR'], 'createArrayCache', arg, function () {
           delete result.id;
         });
         return result.pub;
