@@ -1967,8 +1967,8 @@ function (fabricClient, logCallback, debugLogCallback) {
         executeQueuedCommands();
       };
 
-      valueProducer.pub.flush = function (callback) {
-        valueProducer.queueCommand('flush', valueProducer.registerCallback(callback));
+      valueProducer.pub.flush = function () {
+        valueProducer.queueCommand('flush');
         executeQueuedCommands();
       };
     };
@@ -2050,6 +2050,11 @@ function (fabricClient, logCallback, debugLogCallback) {
         }
         arg.serial = arrayProducer.registerCallback(callback);
         arrayProducer.queueCommand('produceAsync', arg);
+        executeQueuedCommands();
+      };
+
+      arrayProducer.pub.flush = function () {
+        arrayProducer.queueCommand('flush');
         executeQueuedCommands();
       };
     };

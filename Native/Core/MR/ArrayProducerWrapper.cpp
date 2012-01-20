@@ -35,6 +35,8 @@ namespace Fabric
         jsonExecProduce( arg, resultJAG );
       else if ( cmd == "produceAsync" )
         jsonExecProduceAsync( arg, resultJAG );
+      else if ( cmd == "flush" )
+        jsonExecFlush( arg, resultJAG );
       else ProducerWrapper::jsonExec( cmd, arg, resultJAG );
     }
     
@@ -174,6 +176,14 @@ namespace Fabric
 
       arrayProducerWrapper->jsonNotify( "produceAsyncFinished", 20, notifyJSONArg );
       delete notifyJSONArg;
+    }
+
+    void ArrayProducerWrapper::jsonExecFlush(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      (const_cast<ArrayProducer *>(getUnwrapped().ptr()))->flush();
     }
   }
 }
