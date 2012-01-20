@@ -20,11 +20,14 @@ SConscript(
     'MT',
     'RT',
     'CG',
+    'MR',
     'AST',
     #'OCL',
     'KL',
     'IO',
     'Plug',
+    'GC',
+    'KLC',
     'DG',
   ]
   )

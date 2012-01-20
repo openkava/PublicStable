@@ -91,4 +91,4 @@ if ( node.getErrors().length > 0 )
   console.log(JSON.stringify((node.getErrors())));
 node.evaluate();
 
-FABRIC.flush();
+FABRIC.close();

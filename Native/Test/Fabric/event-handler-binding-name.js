@@ -27,4 +27,4 @@ e.appendEventHandler( peh );
 
 e.fire();
 
-F.flush();
+F.close();

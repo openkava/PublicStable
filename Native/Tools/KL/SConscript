@@ -17,6 +17,8 @@ if buildOS == 'Windows':
         '/STACK:4194304'
     ] )
     klEnv.Append( LIBS = [ 'advapi32' ] )
+elif buildOS == 'Linux':
+	klEnv.Append( LIBS = [ 'dl' ] )
 
 klBin = klEnv.Program( 'kl', [ Glob('*.cpp'), extraObjects ] )
   

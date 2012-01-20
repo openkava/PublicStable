@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/RT/ComparableImpl.h>
 #include <Fabric/Base/Util/AtomicSize.h>
+#include <Fabric/Base/Util/Bits.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@ namespace Fabric
     class StringImpl : public ComparableImpl
     {
       friend class Manager;
+      friend class DictImpl;
       
       struct bits_t
       {
@@ -35,10 +37,12 @@ namespace Fabric
       virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
+      virtual size_t getIndirectMemoryUsage( void const *data ) const;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
       virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
+      virtual void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
 
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const;
       virtual bool isShallow() const;
@@ -73,11 +77,11 @@ namespace Fabric
         return result;
       }
 
-      static void SetValue( char const *cStr, size_t length, void *dst )
+      static void SetValue( char const *data, size_t length, void *dst )
       {
         FABRIC_ASSERT( dst );
-        Prepare( length, false, dst );
-        Replace( cStr, length, dst );
+        Prepare( length, length + 1, false, dst );
+        Replace( data, length, dst );
       }
 
       static void Append( void *dst, void const *src )
@@ -92,7 +96,8 @@ namespace Fabric
           if ( dstBits )
           {
             size_t totalLength = dstBits->length + srcBits->length;
-            Prepare( totalLength, true, dst );
+            size_t allocSize = std::max( Util::nextPowerOfTwoMinusOne( totalLength + 1 ), size_t(32) );
+            Prepare( totalLength, allocSize, true, dst );
             memcpy( &dstBits->cStr[dstBits->length], srcBits->cStr, srcBits->length + 1 );
             dstBits->length = totalLength;
           }
@@ -113,6 +118,8 @@ namespace Fabric
         size_t result;
         if ( length < 32 )
           result = 32;
+        else if ( length < 32 )
+          result = 32;
         else if ( length < 64 )
           result = 64;
         else if ( length < 128 )
@@ -123,7 +130,7 @@ namespace Fabric
         return result;
       }
     
-      static void Prepare( size_t length, bool retain, void *dst )
+      static void Prepare( size_t length, size_t allocSize, bool retain, void *dst )
       {
         FABRIC_ASSERT( dst );
         bits_t *&bits = *static_cast<bits_t **>(dst);
@@ -143,7 +150,6 @@ namespace Fabric
           
           if ( !bits )
           {
-            size_t allocSize = AllocSizeForLength( length + 1 );
             bits = (bits_t *)malloc( sizeof( bits_t ) + allocSize );
             bits->refCount.setValue( 1 );
             bits->allocSize = allocSize;
@@ -158,7 +164,6 @@ namespace Fabric
           }
           else if ( length + 1 > bits->allocSize )
           {
-            size_t allocSize = AllocSizeForLength( length + 1 );
             bits = (bits_t *)realloc( bits, sizeof( bits_t ) + allocSize );
             bits->allocSize = allocSize;
           }
@@ -186,6 +191,25 @@ namespace Fabric
           bits->length = length;
         }
         else FABRIC_ASSERT( !bits );
+      }
+
+      static char *GetMutableValueData( void *data, size_t length )
+      {
+        FABRIC_ASSERT( data );
+        
+        Prepare( length, length + 1, false, data );
+        
+        bits_t * const *bitsPtr = static_cast<bits_t * const *>( data );
+        bits_t *bits = *bitsPtr;
+        char *result;
+        if ( bits )
+        {
+          bits->length = length;
+          result = bits->cStr;
+          result[length] = '\0';
+        }
+        else result = 0;
+        return result;
       }
     };
   };

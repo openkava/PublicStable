@@ -22,7 +22,6 @@
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/Util/Assert.h>
-#include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
@@ -361,8 +360,6 @@ namespace Fabric
       if ( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
         
-      MT::IdleTaskQueue::Instance()->wait();
-      
       Interface *interface = static_cast<Interface *>( npp->pdata );
       // [pzion 20110228] Safari sometimes calls NPP_Destroy with an uninitialized instance
       if ( interface )

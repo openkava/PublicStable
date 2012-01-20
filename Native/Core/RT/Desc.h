@@ -19,6 +19,7 @@ namespace Fabric
     class Decoder;
     class JSONGenerator;
     class JSONObjectGenerator;
+    class JSONEntityInfo;
   };
   
   namespace JSON
@@ -61,10 +62,12 @@ namespace Fabric
       std::string descData( void const *data ) const;
       std::string toString( void const *data ) const;
       bool equalsData( void const *lhs, void const *rhs ) const;
+      size_t getIndirectMemoryUsage( void const *data ) const;
       
       RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
       void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
+      void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
 
       void setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const;
       RC::ConstHandle<RC::Object> getKLBindingsAST() const;

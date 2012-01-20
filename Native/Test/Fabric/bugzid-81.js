@@ -98,4 +98,4 @@ F = require('Fabric').createClient();
   console.log(JSON.stringify(dgnode1.getSlicesBulkData(indices)));
   console.log(JSON.stringify(dgnode2.getSlicesBulkData(indices)));
 
-F.flush();
+F.close();

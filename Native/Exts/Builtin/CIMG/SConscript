@@ -24,6 +24,7 @@ if buildOS == 'Windows':
   for libtiffname in libtiffnames:
     sources.extend([libtiffRoot + '/libtiff/tif_'+libtiffname+'.c'])
 elif buildOS == 'Darwin':
+  cimgPluginEnv.Append(CPPPATH = [libtiffRoot+'/libtiff'])
   cimgPluginEnv['CFLAGS'].append(['-DTIF_PLATFORM_CONSOLE=1'])
   sources.extend([libtiffRoot + '/libtiff/fax3sm_winnt.c'])
   sources.extend([libtiffRoot + '/port/getopt.c'])

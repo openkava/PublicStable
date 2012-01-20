@@ -20,6 +20,22 @@ namespace Fabric
 {
   namespace DG
   {
+    EventHandlerTask::EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback )
+      : MT::Task<EventHandler>( t, executeCallback )
+      , m_context( t->m_context )
+    {
+      m_shouldSelect = false;
+      m_selectParallelCall = 0;
+    }
+    
+    EventHandlerTask::EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback, RC::Handle<Node> const &node, RC::ConstHandle<RT::Desc> const &selectorType )
+      : MT::Task<EventHandler>( t, executeCallback )
+      , m_selectedNode( node, selectorType )
+      , m_context( t->m_context )
+    {
+      m_shouldSelect = false;
+      m_selectParallelCall = 0;
+    }
     
     void EventHandlerTask::execute( void *userdata ) const
     {
@@ -27,20 +43,18 @@ namespace Fabric
       for ( size_t i=0; i<numBindings; ++i )
       {
         RC::Handle<MT::ParallelCall> opParallelCall = m_evaluateParallelCallsPerOperator[i];
-        opParallelCall->executeSerial();
+        opParallelCall->executeSerial( m_context );
       }
       
       SelectedNodeList *selectedNodes = (SelectedNodeList*)userdata;
       if(m_selectParallelCall && selectedNodes )
       {
-        m_selectParallelCall->executeSerial();
+        m_selectParallelCall->executeSerial( m_context );
         if ( m_shouldSelect ){
           selectedNodes->push_back( m_selectedNode );
         }
       }
     }
-    
-    
     
     RC::Handle<EventHandler> EventHandler::Create( std::string const &name, RC::Handle<Context> const &context )
     {
@@ -301,7 +315,8 @@ namespace Fabric
       Scope *childScope = m_bindingName.length()>0? (Scope *)&bindingNameScope: (Scope *)&bindingsScope;
       
       size_t numPreDescendBindings = m_preDescendBindings->size();
-      if(numPreDescendBindings > 0){
+      if ( numPreDescendBindings > 0 )
+      {
         EventHandlerTask* task = new EventHandlerTask( this, &EventHandler::evaluateLocal );
         
         task->m_evaluateParallelCallsPerOperator.resize(numPreDescendBindings);
@@ -322,7 +337,8 @@ namespace Fabric
       }
       
       size_t numPostDescendBindings = m_postDescendBindings->size();
-      if(numPostDescendBindings > 0){
+      if ( numPostDescendBindings > 0 )
+      {
         EventHandlerTask* task = new EventHandlerTask( this, &EventHandler::evaluateLocal );
         task->m_evaluateParallelCallsPerOperator.resize(numPostDescendBindings);
         

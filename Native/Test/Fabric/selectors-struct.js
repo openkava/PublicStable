@@ -77,9 +77,10 @@ ut.test("Selectors (Vec3)", function() {
 	eventHandlerTwo.setSelector( 'self', bindingTwo );
 	eventHandler.appendChildEventHandler( eventHandlerTwo );
 
-	var result = event.select( 'Vec3' );
+	event.setSelectType( 'Vec3' );
+	var result = event.select();
 	ut.expect( "Correct number of results", result.length, 1 );
 	ut.expect( "Correct result value", result[0].value.x, 7 );
 });
 
-FABRIC.flush();
+FABRIC.close();

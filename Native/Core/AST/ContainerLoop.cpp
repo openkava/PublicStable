@@ -128,6 +128,11 @@ namespace Fabric
           );
 
         basicBlockBuilder->SetInsertPoint( bodyBB );
+        llvm::Value *bitsNextNodePtrPtr = basicBlockBuilder->CreateStructGEP( nodePtr, 1 );
+        llvm::Value *bitsNextNodePtr = basicBlockBuilder->CreatePointerCast(
+          basicBlockBuilder->CreateLoad( bitsNextNodePtrPtr ),
+          nodePtrType
+          );
         {
           CG::LoopScope loopScope( parentBasicBlockBuilder.getScope(), endBB, stepBB );
           llvm::Value *keyLValue = basicBlockBuilder->CreatePointerCast(
@@ -174,11 +179,6 @@ namespace Fabric
         basicBlockBuilder->CreateBr( stepBB );
 
         basicBlockBuilder->SetInsertPoint( stepBB );
-        llvm::Value *bitsNextNodePtrPtr = basicBlockBuilder->CreateStructGEP( nodePtr, 1 );
-        llvm::Value *bitsNextNodePtr = basicBlockBuilder->CreatePointerCast(
-          basicBlockBuilder->CreateLoad( bitsNextNodePtrPtr ),
-          nodePtrType
-          );
         basicBlockBuilder->CreateStore( bitsNextNodePtr, nodePtrPtr );
         basicBlockBuilder->CreateBr( checkBB );
         

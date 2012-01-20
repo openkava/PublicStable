@@ -21,4 +21,4 @@ console.log(JSON.stringify((mapNamedObjectsToNames(eh.getChildEventHandlers())))
 eh.removeChildEventHandler(childEventHandler);
 console.log(JSON.stringify((mapNamedObjectsToNames(eh.getChildEventHandlers()))));
 
-F.flush();
+F.close();
