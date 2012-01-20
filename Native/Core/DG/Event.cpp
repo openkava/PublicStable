@@ -184,10 +184,11 @@ namespace Fabric
     
     void Event::collectErrors( Scope *scope )
     {
+      Errors &errors = getErrors();
       for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
       {
         RC::Handle<EventHandler> const &eventHandler = *it;
-        eventHandler->collectErrorsForScope( scope );
+        eventHandler->collectErrorsForScope( scope, errors );
       }
     }
     
