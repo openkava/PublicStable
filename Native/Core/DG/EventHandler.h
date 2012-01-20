@@ -126,7 +126,7 @@ namespace Fabric
       
       void collectEventTasksImpl( EventTaskGroup &taskGroup, RC::ConstHandle<RT::Desc> const &selectorType, Scope const *parentScope );
       
-      void collectErrorsForScope( Scope const *parentScope );
+      void collectErrorsForScope( Scope const *parentScope, Errors &errors );
     
       virtual void propagateMarkForRecompileImpl( unsigned generation );    
       virtual void propagateMarkForRefreshImpl( unsigned generation );    
