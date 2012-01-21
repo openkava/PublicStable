@@ -29,7 +29,7 @@ FABRIC_EXT_EXPORT void FabricFileStream_Open(
 {
   std::string modeStr = mode.data();
   FabricFileStream_Free(stream);
-  FileHandleWrapper file( fileHandleString );
+  KL::FileHandleWrapper file( fileHandleString );
   if( file.isFolder() )
     throwException( "Invalid Fabric file handle" );
 
