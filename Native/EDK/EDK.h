@@ -280,7 +280,7 @@ namespace Fabric
 
         void createFromFolder( char const *folderCString, bool readOnly )
         {
-          ( *s_callbacks.m_fileHandleCreateFromPath)( &m_handle, filePathCString, true, readOnly );
+          ( *s_callbacks.m_fileHandleCreateFromPath)( &m_handle, folderCString, true, readOnly );
         }
 
         String get() const
