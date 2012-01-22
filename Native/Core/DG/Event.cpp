@@ -36,7 +36,7 @@ namespace Fabric
     {
       for ( size_t i=0; i<m_tasks.size(); ++i )
       {
-        delete m_tasks[i];
+        delete (EventHandlerTask*)m_tasks[i];
       }
       m_tasks.resize(0);
     }
