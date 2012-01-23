@@ -61,17 +61,14 @@ namespace Fabric
     {
       return m_operator->getValueDesc();
     }
-
-    size_t ArrayGenerator::getCount() const
-    {
-      size_t count;
-      m_countValueProducer->createComputeState()->produce( &count );
-      return count;
-    }
       
     const RC::Handle<ArrayProducer::ComputeState> ArrayGenerator::createComputeState() const
     {
       return ComputeState::Create( this );
+    }
+
+    void ArrayGenerator::flush()
+    {
     }
     
     RC::Handle<ArrayGenerator::ComputeState> ArrayGenerator::ComputeState::Create( RC::ConstHandle<ArrayGenerator> const &arrayGenerator )
@@ -83,6 +80,10 @@ namespace Fabric
       : ArrayProducer::ComputeState( arrayGenerator )
       , m_arrayGenerator( arrayGenerator )
     {
+      size_t count;
+      m_arrayGenerator->m_countValueProducer->createComputeState()->produce( &count );
+      setCount( count );
+      
       if ( m_arrayGenerator->m_operator->takesSharedValue() )
       {
         RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayGenerator->m_sharedValueProducer;
@@ -90,7 +91,7 @@ namespace Fabric
         sharedValueProducer->createComputeState()->produce( &m_sharedData[0] );
       }
     }
-    
+
     ArrayGenerator::ComputeState::~ComputeState()
     {
       if ( m_arrayGenerator->m_operator->takesSharedValue() )

@@ -9,6 +9,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONEntityInfo;
+  }
+  
   namespace RT
   {
     class Desc;
@@ -37,6 +42,12 @@ namespace Fabric
         RC::ConstHandle<JSON::Array> const &jsonArray
         );
       
+      static RC::Handle<ConstArrayWrapper> Create(
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::Desc> const &elementDesc,
+        Util::JSONEntityInfo const &entityInfo
+        );
+      
       virtual RC::ConstHandle<ArrayProducer> getUnwrapped() const;
       
       // Virtual functions: ArrayProducer
@@ -48,6 +59,13 @@ namespace Fabric
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
+        );
+    
+      ConstArrayWrapper(
+        FABRIC_GC_OBJECT_CLASS_PARAM,
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::Desc> const &elementDesc,
+        Util::JSONEntityInfo const &entityInfo
         );
     
       virtual char const *getKind() const;

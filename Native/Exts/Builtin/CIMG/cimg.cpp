@@ -5,6 +5,8 @@
 #include <Fabric/EDK/EDK.h>
 
 #define cimg_display 0
+#define cimg_use_tif 1
+#define cimg_use_tiff 1
 
 #include "CImg.h"
 

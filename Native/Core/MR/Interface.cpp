@@ -9,6 +9,8 @@
 #include <Fabric/Core/MR/ConstArrayWrapper.h>
 #include <Fabric/Core/MR/ConstValueWrapper.h>
 #include <Fabric/Core/MR/ReduceWrapper.h>
+#include <Fabric/Core/MR/ValueCacheWrapper.h>
+#include <Fabric/Core/MR/ArrayCacheWrapper.h>
 #include <Fabric/Core/MR/ValueGeneratorWrapper.h>
 #include <Fabric/Core/MR/ValueMapWrapper.h>
 #include <Fabric/Core/MR/ValueTransformWrapper.h>
@@ -22,6 +24,7 @@
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Core/Util/Parse.h>
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Base/JSON/Decode.h>
@@ -68,6 +71,8 @@ namespace Fabric
         jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createValueTransform" )
         jsonExecCreateValueTransform( arg, resultJAG );
+      else if ( cmd == "createValueCache" )
+        jsonExecCreateValueCache( arg, resultJAG );
       else if ( cmd == "createConstArray" )
         jsonExecCreateConstArray( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
@@ -76,6 +81,8 @@ namespace Fabric
         jsonExecCreateArrayMap( arg, resultJAG );
       else if ( cmd == "createArrayTransform" )
         jsonExecCreateArrayTransform( arg, resultJAG );
+      else if ( cmd == "createArrayCache" )
+        jsonExecCreateArrayCache( arg, resultJAG );
       else if ( cmd == "createReduce" )
         jsonExecCreateReduce( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
@@ -108,38 +115,60 @@ namespace Fabric
         throw "elementType: " + e;
       }
       
-      RC::ConstHandle<JSON::Array> dataJSONArray;
-      try
+      RC::ConstHandle<JSON::Value> dataJSONValue = argObject->maybeGet("data");
+      if ( dataJSONValue )
       {
-        RC::ConstHandle<JSON::Value> dataJSONValue = argObject->maybeGet("data");
-        if ( dataJSONValue )
-          dataJSONArray = dataJSONValue->toArray();
-      }
-      catch ( Exception e )
-      {
-        throw "data: " + e;
-      }
-      try
-      {
-        RC::ConstHandle<JSON::Value> jsonDataJSONValue = argObject->maybeGet("jsonData");
-        if ( jsonDataJSONValue )
+        try
         {
-          RC::ConstHandle<JSON::String> jsonDataJSONString = jsonDataJSONValue->toString();
-          dataJSONArray = JSON::decode( jsonDataJSONString->data(), jsonDataJSONString->length() )->toArray();
+          RC::ConstHandle<JSON::Array> dataJSONArray = dataJSONValue->toArray();
+          
+          ConstArrayWrapper::Create(
+            m_rtManager,
+            elementTypeRTDesc,
+            dataJSONArray
+            )->reg( m_gcContainer, id_ );
+          
+          return;
+        }
+        catch ( Exception e )
+        {
+          throw "data: " + e;
         }
       }
-      catch ( Exception e )
+
+      RC::ConstHandle<JSON::Value> jsonDataJSONValue = argObject->maybeGet("jsonData");
+      if ( jsonDataJSONValue )
       {
-        throw "jsonData: " + e;
+        try
+        {
+          RC::ConstHandle<JSON::String> jsonDataJSONString = jsonDataJSONValue->toString();
+          
+          Util::JSONDecoder jsonDecoder( jsonDataJSONString->data(), jsonDataJSONString->length() );
+          Util::JSONEntityInfo jsonEntityInfo;
+          if ( !jsonDecoder.getNext( jsonEntityInfo ) )
+            throw Exception("missing JSON data");
+          /*
+          jsonEntityInfo.type = Util::ET_ARRAY;
+          jsonEntityInfo.data = "[]";
+          jsonEntityInfo.length = 2;
+          jsonEntityInfo.value.array.size = 0;
+          */
+          ConstArrayWrapper::Create(
+            m_rtManager,
+            elementTypeRTDesc,
+            jsonEntityInfo
+            )->reg( m_gcContainer, id_ );
+          if ( jsonDecoder.getNext( jsonEntityInfo ) )
+            throw Exception("extra JSON data");
+          return;
+        }
+        catch ( Exception e )
+        {
+          throw "jsonData: " + e;
+        }
       }
-      if ( !dataJSONArray )
-        throw Exception("missing data");
       
-      ConstArrayWrapper::Create(
-        m_rtManager,
-        elementTypeRTDesc,
-        dataJSONArray
-        )->reg( m_gcContainer, id_ );
+      throw Exception( "missing both data and jsonData" );
     }
     
     void Interface::jsonExecCreateArrayMap(
@@ -384,6 +413,38 @@ namespace Fabric
         sharedWrapper
         )->reg( m_gcContainer, id_ );
     }
+ 
+    void Interface::jsonExecCreateArrayCache(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ArrayProducerWrapper> input;
+      try
+      {
+        input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !input )
+          throw "must be an array producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputID: " + e;
+      }
+      
+      ArrayCacheWrapper::Create( input )->reg( m_gcContainer, id_ );
+    }
     
     void Interface::jsonExecCreateArrayTransform(
       RC::ConstHandle<JSON::Value> const &arg,
@@ -618,6 +679,40 @@ namespace Fabric
         m_rtManager,
         valueTypeRTDesc,
         dataJSONValue
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueCache(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ValueProducerWrapper> inputWrapper;
+      try
+      {
+        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !inputWrapper )
+          throw "must be a value producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputID: " + e;
+      }
+      
+      ValueCacheWrapper::Create(
+        inputWrapper
         )->reg( m_gcContainer, id_ );
     }
   }

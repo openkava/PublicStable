@@ -81,7 +81,12 @@ namespace Fabric
     
     void Desc::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
     {
-      return m_impl->generateJSON( data, jsonGenerator );
+      m_impl->generateJSON( data, jsonGenerator );
+    }
+    
+    void Desc::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    {
+      m_impl->decodeJSON( entityInfo, data );
     }
     
     void Desc::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const

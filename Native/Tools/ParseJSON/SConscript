@@ -1,0 +1,14 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os.path
+Import( 'coreEnv', 'buildOS' )
+
+parseJSONEnv = coreEnv.Clone()
+
+extraObjects = []
+
+parseJSONBin = parseJSONEnv.Program( 'parseJSON', [ Glob('*.cpp'), extraObjects ] )
+  
+Alias( 'parseJSON', parseJSONBin )
