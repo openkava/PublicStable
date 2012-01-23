@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
+FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, callback) {
   
   if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = false;
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
@@ -645,16 +645,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return colladaData;
   }
   
-  var xmlText = FABRIC.loadResourceURL(assetFile, 'text/xml');
-  var parser = new DOMParser();
-  var xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-  
-  // get the root and check its type
-  var xmlRoot = xmlDoc.firstChild;
-  if (xmlRoot.nodeName != 'COLLADA') {
-    throw 'Collada file is corrupted.';
-  }
-  var colladaData = parseColladaBase(xmlRoot);
+
   
   //////////////////////////////////////////////////////////////////////////////
   // SceneGraph Construction
@@ -1111,6 +1102,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     
     // Look up through the hierarchy and find the actual root.
     var joint =  sceneData.nodeLibrary[jointDataSource.data[0]];
+    if(!joint){
+      throw "Joint nodes not exported with collada file.";
+    }
     while(joint.parentId && joint.parentId != "Scene_Root"){
       joint = sceneData.nodeLibrary[joint.parentId];
     }
@@ -1345,28 +1339,52 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     }
   }
   
-  if(colladaData.scene){
-    var sceneData = colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)];
-    if(options.constructScene){
-      constructScene(sceneData);
-      
-      // The file may contain a hierarchy that can be used to generate a skeleton
-      if (options.constructRigFromHierarchy) {
-        constructRigFromHierarchy(sceneData, options.rigHierarchyRootNodeName);
-      }
+  var xmlText, colladaData;
+  var parseAndConstruct = function(){
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    
+    // get the root and check its type
+    var xmlRoot = xmlDoc.firstChild;
+    if (xmlRoot.nodeName != 'COLLADA') {
+      throw 'Collada file is corrupted.';
     }
-    else{
-      
-      if (options.loadAnimationUsingRig) {
-        loadRigAnimation(options.rigNode);
+    colladaData = parseColladaBase(xmlRoot);
+  
+    if(colladaData.scene){
+      var sceneData = colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)];
+      if(options.constructScene){
+        constructScene(sceneData);
+        
+        // The file may contain a hierarchy that can be used to generate a skeleton
+        if (options.constructRigFromHierarchy) {
+          constructRigFromHierarchy(sceneData, options.rigHierarchyRootNodeName);
+        }
       }
-      if (options.loadPoseOntoRig) {
-        loadPoseOntoRig(sceneData, options.rigNode, options.rigHierarchyRootNodeName);
+      else{
+        
+        if (options.loadAnimationUsingRig) {
+          loadRigAnimation(options.rigNode);
+        }
+        if (options.loadPoseOntoRig) {
+          loadPoseOntoRig(sceneData, options.rigNode, options.rigHierarchyRootNodeName);
+        }
       }
     }
   }
   
+  if(callback){
+    FABRIC.loadResourceURL(assetFile, 'text/xml', function(txt){
+      xmlText = txt;
+      parseAndConstruct();
+      callback(assetNodes);
+    });
+    
+  }else{
+    xmlText = FABRIC.loadResourceURL(assetFile, 'text/xml');
+    parseAndConstruct();
+    return assetNodes;
+  }
   
-  return assetNodes;
 });
 
