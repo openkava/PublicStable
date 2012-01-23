@@ -4,7 +4,7 @@
  
 #include "ValueProducerDesc.h"
 #include "ValueProducerImpl.h"
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -21,10 +21,10 @@ namespace Fabric
     {
     }
     
-    void ValueProducerDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void ValueProducerDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "valueProducer" );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "valueProducer" );
     }
     
     RC::ConstHandle<Desc> ValueProducerDesc::getValueDesc() const

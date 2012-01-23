@@ -5,12 +5,10 @@
 #include <Fabric/Clients/NPAPI/Darwin/WindowedCAViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Clients/NPAPI/Context.h>
-#include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/Encode.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 
 #include <Cocoa/Cocoa.h>
 #include <QuartzCore/QuartzCore.h>
@@ -312,7 +310,7 @@ namespace Fabric
             
               for ( PopUpItems::const_iterator it=m_popUpItems.begin(); it!=m_popUpItems.end(); ++it )
               {
-                Util::SimpleString arg = JSON::encode( it->value );
+                Util::SimpleString const &arg = it->argJSON;
                 NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] viewPort:this arg:&arg];
                 [nsMenuItem setEnabled:YES];
                 [nsMenu addItem:nsMenuItem];

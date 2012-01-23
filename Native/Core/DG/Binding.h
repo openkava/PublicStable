@@ -10,9 +10,9 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
+    class Encoder;
   };
   
   namespace MT
@@ -61,7 +61,7 @@ namespace Fabric
         ) const;      
       bool getMainThreadOnly() const;
       
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
       
     protected:
     

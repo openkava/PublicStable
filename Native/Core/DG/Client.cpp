@@ -5,15 +5,10 @@
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/CompiledObject.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Encode.h>
-#include <Fabric/Base/JSON/Decode.h>
-#include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/Util/Timer.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
@@ -38,94 +33,122 @@ namespace Fabric
     void Client::jsonExec(
       char const *jsonEncodedCommandsData,
       size_t jsonEncodedCommandsLength,
-      Util::JSONGenerator &resultJG
+      JSON::Encoder &resultEncoder
       ) const
     {
       Context::NotificationBracket notificationBracket( m_context );
       
-      RC::ConstHandle<JSON::Array> cmdsAndArgsJSONArray;
-      cmdsAndArgsJSONArray = JSON::decode( jsonEncodedCommandsData, jsonEncodedCommandsLength )->toArray();
-      size_t cmdsAndArgsJSONArraySize = cmdsAndArgsJSONArray->size();
+      JSON::Decoder decoder( jsonEncodedCommandsData, jsonEncodedCommandsLength );
+      JSON::Entity entity;
+      if ( !decoder.getNext( entity ) )
+        throw "missing JSON entity";
       
-      Util::JSONArrayGenerator resultJSONArray = resultJG.makeArray();
-      for ( size_t i=0; i<cmdsAndArgsJSONArraySize; ++i )
+      JSON::ArrayEncoder resultArrayEncoder = resultEncoder.makeArray();
+
+      entity.requireArray();
+      JSON::ArrayDecoder arrayDecoder( entity );
+      JSON::Entity elementEntity;
+      size_t cmdIndex = 0;
+      while ( arrayDecoder.getNext( elementEntity ) )
       {
-        RC::ConstHandle<JSON::Object> cmdAndArgJSONObject = cmdsAndArgsJSONArray->get(i)->toObject();
+        std::vector<JSON::Entity> dst;
+        JSON::Entity cmd;
+        JSON::Entity arg;
         
-        Util::JSONObjectGenerator resultJSONObject = resultJSONArray.makeElement().makeObject();
         try
         {
-          std::vector<std::string> dst;
+          elementEntity.requireObject();
+          JSON::ObjectDecoder objectDecoder( elementEntity );
+          JSON::Entity keyString, valueEntity;
+          while ( objectDecoder.getNext( keyString, valueEntity ) )
+          {
+            try
+            {
+              if ( keyString.stringIs( "cmd", 3 ) )
+              {
+                valueEntity.requireString();
+                cmd = valueEntity;
+              }
+              else if ( keyString.stringIs( "dst", 3 ) )
+              {
+                valueEntity.requireArray();
+                JSON::ArrayDecoder dstArrayDecoder( valueEntity );
+                JSON::Entity dstElementEntity;
+                while ( dstArrayDecoder.getNext( dstElementEntity ) )
+                {
+                  try
+                  {
+                    dstElementEntity.requireString();
+                    dst.push_back( dstElementEntity );
+                  }
+                  catch ( Exception e )
+                  {
+                    dstArrayDecoder.rethrow( e );
+                  }
+                }
+              }
+              else if ( keyString.stringIs( "arg", 3 ) )
+                arg = valueEntity;
+              else throw Exception( "unexpected" );
+            }
+            catch ( Exception e )
+            {
+              objectDecoder.rethrow( e );
+            }
+          }
+          
+          if ( !cmd )
+            throw Exception( "missing 'cmd'" );
+        }
+        catch ( Exception e )
+        {
+          throw "command index " + _(cmdIndex) + ": " + e;
+        }
+
+        JSON::ObjectEncoder resultObjectEncoder = resultArrayEncoder.makeElement().makeObject();
+        try
+        {
           try
           {
-            RC::ConstHandle<JSON::Array> dstJSONArray = cmdAndArgJSONObject->get( "dst" )->toArray();
-            size_t dstJSONArraySize = dstJSONArray->size();
-            for ( size_t i=0; i<dstJSONArraySize; ++i )
+            Util::SimpleString commandResult;
+            JSON::Encoder commandResultEncoder( &commandResult );
+            JSON::ArrayEncoder commandResultArrayEncoder = commandResultEncoder.makeArray();
+            m_context->jsonRoute( dst, 0, cmd, arg, commandResultArrayEncoder );
+            if ( commandResultArrayEncoder.getCount() > 0 )
             {
-              try
-              {
-                dst.push_back( dstJSONArray->get(i)->toString()->value() );
-              }
-              catch ( Exception e )
-              {
-                throw "index "+_(i)+": " + e;
-              }
+              commandResultArrayEncoder.flush();
+              commandResultEncoder.flush();
+              JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "result", 6 );
+              memberEncoder.appendJSON( commandResult.data()+1, commandResult.length()-2 );
             }
           }
           catch ( Exception e )
           {
-            throw "'dst': " + e;
-          }
-          
-          std::string cmd;
-          try
-          {
-            cmd = cmdAndArgJSONObject->get( "cmd" )->toString()->value();
-          }
-          catch ( Exception e )
-          {
-            throw "'cmd': " + e;
-          }
-          
-          RC::ConstHandle<JSON::Value> arg = cmdAndArgJSONObject->maybeGet( "arg" );
-        
-          try
-          {
-            Util::SimpleString resultJSON;
-            Util::JSONGenerator resultJG( &resultJSON );
-            Util::JSONArrayGenerator resultJAG = resultJG.makeArray();
-            m_context->jsonRoute( dst, 0, cmd, arg, resultJAG );
-            if ( resultJAG.getCount() > 0 )
+            std::string prefix;
+            for ( std::vector<JSON::Entity>::const_iterator it=dst.begin(); it!=dst.end(); ++it )
             {
-              resultJAG.flush();
-              resultJG.flush();
-              Util::JSONGenerator memberJG = resultJSONObject.makeMember( "result", 6 );
-              memberJG.appendJSON( resultJSON.data()+1, resultJSON.length()-2 );
-            }
-          }
-          catch ( Exception e )
-          {
-            std::string dstString;
-            for ( size_t i=0; i<dst.size(); ++i )
-            {
-              dstString += dst[i];
-              dstString += '.';
+              prefix += it->stringToStdString();
+              prefix += '.';
             }
             
-            std::string prefix;
+            prefix += cmd.stringToStdString();
+            prefix += '(';
             if ( arg )
-              prefix = dstString + cmd + "(" + _( JSON::encode(arg), 32 ) + "): ";
-            else prefix = dstString + cmd + "(): ";
+              prefix += _( arg.data, arg.length, 32 );
+            prefix += "): ";
             
             throw prefix + e;
           }
         }
         catch ( Exception e )
         {
-          resultJSONObject.makeMember( "exception", 9 ).makeString( e.getDesc() );
+          resultObjectEncoder.makeMember( "exception", 9 ).makeString( e.getData(), e.getLength() );
           break;
         }
       }
+      
+      if ( decoder.getNext( entity ) )
+        throw "extra JSON entity";
       
       CompiledObject::PrepareForExecution();
     }
@@ -134,26 +157,26 @@ namespace Fabric
     {
       Util::SimpleString json;
       {
-        Util::JSONGenerator arrayJG( &json );
-        Util::JSONArrayGenerator arrayJAG = arrayJG.makeArray();
+        JSON::Encoder encoder( &json );
+        JSON::ArrayEncoder arrayEncoder = encoder.makeArray();
         
         {
-          Util::JSONGenerator jg = arrayJAG.makeElement();
-          Util::JSONObjectGenerator jog = jg.makeObject();
+          JSON::Encoder encoder = arrayEncoder.makeElement();
+          JSON::ObjectEncoder objectEncoder = encoder.makeObject();
           
           {
-            Util::JSONGenerator srcJG = jog.makeMember( "src", 3 );
-            Util::JSONArrayGenerator srcJAG = srcJG.makeArray();
+            JSON::Encoder srcEncoder = objectEncoder.makeMember( "src", 3 );
+            JSON::ArrayEncoder srcArrayEncoder = srcEncoder.makeArray();
           }
           
           {
-            Util::JSONGenerator cmdJG = jog.makeMember( "cmd", 3 );
-            cmdJG.makeString( "state", 5 );
+            JSON::Encoder cmdEncoder = objectEncoder.makeMember( "cmd", 3 );
+            cmdEncoder.makeString( "state", 5 );
           }
           
           {
-            Util::JSONGenerator argJG = jog.makeMember( "arg", 3 );
-            jsonDesc( argJG );
+            JSON::Encoder argEncoder = objectEncoder.makeMember( "arg", 3 );
+            jsonDesc( argEncoder );
           }
         }
       }
@@ -161,35 +184,35 @@ namespace Fabric
     }
 
     void Client::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( dst.size() - dstOffset == 1 && dst[dstOffset] == "client" )
+      if ( dst.size() - dstOffset == 1 && dst[dstOffset].stringIs( "client", 6 ) )
       {
         try
         {
-          jsonExec( cmd, arg, resultJAG );
+          jsonExec( cmd, arg, resultArrayEncoder );
         }
         catch ( Exception e )
         {
-          throw "'client': command " + _(cmd) + ": " + e;
+          throw "'client': command " + _(cmd.stringToStdString()) + ": " + e;
         }
       }
-      else m_context->jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+      else m_context->jsonRoute( dst, dstOffset, cmd, arg, resultArrayEncoder );
     }
     
-    void Client::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Client::jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       throw Exception( "unknown command" );
     }
     
-    void Client::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Client::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      return m_context->jsonDesc( resultJG );
+      return m_context->jsonDesc( resultEncoder );
     }
   };
 };

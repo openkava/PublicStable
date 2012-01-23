@@ -4,10 +4,9 @@
  
 #include <Fabric/Core/RT/ArrayProducerImpl.h>
 #include <Fabric/Core/MR/ArrayProducer.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -52,22 +51,12 @@ namespace Fabric
       return lhsBits == rhsBits;
     }
     
-    RC::Handle<JSON::Value> ArrayProducerImpl::getJSONValue( void const *src ) const
+    void ArrayProducerImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       throw Exception( "unable to convert ArrayProducer to JSON" );
     }
     
-    void ArrayProducerImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      throw Exception( "unable to convert ArrayProducer to JSON" );
-    }
-    
-    void ArrayProducerImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
-    {
-      throw Exception( "unable to convert ArrayProducer from JSON" );
-    }
-    
-    void ArrayProducerImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    void ArrayProducerImpl::decodeJSON( JSON::Entity const &entity, void *dst ) const
     {
       throw Exception( "unable to convert ArrayProducer from JSON" );
     }

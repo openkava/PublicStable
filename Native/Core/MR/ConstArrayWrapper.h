@@ -9,20 +9,15 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONEntityInfo;
+    class Entity;
   }
   
   namespace RT
   {
     class Desc;
     class Manager;
-  }
-  
-  namespace JSON
-  {
-    class Array;
   }
   
   namespace MR
@@ -39,13 +34,7 @@ namespace Fabric
       static RC::Handle<ConstArrayWrapper> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
-        RC::ConstHandle<JSON::Array> const &jsonArray
-        );
-      
-      static RC::Handle<ConstArrayWrapper> Create(
-        RC::ConstHandle<RT::Manager> const &rtManager,
-        RC::ConstHandle<RT::Desc> const &elementDesc,
-        Util::JSONEntityInfo const &entityInfo
+        JSON::Entity const &entity
         );
       
       virtual RC::ConstHandle<ArrayProducer> getUnwrapped() const;
@@ -53,23 +42,16 @@ namespace Fabric
       // Virtual functions: ArrayProducer
     
     protected:
-        
-      ConstArrayWrapper(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
-        RC::ConstHandle<RT::Manager> const &rtManager,
-        RC::ConstHandle<RT::Desc> const &elementDesc,
-        RC::ConstHandle<JSON::Array> const &jsonArray
-        );
     
       ConstArrayWrapper(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
-        Util::JSONEntityInfo const &entityInfo
+        JSON::Entity const &entity
         );
     
       virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
+      virtual void toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const;
     
     private:
     

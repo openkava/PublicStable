@@ -5,9 +5,8 @@
 #include <Fabric/Core/MR/ArrayProducerWrapper.h>
 #include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
@@ -24,144 +23,165 @@ namespace Fabric
     }
     
     void ArrayProducerWrapper::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "getCount" )
-        jsonExecGetCount( arg, resultJAG );
-      else if ( cmd == "produce" )
-        jsonExecProduce( arg, resultJAG );
-      else if ( cmd == "produceAsync" )
-        jsonExecProduceAsync( arg, resultJAG );
-      else if ( cmd == "flush" )
-        jsonExecFlush( arg, resultJAG );
-      else ProducerWrapper::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "getCount", 8 ) )
+        jsonExecGetCount( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "produce", 7 ) )
+        jsonExecProduce( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "produceAsync", 12 ) )
+        jsonExecProduceAsync( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "flush", 5 ) )
+        jsonExecFlush( arg, resultArrayEncoder );
+      else ProducerWrapper::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
     void ArrayProducerWrapper::jsonExecGetCount(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
       jg.makeInteger( getUnwrapped()->createComputeState()->getCount() );
     }
     
     void ArrayProducerWrapper::jsonExecProduce(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      size_t index = SIZE_MAX;
+      size_t count = SIZE_MAX;
       
-      Util::JSONGenerator jg = resultJAG.makeElement();
-
-      RC::ConstHandle<JSON::Value> indexValue = argObject->maybeGet("index");
-      if ( indexValue )
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        size_t index;
         try
         {
-          index = indexValue->toInteger()->value();
+          if ( keyString.stringIs( "index", 5 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t indexInt32 = valueEntity.integerValue();
+            if ( indexInt32 < 0 )
+              throw Exception( "out of range" );
+            index = size_t( indexInt32 );
+          }
+          else if ( keyString.stringIs( "count", 5 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t countInt32 = valueEntity.integerValue();
+            if ( countInt32 < 0 )
+              throw Exception( "out of range" );
+            count = size_t( countInt32 );
+          }
         }
         catch ( Exception e )
         {
-          throw "index: " + e;
+          argObjectDecoder.rethrow( e );
         }
-        
-        RC::ConstHandle<JSON::Value> countValue = argObject->maybeGet("count");
-        if ( countValue )
-        {
-          size_t count;
-          try
-          {
-            count = countValue->toInteger()->value();
-          }
-          catch ( Exception e )
-          {
-            throw "count: " + e;
-          }
-          
-          getUnwrapped()->createComputeState()->produceJSON( index, count, jg );
-        }
-        else getUnwrapped()->createComputeState()->produceJSON( index, jg );
       }
-      else getUnwrapped()->createComputeState()->produceJSON( jg );
+      
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      if ( index != SIZE_MAX )
+      {
+        if ( count != SIZE_MAX )
+          getUnwrapped()->createComputeState()->produceJSON( index, count, resultEncoder );
+        else getUnwrapped()->createComputeState()->produceJSON( index, resultEncoder );
+      }
+      else getUnwrapped()->createComputeState()->produceJSON( resultEncoder );
     }
     
     struct JSONProduceAsyncUserdata
     {
       RC::Handle<ArrayProducerWrapper> arrayProducerWrapper;
       Util::SimpleString *notifyJSONArg;
-      Util::JSONGenerator notifyJSONArgGenerator;
-      Util::JSONObjectGenerator notifyJSONArgObjectGenerator;
+      JSON::Encoder notifyJSONArgEncoder;
+      JSON::ObjectEncoder notifyJSONArgObjectEncoder;
     
       JSONProduceAsyncUserdata( RC::Handle<ArrayProducerWrapper> const &arrayProducerWrapper_, int32_t serial )
         : arrayProducerWrapper( arrayProducerWrapper_ )
         , notifyJSONArg( new Util::SimpleString )
-        , notifyJSONArgGenerator( notifyJSONArg )
-        , notifyJSONArgObjectGenerator( notifyJSONArgGenerator.makeObject() )
+        , notifyJSONArgEncoder( notifyJSONArg )
+        , notifyJSONArgObjectEncoder( notifyJSONArgEncoder.makeObject() )
       {
-        Util::JSONGenerator notifyJSONArgSerialGenerator( notifyJSONArgObjectGenerator.makeMember( "serial" ) );
-        notifyJSONArgSerialGenerator.makeInteger( serial );
+        notifyJSONArgObjectEncoder.makeMember( "serial" ).makeInteger( serial );
       }
     };
     
     void ArrayProducerWrapper::jsonExecProduceAsync(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      bool haveSerial = false;
+      int32_t serial;
+      size_t index = SIZE_MAX;
+      size_t count = SIZE_MAX;
       
-      int32_t serial = argObject->get("serial")->toInteger()->value();
-      JSONProduceAsyncUserdata *jsonProduceAsyncUserdata = new JSONProduceAsyncUserdata( this, serial );
-
-      RC::ConstHandle<JSON::Value> indexValue = argObject->maybeGet("index");
-      if ( indexValue )
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        size_t index;
         try
         {
-          index = indexValue->toInteger()->value();
+          if ( keyString.stringIs( "serial", 6 ) )
+          {
+            valueEntity.requireInteger();
+            serial = valueEntity.integerValue();
+            haveSerial = true;
+          }
+          else if ( keyString.stringIs( "index", 5 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t indexInt32 = valueEntity.integerValue();
+            if ( indexInt32 < 0 )
+              throw Exception( "out of range" );
+            index = size_t( indexInt32 );
+          }
+          else if ( keyString.stringIs( "count", 5 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t countInt32 = valueEntity.integerValue();
+            if ( countInt32 < 0 )
+              throw Exception( "out of range" );
+            count = size_t( countInt32 );
+          }
         }
         catch ( Exception e )
         {
-          throw "index: " + e;
+          argObjectDecoder.rethrow( e );
         }
-        
-        RC::ConstHandle<JSON::Value> countValue = argObject->maybeGet("count");
-        if ( countValue )
+      }
+      
+      if ( !haveSerial )
+        throw Exception( "missing 'serial'" );
+      JSONProduceAsyncUserdata *jsonProduceAsyncUserdata = new JSONProduceAsyncUserdata( this, serial );
+      
+      if ( index != SIZE_MAX )
+      {
+        if ( count != SIZE_MAX )
         {
-          size_t count;
-          try
-          {
-            count = countValue->toInteger()->value();
-          }
-          catch ( Exception e )
-          {
-            throw "count: " + e;
-          }
-          
           getUnwrapped()->createComputeState()->produceJSONAsync(
             index,
             count,
-            jsonProduceAsyncUserdata->notifyJSONArgObjectGenerator,
+            jsonProduceAsyncUserdata->notifyJSONArgObjectEncoder,
             &ArrayProducerWrapper::JSONExecProduceAsyncFinishedCallback,
             jsonProduceAsyncUserdata
             );
         }
         else getUnwrapped()->createComputeState()->produceJSONAsync(
           index,
-          jsonProduceAsyncUserdata->notifyJSONArgObjectGenerator,
+          jsonProduceAsyncUserdata->notifyJSONArgObjectEncoder,
           &ArrayProducerWrapper::JSONExecProduceAsyncFinishedCallback,
           jsonProduceAsyncUserdata
           );
       }
       else getUnwrapped()->createComputeState()->produceJSONAsync(
-        jsonProduceAsyncUserdata->notifyJSONArgObjectGenerator,
+        jsonProduceAsyncUserdata->notifyJSONArgObjectEncoder,
         &ArrayProducerWrapper::JSONExecProduceAsyncFinishedCallback,
         jsonProduceAsyncUserdata
         );
@@ -179,8 +199,8 @@ namespace Fabric
     }
 
     void ArrayProducerWrapper::jsonExecFlush(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       (const_cast<ArrayProducer *>(getUnwrapped().ptr()))->flush();

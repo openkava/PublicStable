@@ -2,11 +2,7 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "ArrayImpl.h"
-
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Core/RT/ArrayImpl.h>
 
 namespace Fabric
 {

@@ -46,12 +46,12 @@ namespace Fabric
     {
     }
     
-    void CreateReduce::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void CreateReduce::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_input->appendJSON( jsonObjectGenerator.makeMember( "input" ), includeLocation );
-      jsonObjectGenerator.makeMember( "operatorName" ).makeString( m_operatorName );
-      m_shared->appendJSON( jsonObjectGenerator.makeMember( "shared" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_input->appendJSON( jsonObjectEncoder.makeMember( "input" ), includeLocation );
+      jsonObjectEncoder.makeMember( "operatorName" ).makeString( m_operatorName );
+      m_shared->appendJSON( jsonObjectEncoder.makeMember( "shared" ), includeLocation );
     }
     
     void CreateReduce::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

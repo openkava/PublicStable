@@ -49,12 +49,12 @@ namespace Fabric
     {
     }
     
-    void ConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void ConstDecl::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Node::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
-      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
-      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
+      Node::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "name" ).makeString( m_name );
+      jsonObjectEncoder.makeMember( "type" ).makeString( m_type );
+      jsonObjectEncoder.makeMember( "value" ).makeString( m_value );
     }
     
     void ConstDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
