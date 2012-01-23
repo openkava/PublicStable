@@ -4,7 +4,6 @@
 
 #include <Fabric/Core/DG/LogCollector.h>
 #include <Fabric/Core/DG/Context.h>
-#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -31,7 +30,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jg.makeString( data, length );
       }
       m_context->jsonNotify( src, "log", 3, &json );

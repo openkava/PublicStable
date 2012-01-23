@@ -22,7 +22,6 @@
 #include <Fabric/Core/AST/UseInfo.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/String.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -264,48 +263,48 @@ namespace Fabric
     }
     
     void Executable::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "getAST" )
-        jsonExecGetAST( arg, resultJAG );
-      else if ( cmd == "getDiagnostics" )
-        jsonExecGetDiagnostics( arg, resultJAG );
-      else if ( cmd == "resolveValueGeneratorOperator" )
-        jsonExecResolveOperator<ValueGeneratorOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "resolveValueMapOperator" )
-        jsonExecResolveOperator<ValueMapOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "resolveValueTransformOperator" )
-        jsonExecResolveOperator<ValueTransformOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "resolveArrayGeneratorOperator" )
-        jsonExecResolveOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "resolveArrayMapOperator" )
-        jsonExecResolveOperator<ArrayMapOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "resolveArrayTransformOperator" )
-        jsonExecResolveOperator<ArrayTransformOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "resolveReduceOperator" )
-        jsonExecResolveOperator<ReduceOperatorWrapper>( arg, resultJAG );
-      else GC::Object::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "getAST", 6 ) )
+        jsonExecGetAST( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getDiagnostics", 14 ) )
+        jsonExecGetDiagnostics( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveValueGeneratorOperator", 29 ) )
+        jsonExecResolveOperator<ValueGeneratorOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveValueMapOperator", 23 ) )
+        jsonExecResolveOperator<ValueMapOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveValueTransformOperator", 29 ) )
+        jsonExecResolveOperator<ValueTransformOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveArrayGeneratorOperator", 29 ) )
+        jsonExecResolveOperator<ArrayGeneratorOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveArrayMapOperator", 23 ) )
+        jsonExecResolveOperator<ArrayMapOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveArrayTransformOperator", 29 ) )
+        jsonExecResolveOperator<ArrayTransformOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resolveReduceOperator", 21 ) )
+        jsonExecResolveOperator<ReduceOperatorWrapper>( arg, resultArrayEncoder );
+      else GC::Object::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
     void Executable::jsonExecGetDiagnostics(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
-      getDiagnostics().generateJSON( jg );
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
+      getDiagnostics().encodeJSON( jg );
     }
     
     void Executable::jsonExecGetAST(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
-      getAST()->generateJSON( true, jg );
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
+      getAST()->encodeJSON( true, jg );
     }
   }
 }

@@ -22,7 +22,7 @@ namespace Fabric
       bool getValue( void const *data ) const;
       void setValue( bool value, void *data ) const;
       
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       
     protected:
     

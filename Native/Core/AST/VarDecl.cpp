@@ -35,11 +35,11 @@ namespace Fabric
     {
     }
     
-    void VarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void VarDecl::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Node::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
-      jsonObjectGenerator.makeMember( "arrayModifier" ).makeString( m_arrayModifier );
+      Node::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "name" ).makeString( m_name );
+      jsonObjectEncoder.makeMember( "arrayModifier" ).makeString( m_arrayModifier );
     }
     
     RC::ConstHandle<CG::Adapter> VarDecl::getAdapter( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

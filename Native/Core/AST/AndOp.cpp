@@ -30,11 +30,11 @@ namespace Fabric
     {
     }
     
-    void AndOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void AndOp::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ), includeLocation );
-      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_left->appendJSON( jsonObjectEncoder.makeMember( "lhs" ), includeLocation );
+      m_right->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const

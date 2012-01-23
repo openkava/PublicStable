@@ -71,7 +71,7 @@ namespace Fabric
         CG::Usage usage
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
       RC::ConstHandle<CG::Adapter> getAdapter( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       

@@ -11,19 +11,13 @@
 #include <Fabric/Core/GC/Container.h>
 #include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Decoder.h>
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONArrayGenerator;
-  };
-  
   namespace JSON
   {
-    class Value;
+    class ArrayEncoder;
   };
   
   namespace KLC
@@ -39,74 +33,71 @@ namespace Fabric
         );
     
       void jsonRoute(
-        std::vector<std::string> const &dst,
+        std::vector<JSON::Entity> const &dst,
         size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
       void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateCompilation(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateExecutable(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       template<class T> void jsonExecCreateOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         )
       {
-        RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-        
         std::string id_;
-        try
-        {
-          id_ = argObject->get( "id" )->toString()->value();
-        }
-        catch ( Exception e )
-        {
-          throw "id: " + e;
-        }
-        
         std::string sourceName;
-        try
-        {
-          sourceName = argObject->get( "sourceName" )->toString()->value();
-        }
-        catch ( Exception e )
-        {
-          throw "sourceName: " + e;
-        }
-        
         std::string sourceCode;
-        try
-        {
-          sourceCode = argObject->get( "sourceCode" )->toString()->value();
-        }
-        catch ( Exception e )
-        {
-          throw "sourceCode: " + e;
-        }
-        
         std::string operatorName;
-        try
+        
+        arg.requireObject();
+        JSON::ObjectDecoder argObjectDecoder( arg );
+        JSON::Entity keyString, valueEntity;
+        while ( argObjectDecoder.getNext( keyString, valueEntity ) )
         {
-          operatorName = argObject->get( "operatorName" )->toString()->value();
-        }
-        catch ( Exception e )
-        {
-          throw "operatorName: " + e;
+          try
+          {
+            if ( keyString.stringIs( "id", 2 ) )
+            {
+              valueEntity.requireString();
+              id_ = valueEntity.stringToStdString();
+            }
+            else if ( keyString.stringIs( "sourceName", 10 ) )
+            {
+              valueEntity.requireString();
+              sourceName = valueEntity.stringToStdString();
+            }
+            else if ( keyString.stringIs( "sourceCode", 10 ) )
+            {
+              valueEntity.requireString();
+              sourceCode = valueEntity.stringToStdString();
+            }
+            else if ( keyString.stringIs( "operatorName", 12 ) )
+            {
+              valueEntity.requireString();
+              operatorName = valueEntity.stringToStdString();
+            }
+          }
+          catch ( Exception e )
+          {
+            argObjectDecoder.rethrow( e );
+          }
         }
         
         RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );

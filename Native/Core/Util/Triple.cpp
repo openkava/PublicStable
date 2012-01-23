@@ -3,7 +3,7 @@
  */
 
 #include <Fabric/Core/Util/Triple.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/Config.h>
 
@@ -16,7 +16,7 @@ namespace Fabric
     std::string const &getHostTriple()
     {
       static std::string hostTriple;
-      if ( hostTriple.length() == 0 )
+      if ( hostTriple.empty() )
       {
 #if defined( FABRIC_OS_MACOSX )
         if ( sizeof(size_t) == 8 )
