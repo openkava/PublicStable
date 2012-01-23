@@ -93,22 +93,25 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   viewport.setCameraNode(camera);
 
-  var assets = scene.importAssetFile('../BasicDemos/Models/cow.obj');
-  
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var phongMaterial = scene.constructNode('PhongMaterial', {
       diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
       lightNode: light
     });
-
-  scene.constructNode('Instance', {
-      transformNode: scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
-        }),
-      geometryNode: assets.cow,
-      materialNode: phongMaterial
-    });
+  
+  scene.importAssetFile('Models/cow.obj').addEventListener('objparsesuccess', function(evt){
+    for(var i=0; i< evt.objectNames.length; i++){
+      var objectName = evt.objectNames[i];
+      var instance = scene.constructNode('Instance', {
+        geometryNode: evt.loadedGeometries[objectName],
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('Transform', {
+            hierarchical: false,
+            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+          }),
+      });
+     }
+  });
 
   // create the websocket node
   try{
