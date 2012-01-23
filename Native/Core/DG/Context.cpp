@@ -49,6 +49,7 @@ namespace Fabric
   {
     Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
+    static bool s_checkExpiry = true;
     Context *s_activeContext = NULL;
     
     Context::ActiveContextBracket::ActiveContextBracket( Context* currContext )
@@ -68,10 +69,11 @@ namespace Fabric
       RC::Handle<IO::Manager> const &ioManager,
       std::vector<std::string> const &pluginDirs,
       CG::CompileOptions const &compileOptions,
-      bool optimizeSynchronously
+      bool optimizeSynchronously,
+      bool checkExpiry
       )
     {
-       return new Context( ioManager, pluginDirs, compileOptions, optimizeSynchronously );
+       return new Context( ioManager, pluginDirs, compileOptions, optimizeSynchronously, checkExpiry );
     }
     
     RC::Handle<Context> Context::Bind( std::string const &contextID )
@@ -87,7 +89,8 @@ namespace Fabric
       RC::Handle<IO::Manager> const &ioManager,
       std::vector<std::string> const &pluginDirs,
       CG::CompileOptions const &compileOptions,
-      bool optimizeSynchronously
+      bool optimizeSynchronously,
+      bool checkExpiry
       )
       : m_mutex( "Context::Context" )
       , m_logCollector( LogCollector::Create( this ) )
@@ -111,6 +114,9 @@ namespace Fabric
       static const size_t contextIDByteCount = 96;
       uint8_t contextIDBytes[contextIDByteCount];
       Util::generateSecureRandomBytes( contextIDByteCount, contextIDBytes );
+      
+      s_checkExpiry = checkExpiry;
+
       m_contextID = Util::encodeBase64( contextIDBytes, contextIDByteCount );
       Util::Mutex::Lock contextMapLock( s_contextMapMutex );
       s_contextMap.insert( ContextMap::value_type( m_contextID, this ) ).first;
@@ -370,7 +376,7 @@ namespace Fabric
       if ( !haveIsExpired )
       {
         time_t currentTime = time( NULL );
-        isExpired = currentTime >= buildExpiry;
+        isExpired = s_checkExpiry && currentTime >= buildExpiry;
         haveIsExpired = true;
       }
       return isExpired;

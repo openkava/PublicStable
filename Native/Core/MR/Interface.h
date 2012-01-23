@@ -51,6 +51,11 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
+      void jsonExecCreateValueCache(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      
       void jsonExecCreateValueGenerator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
@@ -82,6 +87,11 @@ namespace Fabric
         );
       
       void jsonExecCreateArrayTransform(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      
+      void jsonExecCreateArrayCache(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

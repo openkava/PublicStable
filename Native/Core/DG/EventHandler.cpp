@@ -371,7 +371,7 @@ namespace Fabric
     }
     
     
-    void EventHandler::collectErrorsForScope( Scope const *parentScope )
+    void EventHandler::collectErrorsForScope( Scope const *parentScope, Errors &errors )
     {
       BindingsScope bindingsScope( m_bindings, parentScope );
       SelfScope selfScope( this, &bindingsScope );
@@ -383,16 +383,16 @@ namespace Fabric
       {
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
         std::string const errorPrefix = "pre-descend operator " + _(i) + ": ";
-        std::vector<std::string> errors;
-        binding->bind( errors, selfScope, 0 );
-        for ( size_t i=0; i<errors.size(); ++i )
-          getErrors().push_back( errorPrefix + errors[i] );
+        std::vector<std::string> preDescendBindingsErrors;
+        binding->bind( preDescendBindingsErrors, selfScope, 0 );
+        for ( size_t i=0; i<preDescendBindingsErrors.size(); ++i )
+          errors.push_back( errorPrefix + preDescendBindingsErrors[i] );
       }
       
       for ( size_t i=0; i<m_childEventHandlers.size(); ++i )
       {
         RC::Handle<EventHandler> const &childEventHandler = m_childEventHandlers[i];
-        childEventHandler->collectErrorsForScope( childScope );
+        childEventHandler->collectErrorsForScope( childScope, errors );
       }
     
       size_t numPostDescendBindings = m_postDescendBindings->size();
@@ -400,20 +400,20 @@ namespace Fabric
       {
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
         std::string const errorPrefix = "post-descend operator " + _(i) + ": ";
-        std::vector<std::string> errors;
-        binding->bind( errors, selfScope, 0 );
-        for ( size_t i=0; i<errors.size(); ++i )
-          getErrors().push_back( errorPrefix + errors[i] );
+        std::vector<std::string> postDescendBindingsErrors;
+        binding->bind( postDescendBindingsErrors, selfScope, 0 );
+        for ( size_t i=0; i<postDescendBindingsErrors.size(); ++i )
+          errors.push_back( errorPrefix + postDescendBindingsErrors[i] );
       }
         
       if ( m_selectBinding )
       {
         void *prefixes[2] = { 0, 0 };
         std::string const errorPrefix = "selector: ";
-        std::vector<std::string> errors;
-        m_selectBinding->bind( errors, bindingsScope, 0, 2, prefixes );
-        for ( size_t i=0; i<errors.size(); ++i )
-          getErrors().push_back( errorPrefix + errors[i] );
+        std::vector<std::string> selectBindingErrors;
+        m_selectBinding->bind( selectBindingErrors, bindingsScope, 0, 2, prefixes );
+        for ( size_t i=0; i<selectBindingErrors.size(); ++i )
+          errors.push_back( errorPrefix + selectBindingErrors[i] );
       }
     }
     
@@ -460,11 +460,13 @@ namespace Fabric
 
     void EventHandler::collectErrors()
     {
+      Errors &errors = getErrors();
+
       if ( m_selectBinding )
       {
         Bindings::const_iterator it = m_bindings.find( m_selectNodeBindingName );
         if ( it == m_bindings.end() )
-          getErrors().push_back( "selector node '" + m_selectNodeBindingName + "' is not bound" );
+          errors.push_back( "selector node '" + m_selectNodeBindingName + "' is not bound" );
       }
     }
     

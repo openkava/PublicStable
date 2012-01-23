@@ -64,15 +64,15 @@ namespace Fabric
     {
       return m_operator->getValueDesc();
     }
-
-    size_t ArrayTransform::getCount() const
-    {
-      return m_inputArrayProducer->getCount();
-    }
       
     const RC::Handle<ArrayProducer::ComputeState> ArrayTransform::createComputeState() const
     {
       return ComputeState::Create( this );
+    }
+
+    void ArrayTransform::flush()
+    {
+      (const_cast<ArrayProducer *>(m_inputArrayProducer.ptr()))->flush();
     }
     
     RC::Handle<ArrayTransform::ComputeState> ArrayTransform::ComputeState::Create( RC::ConstHandle<ArrayTransform> const &arrayTransform )
@@ -85,6 +85,8 @@ namespace Fabric
       , m_arrayTransform( arrayTransform )
       , m_inputArrayProducerComputeState( arrayTransform->m_inputArrayProducer->createComputeState() )
     {
+      setCount( m_inputArrayProducerComputeState->getCount() );
+      
       if ( m_arrayTransform->m_operator->takesSharedValue() )
       {
         RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayTransform->m_sharedValueProducer;

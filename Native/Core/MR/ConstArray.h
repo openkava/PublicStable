@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONEntityInfo;
+  };
+  
   namespace JSON
   {
     class Array;
@@ -38,6 +43,12 @@ namespace Fabric
 
       static RC::Handle<ConstArray> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::Desc> const &elementDesc,
+        Util::JSONEntityInfo const &entityInfo
+        );
+
+      static RC::Handle<ConstArray> Create(
+        RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::ArrayDesc> const &arrayDesc,
         void const *data
         );
@@ -47,11 +58,11 @@ namespace Fabric
     public:
       
       virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
-      virtual size_t getCount() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
 
       RC::ConstHandle<RT::ArrayDesc> getArrayDesc() const;
       void const *getImmutableData() const;
+      virtual void flush();
       
     protected:
     
@@ -77,6 +88,12 @@ namespace Fabric
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
+        );
+
+      ConstArray(
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::Desc> const &elementDesc,
+        Util::JSONEntityInfo const &entityInfo
         );
 
       ConstArray(

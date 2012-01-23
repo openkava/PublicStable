@@ -67,14 +67,14 @@ namespace Fabric
       return m_arrayIOOperator->getOutputDesc();
     }
 
-    size_t ArrayMap::getCount() const
-    {
-      return m_inputArrayProducer->getCount();
-    }
-      
     const RC::Handle<ArrayProducer::ComputeState> ArrayMap::createComputeState() const
     {
       return ComputeState::Create( this );
+    }
+
+    void ArrayMap::flush()
+    {
+      (const_cast<ArrayProducer *>(m_inputArrayProducer.ptr()))->flush();
     }
     
     RC::Handle<ArrayMap::ComputeState> ArrayMap::ComputeState::Create( RC::ConstHandle<ArrayMap> const &arrayMap )
@@ -87,6 +87,8 @@ namespace Fabric
       , m_arrayMap( arrayMap )
       , m_inputArrayProducerComputeState( arrayMap->m_inputArrayProducer->createComputeState() )
     {
+      setCount( m_inputArrayProducerComputeState->getCount() );
+      
       if ( m_arrayMap->m_arrayIOOperator->takesSharedValue() )
       {
         RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayMap->m_sharedValueProducer;
@@ -103,7 +105,7 @@ namespace Fabric
         sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
       }
     }
-    
+      
     void ArrayMap::ComputeState::produce( size_t index, void *data ) const
     {
       RC::ConstHandle<RT::Desc> inputElementDesc = m_arrayMap->m_inputArrayProducer->getElementDesc();

@@ -8,7 +8,7 @@
 #include <Fabric/Core/Util/JSONGenerator.h>
 
 #if !defined(FABRIC_OS_WINDOWS)
-  #include <alloca.h>
+# include <alloca.h>
 #endif
 
 #include <string.h>

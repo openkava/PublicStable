@@ -119,7 +119,8 @@ namespace Fabric
         RC::Handle<IO::Manager> const &ioManager,
         std::vector<std::string> const &pluginDirs,
         CG::CompileOptions const &compileOptions,
-        bool optimizeSynchronously
+        bool optimizeSynchronously,
+        bool checkExpiry
         );
       static RC::Handle<Context> Bind( std::string const &contextID );
       
@@ -174,7 +175,8 @@ namespace Fabric
         RC::Handle<IO::Manager> const &ioManager,
         std::vector<std::string> const &pluginDirs,
         CG::CompileOptions const &compileOptions,
-        bool optimizeSynchronously
+        bool optimizeSynchronously,
+        bool checkExpiry
         );
       ~Context();
 

@@ -66,6 +66,11 @@ namespace Fabric
     {
       throw Exception( "unable to convert ValueProducer from JSON" );
     }
+    
+    void ValueProducerImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    {
+      throw Exception( "unable to convert ValueProducer from JSON" );
+    }
 
     void ValueProducerImpl::disposeDatasImpl( void *dst, size_t count, size_t stride ) const
     {

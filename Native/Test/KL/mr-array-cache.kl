@@ -1,0 +1,66 @@
+operator generator(
+  io Integer value
+  )
+{
+  report "  Running generator";
+  value = 42;
+}
+
+operator transform(
+  io Integer value
+  )
+{
+  report "  Running transform";
+  value *= 2;
+}
+
+operator entry() {
+  // Generator caching
+  ValueProducer<Size> cvg = createConstValue(Size(10));
+  ArrayProducer<Integer> gen = createArrayCache(
+    createArrayGenerator(cvg, generator)
+    );
+
+  report gen;
+  report " gen.getCount() = " + gen.getCount();
+
+  report "Should run generator 10x";
+  for (Size i=0; i<10; ++i)
+    report " gen.produce() = " + gen.produce(i);
+
+  report "Should not run generator (cached)";
+  for (Size i=0; i<10; ++i)
+    report " gen.produce() = " + gen.produce(i);
+
+  gen.flush();
+  report "Should run generator 10x";
+  for (Size i=0; i<10; ++i)
+    report " gen.produce() = " + gen.produce(i);
+
+  // Transform caching
+  Integer va[];
+  for (Integer i=0; i<10; ++i)
+    va.push(i);
+
+  ArrayProducer<Integer> cap = createConstArray(va);
+  report "cap.getCount() = " + cap.getCount();
+
+  ArrayProducer<Integer> tr = createArrayCache(
+    createArrayTransform(cap, transform)
+    );
+  report tr;
+  report " tr.getCount() = " + tr.getCount();
+
+  report "Should run transform 10x";
+  for (Size i=0; i<10; ++i)
+    report " tr.produce() = " + tr.produce(i);
+
+  report "Should not run transform (cached)";
+  for (Size i=0; i<10; ++i)
+    report " tr.produce() = " + tr.produce(i);
+
+  tr.flush();
+  report "Should run transform 10x";
+  for (Size i=0; i<10; ++i)
+    report " tr.produce() = " + tr.produce(i);
+}

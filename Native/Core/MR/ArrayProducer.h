@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/MR/Producer.h>
 
 namespace Fabric
 {
@@ -23,7 +24,7 @@ namespace Fabric
   
   namespace MR
   {
-    class ArrayProducer : public RC::Object
+    class ArrayProducer : public Producer
     {
       // Virtual functions: Object
       
@@ -68,6 +69,11 @@ namespace Fabric
       protected:
       
         ComputeState( RC::ConstHandle<ArrayProducer> const &arrayProducer );
+
+        virtual void setCount( size_t count )
+        {
+          m_count = count;
+        }
     
         static void ProduceJSONAsyncCallback_0(
           void *userdata,
@@ -93,7 +99,6 @@ namespace Fabric
     public:
       
       virtual RC::ConstHandle<RT::Desc> getElementDesc() const = 0;
-      virtual size_t getCount() const = 0;
       virtual const RC::Handle<ComputeState> createComputeState() const = 0;
     
     protected:

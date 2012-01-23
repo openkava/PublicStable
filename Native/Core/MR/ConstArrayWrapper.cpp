@@ -7,6 +7,7 @@
 #include <Fabric/Core/RT/ArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/JSONDecoder.h>
 #include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
@@ -24,6 +25,15 @@ namespace Fabric
       return new ConstArrayWrapper( FABRIC_GC_OBJECT_MY_CLASS, rtManager, elementDesc, jsonArray );
     }
     
+    RC::Handle<ConstArrayWrapper> ConstArrayWrapper::Create(
+      RC::ConstHandle<RT::Manager> const &rtManager,
+      RC::ConstHandle<RT::Desc> const &elementDesc,
+      Util::JSONEntityInfo const &entityInfo
+      )
+    {
+      return new ConstArrayWrapper( FABRIC_GC_OBJECT_MY_CLASS, rtManager, elementDesc, entityInfo );
+    }
+    
     ConstArrayWrapper::ConstArrayWrapper(
       FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<RT::Manager> const &rtManager,
@@ -32,6 +42,17 @@ namespace Fabric
       )
       : ArrayProducerWrapper( FABRIC_GC_OBJECT_CLASS_ARG )
       , m_unwrapped( ConstArray::Create( rtManager, elementDesc, jsonArray ) )
+    {
+    }
+    
+    ConstArrayWrapper::ConstArrayWrapper(
+      FABRIC_GC_OBJECT_CLASS_PARAM,
+      RC::ConstHandle<RT::Manager> const &rtManager,
+      RC::ConstHandle<RT::Desc> const &elementDesc,
+      Util::JSONEntityInfo const &entityInfo
+      )
+      : ArrayProducerWrapper( FABRIC_GC_OBJECT_CLASS_ARG )
+      , m_unwrapped( ConstArray::Create( rtManager, elementDesc, entityInfo ) )
     {
     }
       
