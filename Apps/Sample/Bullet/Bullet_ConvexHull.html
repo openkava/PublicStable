@@ -102,11 +102,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // create a simulation world
   var bulletWorldNode = scene.constructNode('BulletWorldNode');
   
-  // import the cow  
-  var assets = scene.importAssetFile('../BasicDemos/Models/cow.obj');
-
-  // add a box shape
-  bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createConvexHull(assets.cow));
+  // import the cow
+  var cowGeometry;
+  scene.importAssetFile('../BasicDemos/Models/cow.obj', {
+   splitMaterials: false
+  }).addEventListener('objparsesuccess', function(evt){
+    cowGeometry = evt.loadedGeometries.cow;
+    bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createConvexHull(cowGeometry));
+  });
 
   // create a force manipulator
   var manipulatorNode = scene.constructNode('BulletForceManipulator', {
@@ -150,7 +153,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
           });
           
           scene.constructNode('Instance', {
-            geometryNode: assets.cow,
+            geometryNode: cowGeometry,
             materialNode: materialNode,
             transformNode: nonslicedTransform,
             enableRaycasting: true
@@ -177,11 +180,11 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         });
       
         scene.constructNode('Instance', {
-          geometryNode: assets.cow,
+          geometryNode: cowGeometry,
           materialNode: scene.constructNode('PhongInstancingExtMaterial', {
             diffuseColor: FABRIC.RT.rgb255(10,10,255),
             lightNode: light,
-            transformTextureNode: slicedTransform.getTransformTexture(true)
+            transformTextureNode: slicedTransform.getTransformTexture()
           }),
           transformNode: slicedTransform,
           enableRaycasting: true

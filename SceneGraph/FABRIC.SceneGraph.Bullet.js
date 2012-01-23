@@ -766,6 +766,13 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
       return bulletWorldNode.pub.getRigidBodyInitialTransform(bodyName,val)[0];
     };
     
+    var transformTexture;
+    rigidBodyTransformNode.pub.getTransformTexture = function() {
+      if(!transformTexture)
+        transformTexture = scene.constructNode("TransformTexture", { transformNode: rigidBodyTransformNode.pub });
+      return transformTexture.pub;
+    };
+    
     return rigidBodyTransformNode;
   }});
 
