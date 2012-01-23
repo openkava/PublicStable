@@ -13,7 +13,6 @@
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/RT/Impl.h>
-#include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
 {
@@ -154,13 +153,13 @@ namespace Fabric
       return result;
     }
 
-    void Manager::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Manager::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
       {
-        Util::JSONGenerator instJG = resultJOG.makeMember( it->first );
-        it->second->jsonDesc( instJG );
+        JSON::Encoder instEncoder = resultObjectEncoder.makeMember( it->first );
+        it->second->jsonDesc( instEncoder );
       }
     }
 

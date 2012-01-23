@@ -127,6 +127,16 @@ namespace Fabric
         return getLength();
       }
       
+      bool empty() const
+      {
+        return getLength() == 0;
+      }
+      
+      bool isEmpty() const
+      {
+        return empty();
+      }
+      
       // Ensure we can hold at least length+1 characters
       char *reserve( size_t length )
       {

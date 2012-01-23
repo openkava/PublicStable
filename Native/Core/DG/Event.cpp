@@ -16,9 +16,6 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
@@ -54,7 +51,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         event->jsonDesc( jg );
       }
       event->jsonNotifyDelta( json );
@@ -96,7 +93,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescEventHandlers( jg );
       }
       jsonNotifyMemberDelta( "eventHandlers", 13, json );
@@ -239,92 +236,90 @@ namespace Fabric
       return m_runState->canExecute;
     }
       
-    void Event::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Event::jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      if ( cmd == "appendEventHandler" )
-        jsonExecAppendEventHandler( arg, resultJAG );
-      else if ( cmd == "fire" )
-        jsonExecFire( resultJAG );
-      else if ( cmd == "setSelectType" )
+      if ( cmd.stringIs( "appendEventHandler", 18 ) )
+        jsonExecAppendEventHandler( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "fire", 4 ) )
+        jsonExecFire( resultArrayEncoder );
+      else if ( cmd.stringIs( "setSelectType", 13 ) )
         jsonExecSetSelectType( arg );
-      else if ( cmd == "select" )
-        jsonExecSelect( resultJAG );
-      else Container::jsonExec( cmd, arg, resultJAG );
+      else if ( cmd.stringIs( "select", 6 ) )
+        jsonExecSelect( resultArrayEncoder );
+      else Container::jsonExec( cmd, arg, resultArrayEncoder );
     }
 
-    void Event::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
+    void Event::jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      Create( arg->toString()->value(), context );
+      arg.requireString();
+      Create( arg.stringToStdString(), context );
     }
     
-    void Event::jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Event::jsonExecAppendEventHandler( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      appendEventHandler( m_context->getEventHandler( arg->toString()->value() ) );
+      arg.requireString();
+      appendEventHandler( m_context->getEventHandler( arg.stringToStdString() ) );
     }
     
-    void Event::jsonExecFire( Util::JSONArrayGenerator &resultJAG )
+    void Event::jsonExecFire( JSON::ArrayEncoder &resultArrayEncoder )
     {
       fire();
     }
     
     
-    void Event::jsonExecSetSelectType( RC::ConstHandle<JSON::Value> const &arg )
+    void Event::jsonExecSetSelectType( JSON::Entity const &arg )
     {
-      RC::ConstHandle<RT::Desc> desc = m_context->getRTManager()->getDesc( arg->toString()->value() );
-      if(!desc){
-        throw Exception( "Type not a valid selector type:" + arg->toString() );
-      }
-      setSelectType(desc);
+      arg.requireString();
+      std::string selectorTypeName = arg.stringToStdString();
+      setSelectType( m_context->getRTManager()->getDesc( selectorTypeName ) );
     }
     
-    void Event::jsonExecSelect( Util::JSONArrayGenerator &resultJAG )
+    void Event::jsonExecSelect( JSON::ArrayEncoder &resultArrayEncoder )
     {
       SelectedNodeList selectedNodeList;
       select( selectedNodeList );
       
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      Util::JSONArrayGenerator elementsJAG = resultJG.makeArray();
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ArrayEncoder elementsArrayEncoder = resultEncoder.makeArray();
       for ( SelectedNodeList::const_iterator it=selectedNodeList.begin(); it!=selectedNodeList.end(); ++it )
       {
         SelectedNode const &selectedNode = *it;
-        Util::JSONGenerator elementJG = elementsJAG.makeElement();
-        Util::JSONObjectGenerator elementJOG = elementJG.makeObject();
+        JSON::Encoder elementEncoder = elementsArrayEncoder.makeElement();
+        JSON::ObjectEncoder elementObjectEncoder = elementEncoder.makeObject();
         {
-          Util::JSONGenerator nodeJG = elementJOG.makeMember( "node", 4 );
-          nodeJG.makeString( selectedNode.node->getName() );
+          elementObjectEncoder.makeMember( "node", 4 ).makeString( selectedNode.node->getName() );
         }
         {
-          Util::JSONGenerator dataJG = elementJOG.makeMember( "data", 4 );
-          m_selectorType->generateJSON( &selectedNode.data[0], dataJG );
+          JSON::Encoder dataEncoder = elementObjectEncoder.makeMember( "data", 4 );
+          m_selectorType->encodeJSON( &selectedNode.data[0], dataEncoder );
         }
       }
     }
       
-    void Event::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Event::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Container::jsonDesc( resultJG );
+      Container::jsonDesc( resultEncoder );
     }
     
-    void Event::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void Event::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Container::jsonDesc( resultJOG );
-      Util::JSONGenerator eventHandlersJG = resultJOG.makeMember( "eventHandlers", 13 );
-      jsonDescEventHandlers( eventHandlersJG );
+      Container::jsonDesc( resultObjectEncoder );
+      JSON::Encoder eventHandlersEncoder = resultObjectEncoder.makeMember( "eventHandlers", 13 );
+      jsonDescEventHandlers( eventHandlersEncoder );
     }
       
-    void Event::jsonDescType( Util::JSONGenerator &resultJG ) const
+    void Event::jsonDescType( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeString( "Event", 5 );
+      resultEncoder.makeString( "Event", 5 );
     }
       
-    void Event::jsonDescEventHandlers( Util::JSONGenerator &resultJG ) const
+    void Event::jsonDescEventHandlers( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONArrayGenerator eventHandlersJAG = resultJG.makeArray();
+      JSON::ArrayEncoder eventHandlersArrayEncoder = resultEncoder.makeArray();
       for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
       {
         RC::Handle<EventHandler> const &eventHandler = *it;
-        Util::JSONGenerator eventHandlerJG = eventHandlersJAG.makeElement();
-        eventHandlerJG.makeString( eventHandler->getName() );
+        eventHandlersArrayEncoder.makeElement().makeString( eventHandler->getName() );
       }
     }
   };

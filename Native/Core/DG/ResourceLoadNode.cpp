@@ -12,10 +12,6 @@
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/Value.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Integer.h>
 
 namespace Fabric
 {
@@ -27,7 +23,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         resourceLoadNode->jsonDesc( jg );
       }
       resourceLoadNode->jsonNotifyDelta( json );
@@ -38,11 +34,11 @@ namespace Fabric
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
       , m_context( context.ptr() )
-      , m_streamGeneration( 0 )
       , m_fabricResourceStreamData( context->getRTManager() )
-      , m_nbStreamed( 0 )
-      , m_keepMemoryCache( false )
       , m_firstEvalAfterLoad( false )
+      , m_keepMemoryCache( false )
+      , m_streamGeneration( 0 )
+      , m_nbStreamed( 0 )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       RC::ConstHandle<RT::BooleanDesc> booleanDesc = context->getRTManager()->getBooleanDesc();
@@ -53,12 +49,13 @@ namespace Fabric
     }
 
     void ResourceLoadNode::jsonExecCreate(
-      RC::ConstHandle<JSON::Value> const &arg,
+      JSON::Entity const &arg,
       RC::Handle<Context> const &context,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Create( arg->toString()->value(), context );
+      arg.requireString();
+      Create( arg.stringToStdString(), context );
     }
 
     void ResourceLoadNode::evaluateLocal( void *userdata )
@@ -148,15 +145,15 @@ namespace Fabric
 
           Util::SimpleString json;
           {
-            Util::JSONGenerator jg( &json );
-            Util::JSONObjectGenerator jog = jg.makeObject();
+            JSON::Encoder jsonEncoder( &json );
+            JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
             {
-              Util::JSONGenerator memberJG = jog.makeMember( "received", 8 );
-              memberJG.makeInteger( m_nbStreamed );
+              JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "received", 8 );
+              memberEncoder.makeInteger( m_nbStreamed );
             }
             {
-              Util::JSONGenerator memberJG = jog.makeMember( "total", 5 );
-              memberJG.makeInteger( totalsize );
+              JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "total", 5 );
+              memberEncoder.makeInteger( totalsize );
             }
           }
           getContext()->jsonNotify( src, "resourceLoadProgress", 20, &json );

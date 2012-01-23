@@ -4,7 +4,7 @@
  
 #include <Fabric/Clients/CLI/Client.h>
 #include <Fabric/Core/DG/Context.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
@@ -60,7 +60,7 @@ namespace Fabric
           else
           {
             std::string filename = m_url.substr( colonIndex+1, m_url.length() - colonIndex - 1 );
-            if ( filename.length() == 0 )
+            if ( filename.empty() )
               onFailure( m_url, "empty filename" );
             else
             {
@@ -292,7 +292,7 @@ namespace Fabric
       Util::SimpleString jsonEncodedResults;
       {
         v8::Handle<v8::Object> v8This = args.This();
-        Util::JSONGenerator resultJSON( &jsonEncodedResults );
+        JSON::Encoder resultJSON( &jsonEncodedResults );
         wrap->m_client->jsonExec(
           const_cast<char const *>(*v8JSONEncodedCommandsUtf8Value),
           size_t(v8JSONEncodedCommandsUtf8Value.length()),

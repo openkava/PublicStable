@@ -9,8 +9,8 @@
 #include <Fabric/Core/MT/Impl.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/MT/Util.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric

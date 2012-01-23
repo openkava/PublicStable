@@ -5,7 +5,7 @@
 #include <Fabric/Core/MR/ArrayCacheWrapper.h>
 #include <Fabric/Core/MR/ArrayCache.h>
 #include <Fabric/Core/MR/ArrayProducerWrapper.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -44,11 +44,11 @@ namespace Fabric
       return "ArrayCache";
     }
     
-    void ArrayCacheWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ArrayCacheWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "input" );
-        m_inputArrayProducer->toJSON( jg );
+        JSON::Encoder inputEncoder = objectEncoder.makeMember( "input" );
+        m_inputArrayProducer->toJSON( inputEncoder );
       }
     }
   }

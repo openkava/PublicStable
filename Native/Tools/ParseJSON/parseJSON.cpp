@@ -2,50 +2,50 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include <Fabric/Core/Util/JSONDecoder.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #include <stdio.h>
 #include <string>
 #include <iostream>
 
-void displayEntity( Fabric::Util::JSONEntityInfo const &entityInfo, std::string const &indent )
+void displayEntity( Fabric::JSON::Entity const &entity, std::string const &indent )
 {
   std::cout << indent;
   
-  switch ( entityInfo.type )
+  switch ( entity.type )
   {
     case Fabric::Util::ET_NULL:
       std::cout << "NULL" << std::endl;
       break;
     case Fabric::Util::ET_BOOLEAN:
       std::cout << "BOOLEAN ";
-      std::cout << (entityInfo.value.boolean? "true": "false");
+      std::cout << (entity.value.boolean? "true": "false");
       std::cout << std::endl;
       break;
     case Fabric::Util::ET_INTEGER:
       std::cout << "INTEGER ";
-      std::cout << Fabric::_(entityInfo.value.integer);
+      std::cout << Fabric::_(entity.value.integer);
       std::cout << std::endl;
       break;
     case Fabric::Util::ET_SCALAR:
       std::cout << "SCALAR ";
-      std::cout << Fabric::_(entityInfo.value.scalar);
+      std::cout << Fabric::_(entity.value.scalar);
       std::cout << std::endl;
       break;
     case Fabric::Util::ET_STRING:
       std::cout << "STRING ";
-      std::cout << entityInfo.value.string.length;
+      std::cout << entity.value.string.length;
       std::cout << " ";
-      std::cout << Fabric::_( entityInfo.value.string.shortData, entityInfo.value.string.length, Fabric::Util::jsonDecoderShortStringMaxLength );
+      std::cout << Fabric::_( entity.value.string.shortData, entity.value.string.length, Fabric::JSON::DecoderShortStringMaxLength );
       std::cout << std::endl;
       break;
     case Fabric::Util::ET_OBJECT:
     {
-      std::cout << "OBJECT " << entityInfo.value.object.size << std::endl;
-      Fabric::Util::JSONObjectParser objectParser( entityInfo );
-      Fabric::Util::JSONEntityInfo keyEntityInfo, valueEntityInfo;
+      std::cout << "OBJECT " << entity.value.object.size << std::endl;
+      Fabric::JSON::ObjectDecoder objectParser( entity );
+      Fabric::JSON::Entity keyEntityInfo, valueEntityInfo;
       while ( objectParser.getNext( keyEntityInfo, valueEntityInfo ) )
       {
         displayEntity( keyEntityInfo, "  " + indent );
@@ -55,9 +55,9 @@ void displayEntity( Fabric::Util::JSONEntityInfo const &entityInfo, std::string 
     break;
     case Fabric::Util::ET_ARRAY:
     {
-      std::cout << "ARRAY " << entityInfo.value.array.size << std::endl;
-      Fabric::Util::JSONArrayParser arrayParser( entityInfo );
-      Fabric::Util::JSONEntityInfo elementEntityInfo;
+      std::cout << "ARRAY " << entity.value.array.size << std::endl;
+      Fabric::JSON::ArrayDecoder arrayParser( entity );
+      Fabric::JSON::Entity elementEntityInfo;
       while ( arrayParser.getNext( elementEntityInfo ) )
         displayEntity( elementEntityInfo, "  " + indent );
     }
@@ -82,10 +82,10 @@ void parseJSON( FILE *fp )
     length += read;
   }
   
-  Fabric::Util::JSONDecoder decoder( data, length );
-  Fabric::Util::JSONEntityInfo entityInfo;
-  while ( decoder.getNext( entityInfo ) )
-    displayEntity( entityInfo, "" );
+  Fabric::JSON::Decoder decoder( data, length );
+  Fabric::JSON::Entity entity;
+  while ( decoder.getNext( entity ) )
+    displayEntity( entity, "" );
     
   delete [] data;
 }

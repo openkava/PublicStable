@@ -50,19 +50,19 @@ namespace Fabric
     {
     }
     
-    void CStyleLoop::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void CStyleLoop::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      Statement::appendJSONMembers( jsonObjectEncoder, includeLocation );
       if ( m_startStatement )
-        m_startStatement->appendJSON( jsonObjectGenerator.makeMember( "startStatement" ), includeLocation );
+        m_startStatement->appendJSON( jsonObjectEncoder.makeMember( "startStatement" ), includeLocation );
       if ( m_preCondExpr )
-        m_preCondExpr->appendJSON( jsonObjectGenerator.makeMember( "preCondExpr" ), includeLocation );
+        m_preCondExpr->appendJSON( jsonObjectEncoder.makeMember( "preCondExpr" ), includeLocation );
       if ( m_nextExpr )
-        m_nextExpr->appendJSON( jsonObjectGenerator.makeMember( "nextExpr" ), includeLocation );
+        m_nextExpr->appendJSON( jsonObjectEncoder.makeMember( "nextExpr" ), includeLocation );
       if ( m_postCondExpr )
-        m_postCondExpr->appendJSON( jsonObjectGenerator.makeMember( "postCondExpr" ), includeLocation );
+        m_postCondExpr->appendJSON( jsonObjectEncoder.makeMember( "postCondExpr" ), includeLocation );
       if ( m_body )
-        m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ), includeLocation );
+        m_body->appendJSON( jsonObjectEncoder.makeMember( "body" ), includeLocation );
     }
     
     void CStyleLoop::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

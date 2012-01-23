@@ -5,8 +5,8 @@
 #include <Fabric/Core/MR/ArrayCache.h>
 #include <Fabric/Core/MR/ArrayOutputOperator.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric

@@ -10,7 +10,7 @@
 #include <Fabric/Core/MR/ArrayProducerWrapper.h>
 #include <Fabric/Core/KLC/ArrayTransformOperator.h>
 #include <Fabric/Core/KLC/ArrayTransformOperatorWrapper.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -57,21 +57,21 @@ namespace Fabric
       return "ArrayTransform";
     }
     
-    void ArrayTransformWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ArrayTransformWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "input" );
+        JSON::Encoder jg = objectEncoder.makeMember( "input" );
         m_inputArrayProducer->toJSON( jg );
       }
 
       {
-        Util::JSONGenerator jg = jog.makeMember( "operator" );
+        JSON::Encoder jg = objectEncoder.makeMember( "operator" );
         m_operator->toJSON( jg );
       }
 
       if ( m_sharedValueProducer )
       {
-        Util::JSONGenerator jg = jog.makeMember( "shared" );
+        JSON::Encoder jg = objectEncoder.makeMember( "shared" );
         m_sharedValueProducer->toJSON( jg );
       }
     }

@@ -7,9 +7,8 @@
 #include <Fabric/Core/MT/Impl.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/MT/Util.h>
-#include <Fabric/Core/Util/Log.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/Util/Log.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -32,12 +31,12 @@ namespace Fabric
       produce( 0, m_count, data );
     }
       
-    void ArrayProducer::ComputeState::produceJSON( Util::JSONGenerator &jg ) const
+    void ArrayProducer::ComputeState::produceJSON( JSON::Encoder &jg ) const
     {
       produceJSON( 0, m_count, jg );
     }
       
-    void ArrayProducer::ComputeState::produceJSON( size_t index, Util::JSONGenerator &jg ) const
+    void ArrayProducer::ComputeState::produceJSON( size_t index, JSON::Encoder &jg ) const
     {
       RC::ConstHandle<RT::Desc> elementDesc = m_arrayProducer->getElementDesc();
       
@@ -45,7 +44,7 @@ namespace Fabric
       void *valueData = alloca( allocSize );
       memset( valueData, 0, allocSize );
       produce( index, valueData );
-      elementDesc->generateJSON( valueData, jg );
+      elementDesc->encodeJSON( valueData, jg );
       elementDesc->disposeData( valueData );
     }
     
@@ -128,7 +127,7 @@ namespace Fabric
         ).run();
     }
 
-    void ArrayProducer::ComputeState::produceJSON( size_t index, size_t count, Util::JSONGenerator &jg ) const
+    void ArrayProducer::ComputeState::produceJSON( size_t index, size_t count, JSON::Encoder &jg ) const
     {
       RC::ConstHandle<RT::Desc> elementDesc = m_arrayProducer->getElementDesc();
       size_t allocSize = elementDesc->getAllocSize();
@@ -137,12 +136,12 @@ namespace Fabric
       memset( datas, 0, totalAllocSize );
       produce( index, count, datas );
       {
-        Util::JSONArrayGenerator jag = jg.makeArray();
+        JSON::ArrayEncoder jag = jg.makeArray();
         uint8_t *data = reinterpret_cast<uint8_t *>( datas );
         for ( size_t i=0; i<count; ++i )
         {
-          Util::JSONGenerator elementJG = jag.makeElement();
-          elementDesc->generateJSON( data, elementJG );
+          JSON::Encoder elementEncoder = jag.makeElement();
+          elementDesc->encodeJSON( data, elementEncoder );
           data += allocSize;
         }
       }
@@ -152,18 +151,18 @@ namespace Fabric
     struct ProduceJSONAsyncCallbackData_0
     {
       RC::Handle<ArrayProducer::ComputeState> computeState;
-      Util::JSONObjectGenerator *jsonObjectGenerator;
+      JSON::ObjectEncoder *jsonObjectEncoder;
     };
 
     void ArrayProducer::ComputeState::produceJSONAsync(
-      Util::JSONObjectGenerator &jsonObjectGenerator,
+      JSON::ObjectEncoder &jsonObjectEncoder,
       void (*finishedCallback)( void * ),
       void *finishedUserdata
       )
     {
       ProduceJSONAsyncCallbackData_0 *produceJSONAsyncCallbackData = new ProduceJSONAsyncCallbackData_0;
       produceJSONAsyncCallbackData->computeState = this;
-      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      produceJSONAsyncCallbackData->jsonObjectEncoder = &jsonObjectEncoder;
       
       MT::ThreadPool::Instance()->executeParallelAsync(
         MT::tlsLogCollector.get(),
@@ -183,7 +182,7 @@ namespace Fabric
     {
       ProduceJSONAsyncCallbackData_0 *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData_0 *>( userdata );
       {
-        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        JSON::Encoder jg = produceJSONAsyncCallbackData->jsonObjectEncoder->makeMember( "result" );
         produceJSONAsyncCallbackData->computeState->produceJSON( jg );
       }
       delete produceJSONAsyncCallbackData;
@@ -193,12 +192,12 @@ namespace Fabric
     {
       RC::Handle<ArrayProducer::ComputeState> computeState;
       size_t index;
-      Util::JSONObjectGenerator *jsonObjectGenerator;
+      JSON::ObjectEncoder *jsonObjectEncoder;
     };
 
     void ArrayProducer::ComputeState::produceJSONAsync(
       size_t index,
-      Util::JSONObjectGenerator &jsonObjectGenerator,
+      JSON::ObjectEncoder &jsonObjectEncoder,
       void (*finishedCallback)( void * ),
       void *finishedUserdata
       )
@@ -206,7 +205,7 @@ namespace Fabric
       ProduceJSONAsyncCallbackData_1 *produceJSONAsyncCallbackData = new ProduceJSONAsyncCallbackData_1;
       produceJSONAsyncCallbackData->computeState = this;
       produceJSONAsyncCallbackData->index = index;
-      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      produceJSONAsyncCallbackData->jsonObjectEncoder = &jsonObjectEncoder;
       
       MT::ThreadPool::Instance()->executeParallelAsync(
         MT::tlsLogCollector.get(),
@@ -226,7 +225,7 @@ namespace Fabric
     {
       ProduceJSONAsyncCallbackData_1 *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData_1 *>( userdata );
       {
-        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        JSON::Encoder jg = produceJSONAsyncCallbackData->jsonObjectEncoder->makeMember( "result" );
         produceJSONAsyncCallbackData->computeState->produceJSON( produceJSONAsyncCallbackData->index, jg );
       }
       delete produceJSONAsyncCallbackData;
@@ -237,13 +236,13 @@ namespace Fabric
       RC::Handle<ArrayProducer::ComputeState> computeState;
       size_t index;
       size_t count;
-      Util::JSONObjectGenerator *jsonObjectGenerator;
+      JSON::ObjectEncoder *jsonObjectEncoder;
     };
 
     void ArrayProducer::ComputeState::produceJSONAsync(
       size_t index,
       size_t count,
-      Util::JSONObjectGenerator &jsonObjectGenerator,
+      JSON::ObjectEncoder &jsonObjectEncoder,
       void (*finishedCallback)( void * ),
       void *finishedUserdata
       )
@@ -252,7 +251,7 @@ namespace Fabric
       produceJSONAsyncCallbackData->computeState = this;
       produceJSONAsyncCallbackData->index = index;
       produceJSONAsyncCallbackData->count = count;
-      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      produceJSONAsyncCallbackData->jsonObjectEncoder = &jsonObjectEncoder;
       
       MT::ThreadPool::Instance()->executeParallelAsync(
         MT::tlsLogCollector.get(),
@@ -272,7 +271,7 @@ namespace Fabric
     {
       ProduceJSONAsyncCallbackData_2 *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData_2 *>( userdata );
       {
-        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        JSON::Encoder jg = produceJSONAsyncCallbackData->jsonObjectEncoder->makeMember( "result" );
         produceJSONAsyncCallbackData->computeState->produceJSON( produceJSONAsyncCallbackData->index, produceJSONAsyncCallbackData->count, jg );
       }
       delete produceJSONAsyncCallbackData;

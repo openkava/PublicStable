@@ -16,7 +16,7 @@ namespace Fabric
 {
   namespace JSON
   {
-    class Object;
+    class Entity;
   };
   
   namespace Plug
@@ -124,7 +124,7 @@ namespace Fabric
       Interface interface;
     };
     
-    Desc parseDesc( RC::ConstHandle<JSON::Object> const &object );
+    Desc parseDesc( JSON::Entity const &object );
   };
 };
 

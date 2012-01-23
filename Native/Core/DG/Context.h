@@ -9,7 +9,7 @@
 #include <Fabric/Core/MR/Interface.h>
 #include <Fabric/Core/KLC/Interface.h>
 #include <Fabric/Core/CG/CompileOptions.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/Util/Mutex.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Base/RC/WeakHandleSet.h>
@@ -19,13 +19,6 @@
 
 namespace Fabric
 {
-  namespace JSON
-  {
-    class Value;
-    class Object;
-    class Array;
-  };
-  
   namespace MT
   {
     class LogCollector;
@@ -128,13 +121,19 @@ namespace Fabric
       RC::Handle<Event> getEvent( std::string const &name ) const;
       RC::Handle<EventHandler> getEventHandler( std::string const &name ) const;
     
-      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      virtual void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonRoute(
+        std::vector<JSON::Entity> const &dst,
+        size_t dstOffset,
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
+        );
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      virtual void jsonDesc( JSON::Encoder &resultEncoder ) const;
       
-      void jsonRouteDG( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecDG( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDescDG( Util::JSONGenerator &resultJG ) const;
+      void jsonRouteDG( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecDG( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDescDG( JSON::Encoder &resultEncoder ) const;
 
       void registerClient( Client *client );
       virtual void jsonNotify( std::vector<std::string> const &srcs, char const *cmdData, size_t cmdLength, Util::SimpleString const *arg = 0 );
@@ -167,9 +166,9 @@ namespace Fabric
         );
       ~Context();
 
-      void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      void jsonExecGetMemoryUsage( Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonDGGetMemoryUsage( Util::JSONGenerator &jg ) const;
+      void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      void jsonExecGetMemoryUsage( JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonDGGetMemoryUsage( JSON::Encoder &jg ) const;
       
     private:
     
@@ -193,8 +192,8 @@ namespace Fabric
       Util::AtomicSize m_notificationBracketCount;
       Util::Mutex m_pendingNotificationsMutex;
       Util::SimpleString *m_pendingNotificationsJSON;
-      Util::JSONGenerator *m_pendingNotificationsJSONGenerator;
-      Util::JSONArrayGenerator *m_pendingNotificationsJSONArrayGenerator;
+      JSON::Encoder *m_pendingNotificationsEncoder;
+      JSON::ArrayEncoder *m_pendingNotificationsArrayEncoder;
       
       static std::string const s_wrapFabricClientJSSource;
       
