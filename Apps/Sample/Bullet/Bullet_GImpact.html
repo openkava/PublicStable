@@ -102,12 +102,18 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // create a simulation world
   var bulletWorldNode = scene.constructNode('BulletWorldNode');
   
-  // import the cow  
-  var assets = scene.importAssetFile('../BasicDemos/Models/cow.obj');
+  // import the cow
+  var cow;
+  var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/cow.obj');
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    cow = evt.loadedGeometries.cow;
+    
+    
+    // add a gimpact shape
+    bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createGImpact(cow));
+  });
 
-  // add a gimpact shape
-  bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createGImpact(assets.cow));
-
+  
   // create a force manipulator
   var manipulatorNode = scene.constructNode('BulletForceManipulator', {
     bulletWorldNode: bulletWorldNode,
@@ -150,7 +156,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
           });
           
           scene.constructNode('Instance', {
-            geometryNode: assets.cow,
+            geometryNode: cow,
             materialNode: materialNode,
             transformNode: nonslicedTransform,
             enableRaycasting: true
@@ -177,7 +183,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         });
       
         scene.constructNode('Instance', {
-          geometryNode: assets.cow,
+          geometryNode: cow,
           materialNode: scene.constructNode('PhongInstancingExtMaterial', {
             diffuseColor: FABRIC.RT.rgb255(10,10,255),
             lightNode: light,
