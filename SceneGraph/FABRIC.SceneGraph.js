@@ -66,13 +66,13 @@ FABRIC.SceneGraph = {
   registerParser: function(ext, parserFn) {
     ext = ext.toLocaleLowerCase();
     if (!this.assetLoaders[ext]) {
-      this.assetLoaders[ext] = function(scene, assetFile, options) {
+      this.assetLoaders[ext] = function(scene, assetFile, options, callback) {
         if (!options) options = {};
         var pathArray = assetFile.split('/');
         var fileName = pathArray.pop();
         options.baseName = fileName.split('.')[0];
         options.basePath = pathArray.join('/');
-        return parserFn(scene, assetFile, options);
+        return parserFn(scene, assetFile, options, callback);
       }
     }
   },
@@ -539,10 +539,10 @@ FABRIC.SceneGraph = {
     scene.pub.getGlobalsNode = function() {
       return globalsNode;
     };
-    scene.pub.importAssetFile = function(file, options) {
+    scene.pub.importAssetFile = function(file, options, callback) {
       var ext = file.split('.').pop().toLocaleLowerCase();
       if (FABRIC.SceneGraph.assetLoaders[ext]) {
-        var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options);
+        var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
         return assets;
       }
       else {

@@ -375,20 +375,25 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
   //  }
   
       
-    scene.pub.addEventListener('beginmanipulation', function(evt){
-      characterVariablesNode.pub.setEnableTrackEvaluation(false);
-      m_animationLibraryNode.beginManipulation(m_trackSetId);
-      
-    });
-    scene.pub.addEventListener('endmanipulation', function(evt){
-      m_animationLibraryNode.endManipulation();
-      characterVariablesNode.pub.setEnableTrackEvaluation(true);
-    });
-    
     var m_animationLibraryNode;
     var m_animationControllerNode;
     var m_trackSetId;
     var m_keyframeTrackBindings;
+    
+    scene.pub.addEventListener('beginmanipulation', function(evt){
+      if(m_animationLibraryNode){
+        characterVariablesNode.pub.setEnableTrackEvaluation(false);
+        m_animationLibraryNode.beginManipulation(m_trackSetId);
+      }
+      
+    });
+    scene.pub.addEventListener('endmanipulation', function(evt){
+      if(m_animationLibraryNode){
+        m_animationLibraryNode.endManipulation();
+        characterVariablesNode.pub.setEnableTrackEvaluation(true);
+      }
+    });
+    
     characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId){
       if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
