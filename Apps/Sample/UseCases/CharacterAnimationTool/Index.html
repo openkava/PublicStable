@@ -94,12 +94,12 @@ s.parentNode.insertBefore(ga, s);
 .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
 
 
-	#feedback { font-size: 1.4em; }
-	#animationLibraryList .ui-selecting { background: #78AB46; }
-	#animationLibraryList .ui-selected { background: #659D32; color: white; }
-	#animationLibraryList { list-style-type: none; margin: 0; padding: 0; width: 100%; }
-	#animationLibraryList li { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 16px; }
-	
+  #feedback { font-size: 1.4em; }
+  #animationLibraryList .ui-selecting { background: #78AB46; }
+  #animationLibraryList .ui-selected { background: #659D32; color: white; }
+  #animationLibraryList { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+  #animationLibraryList li { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 16px; }
+  
   </style>
 
     <script type="text/javascript">
@@ -116,13 +116,13 @@ $(document).ready(function() {
     enableRaycasting: true,
     rayIntersectionThreshold: 0.1
   });
-/*
-  viewport.setBackgroundTextureNode(scene.constructNode('Image', {
-    url: 'Resources/fabric-demo-gradient.png'
-  }));
-*/
-  // Create a camera to draw the scene from
- camera = scene.constructNode('TargetCamera', {
+ /*
+   viewport.setBackgroundTextureNode(scene.constructNode('Image', {
+     url: 'Resources/fabric-demo-gradient.png'
+   }));
+ */
+   // Create a camera to draw the scene from
+  camera = scene.constructNode('TargetCamera', {
       nearDistance: 0.1,
       farDistance: 300,
       target: new FABRIC.RT.Vec3(1.44, 6.6, 1.96),
@@ -135,9 +135,9 @@ $(document).ready(function() {
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var material = scene.constructNode('PhongMaterial', {
-          diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-          lightNode: light
-        });
+    diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+    lightNode: light
+  });
   
   // create the scene grid
   scene.constructNode('Instance', {
@@ -151,372 +151,370 @@ $(document).ready(function() {
     } )
   });
 
-	
-	var layerManager = scene.constructNode('LayerManager');
-	
-	layerManager.addLayer('geometries');
-	layerManager.addLayer('rig');
-	
-	
-	var rigNode, rigInstances = {};
-	
-	scene.importAssetFile('Resources/Monster.DAE', {
-	}, function(assetNodes){
-		
-		rigNode = assetNodes.BodyCharacterRig;
-		
-		rigInstances['body'] = assetNodes.BodyMeshMaterial__56CharacterInstance;
-		rigInstances['horns'] = assetNodes.HornsMeshMaterial__56CharacterInstance;
-		rigInstances['eyes'] = assetNodes.eyesMeshMaterial__56CharacterInstance;
-		rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
-		
-		var materialNode = scene.constructNode('PhongSkinningMaterial', {
+  
+  var layerManager = scene.constructNode('LayerManager');
+  
+  layerManager.addLayer('geometries');
+  layerManager.addLayer('rig');
+  
+  
+  var rigNode, rigInstances = {};
+  
+  scene.importAssetFile('Resources/Monster.DAE', {
+  }, function(assetNodes){
+    
+    rigNode = assetNodes.BodyCharacterRig;
+    
+    rigInstances['body'] = assetNodes.BodyMeshMaterial__56CharacterInstance;
+    rigInstances['horns'] = assetNodes.HornsMeshMaterial__56CharacterInstance;
+    rigInstances['eyes'] = assetNodes.eyesMeshMaterial__56CharacterInstance;
+    rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
+    
+    var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
     });
-		
-		for(var i in rigInstances){
-			rigInstances[i].addMaterialNode(materialNode);
-		}
-		
-		var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
-			characterRigNode:rigNode,
-			boneradius: 0.2
-		});
-		
-		rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
-		
-		rigNode.addSolver('Hubs', 'HubSolver', {
-			hubs: [
-				{ bone: '_Pelvis' },
-				{ bone: '_Ribcage',
-					spineBones:[
-						'_Spine1',
-						'_Spine2',
-						'_Spine3',
-						'_Spine4',
-						'_Spine5'
-					]
-				},
-				{ bone: '_Skull',
-					spineBones:[
-						'_Neck1',
-						'_Neck2',
-						'_Neck3'
-					]
-				}
-			],
-			createManipulators: true,
-			manipulatorSizes: [ 1.8, 2.0, 1.5 ]
-		} );
-		
-		rigNode.addSolver('PubicMound', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_PubicMound',
-				]
-			}
-		});
-		
-		
-		
-		
-		rigNode.addSolver('face', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_Jaw', '_LEyebrow', '_REyebrow',
-				]
-			}
-		});
-		
-		
-		rigNode.addSolver('neckChains', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_NeckChain1', '_NeckChain2', '_NeckChain3',
-					'_RNeckChain1', '_RNeckChain2', '_RNeckChain3',
-					'_LNeckChain1', '_LNeckChain2', '_LNeckChain3'
-				]
-			}
-		});
-	
-		rigNode.addSolver('Legs', 'HumanoidLegSolver', {
-			limbs: [ { bones:['_LLeg1', '_LLeg2'], ankle:'_LLegAnkle' },
-							 { bones:['_RLeg1', '_RLeg2'], ankle:'_RLegAnkle' }],
-			createManipulators: true,
-			manipulatorSizes: [ 0.8, 1.0, 0.9 ],
-			ikGoalManipulatorSizes: [ new FABRIC.RT.Vec2(8.0, 5.0), new FABRIC.RT.Vec2(8.0, 5.0) ]
-		});
-		
-		
-		rigNode.addSolver('toes', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LLegDigit11', '_LLegDigit12',
-					'_LLegDigit21', '_LLegDigit22',
-					'_LLegDigit31', '_LLegDigit32',
-					'_LLegDigit41', '_LLegDigit42',
-					'_LLegDigit51', '_LLegDigit52',
-					
-					'_RLegDigit11', '_RLegDigit12',
-					'_RLegDigit21', '_RLegDigit22',
-					'_RLegDigit31', '_RLegDigit32',
-					'_RLegDigit41', '_RLegDigit42',
-					'_RLegDigit51', '_RLegDigit52'
-				]
-			}
-		});
-		
-		
-		rigNode.addSolver('Arms', 'ArmSolver', {
-			limbs: [ { bones:['_LArmCollarbone', '_LArm1', '_LArm21'], wrist:'_LArmPalm' },
-							 { bones:['_RArmCollarbone', '_RArm1', '_RArm21'], wrist:'_RArmPalm' } ],
-			createManipulators: true
-		});
-		
-		
-		rigNode.addSolver('shoulderBlades', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LShoulderblade','_RShoulderblade'
-				]
-			}
-		});
-		
-		rigNode.addSolver('FatJiggle', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LFat1','_LFat2','_RFat1','_RFat2'
-				]
-			}
-		});
-		
-		rigNode.addSolver('fingers', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LArmDigit11', '_LArmDigit12', '_LArmDigit13',
-					'_LArmDigit21', '_LArmDigit22', '_LArmDigit23',
-					'_LArmDigit31', '_LArmDigit32', '_LArmDigit33',
-					'_LArmDigit41', '_LArmDigit42', '_LArmDigit43',
-					'_LArmDigit51', '_LArmDigit52', '_LArmDigit53',
-					
-					'_RArmDigit11', '_RArmDigit12', '_RArmDigit13',
-					'_RArmDigit21', '_RArmDigit22', '_RArmDigit23',
-					'_RArmDigit31', '_RArmDigit32', '_RArmDigit33',
-					'_RArmDigit41', '_RArmDigit42', '_RArmDigit43',
-					'_RArmDigit51', '_RArmDigit52', '_RArmDigit53'
-				]
-			}
-		});
-		
-		rigNode.addSolver('twistBones', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LArm22', '_LArm23',
-					'_RArm22', '_RArm23'
-				]
-			}
-		});
-		
-		rigNode.addSolver('muscles', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LLat',
-					'_LBicep',
-					'_LTricep',
-					'_RLat',
-					'_RBicep',
-					'_RTricep',
-					
-					
-					'_LButtock',
-					'_LThighAnterior',
-					'_LThighPosterior',
-					'_LCalf',
-					
-					'_LButtock_ncl1_1',
-					'_RThighAnterior',
-					'_RThighPosterior',
-					'_RCalf',
-				]
-			}
-		});
-		
-		
-		rigNode.addSolver('kneeCaps', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LKneecap', '_RKneecap'
-				]
-			}
-		});
-		
-		
-		rigNode.addSolver('stomachChains', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_StomachChain1','_StomachChain2','_StomachChain3',
-					'_LStomachChain11','_LStomachChain12','_LStomachChain13',
-					'_LStomachChain21','_LStomachChain22','_LStomachChain23',
-					'_RStomachChain11','_RStomachChain12','_RStomachChain13',
-					'_RStomachChain21','_RStomachChain22','_RStomachChain23'
-				]
-			}
-		});
-		
-		rigNode.addSolver('moobs', 'FKHierarchySolver', {
-			bones: {
-				bones:[
-					'_LMoob','_RMoob'
-				]
-			}
-		});
-		
-	});
-	/*
-	
-	var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
-	var controllerNode = scene.constructNode('AnimationController');
-	ikrigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
-	
-	var curveEditorWindow;
-	var trackFilters;
-	scene.addEventListener('beginmanipulation', function(evt){
-		if(evt.manipulatorNode.getTargetName){
-			trackFilters = [evt.manipulatorNode.getTargetName()];
-			if(curveEditorWindow){
-				curveEditorWindow.setCurveFilters(trackFilters);
-			}
-		}
-	});
-			
-	*/
-	
-	/*
-	var animationLibraryLoader = scene.constructManager('SceneDeserializer');
-	animationLibraryLoader.setPreLoadedNode(bezierKeyAnimationLibrary);
-	var localStorage = new FABRIC.SceneGraph.LocalStorage('TestAnimation');
-	
-	animationLibraryLoader.load(localStorage, function(nodeMap){
-		rebuildAnimationLibraryList();
-		viewport.redraw();
-	});
-	*/
-	
-	/*
-	var presetSaver = scene.constructManager('SceneSerializer');
-	presetSaver.addNode(bezierKeyAnimationLibrary);
-	var fileWriter = new FABRIC.SceneGraph.FileWriter(scene, 'Animation', 'Test');
-	
+    
+    for(var i in rigInstances){
+      rigInstances[i].addMaterialNode(materialNode);
+    }
+    
+    var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
+      characterRigNode:rigNode,
+      boneradius: 0.2
+    });
+    
+    rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
+    
+    rigNode.addSolver('Hubs', 'HubSolver', {
+      hubs: [
+        { bone: '_Pelvis' },
+        { bone: '_Ribcage',
+          spineBones:[
+            '_Spine1',
+            '_Spine2',
+            '_Spine3',
+            '_Spine4',
+            '_Spine5'
+          ]
+        },
+        { bone: '_Skull',
+          spineBones:[
+            '_Neck1',
+            '_Neck2',
+            '_Neck3'
+          ]
+        }
+      ],
+      createManipulators: true,
+      manipulatorSizes: [ 1.8, 2.0, 1.5 ]
+    } );
+    
+    rigNode.addSolver('PubicMound', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_PubicMound',
+        ]
+      }
+    });
+    
+    rigNode.addSolver('face', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_Jaw', '_LEyebrow', '_REyebrow',
+        ]
+      }
+    });
+    
+    
+    rigNode.addSolver('neckChains', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_NeckChain1', '_NeckChain2', '_NeckChain3',
+          '_RNeckChain1', '_RNeckChain2', '_RNeckChain3',
+          '_LNeckChain1', '_LNeckChain2', '_LNeckChain3'
+        ]
+      }
+    });
+  
+    rigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [
+	 { bones:['_LLeg1', '_LLeg2'], ankle:'_LLegAnkle' },
+         { bones:['_RLeg1', '_RLeg2'], ankle:'_RLegAnkle' }
+      ],
+      createManipulators: true,
+      manipulatorSizes: [ 0.8, 1.0, 0.9 ],
+      ikGoalManipulatorSizes: [ new FABRIC.RT.Vec2(6.0, 3.0), new FABRIC.RT.Vec2(6.0, 3.0) ]
+    });
+    
+    
+    rigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LLegDigit11', '_LLegDigit12',
+          '_LLegDigit21', '_LLegDigit22',
+          '_LLegDigit31', '_LLegDigit32',
+          '_LLegDigit41', '_LLegDigit42',
+          '_LLegDigit51', '_LLegDigit52',
+          
+          '_RLegDigit11', '_RLegDigit12',
+          '_RLegDigit21', '_RLegDigit22',
+          '_RLegDigit31', '_RLegDigit32',
+          '_RLegDigit41', '_RLegDigit42',
+          '_RLegDigit51', '_RLegDigit52'
+        ]
+      }
+    });
+    
+    
+    rigNode.addSolver('Arms', 'ArmSolver', {
+      limbs: [ { bones:['_LArmCollarbone', '_LArm1', '_LArm21'], wrist:'_LArmPalm' },
+               { bones:['_RArmCollarbone', '_RArm1', '_RArm21'], wrist:'_RArmPalm' } ],
+      createManipulators: true
+    });
+    
+    
+    rigNode.addSolver('shoulderBlades', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LShoulderblade','_RShoulderblade'
+        ]
+      }
+    });
+    
+    rigNode.addSolver('FatJiggle', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LFat1','_LFat2','_RFat1','_RFat2'
+        ]
+      }
+    });
+    
+    rigNode.addSolver('fingers', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LArmDigit11', '_LArmDigit12', '_LArmDigit13',
+          '_LArmDigit21', '_LArmDigit22', '_LArmDigit23',
+          '_LArmDigit31', '_LArmDigit32', '_LArmDigit33',
+          '_LArmDigit41', '_LArmDigit42', '_LArmDigit43',
+          '_LArmDigit51', '_LArmDigit52', '_LArmDigit53',
+          
+          '_RArmDigit11', '_RArmDigit12', '_RArmDigit13',
+          '_RArmDigit21', '_RArmDigit22', '_RArmDigit23',
+          '_RArmDigit31', '_RArmDigit32', '_RArmDigit33',
+          '_RArmDigit41', '_RArmDigit42', '_RArmDigit43',
+          '_RArmDigit51', '_RArmDigit52', '_RArmDigit53'
+        ]
+      }
+    });
+    
+    rigNode.addSolver('twistBones', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LArm22', '_LArm23',
+          '_RArm22', '_RArm23'
+        ]
+      }
+    });
+    
+    rigNode.addSolver('muscles', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LLat',
+          '_LBicep',
+          '_LTricep',
+          '_RLat',
+          '_RBicep',
+          '_RTricep',
+          
+          
+          '_LButtock',
+          '_LThighAnterior',
+          '_LThighPosterior',
+          '_LCalf',
+          
+          '_LButtock_ncl1_1',
+          '_RThighAnterior',
+          '_RThighPosterior',
+          '_RCalf',
+        ]
+      }
+    });
+    
+    
+    rigNode.addSolver('kneeCaps', 'BlendBoneSolver', {
+      blendBones:[
+        { bone:'_LKneecap', base:'_LLeg1', target:'_LLeg2', blendWeight: 0.6 },
+        { bone:'_RKneecap', base:'_RLeg1', target:'_RLeg2', blendWeight: 0.6 }
+      ]
+    });
+    
+    
+    rigNode.addSolver('stomachChains', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_StomachChain1','_StomachChain2','_StomachChain3',
+          '_LStomachChain11','_LStomachChain12','_LStomachChain13',
+          '_LStomachChain21','_LStomachChain22','_LStomachChain23',
+          '_RStomachChain11','_RStomachChain12','_RStomachChain13',
+          '_RStomachChain21','_RStomachChain22','_RStomachChain23'
+        ]
+      }
+    });
+    
+    rigNode.addSolver('moobs', 'FKHierarchySolver', {
+      bones: {
+        bones:[
+          '_LMoob','_RMoob'
+        ]
+      }
+    });
+    
+  });
+  /*
+  
+  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+  var controllerNode = scene.constructNode('AnimationController');
+  ikrigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
+  
+  var curveEditorWindow;
+  var trackFilters;
+  scene.addEventListener('beginmanipulation', function(evt){
+    if(evt.manipulatorNode.getTargetName){
+      trackFilters = [evt.manipulatorNode.getTargetName()];
+      if(curveEditorWindow){
+        curveEditorWindow.setCurveFilters(trackFilters);
+      }
+    }
+  });
+      
+  */
+  
+  /*
+  var animationLibraryLoader = scene.constructManager('SceneDeserializer');
+  animationLibraryLoader.setPreLoadedNode(bezierKeyAnimationLibrary);
+  var localStorage = new FABRIC.SceneGraph.LocalStorage('TestAnimation');
+  
+  animationLibraryLoader.load(localStorage, function(nodeMap){
+    rebuildAnimationLibraryList();
+    viewport.redraw();
+  });
+  */
+  
+  /*
+  var presetSaver = scene.constructManager('SceneSerializer');
+  presetSaver.addNode(bezierKeyAnimationLibrary);
+  var fileWriter = new FABRIC.SceneGraph.FileWriter(scene, 'Animation', 'Test');
+  
 
-	var selectedAnimation = 0;
-	var setSelectedAnimation = function(val){
-		selectedAnimation = val;
-		ikrigNode.setBoundTrackSet(selectedAnimation);
-	}
-	*/
-	$( "#animationLibraryList" ).selectable({
-		selected: function(event, ui) {
-			setSelectedAnimation($(ui.selected).val());
-		}
-	});
-	var rebuildAnimationLibraryList = function(){
-		$('#animationLibraryList').empty();
-		for(var i=0; i<bezierKeyAnimationLibrary.getTrackSetCount(); i++){
-			var presetName = bezierKeyAnimationLibrary.getTrackSetName(i);
-			var li = $(document.createElement('li'));
-			li.addClass('ui-widget-content'); li.text(presetName); li.val(i);
-			if(selectedAnimation == i){
-				li.addClass('ui-selected');
-			}
-			$('#animationLibraryList').append(li);
-			
-		}
-	}
-//	rebuildAnimationLibraryList();
-	
-	$('#newAnimation').button({
-			text: true,
-			icons: {
-				primary: 'ui-icon-document'
-			}
-		})
-		.click(function() {
-			var closeDialogAndNewAnimation = function(){
-				var newTrackSetName = $("#presetName").val();
-				ikrigNode.generateAnimationTracks(bezierKeyAnimationLibrary, newTrackSetName, true, controllerNode);
-				rebuildAnimationLibraryList();
-				$("#presetNameDialog").dialog( "close" );
-			}
-			$('#presetNameDialog').dialog({
-				autoOpen: true,
-				position: 'right top',
-				width: 190,
-				buttons: {
-					Ok: function() {
-						closeDialogAndNewAnimation();
-					}
-				},
-				closeOnEscape: true
-			})
-			.keyup(function(e) {
-				if (e.keyCode == 13) { // Enter key
-					closeDialogAndNewAnimation();
-				}
-			});
-		});
-	
-	$('#deleteAnimation').button({
-			text: true,
-			icons: {
-				primary: 'ui-icon-trash'
-			}
-		})
-		.click(function() {
-			bezierKeyAnimationLibrary.removeTrackSet(selectedAnimation);
-			if(selectedAnimation>0){
-				setSelectedAnimation(selectedAnimation-1);
-			}else{
-				setSelectedAnimation(selectedAnimation+1);
-			}
-			rebuildAnimationLibraryList();
-		});
-	
-	$('#saveResource').button({
-			text: true,
-			icons: {
-				primary: 'ui-icon-triangle-1-s'
-			}
-		})
-		.click(function() {
-			presetSaver.save(localStorage);
-			localStorage.log();
-		});
-	
-	$('#exportResource').button({
-			text: true,
-			icons: {
-				primary: 'ui-icon-disk'
-			}
-		})
-		.click(function() {
-			fileWriter.querySavePath();
-			presetSaver.save(fileWriter);
-			fileWriter.log();
-		});
-	
-	$("#displayRig").attr('checked', true).change(function(event, ui) {
-		var checked = $('#displayRig').attr('checked') === 'checked';
-		layerManager.setRig(checked);
-		viewport.redraw();
-	});
-	
-	$("#displayGeometry").attr('checked', true).change(function(event, ui) {
-		var checked = $('#displayGeometry').attr('checked') === 'checked';
-		layerManager.setGeometries(checked);
-		viewport.redraw();
-	});
-	
+  var selectedAnimation = 0;
+  var setSelectedAnimation = function(val){
+    selectedAnimation = val;
+    ikrigNode.setBoundTrackSet(selectedAnimation);
+  }
+  */
+  $( "#animationLibraryList" ).selectable({
+    selected: function(event, ui) {
+      setSelectedAnimation($(ui.selected).val());
+    }
+  });
+  var rebuildAnimationLibraryList = function(){
+    $('#animationLibraryList').empty();
+    for(var i=0; i<bezierKeyAnimationLibrary.getTrackSetCount(); i++){
+      var presetName = bezierKeyAnimationLibrary.getTrackSetName(i);
+      var li = $(document.createElement('li'));
+      li.addClass('ui-widget-content'); li.text(presetName); li.val(i);
+      if(selectedAnimation == i){
+        li.addClass('ui-selected');
+      }
+      $('#animationLibraryList').append(li);
+      
+    }
+  }
+//  rebuildAnimationLibraryList();
+  
+  $('#newAnimation').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-document'
+      }
+    })
+    .click(function() {
+      var closeDialogAndNewAnimation = function(){
+        var newTrackSetName = $("#presetName").val();
+        ikrigNode.generateAnimationTracks(bezierKeyAnimationLibrary, newTrackSetName, true, controllerNode);
+        rebuildAnimationLibraryList();
+        $("#presetNameDialog").dialog( "close" );
+      }
+      $('#presetNameDialog').dialog({
+        autoOpen: true,
+        position: 'right top',
+        width: 190,
+        buttons: {
+          Ok: function() {
+            closeDialogAndNewAnimation();
+          }
+        },
+        closeOnEscape: true
+      })
+      .keyup(function(e) {
+        if (e.keyCode == 13) { // Enter key
+          closeDialogAndNewAnimation();
+        }
+      });
+    });
+  
+  $('#deleteAnimation').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-trash'
+      }
+    })
+    .click(function() {
+      bezierKeyAnimationLibrary.removeTrackSet(selectedAnimation);
+      if(selectedAnimation>0){
+        setSelectedAnimation(selectedAnimation-1);
+      }else{
+        setSelectedAnimation(selectedAnimation+1);
+      }
+      rebuildAnimationLibraryList();
+    });
+  
+  $('#saveResource').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-triangle-1-s'
+      }
+    })
+    .click(function() {
+      presetSaver.save(localStorage);
+      localStorage.log();
+    });
+  
+  $('#exportResource').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-disk'
+      }
+    })
+    .click(function() {
+      fileWriter.querySavePath();
+      presetSaver.save(fileWriter);
+      fileWriter.log();
+    });
+  
+  $("#displayRig").attr('checked', true).change(function(event, ui) {
+    var checked = $('#displayRig').attr('checked') === 'checked';
+    layerManager.setRig(checked);
+    viewport.redraw();
+  });
+  
+  $("#displayGeometry").attr('checked', true).change(function(event, ui) {
+    var checked = $('#displayGeometry').attr('checked') === 'checked';
+    layerManager.setGeometries(checked);
+    viewport.redraw();
+  });
+  
    
   var timeSlider = $('#timeSlider').slider({
       min: 0,
@@ -634,9 +632,9 @@ $(document).ready(function() {
 
 // jQuert UI Styling classes
 $(document).ready(function() {
-	$(".box").addClass("ui-widget");
-	$(".box h2").addClass("ui-widget-header ui-corner-all");
-	$(".content").addClass("ui-widget-content");
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
 });
 
 </script>
