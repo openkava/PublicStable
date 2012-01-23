@@ -9,6 +9,7 @@
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 #include <GL/glew.h>
 #include <npapi/npapi.h>
@@ -29,20 +30,19 @@ namespace Fabric
 {
   namespace Util
   {
-    class JSONGenerator;
-    class JSONArrayGenerator;
     class SimpleString;
+  };
+  
+  namespace JSON
+  {
+    class ArrayEncoder;
+    class Encoder;
+    class Entity;
   };
   
   namespace IO
   {
     class Dir;
-  };
-
-  namespace JSON
-  {
-    class Value;
-    class Object;
   };
   
   namespace MT
@@ -95,10 +95,10 @@ namespace Fabric
       RC::Handle<MT::LogCollector> getLogCollector() const;
       virtual void redrawFinished();
       
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      virtual void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      void jsonNotify( std::string const &cmd, Util::SimpleString const *arg ) const;
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecAddPopupItem( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      virtual void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      void jsonNotify( char const *cmdData, size_t length, Util::SimpleString const *arg ) const;
       void jsonNotifyPopUpItem( Util::SimpleString const &arg ) const;
 
       virtual void pushOGLContext() = 0;
@@ -121,8 +121,8 @@ namespace Fabric
 
       struct PopUpItem
       {
-        std::string desc;
-        RC::ConstHandle<JSON::Value> value;
+        Util::SimpleString desc;
+        Util::SimpleString argJSON;
       };
       typedef std::vector<PopUpItem> PopUpItems;
 
@@ -130,7 +130,7 @@ namespace Fabric
 
     private:
     
-      void jsonExecGetFPS( Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecGetFPS( JSON::ArrayEncoder &resultArrayEncoder ) const;
 
       static void AsyncRedrawFinished( void *_this );
           

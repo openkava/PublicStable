@@ -30,12 +30,9 @@
 #include "OpaqueDesc.h"
 #include "OpaqueImpl.h"
 
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Core/JSON/CommandChannel.h>
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/Util/Debug.h>
 
 namespace Fabric
@@ -203,7 +200,7 @@ namespace Fabric
         
         Util::SimpleString json;
         {
-          Util::JSONGenerator jg( &json );
+          JSON::Encoder jg( &json );
           desc->jsonDesc( jg );
         }
         m_jsonCommandChannel->jsonNotify( dst, "delta", 5, &json );
@@ -450,30 +447,30 @@ namespace Fabric
       return m_constStringDesc;
     }
       
-    void Manager::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Manager::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator registeredTypesJG = resultJOG.makeMember( "registeredTypes", 15 );
-      jsonDescRegisteredTypes( registeredTypesJG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder registeredTypesEncoder = resultObjectEncoder.makeMember( "registeredTypes", 15 );
+      jsonDescRegisteredTypes( registeredTypesEncoder );
     }
       
-    void Manager::jsonDescRegisteredTypes( Util::JSONGenerator &resultJG ) const
+    void Manager::jsonDescRegisteredTypes( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( it->first );
-        it->second->jsonDesc( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( it->first );
+        it->second->jsonDesc( memberEncoder );
       }
     }
 
-    void Manager::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Manager::jsonRoute( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       if ( dst.size() - dstOffset == 0 )
       {
         try
         {
-          jsonExec( cmd, arg, resultJAG );
+          jsonExec( cmd, arg, resultArrayEncoder );
         }
         catch ( Exception e )
         {
@@ -483,123 +480,113 @@ namespace Fabric
       else throw Exception( "unroutable" );
     }
 
-    void Manager::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Manager::jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      if ( cmd == "registerType" )
-        jsonExecRegisterType( arg, resultJAG );
+      if ( cmd.stringIs( "registerType", 12 ) )
+        jsonExecRegisterType( arg, resultArrayEncoder );
       else throw Exception( "unknown command" );
     }
     
-    void Manager::jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Manager::jsonExecRegisterType( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
       std::string name;
-      try
-      {
-        name = argJSONObject->get( "name" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'name': " + e;
-      }
+      RT::StructMemberInfoVector memberInfos;
+      std::map< std::string, size_t > memberNameToIndexMap;
+      JSON::Entity defaultValueObject;
+      RC::ConstHandle<RC::Object> klBindingsAST;
       
-      try
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        RC::ConstHandle<JSON::Object> defaultValue;
         try
         {
-          defaultValue = argJSONObject->get( "defaultValue" )->toObject();
-        }
-        catch ( Exception e )
-        {
-          throw "'defaultValue': " + e;
-        }
-        
-        RT::StructMemberInfoVector memberInfos;
-        try
-        {
-          RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
-          size_t membersArraySize = membersArray->size();
-          for ( size_t i=0; i<membersArraySize; ++i )
+          if ( keyString.stringIs( "name", 4 ) )
           {
-            try
+            valueEntity.requireString();
+            name = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "members", 7 ) )
+          {
+            valueEntity.requireArray();
+            JSON::ArrayDecoder membersArrayDecoder( valueEntity );
+            JSON::Entity memberEntity;
+            while ( membersArrayDecoder.getNext( memberEntity ) )
             {
-              RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
-              RT::StructMemberInfo memberInfo;
-
               try
               {
-                memberInfo.name = memberObject->get( "name" )->toString()->value();
+                RT::StructMemberInfo memberInfo;
+                
+                memberEntity.requireObject();
+                JSON::ObjectDecoder memberObjectDecoder( memberEntity );
+                JSON::Entity memberKeyString, memberValueEntity;
+                while ( memberObjectDecoder.getNext( memberKeyString, memberValueEntity ) )
+                {
+                  try
+                  {
+                    if ( memberKeyString.stringIs( "name", 4 ) )
+                    {
+                      memberValueEntity.requireString();
+                      memberInfo.name = memberValueEntity.stringToStdString();
+                    }
+                    else if ( memberKeyString.stringIs( "type", 4 ) )
+                    {
+                      memberValueEntity.requireString();
+                      std::string typeName = memberValueEntity.stringToStdString();
+                      if ( typeName.empty() )
+                        throw Exception( "must be non-empty" );
+                      memberInfo.desc = getDesc( typeName );
+                    }
+                  }
+                  catch ( Exception e )
+                  {
+                    memberObjectDecoder.rethrow( e );
+                  }
+                }
+                
+                size_t memberIndex = memberInfos.size();
+                memberInfos.push_back( memberInfo );
+                memberNameToIndexMap.insert( std::map< std::string, size_t >::value_type( memberInfo.name, memberIndex ) );
               }
               catch ( Exception e )
               {
-                throw "'name': " + e;
+                membersArrayDecoder.rethrow( e );
               }
-              
-              try
-              {
-                std::string typeName = memberObject->get( "type" )->toString()->value();
-                if ( typeName.empty() )
-                  throw Exception( "must be non-empty" );
-                memberInfo.desc = getDesc( typeName );
-                if ( !memberInfo.desc )
-                  throw Exception( "type " + _(typeName) + " not registered" );
-              }
-              catch ( Exception e )
-              {
-                throw "'type': " + e;
-              }
-              
-              memberInfo.defaultData.resize( memberInfo.desc->getAllocSize() );
-              try
-              {
-                memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
-              }
-              catch ( Exception e )
-              {
-                throw _(memberInfo.name) + " default value: " + e;
-              }
-
-              memberInfos.push_back( memberInfo );
-            }
-            catch ( Exception e )
-            {
-              throw "index " + _(i) + ": " + e;
             }
           }
-        }
-        catch ( Exception e )
-        {
-          throw "members: " + e;
-        }
-        
-        RC::ConstHandle<RC::Object> klBindingsAST;
-        try
-        {
-          RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "klBindings" );
-          if ( klBindingsJSONValue )
+          else if ( keyString.stringIs( "defaultValue", 12 ) )
           {
-            RC::ConstHandle<JSON::Object> klBindingsJSONObject = klBindingsJSONValue->toObject();
-            
+            valueEntity.requireObject();
+            defaultValueObject = valueEntity;
+          }
+          else if ( keyString.stringIs( "klBindings", 10 ) )
+          {
             std::string filename;
-            try
-            {
-              filename = klBindingsJSONObject->get("filename")->toString()->value();
-            }
-            catch ( Exception e )
-            {
-              throw "'filename': " + e;
-            }
-            
             std::string sourceCode;
-            try
+
+            valueEntity.requireObject();
+            JSON::ObjectDecoder klBindingsObjectDecoder( valueEntity );
+            JSON::Entity klBindingsKeyString, klBindingsValueEntity;
+            while ( klBindingsObjectDecoder.getNext( klBindingsKeyString, klBindingsValueEntity ) )
             {
-              sourceCode = klBindingsJSONObject->get("sourceCode")->toString()->value();
-            }
-            catch ( Exception e )
-            {
-              throw "'sourceCode': " + e;
+              try
+              {
+                if ( klBindingsKeyString.stringIs( "filename", 8 ) )
+                {
+                  klBindingsValueEntity.requireString();
+                  filename = klBindingsValueEntity.stringToStdString();
+                }
+                else if ( klBindingsKeyString.stringIs( "sourceCode", 10 ) )
+                {
+                  klBindingsValueEntity.requireString();
+                  sourceCode = klBindingsValueEntity.stringToStdString();
+                }
+              }
+              catch ( Exception e )
+              {
+                klBindingsObjectDecoder.rethrow( e );
+              }
             }
 
             klBindingsAST = m_klCompiler->compile( filename, sourceCode );
@@ -607,31 +594,61 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          throw "'klBindings': " + e;
+          argObjectDecoder.rethrow( e );
         }
-        
-        RC::ConstHandle<RT::StructDesc> structDesc = registerStruct( name, memberInfos );
-
-        // [pzion 20110927] Special case: if we are registering a structure, replace
-        // the default values.  This exists purely so that if a structure is registered
-        // from an extension KL file first you can then register the same structure from
-        // Javascript but with default values
-        RC::ConstHandle<RT::StructImpl> structImpl = RC::ConstHandle<RT::StructImpl>::StaticCast( structDesc->getImpl() );
-        structImpl->setDefaultValues( memberInfos );
-
-        for ( size_t i=0; i<memberInfos.size(); ++i )
+      }
+      
+      if ( name.empty() )
+        throw Exception( "missing 'name'" );
+      if ( memberInfos.empty() )
+        throw Exception( "missing or empty 'members'" );
+      
+      try
+      {
+        JSON::ObjectDecoder defaultValueObjectDecoder( defaultValueObject );
+        JSON::Entity defaultValueKeyString, defaultValueValueEntity;
+        while ( defaultValueObjectDecoder.getNext( defaultValueKeyString, defaultValueValueEntity ) )
         {
-          RT::StructMemberInfo &memberInfo = memberInfos[i];
-          memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
+          try
+          {
+            std::string memberName = defaultValueKeyString.stringToStdString();
+            std::map< std::string, size_t >::const_iterator it = memberNameToIndexMap.find( memberName );
+            if ( it == memberNameToIndexMap.end() )
+              throw Exception( "no such member" );
+            RT::StructMemberInfo &memberInfo = memberInfos[it->second];
+              
+            memberInfo.defaultData.resize( memberInfo.desc->getAllocSize() );
+            memberInfo.desc->decodeJSON( defaultValueValueEntity, &memberInfo.defaultData[0] );
+          }
+          catch ( Exception e )
+          {
+            defaultValueObjectDecoder.rethrow( e );
+          }
         }
-
-        if ( klBindingsAST )
-          structDesc->setKLBindingsAST( klBindingsAST );
       }
       catch ( Exception e )
       {
-        throw "name " + _(name) + ": " + e;
+        throw "'defaultValue': " + e;
       }
+      
+      RC::ConstHandle<RT::StructDesc> structDesc = registerStruct( name, memberInfos );
+
+      // [pzion 20110927] Special case: if we are registering a structure, replace
+      // the default values.  This exists purely so that if a structure is registered
+      // from an extension KL file first you can then register the same structure from
+      // Javascript but with default values
+      RC::ConstHandle<RT::StructImpl> structImpl = RC::ConstHandle<RT::StructImpl>::StaticCast( structDesc->getImpl() );
+      structImpl->setDefaultValues( memberInfos );
+
+      for ( size_t i=0; i<memberInfos.size(); ++i )
+      {
+        RT::StructMemberInfo &memberInfo = memberInfos[i];
+        if ( !memberInfo.defaultData.empty() )
+          memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
+      }
+
+      if ( klBindingsAST )
+        structDesc->setKLBindingsAST( klBindingsAST );
     }
     
     RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const

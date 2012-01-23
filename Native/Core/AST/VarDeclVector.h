@@ -11,15 +11,9 @@
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONGenerator;
-  };
-  
   namespace JSON
   {
-    class Value;
-    class Array;
+    class Encoder;
   };
   
   namespace CG
@@ -40,7 +34,7 @@ namespace Fabric
       
       static RC::ConstHandle<VarDeclVector> Create( RC::ConstHandle<VarDecl> const &first = 0, RC::ConstHandle<VarDeclVector> const &remaining = 0 );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
+      void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
       
       void registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
     
@@ -49,12 +43,8 @@ namespace Fabric
     protected:
     
       VarDeclVector();
-      
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_AST_VAR_DECL_VECTOR_H

@@ -2,16 +2,11 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "StringImpl.h"
+#include <Fabric/Core/RT/StringImpl.h>
 
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
-
-#include <llvm/Intrinsics.h>
 
 namespace Fabric
 {
@@ -47,33 +42,16 @@ namespace Fabric
           dstBits->refCount.increment();
       }
     }
-     
-    RC::Handle<JSON::Value> StringImpl::getJSONValue( void const *src ) const
+    
+    void StringImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
-      return JSON::String::Create( getValueData(src), getValueLength(src) );
+      encoder.makeString( getValueData(data), getValueLength(data) );
     }
     
-    void StringImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    void StringImpl::decodeJSON( JSON::Entity const &entity, void *dst ) const
     {
-      jsonGenerator.makeString( getValueData(data), getValueLength(data) );
-    }
-    
-    void StringImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
-    {
-      if ( !jsonValue->isString() )
-        throw Exception( "JSON value is not a string" );
-      RC::ConstHandle<JSON::String> jsonString = RC::ConstHandle<JSON::String>::StaticCast( jsonValue );
-      SetValue( jsonString->data(), jsonString->length(), dst );
-    }
-    
-    void StringImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
-    {
-      if ( entityInfo.type != Util::ET_STRING )
-        throw Exception("value is not string");
-      if ( entityInfo.value.string.length <= Util::jsonDecoderShortStringMaxLength )
-        SetValue( entityInfo.value.string.shortData, entityInfo.value.string.length, dst );
-      else
-        Util::jsonParseString( entityInfo, GetMutableValueData( dst, entityInfo.value.string.length ) );
+      entity.requireString();
+      entity.stringGetData( GetMutableValueData( dst, entity.stringLength() ) );
     }
 
     void StringImpl::disposeDatasImpl( void *dst, size_t count, size_t stride ) const

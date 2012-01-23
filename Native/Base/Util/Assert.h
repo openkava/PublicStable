@@ -6,12 +6,12 @@
 #define _FABRIC_ASSERT_H
 
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 
 #if defined(FABRIC_BUILD_RELEASE)
 # define FABRIC_ASSERT(condition)
 # define FABRIC_ASSERT_TEXT(condition,text)
-# define FABRIC_CONFIRM(condition) (void)(condition)
+# define FABRIC_VERIFY(condition) (void)(condition)
 #else //defined(FABRIC_BUILD_DEBUG)
 # if defined( FABRIC_OS_WINDOWS )
 #  include <assert.h>
@@ -19,7 +19,7 @@
   (void)( (!!(condition)) || (_wassert(_CRT_WIDE(text), _CRT_WIDE(__FILE__), __LINE__), 0) )
 # define FABRIC_ASSERT(condition) \
   FABRIC_ASSERT_TEXT( condition, #condition )
-# define FABRIC_CONFIRM(condition) \
+# define FABRIC_VERIFY(condition) \
   FABRIC_ASSERT_TEXT( condition, #condition )
 # else
 #  include <stdlib.h>
@@ -32,7 +32,7 @@
   } while(false)
 # define FABRIC_ASSERT(condition) \
   FABRIC_ASSERT_TEXT( condition, "" #condition )
-# define FABRIC_CONFIRM(condition) \
+# define FABRIC_VERIFY(condition) \
   FABRIC_ASSERT_TEXT( condition, "" #condition )
 # endif
 #endif

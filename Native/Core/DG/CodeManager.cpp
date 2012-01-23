@@ -3,7 +3,7 @@
  */
  
 #include <Fabric/Core/DG/CodeManager.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Core/DG/IRCache.h>
 
 namespace Fabric

@@ -39,11 +39,11 @@ namespace Fabric
     {
     }
     
-    void Call::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void Call::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "functionFriendlyName" ).makeString( m_name );
-      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "functionFriendlyName" ).makeString( m_name );
+      m_args->appendJSON( jsonObjectEncoder.makeMember( "args" ), includeLocation );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const

@@ -2,32 +2,32 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#ifndef _FABRIC_UTIL_JSON_GENERATOR_H
-#define _FABRIC_UTIL_JSON_GENERATOR_H
+#ifndef _FABRIC_JSON_ENCODER_H
+#define _FABRIC_JSON_ENCODER_H
 
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Base/RC/String.h>
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONObjectGenerator;
-    class JSONArrayGenerator;
+    class ObjectEncoder;
+    class ArrayEncoder;
     
-    class JSONGenerator
+    class Encoder
     {
     public:
     
-      JSONGenerator( Util::SimpleString *ss )
+      Encoder( Util::SimpleString *ss )
         : m_ss( ss )
       {
         FABRIC_ASSERT( m_ss );
       }
       
-      ~JSONGenerator()
+      ~Encoder()
       {
         // [pzion 20111023] We would like to assert here but
         // we can't because an exception might be thrown
@@ -129,10 +129,10 @@ namespace Fabric
         makeString( string->data(), string->length() );
       }
       
-      JSONObjectGenerator makeObject() const;
+      ObjectEncoder makeObject() const;
       
-      JSONArrayGenerator makeArray() const;
-      JSONArrayGenerator *newArray() const;
+      ArrayEncoder makeArray() const;
+      ArrayEncoder *newArray() const;
       
       void appendJSON( char const *data, size_t length ) const
       {  
@@ -155,14 +155,14 @@ namespace Fabric
       
     private:
     
-      mutable SimpleString *m_ss;
+      mutable Util::SimpleString *m_ss;
     };
     
-    class JSONObjectGenerator
+    class ObjectEncoder
     {
     public:
     
-      JSONObjectGenerator( SimpleString *ss )
+      ObjectEncoder( Util::SimpleString *ss )
         : m_ss( ss )
         , m_count( 0 )
       {
@@ -170,11 +170,11 @@ namespace Fabric
       }
 
 #if defined(FABRIC_OS_WINDOWS)
-      JSONObjectGenerator(JSONObjectGenerator& other) {
+      ObjectEncoder(ObjectEncoder& other) {
         *this = other;
       }
 
-      JSONObjectGenerator& operator=(JSONObjectGenerator& other) {
+      ObjectEncoder& operator=(ObjectEncoder& other) {
         m_ss = other.m_ss;
         m_count = other.m_count;
         other.m_ss = 0;
@@ -183,7 +183,7 @@ namespace Fabric
 		
 #endif
 
-      ~JSONObjectGenerator()
+      ~ObjectEncoder()
       {
         flush();
       }
@@ -197,50 +197,50 @@ namespace Fabric
         }
       }
       
-      JSONGenerator makeMember( char const *data, size_t length ) const
+      Encoder makeMember( char const *data, size_t length ) const
       {
         FABRIC_ASSERT( m_ss );
         if ( m_count++ > 0 )
           m_ss->append( ',' );
-        JSONGenerator( m_ss ).makeString( data, length );
+        Encoder( m_ss ).makeString( data, length );
         m_ss->append( ':' );
-        return JSONGenerator( m_ss );
+        return Encoder( m_ss );
       }
       
-      JSONGenerator makeMember( char const *name ) const
+      Encoder makeMember( char const *name ) const
       {
         return makeMember( name, strlen( name ) );
       }
       
-      JSONGenerator makeMember( std::string const &string ) const
+      Encoder makeMember( std::string const &string ) const
       {
         return makeMember( string.data(), string.length() );
       }
       
-      JSONGenerator makeMember( Util::SimpleString const &ss ) const
+      Encoder makeMember( Util::SimpleString const &ss ) const
       {
         return makeMember( ss.getData(), ss.getLength() );
       }
       
     private:
     
-      SimpleString *m_ss;
+      Util::SimpleString *m_ss;
       mutable size_t m_count;
     };
     
-    inline JSONObjectGenerator JSONGenerator::makeObject() const
+    inline ObjectEncoder Encoder::makeObject() const
     {
       FABRIC_ASSERT( m_ss );
-      JSONObjectGenerator result = JSONObjectGenerator( m_ss );
+      ObjectEncoder result = ObjectEncoder( m_ss );
       FABRIC_ASSERT( !(m_ss = 0) );
       return result;
     }
     
-    class JSONArrayGenerator
+    class ArrayEncoder
     {
     public:
     
-      JSONArrayGenerator( SimpleString *ss )
+      ArrayEncoder( Util::SimpleString *ss )
         : m_ss( ss )
         , m_count( 0 )
       {
@@ -248,11 +248,13 @@ namespace Fabric
       }
 
 #if defined(FABRIC_OS_WINDOWS)
-      JSONArrayGenerator(JSONArrayGenerator& other) {
+      ArrayEncoder( ArrayEncoder &other )
+      {
         *this = other;
       }
 
-      JSONArrayGenerator& operator=(JSONArrayGenerator& other) {
+      ArrayEncoder& operator =( ArrayEncoder &other )
+      {
         m_ss = other.m_ss;
         m_count = other.m_count;
         other.m_ss = 0;
@@ -260,7 +262,7 @@ namespace Fabric
       }
 #endif
 		
-      ~JSONArrayGenerator()
+      ~ArrayEncoder()
       {
         flush();
       }
@@ -274,12 +276,12 @@ namespace Fabric
         }
       }
       
-      JSONGenerator makeElement() const
+      Encoder makeElement() const
       {
         FABRIC_ASSERT( m_ss );
         if ( m_count++ > 0 )
           m_ss->append( ',' );
-        return JSONGenerator( m_ss );
+        return Encoder( m_ss );
       }
       
       size_t getCount() const
@@ -289,26 +291,26 @@ namespace Fabric
       
     private:
     
-      SimpleString *m_ss;
+      Util::SimpleString *m_ss;
       mutable size_t m_count;
     };
     
-    inline JSONArrayGenerator JSONGenerator::makeArray() const
+    inline ArrayEncoder Encoder::makeArray() const
     {
       FABRIC_ASSERT( m_ss );
-      JSONArrayGenerator result = JSONArrayGenerator( m_ss );
+      ArrayEncoder result = ArrayEncoder( m_ss );
       FABRIC_ASSERT( !(m_ss = 0) );
       return result;
     }
     
-    inline JSONArrayGenerator *JSONGenerator::newArray() const
+    inline ArrayEncoder *Encoder::newArray() const
     {
       FABRIC_ASSERT( m_ss );
-      JSONArrayGenerator *result = new JSONArrayGenerator( m_ss );
+      ArrayEncoder *result = new ArrayEncoder( m_ss );
       FABRIC_ASSERT( !(m_ss = 0) );
       return result;
     }
   };
 };
 
-#endif //_FABRIC_UTIL_JSON_GENERATOR_H
+#endif //_FABRIC_JSON_ENCODER_H

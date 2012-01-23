@@ -14,10 +14,8 @@
 #include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -35,85 +33,89 @@ namespace Fabric
     }
   
     void Interface::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( dst.size() - dstOffset == 0 )
-        jsonExec( cmd, arg, resultJAG );
-      else m_gcContainer->jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+        jsonExec( cmd, arg, resultArrayEncoder );
+      else m_gcContainer->jsonRoute( dst, dstOffset, cmd, arg, resultArrayEncoder );
     }
       
     void Interface::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "createCompilation" )
-        jsonExecCreateCompilation( arg, resultJAG );
-      else if ( cmd == "createExecutable" )
-        jsonExecCreateExecutable( arg, resultJAG );
-      else if ( cmd == "createValueMapOperator" )
-        jsonExecCreateOperator<ValueMapOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "createValueGeneratorOperator" )
-        jsonExecCreateOperator<ValueGeneratorOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "createArrayGeneratorOperator" )
-        jsonExecCreateOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "createValueTransformOperator" )
-        jsonExecCreateOperator<ValueTransformOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "createArrayMapOperator" )
-        jsonExecCreateOperator<ArrayMapOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "createArrayTransformOperator" )
-        jsonExecCreateOperator<ArrayTransformOperatorWrapper>( arg, resultJAG );
-      else if ( cmd == "createReduceOperator" )
-        jsonExecCreateOperator<ReduceOperatorWrapper>( arg, resultJAG );
+      if ( cmd.stringIs( "createCompilation", 17 ) )
+        jsonExecCreateCompilation( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createExecutable", 16 ) )
+        jsonExecCreateExecutable( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueMapOperator", 22 ) )
+        jsonExecCreateOperator<ValueMapOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueGeneratorOperator", 28 ) )
+        jsonExecCreateOperator<ValueGeneratorOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayGeneratorOperator", 28 ) )
+        jsonExecCreateOperator<ArrayGeneratorOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueTransformOperator", 28 ) )
+        jsonExecCreateOperator<ValueTransformOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayMapOperator", 22 ) )
+        jsonExecCreateOperator<ArrayMapOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayTransformOperator", 28 ) )
+        jsonExecCreateOperator<ArrayTransformOperatorWrapper>( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createReduceOperator", 20 ) )
+        jsonExecCreateOperator<ReduceOperatorWrapper>( arg, resultArrayEncoder );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
     void Interface::jsonExecCreateCompilation(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
       std::string sourceName;
-      try
+      std::string sourceCode;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        RC::ConstHandle<JSON::Value> sourceNameJSONValue = argObject->maybeGet( "sourceName" );
-        if ( sourceNameJSONValue )
-          sourceName = sourceNameJSONValue->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "sourceName: " + e;
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sourceName", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceName = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sourceCode", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceCode = valueEntity.stringToStdString();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
       
-      std::string sourceCode;
-      try
-      {
-        RC::ConstHandle<JSON::Value> sourceCodeJSONValue = argObject->maybeGet( "sourceCode" );
-        if ( sourceCodeJSONValue )
-          sourceCode = sourceCodeJSONValue->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "sourceCode: " + e;
-      }
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( sourceName.empty() )
+        throw Exception( "missing 'sourceName'" );
+      if ( sourceCode.empty() )
+        throw Exception( "missing 'sourceCode'" );
       
       RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
       if ( sourceName.length() > 0 || sourceCode.length() > 0 )
@@ -122,46 +124,53 @@ namespace Fabric
     }
     
     void Interface::jsonExecCreateExecutable(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
       std::string sourceName;
-      try
+      std::string sourceCode;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        sourceName = argObject->get( "sourceName" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "sourceName: " + e;
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sourceName", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceName = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sourceCode", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceCode = valueEntity.stringToStdString();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
       
-      std::string sourceCode;
-      try
-      {
-        sourceCode = argObject->get( "sourceCode" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "sourceCode: " + e;
-      }
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( sourceName.empty() )
+        throw Exception( "missing 'sourceName'" );
+      if ( sourceCode.empty() )
+        throw Exception( "missing 'sourceCode'" );
       
       RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
       compilation->add( sourceName, sourceCode );
-      RC::Handle<Executable> executable = compilation->run();
-      executable->reg( m_gcContainer, id_ );
+      compilation->run()->reg( m_gcContainer, id_ );
     }
   };
 };

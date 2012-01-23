@@ -5,7 +5,7 @@
 #ifndef _FABRIC_CG_OP_TYPES_H
 #define _FABRIC_CG_OP_TYPES_H
 
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #include <string>
 #include <vector>

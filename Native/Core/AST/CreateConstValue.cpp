@@ -36,10 +36,10 @@ namespace Fabric
     {
     }
     
-    void CreateConstValue::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void CreateConstValue::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_child->appendJSON( jsonObjectEncoder.makeMember( "child" ), includeLocation );
     }
     
     void CreateConstValue::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

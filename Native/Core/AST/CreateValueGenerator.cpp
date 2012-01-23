@@ -41,11 +41,11 @@ namespace Fabric
     {
     }
     
-    void CreateValueGenerator::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void CreateValueGenerator::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "operatorName" ).makeString( m_operatorName );
-      m_shared->appendJSON( jsonObjectGenerator.makeMember( "shared" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "operatorName" ).makeString( m_operatorName );
+      m_shared->appendJSON( jsonObjectEncoder.makeMember( "shared" ), includeLocation );
     }
     
     void CreateValueGenerator::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
