@@ -4,8 +4,8 @@
 
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/IO/Helpers.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Base/Exception.h>
 
 #if defined(FABRIC_POSIX)

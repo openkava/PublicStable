@@ -5,9 +5,7 @@
 #include "ArrayDesc.h"
 
 #include <Fabric/Core/RT/ArrayImpl.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -45,10 +43,10 @@ namespace Fabric
       return m_arrayImpl->getMemberData( data, index );
     }
     
-    void ArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void ArrayDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
   };
 };

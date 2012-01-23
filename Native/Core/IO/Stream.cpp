@@ -3,7 +3,7 @@
  */
 
 #include <Fabric/Core/IO/Stream.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {

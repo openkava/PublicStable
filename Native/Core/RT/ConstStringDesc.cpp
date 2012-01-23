@@ -4,10 +4,7 @@
  
 #include <Fabric/Core/RT/ConstStringDesc.h>
 #include <Fabric/Core/RT/ConstStringImpl.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -19,10 +16,10 @@ namespace Fabric
     {
     }
     
-    void ConstStringDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void ConstStringDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "ConstString" );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "ConstString" );
     }
 
     std::string ConstStringDesc::toString( void const *data ) const

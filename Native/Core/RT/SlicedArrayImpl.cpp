@@ -3,11 +3,11 @@
  */
  
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
+
 #include <Fabric/Core/RT/VariableArrayImpl.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
@@ -49,41 +49,31 @@ namespace Fabric
         ++dstBits->rcva->refCount;
     }
 
-    RC::Handle<JSON::Value> SlicedArrayImpl::getJSONValue( void const *data ) const
+    void SlicedArrayImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-      RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( bits->size );
-      for ( size_t i=0; i<bits->size; ++i )
-        arrayValue->set( i, m_variableArrayImpl->getJSONValue( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->rcva->varArray, bits->offset + i ) ) );
-      return arrayValue;
-    }
-    
-    void SlicedArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
       for ( size_t i=0; i<bits->size; ++i )
       {
-        Util::JSONGenerator jsonGenerator = jsonArrayGenerator.makeElement();
-        m_memberImpl->generateJSON( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->rcva->varArray, bits->offset + i ), jsonGenerator );
+        JSON::Encoder encoder = jsonArrayEncoder.makeElement();
+        m_memberImpl->encodeJSON( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->rcva->varArray, bits->offset + i ), encoder );
       }
     }
     
-    void SlicedArrayImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    void SlicedArrayImpl::decodeJSON( JSON::Entity const &entity, void *data ) const
     {
-      if ( entityInfo.type != Util::ET_ARRAY )
-        throw Exception("JSON value is not an array");
+      entity.requireArray();
         
       bits_t *dstBits = reinterpret_cast<bits_t *>(data);
-      if ( entityInfo.value.array.size != dstBits->size )
+      if ( entity.value.array.size != dstBits->size )
         throw Exception( "JSON array size must equal sliced array size" );
         
       size_t membersFound = 0;
-      Util::JSONArrayParser arrayDecoder( entityInfo );
-      Util::JSONEntityInfo elementEntity;
+      JSON::ArrayDecoder arrayDecoder( entity );
+      JSON::Entity elementEntity;
       while ( arrayDecoder.getNext( elementEntity ) )
       {
-        FABRIC_ASSERT( membersFound < entityInfo.value.array.size );
+        FABRIC_ASSERT( membersFound < entity.value.array.size );
         try
         {
           void *memberData = (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &dstBits->rcva->varArray, dstBits->offset + membersFound );
@@ -96,22 +86,7 @@ namespace Fabric
         ++membersFound;
       }
       
-      FABRIC_ASSERT( membersFound == entityInfo.value.array.size );
-    }
-    
-    void SlicedArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
-    {
-      if ( !jsonValue->isArray() )
-        throw Exception( "JSON value is not array" );
-      RC::ConstHandle<JSON::Array> jsonArray = RC::ConstHandle<JSON::Array>::StaticCast( jsonValue );
-
-      bits_t *dstBits = reinterpret_cast<bits_t *>(data);
-      if ( jsonArray->size() != dstBits->size )
-        throw Exception( "JSON array size must equal sliced array size" );
-
-      for ( size_t i=0; i<dstBits->size; ++i )
-        //m_memberImpl->setDataFromJSONValue( jsonArray->get(i), m_variableArrayImpl->getMutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
-        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &dstBits->rcva->varArray, dstBits->offset + i ) );
+      FABRIC_ASSERT( membersFound == entity.value.array.size );
     }
 
     void SlicedArrayImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const

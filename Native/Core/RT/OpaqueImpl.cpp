@@ -2,14 +2,11 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "OpaqueImpl.h"
+#include <Fabric/Core/RT/OpaqueImpl.h>
 
-#include <Fabric/Base/JSON/Null.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Core/Util/Hex.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -43,27 +40,14 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Value> OpaqueImpl::getJSONValue( void const *data ) const
+    void OpaqueImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
-      return JSON::Null::Create();
+      encoder.makeNull();
     }
     
-    void OpaqueImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    void OpaqueImpl::decodeJSON( JSON::Entity const &entity, void *dst ) const
     {
-      jsonGenerator.makeNull();
-    }
-
-    void OpaqueImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
-    {
-      if ( !jsonValue->isNull() )
-        throw Exception("value is not null");
-      memset( dst, 0, getAllocSize() );
-    }
-    
-    void OpaqueImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
-    {
-      if ( entityInfo.type != Util::ET_NULL )
-        throw Exception("value is not null");
+      entity.requireNull();
       memset( dst, 0, getAllocSize() );
     }
     

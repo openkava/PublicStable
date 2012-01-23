@@ -9,24 +9,18 @@
 #include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #include <stdint.h>
 #include <map>
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class Decoder;
-    class JSONGenerator;
-    class JSONEntityInfo;
-    class Encoder;
-  };
-  
   namespace JSON
   {
-    class Value;
+    class Decoder;
+    class Encoder;
+    class Entity;
   };
   
   namespace RT
@@ -57,10 +51,8 @@ namespace Fabric
       virtual bool equalsData( void const *lhs, void const *rhs ) const = 0;
       virtual size_t getIndirectMemoryUsage( void const *data ) const;
       
-      virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
-      virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const = 0;
-      virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const = 0;
-      virtual void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const = 0;
+      virtual void encodeJSON( void const *data, JSON::Encoder &encoder ) const = 0;
+      virtual void decodeJSON( JSON::Entity const &entity, void *data ) const = 0;
       
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const = 0;
       virtual bool isShallow() const = 0;

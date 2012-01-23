@@ -4,9 +4,7 @@
  
 #include "StringDesc.h"
 #include "StringImpl.h"
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -33,10 +31,10 @@ namespace Fabric
       return StringImpl::SetValue( cStr, length, dst );
     }
     
-    void StringDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void StringDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "string" );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "string" );
     }
   };
 };

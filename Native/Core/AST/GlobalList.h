@@ -12,10 +12,10 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
-    class JSONArrayGenerator;
+    class Encoder;
+    class ArrayEncoder;
   };
   
   namespace CG
@@ -40,7 +40,7 @@ namespace Fabric
       static RC::ConstHandle<GlobalList> Create( RC::ConstHandle<GlobalList> const &lhs, RC::ConstHandle<GlobalList> const &rhs );
 
       Util::SimpleString toJSON( bool includeLocation ) const;
-      void generateJSON( bool includeLocation, Util::JSONGenerator &jg ) const;
+      void encodeJSON( bool includeLocation, JSON::Encoder &jg ) const;
 
       void collectUses( UseNameToLocationMap &uses ) const;
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
@@ -51,7 +51,7 @@ namespace Fabric
     
       GlobalList( RC::ConstHandle<GlobalList> const &before, RC::ConstHandle<Global> const &global, RC::ConstHandle<GlobalList> const &after );
     
-      void appendJSON( Util::JSONArrayGenerator const &jsonArrayGenerator, bool includeLocation ) const;
+      void appendJSON( JSON::ArrayEncoder const &jsonArrayEncoder, bool includeLocation ) const;
       
     private:
     
