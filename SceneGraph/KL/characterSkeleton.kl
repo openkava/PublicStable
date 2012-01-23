@@ -32,18 +32,7 @@ operator calcReferenceLocalPose(io Bone bones[]) {
       bones[i].referenceLocalPose = bones[i].referencePose;
     }
     else {
-      // Our Math library has some fundamental bugs in it, and I'm working around them here.
       bones[i].referenceLocalPose = bones[bones[i].parent].referencePose.inverse() * bones[i].referencePose;
-      
-      //  report( bones[i].referenceLocalPose );
-      //    Mat44 parentGlobal = bones[bones[i].parent].referencePose;
-      //    Mat44 thisGlobal = bones[i].referencePose;
-      //    Mat44 thisLocal = thisGlobal * parentGlobal.inverse();
-      //    bones[i].referenceLocalPose = Xfo( thisLocal );
-
-    //  bones[i].referenceLocalPose = bones[bones[i].parent].referencePose.invProject(bones[i].referencePose);
-
-      //report( bones[i].referenceLocalPose );
     }
   }
 }
@@ -55,16 +44,7 @@ operator calcReferenceGlobalPose(io Bone bones[]) {
       bones[i].referencePose = bones[i].referenceLocalPose;
     }
     else {
-      // Our Math library has some fundamental bugs in it, and I'm working around them here.
-      //  bones[i].referenceLocalPose = bones[bones[i].parent].referencePose.inverse() * bones[i].referencePose;
-      //  bones[i].referenceLocalPose = bones[i].referencePose * bones[bones[i].parent].referencePose.inverse();
-      //  report( bones[i].referenceLocalPose );
-      Mat44 parentGlobal = bones[bones[i].parent].referencePose;
-      Mat44 thisLocal = bones[i].referenceLocalPose;
-      Mat44 thisGlobal = parentGlobal * thisLocal;
-      bones[i].referencePose = Xfo(thisGlobal);
-
-      //  report( bones[i].referencePose );
+      bones[i].referencePose = bones[bones[i].parent].referencePose * bones[i].referenceLocalPose;
     }
   }
 }

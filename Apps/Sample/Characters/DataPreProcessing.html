@@ -30,13 +30,14 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTextureCube.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -86,6 +87,8 @@ s.parentNode.insertBefore(ga, s);
 
 <script type="text/javascript">
 
+FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+
 $(document).ready(function() {
   
   var $globalTimeSlider = $('#globalTime').slider({
@@ -106,7 +109,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../../Sample/BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -115,8 +118,8 @@ $(document).ready(function() {
       position: new FABRIC.RT.Vec3(6, 4.2, 6),
       target: new FABRIC.RT.Vec3(0, -1, 0),
       roll: 0,
-      nearDistance: 1.0,
-      farDistance: 120
+      nearDistance: 0.1,
+      farDistance: 500
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
@@ -135,6 +138,7 @@ $(document).ready(function() {
   // 
   var sampleFrequency = 1/30;
   var scaleFactor = 0.1;
+  var footMovementThreshold = 0.03;
   var libraryFKAnimations, animationController;
   
   var libraryIKAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
@@ -150,12 +154,13 @@ $(document).ready(function() {
     var animationAssetNodes = scene.importAssetFile(file, {
       scaleFactor: scaleFactor,
       constructScene: false,
-      loadAnimationUsingRig: fkrigNode,
+      loadAnimationUsingRig: true,
+      rigNode: fkrigNode,
       animationLibrary: libraryFKAnimations,
       animationController: animationController
     });
     if(!libraryFKAnimations){
-      libraryFKAnimations = animationAssetNodes.AnimationLibrary;
+      libraryFKAnimations = animationAssetNodes.LinearKeyAnimationLibrary;
       animationController = animationAssetNodes.AnimationController;
     }
     
@@ -166,19 +171,110 @@ $(document).ready(function() {
     trackCount++;
   }
   
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var sphere = scene.constructNode('Sphere', { radius: 2, detail: 10, needUVs: true, tangentsFromUV: 0 });
   
+    // Transparency Shader
+    /*
+  var cubeTextureMap = scene.constructNode('CubeMap', {
+    urls: [
+      'Textures/Teide/posx.png',
+      'Textures/Teide/negx.png',
+      'Textures/Teide/posy.png',
+      'Textures/Teide/negy.png',
+      'Textures/Teide/posz.png',
+      'Textures/Teide/negz.png'
+    ]
+  });
+  
+  var reflectionMaterial = scene.constructNode('GlassMaterial', {
+    diffuseColor: FABRIC.RT.rgba(0.0, 0.75, 1, 0.25),
+    cubeMapTextureNode: cubeTextureMap,
+    lightNode: light
+  });
+
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
+    }),
+    geometryNode: sphere,
+    materialNode: reflectionMaterial
+  });
+*/
+
   //////////////////////////////////////////////
-  // 
+  //
+  var rigName = 'Spiedel';
   
-  var rigName = 'marama';
-  var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
+  var assetNodes, bindPoseRig, fkrigNode, rigInstances = {}, skeletonNode, materialNode;
   switch(rigName){
+  case 'Spiedel':
+    scaleFactor = 0.05;
+    footMovementThreshold = 0.08;
+    assetNodes = scene.importAssetFile('Assets/Spiedel.DAE', { scaleFactor: scaleFactor });
+  
+    fkrigNode = assetNodes.SpiedelCharacterRig;
+    rigInstances.rig = assetNodes.SpiedelMeshCharacterInstance;
+
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', { hubs: [{ bone:['SpiedelBody'] }] } );
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['SpiedelFrontRLegCollarbone', 'SpiedelFrontLLegCollarbone', 'SpiedelRearRLegCollarbone', 'SpiedelRearLLegCollarbone',
+               'SpiedelLArmCollarbone', 'SpiedelLArm1', 'SpiedelLArm2', 'SpiedelLArmPalm',
+               'SpiedelRArmCollarbone', 'SpiedelRArm1', 'SpiedelRArm2', 'SpiedelRArmPalm' ]
+      }
+    });
+    ikrigNode.addSolver('Limbs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['SpiedelFrontRLeg1', 'SpiedelFrontRLeg2', 'SpiedelFrontRLeg3'], ankle:'SpiedelFrontRLegAnkle' },
+               { bones:['SpiedelFrontLLeg1', 'SpiedelFrontLLeg2', 'SpiedelFrontLLeg3'], ankle:'SpiedelFrontLLegAnkle' },
+               { bones:['SpiedelRearRLeg1', 'SpiedelRearRLeg2', 'SpiedelRearRLeg3'], ankle:'SpiedelRearRLegAnkle' },
+               { bones:['SpiedelRearLLeg1', 'SpiedelRearLLeg2', 'SpiedelRearLLeg3'], ankle:'SpiedelRearLLegAnkle' } ]
+    });
+    
+  //  ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+  //    bones: {
+  //      bones:['SpiedelFrontRLegAnkle', 'SpiedelFrontLLegAnkle', 'SpiedelRearLLegAnkle', 'SpiedelRearRLegAnkle' ]
+  //    }
+  //  });
+  
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'SpiedelCOM'
+    });
+    
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
+    loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
+
+  
+    
+    rigInstances.rig.addMaterialNode(
+      scene.constructNode('SpiedelShader', {
+        lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+        diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)/*,
+        cubeMapTextureNode: cubeTextureMap */
+      }));
+    
+    break;
   case 'walker':
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
-    rigInstanceNode = assetNodes.Walker_ncl1_1CharacterInstance;
-    characterMesh = assetNodes.Walker_ncl1_1Mesh;
+    rigInstances.rig = assetNodes.Walker_ncl1_1CharacterInstance;
     
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
@@ -199,7 +295,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
   
@@ -208,8 +304,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.CentipedeHub010CharacterRig;
-    rigInstanceNode = assetNodes.CentipedeHub010CharacterInstance;
-    characterMesh = assetNodes.CentipedeHub010Mesh;
+    rigInstances.rig = assetNodes.CentipedeHub010CharacterInstance;
     
     skeletonNode = fkrigNode.getSkeletonNode();
     
@@ -277,17 +372,16 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
     
     break;
   case 'marama':
-    assetNodes = scene.importAssetFile('Assets/Marama2.DAE', { scaleFactor: scaleFactor } );
+    assetNodes = scene.importAssetFile('Assets/Marama3.DAE', { scaleFactor: scaleFactor } );
   
-    fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
-    rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
-    characterMesh = assetNodes.MaramaPelvis001Mesh;
+    fkrigNode = assetNodes.MaramaMeshCharacterRig;
+    rigInstances.rig = assetNodes.MaramaMeshCharacterInstance;
     
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
@@ -316,37 +410,142 @@ $(document).ready(function() {
                'MaramaRPalm', 'MaramaRThumb1', 'MaramaRThumb2' , 'MaramaRIndex1', 'MaramaRIndex2', 'MaramaRFingers1' , 'MaramaRFingers2' ]
       }
     });
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'MaramaCOM'
+    });
 
     fkrigNode.setName("FKRig");
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
+    loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama3_Run.DAE', fkrigNode);
+    /*
+    loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
+ /*   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
+ *//*
+    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
+    /*
+    loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
+    */
+    break;
+  
+  case 'CMan0005':
+    scaleFactor = 0.05;
+    assetNodes = scene.importAssetFile('Assets/CMan0005.DAE', { scaleFactor: scaleFactor } );
+  
+    fkrigNode = assetNodes.CMan0005_M3_CS_MeshCharacterRig;
+    
+    rigInstances = {
+      Cloths: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Cloths_StuffCharacterInstance,
+      Eyes: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Eyes_MouthCharacterInstance,
+      Hair: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HairCharacterInstance,
+      Head: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HeadCharacterInstance,
+      Skin: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_SkinCharacterInstance
+    };
+    
+    rigInstances.Cloths.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Eyes.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Hair.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Head.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Skin.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['CMan0005Pelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['CMan0005LThigh', 'CMan0005LCalf'], ankle:'CMan0005LAnkle' },
+               { bones:['CMan0005RThigh', 'CMan0005RCalf'], ankle:'CMan0005RAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:['CMan0005LToe', 'CMan0005RToe' ]
+      }
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['CMan0005Spine1', 'CMan0005Spine2', 'CMan0005Spine3', 'CMan0005Ribcage', 'CMan0005Neck', 'CMan0005Head',
+               'CMan0005LCollarbone', 'CMan0005LUpperArm', 'CMan0005LForeArm2', 'CMan0005LForeArm2_ncl1_1',
+               'CMan0005RCollarbone', 'CMan0005RUpperArm', 'CMan0005RForeArm2', 'CMan0005RForeArm2_ncl1_1',
+               'CMan0005LPalm', 'CMan0005LThumb1', 'CMan0005LThumb2' , 'CMan0005LIndex1', 'CMan0005LIndex2', 'CMan0005LFingers1' , 'CMan0005LFingers2',
+               'CMan0005RPalm', 'CMan0005RThumb1', 'CMan0005RThumb2' , 'CMan0005RIndex1', 'CMan0005RIndex2', 'CMan0005RFingers1' , 'CMan0005RFingers2' ]
+      }
+    });
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'CMan0005PelvisBone001'
+    });
 
-   loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
-/*   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
-*/
-   loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
-   /*
-   loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
-   */
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.Cloths.setRigNode(ikrigNode);
+    rigInstances.Eyes.setRigNode(ikrigNode);
+    rigInstances.Hair.setRigNode(ikrigNode);
+    rigInstances.Head.setRigNode(ikrigNode);
+    rigInstances.Skin.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/CMan0005_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Run.DAE', fkrigNode);
+
     break;
   }
-  
-  ikrigNode.addSolver('COM', 'COMSolver');
+  /*
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
-  
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
-      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-      numBones: skeletonNode.getNumBones()
-    });
-  rigInstanceNode.setMaterialNode(materialNode);
-  characterMesh.setName('characterMesh');
+  */
   
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
@@ -361,12 +560,14 @@ $(document).ready(function() {
   });
   
   
+  /*
   var timeRange = libraryFKAnimations.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
       min: timeRange.x,
       max: timeRange.y,
       step: 0.01
     });
+  */
   
   $globalTimeSlider.slider('value', 0.0);
   $globalTimeSlider.bind('slide',
@@ -382,7 +583,7 @@ $(document).ready(function() {
       scene.animation.setTime(parseFloat($(this).val()));
       viewport.redraw();
     });
-
+    
   $( "#animationTracksList" ).selectable({
     stop: function(event, ui) {
       var selectedChildren = $("#animationTracksList").children('.ui-selected');
@@ -412,7 +613,10 @@ $(document).ready(function() {
         // NOTE: currently the ikrigNode is actually the locomotion rig, because the locomotion rig
         // simply adds 2 solvers to the rig. We should disolve the Locomotion rig and simply add the
         // solvers to the IK rig, clarifying the situation
-        var bindings = libraryIKAnimations.bindToRig(ikrigNode, libraryFKAnimations.getTrackSetName(i));
+        var trackSetId = ikrigNode.generateAnimationTracks(libraryIKAnimations, libraryFKAnimations.getTrackSetName(i), false);
+        
+        
+        var bindings = libraryIKAnimations.bindToRig(ikrigNode, trackSetId);
         
         var timeRange = libraryFKAnimations.getTimeRange(i);
         libraryIKAnimations.plotKeyframes(i, timeRange, sampleFrequency);
@@ -421,7 +625,6 @@ $(document).ready(function() {
       
       
       if(!bound){
-        var footMovementThreshold = 0.03;
         libraryLocomotionAnimations.bindToSourceAnimationLibrary(
           libraryIKAnimations,
           bindings,
@@ -436,19 +639,26 @@ $(document).ready(function() {
       viewport.redraw();
     });
   
-  $('#saveData').button()
+  $('#writeRigData').button()
     .click(function() {
       ikRigVariablesNode.setName('CharacterVariables');
       var rigSaver = scene.constructManager('SceneSerializer');
+      rigSaver.filterNode(libraryLocomotionAnimations);
       rigSaver.addNode(ikrigNode);
-      rigSaver.addNode(characterMesh);
-      rigSaver.addNode(libraryLocomotionAnimations);
-    //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
-    //  rigSaver.save(storage);
-    //  storage.log();
-    
-      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Save AnimationData", rigName);
+      for(var i in rigInstances){
+        rigSaver.addNode(rigInstances[i]);
+      }
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Rig Data", rigName);
       rigSaver.save(storage);
+    });
+
+  $('#writeAnimationData').button()
+    .click(function() {
+      var animationSaver = scene.constructManager('SceneSerializer');
+      animationSaver.addNode(libraryLocomotionAnimations);
+    
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Animation Data", rigName + "Animation");
+      animationSaver.save(storage);
     });
 
 
@@ -470,7 +680,7 @@ $(document).ready(function() {
     riggedSkeleton.getInstanceNode().setDrawToggle($("#displayRiggedSkeleton").is(":checked"));
     viewport.redraw();
   });
-  
+
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -534,9 +744,10 @@ $(document).ready(function() {
               <label for="timeValue" >Time:</label>
               <input type="text" id="timeValue" style="border:0; font-weight:bold;" />
               <div id='globalTime' style="margin-bottom:10px;"></div>
+              
+              
+              <button id="writeRigData" style="margin-top:3px;">Write Character Definition</button>
                 
-              <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
-              <button id="saveData" style="margin-top:3px;">Write Data</button>
               <!--
               <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
               -->
@@ -546,6 +757,8 @@ $(document).ready(function() {
           <div class="box">
             <h2>ANIMATIONS</h2>
             <div class="content">
+              <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
+              <button id="writeAnimationData" style="margin-top:3px;">Write Animation Library</button>
               <ol id="animationTracksList">
               </ol>
             </div>

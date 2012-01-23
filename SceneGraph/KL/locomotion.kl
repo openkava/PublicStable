@@ -4,6 +4,7 @@ use Vec3, Quat, Xfo;
 use LinearKeyframe;
 use LinearKeyframeTrack;
 use LinearKeyframeTrackSet;
+use LinearKeyframeTrackSetBindings;
 use PoseVariables;
 use CharacterControllerParams;
 use DebugGeometry;
@@ -23,7 +24,7 @@ function activateClip(
   trackcontroller.stepIds = marker.stepIds;
   trackcontroller.comParams = marker.params;
   
-//  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " marker:"+marker);
+//  report("activateClip track:"+trackcontroller.activeTrackSet + " at time:"+marker.time);
 }
 
 
@@ -31,8 +32,8 @@ function Scalar calcClipParamsDelta(
   in Scalar clip1[],
   in Scalar clip2[]
 ){
-  Scalar delta = clip1[1] - clip2[1]; // velocity
- // delta += clip1[2] - clip2[2];       // acceleration
+  Scalar delta = abs(clip1[0] - clip2[0]); // velocity
+  delta += abs(clip1[1] - clip2[1]) / 5.0;       // acceleration
   return delta;
 }
 
@@ -66,7 +67,8 @@ function Boolean fireRay(
   io Vec3  upvector,
   in Scalar rayLength,
   io Scalar dist,
-  io Boolean displayRaycastingDebugging,
+  io Vec3 normal,
+  in Boolean displayRaycastingDebugging,
   io DebugGeometry debugRaycasting
 ){
   Vec3 rayStart = refPos + (upvector * rayLength);
@@ -88,6 +90,7 @@ function Boolean fireRay(
     }
     
     dist = (hitPosition - refPos).dot(upvector);
+    normal = contacts[0].normal;
     return true;
   }
   else{
@@ -106,7 +109,7 @@ operator evaluateLocomotionPoseVariables(
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[][],
   io FootStepTrack footStepTracksLibrary<>[],
-  io KeyframeTrackBindings bindingsLibrary<>,
+  io LinearKeyframeTrackSetBindings bindingsLibrary<>,
   
   io Hub hubs[],
   io Limb legs[],
@@ -117,11 +120,13 @@ operator evaluateLocomotionPoseVariables(
   io CharacterControllerParams controllerparamsSet<>,
   io Scalar comParamsSet<>[],
   
+  io Integer state,
   io TrackSetController trackcontroller,
   io Boolean plantedFeet[],
-  io Vec3 plantLocations[],
-  io Vec3 hitPositions[],
-  io Vec3 hitPositionsPrevStep[],
+  io Xfo plantLocations[],
+  io Xfo hitPositions[],
+  io Xfo hitPositionsPrevStep[],
+  io Xfo footXfos[],
   
   io PoseVariables poseVariables,
   io PoseVariables prevUpdatePose,
@@ -155,11 +160,34 @@ operator evaluateLocomotionPoseVariables(
   CharacterControllerParams controllerparams = controllerparamsSet[index];
   Scalar comParams[] = comParamsSet[index];
   
+  if(trackcontroller.tick == 0){
+    trackcontroller.stepIds.resize(locomotionFeet.size);
+    plantedFeet.resize(locomotionFeet.size);
+    plantLocations.resize(locomotionFeet.size);
+    hitPositions.resize(locomotionFeet.size);
+    hitPositionsPrevStep.resize(locomotionFeet.size);
+    footXfos.resize(locomotionFeet.size);
+    for(Integer j=0; j < locomotionFeet.size; j++){
+      plantLocations[j].setIdentity();
+      hitPositions[j].setIdentity();
+      hitPositionsPrevStep[j].setIdentity();
+      footXfos[j] = legs[locomotionFeet[j].limbId].ikGoalReferenceXfo;
+    }
+  }
   
-  plantedFeet.resize(locomotionFeet.size);
-  plantLocations.resize(locomotionFeet.size);
-  hitPositions.resize(locomotionFeet.size);
-  hitPositionsPrevStep.resize(locomotionFeet.size);
+  Scalar rayLength = 3.5;
+  Vec3 up(0.0, 1.0, 0.0);
+  Xfo rot90;
+  rot90.setIdentity();
+  rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
+  Vec3 upvector = up;//controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+  Quat alignment;
+  
+  Scalar legLiftWeight = 0.0;
+  if(legs.size == 2){
+    controllerparams.lift = 99999.0;
+  }
+
   
   /////////////////////////////////////////////////
   // Clip Activation
@@ -170,58 +198,93 @@ operator evaluateLocomotionPoseVariables(
     );
   }
 
-  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
+  LinearKeyframeTrackSetBindings trackSet = animationLibrary[trackcontroller.activeTrackSet];
   FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
-  KeyframeTrackBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
+  LinearKeyframeTrackSetBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
   
   Xfo invcontrollerXfo = controllerXfo.inverse();
   Vec2 timeRange = trackSet.timeRange;
   Scalar t = trackcontroller.time;
   
-  Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
-  Scalar currSpeed = linearVelocity.length();
-  Scalar clipSpeed = trackcontroller.comParams[1];
+  Scalar currSpeed = comParams[0];
+  Scalar clipSpeed = trackcontroller.comParams[0];
   
-  if(clipSpeed == 0.0){
-    if(trackcontroller.deactivate){
-      for(Integer j=0; j < locomotionFeet.size; j++){
-        LocomotionFoot foot = locomotionFeet[j];
-        Limb leg = legs[foot.limbId];
-        plantedFeet[j] = true;
-        plantLocations[j] = controllerXfo.transformVector(leg.ikGoalReferenceXfo.tr);
-      }
-    }
+  if(state == 0){
+  
+    /////////////////////////////////////////////////
+    // Clip Evaluation
     t += timestep;
     trackcontroller.time = t;
+    
     poseVariables.evaluateKeyframeTracks(t, trackSet, bindings, trackcontroller.currKeys);
     
     /////////////////////////////////////////////////
+    // Now store the com params for the next update.
+    for(Integer j=0; j < com.parameterVarIds.size; j++){
+      trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
+    }
+    
+    /////////////////////////////////////////////////
     // Error dissapation
-    if(trackcontroller.tick > 0){
-      if(trackcontroller.deactivate){
-        poseError = prevUpdatePose.subtract(poseVariables);
-        clipActivationTime = trackcontroller.time-timestep;
-      }
-      if(clipActivationTime > 0.0){
-        // Blend off the error over 0.5 seconds. 
-        Scalar blendTime = 0.5;
-        if(trackcontroller.time - clipActivationTime < blendTime){
-          Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
-          poseVariables.addWeighted(poseError, weight);
+    if(trackcontroller.deactivate){
+      
+      for(Integer j=0; j < locomotionFeet.size; j++){
+        Limb leg = legs[locomotionFeet[j].limbId];
+        prevUpdatePose.xfoValues[leg.ikGoalXfoId] = footXfos[j];
+        
+        BULLLETWORLD_OPENBLOCKCOMMENT
+        if(performRaycasting){
+          Xfo plantedXfo;
+          if(plantedFeet[j]){
+            plantedXfo = controllerXfo * footXfos[j];
+          }else{
+            plantedXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+          }
+          Scalar dist; Vec3 normal;
+          if(fireRay(bulletworld, plantedXfo.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
+            plantedXfo.tr += upvector * dist;
+            alignment.setFrom2Vectors(plantedXfo.ori.rotateVector(Vec3(-1.0,0.0,0.0)), normal);
+            plantedXfo.ori = alignment * plantedXfo.ori;
+            plantLocations[j] = plantedXfo;
+            poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantedXfo;
+          }
         }
+        BULLLETWORLD_CLOSEBLOCKCOMMENT
       }
-      if(!trackcontroller.deactivate){
-        // Hold the feet in place while stationary. 
-        for(Integer j=0; j < locomotionFeet.size; j++){
-          LocomotionFoot foot = locomotionFeet[j];
-          Limb leg = legs[foot.limbId];
-        //  poseVariables.xfoValues[leg.ikGoalXfoId].tr = plantLocations[j];
+    }else{
+      // Hold the feet in place while stationary.
+      for(Integer j=0; j < locomotionFeet.size; j++){
+        Limb leg = legs[locomotionFeet[j].limbId];
+        poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantLocations[j];
+        
+        if(performRaycasting){
+          Scalar lift = poseVariables.xfoValues[leg.ikGoalXfoId].tr.y;
+          addLift(legs, j, lift, controllerparams, legLiftWeight);
+        }
+        
+        if(displayFootPinningDebugging){
+          debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.6, Color(1.0, 0.0, 0.0, 1.0));
         }
       }
     }
+    
+    
+    if(trackcontroller.deactivate){
+      if(trackcontroller.tick > 0){
+        poseError = prevUpdatePose.subtract(poseVariables);
+        clipActivationTime = trackcontroller.time-timestep;
+      }
+    }
+    
+    // Blend off the error over 0.25 seconds. 
+    Scalar blendTime = 0.25;
+    if(trackcontroller.time - clipActivationTime < blendTime){
+      Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
+      poseVariables.addWeighted(poseError, weight);
+    }
+    
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
-    
     
     for(Integer j=0; j < hubs.size; j++){
       Hub hub = hubs[j];
@@ -234,11 +297,12 @@ operator evaluateLocomotionPoseVariables(
       poseVariables.xfoValues[hub.xfoId] = hubXfo;
     }
     
-    
-    if(animationLibrary.size > 1 && currSpeed > 0.001){
+    // Transition to another state if acceleration occurs.
+    if(animationLibrary.size > 1 && comParams[1] > 0.0){
       Integer activeTrackSet = trackcontroller.activeTrackSet;
-      Scalar targetClipRatio = 0.1;
-      Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);  
+     // Scalar targetClipRatio = 0.1;
+      Scalar currClipDelta = 999999.1; // calcClipParamsDelta(comParams, trackcontroller.comParams);  
+    //  report("comParams:"+ comParams  + " curr clip Params:"+ trackcontroller.comParams + " currClipDelta:"+ currClipDelta);
       for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
       // Note: here we block blending from a clip onto its self, but soon we will enable this.
         if(clipId == activeTrackSet){
@@ -246,38 +310,30 @@ operator evaluateLocomotionPoseVariables(
         }
         for(Integer j=0; j < locomotionFeet.size; j++){
           for(Integer l=0; l < locomotionMarkers[clipId][j].size; l++){
-            Scalar clipDelta = calcClipParamsDelta(locomotionMarkers[clipId][j][l].params, trackcontroller.comParams);
-            Scalar ratio = currClipDelta / clipDelta;
-          //  report(activeTrackSet + " to " + clipId + " comParams:"+ trackcontroller.comParams  + " clip Params:"+ trackcontroller.comParams + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " ratio:"+ ratio);
-            if(ratio > targetClipRatio){
+            Scalar clipDelta = calcClipParamsDelta(comParams, locomotionMarkers[clipId][j][l].params);
+            if(clipDelta < currClipDelta){
             //  report("deactivate from:"+activeTrackSet+ " to:" + clipId);
+            //  report(activeTrackSet + " to " + clipId + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " clipDelta:"+ clipDelta);
               trackcontroller.deactivate = true;
               trackcontroller.pivotFoot = j;
               trackcontroller.pivotStepId = l;
               trackcontroller.activeTrackSet = clipId;
               trackcontroller.time = 0.0;
-              targetClipRatio = ratio;
+              currClipDelta = clipDelta;
             }
           }
         }
       }
       if(trackcontroller.deactivate){
-        LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
-        LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
-        FootStepTrack targetFootStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
         for(Integer j=0; j < locomotionFeet.size; j++){
-          FootStepTrack footStepTrack = targetFootStepTracks[j];
-          FootStep currStep = footStepTrack.footSteps[marker.stepIds[j]];
-          if(marker.time > currStep.liftTime && marker.time < currStep.plantTime ){
-            plantedFeet[j] = false;
-            plantLocations[j].setNull();
-          }
+          plantedFeet[j] = true;
         }
+        state = 1;
       }
-      
     }
-          
+    
     if(!trackcontroller.deactivate && trackcontroller.time >= trackSet.timeRange.y){
+      // loop the idle clip
       trackcontroller.time -= trackSet.timeRange.y;
       trackcontroller.deactivate = true;
     }
@@ -292,20 +348,22 @@ operator evaluateLocomotionPoseVariables(
     Scalar strideLength = 0.0;
     Scalar gradient = 0.0;
     
-    // Get the com params from the previous update.
-    stepFrequency = trackcontroller.comParams[0];
-    strideLength = stepFrequency * clipSpeed;
-    
-    clipFrequencyMultiplier = (currSpeed / clipSpeed);
-    if(clipFrequencyMultiplier < minFrequency){
-      strideLengthMultiplier = clipFrequencyMultiplier / minFrequency;
-      clipFrequencyMultiplier = minFrequency;
+    if(clipSpeed > 0.1){
+      clipFrequencyMultiplier = (currSpeed / clipSpeed);
+      if(clipFrequencyMultiplier < minFrequency){
+        strideLengthMultiplier = clipFrequencyMultiplier / minFrequency;
+        clipFrequencyMultiplier = minFrequency;
+      }
     }
-    
   //  report("currSpeed:"+currSpeed + " clipSpeed:"+clipSpeed + " clipFrequencyMultiplier:"+clipFrequencyMultiplier + " strideLengthMultiplier:"+strideLengthMultiplier);
     // When turning, speed up the playback a little to stop the legs getting tangled. 
-    clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
+    clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 10.0;
+    clipFrequencyMultiplier += controllerparams.balanceXfo.tr.length() * 1.0;
     
+    Scalar maxFrequency = 2.0;
+    if(clipFrequencyMultiplier > maxFrequency){
+      clipFrequencyMultiplier = maxFrequency;
+    }
     
     /////////////////////////////////////////////////
     // Clip Evaluation
@@ -325,37 +383,27 @@ operator evaluateLocomotionPoseVariables(
     for(Integer j=0; j < com.parameterVarIds.size; j++){
       trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
     }
-    // re-retrieve the values from the evaluated track.
-    stepFrequency = trackcontroller.comParams[0];
-    clipSpeed = trackcontroller.comParams[1];
       
     /////////////////////////////////////////////////
     // Error dissapation
     if(trackcontroller.tick>0){
       if(trackcontroller.deactivate){
         poseError = prevUpdatePose.subtract(poseVariables);
-        clipActivationTime = t-timestep;
+        clipActivationTime = trackcontroller.time-timestep;
       }
-      if(clipActivationTime > 0.0){
-        // Blend off the error across the first half a stride. 
-        Scalar blendTime = (stepFrequency * clipFrequencyMultiplier * 0.3);
-        if(t - clipActivationTime < blendTime){
-          Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
-          poseVariables.addWeighted(poseError, weight);
-        }
+      
+      // Blend off the error across the first half a stride. 
+      Scalar blendTime = (clipFrequencyMultiplier * 0.3);
+      if(trackcontroller.time - clipActivationTime < blendTime){
+        Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
+        poseVariables.addWeighted(poseError, weight);
       }
     }
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
     
+
     /////////////////////////////////////////////////
-  //  report(trackcontroller.tick);
-    
-    /////////////////////////////////////////////////
-    Xfo rot90;
-    rot90.setIdentity();
-    rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
-    Vec3 upvector = Vec3(0.0, 1.0, 0.0);//controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
     
     Xfo hubComs[];
     for(Integer j=0; j < hubs.size; j++){
@@ -364,6 +412,7 @@ operator evaluateLocomotionPoseVariables(
       
       hubXfo.tr = invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.ori.rotateVector(controllerXfo.ori.rotateVector(hubXfo.tr))) -
                   invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
+      hubXfo.tr.y -= controllerparams.balanceXfo.tr.length() * 0.01;
       hubXfo.ori =  invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
       
       if(controllerparams.trail.size > 0){
@@ -410,18 +459,8 @@ operator evaluateLocomotionPoseVariables(
       poseVariables.xfoValues[hub.xfoId] = hubXfo;
     }
     
-    /////////////////////////////////////////////////
-    trackcontroller.stepIds.resize(locomotionFeet.size);
-    
-    Scalar appliedComRayDelta = 0.0;
-    Scalar appliedFeetRayDeltas[];
-    appliedFeetRayDeltas.resize(locomotionFeet.size);
-    Scalar legLiftWeight = 0.0;
-    
-    if(legs.size == 2){
-      controllerparams.lift = 99999.0;
-    }
-      
+    /////////////////////////////////////////////////      
+  
     for(Integer j=0; j < locomotionFeet.size; j++){
       LocomotionFoot foot = locomotionFeet[j];
       Limb leg = legs[foot.limbId];
@@ -461,21 +500,21 @@ operator evaluateLocomotionPoseVariables(
       
       Scalar stepRatio = (t - currStep.prevStepMidPlantTime) / (currStep.midPlantTime - currStep.prevStepMidPlantTime);
       Scalar footPlantRatio = stepRatio;
-      Vec3 nextStepPos = baseFootXfo.tr - (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footPlantRatio) - (currStep.strideLength * strideLengthMultiplier)));
+      Xfo nextStepPos = baseFootXfo;
+      nextStepPos.tr -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footPlantRatio) - (currStep.strideLength * strideLengthMultiplier)));
       
-      Scalar footLiftRatio = stepRatio - 0.5;
-      if(footLiftRatio < 0.0) footLiftRatio += 1.0;
-      Vec3 currStepPos = baseFootXfo.tr - (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
-      
+    //  Scalar footLiftRatio = stepRatio - 0.5;
+    //  if(footLiftRatio < 0.0) footLiftRatio += 1.0;
+      Xfo currStepPos = footXfo; //baseFootXfo;
+      currStepPos.tr -= upvector * (footXfo.tr - footParentSpaceXfo.tr).dot(upvector);
+      alignment.setFrom2Vectors(footXfo.ori.rotateVector(Vec3(-1.0,0.0,0.0)), upvector);
+      currStepPos.ori = alignment * currStepPos.ori;
+    //  currStepPos.tr -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
+     
     //  report(j+" footLiftRatio:"+footLiftRatio + " footPlantRatio:"+footPlantRatio);
       if(displayFootPinningDebugging){
-        Xfo plantXfo = baseFootXfo;
-        plantXfo.tr = nextStepPos;
-        debugFootMotion.drawCircle(plantXfo * rot90, 0.2, Color(1.0, 0.5, 0.5, 1.0));
-        
-        Xfo liftXfo = baseFootXfo;
-        liftXfo.tr = currStepPos;
-        debugFootMotion.drawCircle(liftXfo * rot90, 0.2, Color(0.5, 0.5, 1.0, 1.0));
+        debugFootMotion.drawCircle(nextStepPos * rot90, 0.2, Color(1.0, 0.5, 0.5, 1.0));
+      //  debugFootMotion.drawCircle(currStepPos * rot90, 0.2, Color(0.5, 0.5, 1.0, 1.0));
       }
     //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " legSwingRatio:"+legSwingRatio + " planted:"+plantedFeet[j]);
       
@@ -484,52 +523,50 @@ operator evaluateLocomotionPoseVariables(
       if(displayFootPinningDebugging){
         debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
       }
-      Vec3 footError;
+      Xfo footError;
       if(legSwingRatio > 0.0 && legSwingRatio < 1.0){
+        footError.setIdentity();
         Scalar liftLift, plantLift;
         if(plantedFeet[j]){
-        
+          Xfo liftLocation = plantLocations[j];
           if(displayFootPinningDebugging){
-            debugFootMotion.drawLine(currStepPos, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
-            
-            Xfo temp = baseFootXfo;
-            temp.tr = plantLocations[j];
-            debugFootMotion.drawCircle(temp * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
+            debugFootMotion.drawLine(currStepPos.tr, liftLocation.tr, Color(0.5, 0.5, 0.0, 1.0));
+            debugFootMotion.drawCircle(liftLocation * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
           }
           
-          BULLLETWORLD_OPENBLOCKCOMMENT
-          if(performRaycasting){
-            Scalar dist;
-            if(fireRay(bulletworld, plantLocations[j], upvector, 2.5, dist, displayRaycastingDebugging, debugRaycasting)){
-              plantLocations[j] += upvector * dist;
-            }
-          }
-          BULLLETWORLD_CLOSEBLOCKCOMMENT
-          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - currStepPos);
+          footError.tr = liftLocation.tr - currStepPos.tr;
+          footError.ori = liftLocation.ori * currStepPos.ori.inverse();
+          // Now store the error that we will blend off over the period of the step.
           plantLocations[j] = footError;
           plantedFeet[j] = false;
-          liftLift = footError.y;
+          liftLift = footError.tr.y;
           plantLift = 0.0;
         }
         else{
         
           // Interpolate the error across the step.
-          if(legSwingRatio < 0.5){
-            Scalar errorDissipation = cos(legSwingRatio * TWO_PI) * 0.5 + 0.5;
-            footError = plantLocations[j] * errorDissipation;
-            
-            liftLift = footError.y;
+          Scalar dissipationPeriod = 1.0;
+          if(legSwingRatio < dissipationPeriod){
+            Scalar errorDissipation = cos((legSwingRatio/dissipationPeriod) * PI) * 0.5 + 0.5;
+            footError.tr = plantLocations[j].tr * errorDissipation;
+            Quat identity; identity.setIdentity();
+            footError.ori = identity.sphericalLinearInterpolate(plantLocations[j].ori, errorDissipation);
+            liftLift = footError.tr.y;
           }
           /////////////////////////////////////////////////
           // Raycasting
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
-            Scalar dist;
-            if(fireRay(bulletworld, nextStepPos, upvector, 2.5, dist, displayRaycastingDebugging, debugRaycasting)){
+            Scalar dist; Vec3 normal;
+            if(fireRay(bulletworld, nextStepPos.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
               Scalar lift = dist * legSwingRatio;
-              footError.y += lift;
+              alignment.setFrom2Vectors(upvector, normal);
+            //  footError.tr.y += lift;
+              footError.tr = footError.tr.linearInterpolate(upvector * lift, legSwingRatio);
+              footError.ori = footError.ori.sphericalLinearInterpolate(alignment, legSwingRatio);
               plantLift = lift;
-              hitPositionsPrevStep[j] = nextStepPos + (upvector*dist);
+              hitPositionsPrevStep[j].tr = nextStepPos.tr + (upvector*dist);
+              hitPositionsPrevStep[j].ori = alignment;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
@@ -537,71 +574,81 @@ operator evaluateLocomotionPoseVariables(
         if(performRaycasting){
           addLift(legs, j, liftLift+plantLift, controllerparams, legLiftWeight);
         }
+        
+        footXfo.tr += footError.tr;
+        footXfo.ori = footError.ori * footXfo.ori;
       }
       else{
-        if(performRaycasting){
-          // Recalculate the lift each update even when the foot is planted,
-          // because we also transfer this lift onto the controller for the
-          // next update.
-          
-          if(displayRaycastingDebugging){
-            Xfo tmp = footXfo;
-            tmp.tr = hitPositionsPrevStep[j];
-            debugRaycasting.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
-            tmp.tr = currStepPos;
-            debugRaycasting.drawCircle(tmp * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
-            debugRaycasting.drawLine(currStepPos, hitPositionsPrevStep[j], Color(0.0, 1.0, 1.0, 1.0));
-          }
-              
-          Scalar lift = (hitPositionsPrevStep[j] - currStepPos).dot(upvector);
-          footXfo.tr += Vec3(0.0, lift, 0.0);
-          addLift(legs, j, lift, controllerparams, legLiftWeight);
-        }
+        Scalar lift;
         if(!plantedFeet[j]){
+          if(performRaycasting){
+            // Recalculate the lift each update even when the foot is planted,
+            // because we also transfer this lift onto the controller for the
+            // next update.
+            if(displayRaycastingDebugging){
+              debugRaycasting.drawCircle(currStepPos * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
+              debugRaycasting.drawLine(currStepPos.tr, hitPositionsPrevStep[j].tr, Color(0.0, 1.0, 1.0, 1.0));
+            }
+            
+            lift = (hitPositionsPrevStep[j].tr - currStepPos.tr).dot(upvector);
+            currStepPos.tr += upvector * lift;
+            currStepPos.ori = hitPositionsPrevStep[j].ori * currStepPos.ori;
+          }
           // Record the foot plant pos.
           plantLocations[j] = currStepPos;
           plantedFeet[j] = true;
+          footError.tr = upvector * lift;
+          footError.ori = hitPositionsPrevStep[j].ori;
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
-          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - currStepPos);
-          // We zero the error vector here, because the raycasting (above) handles the y axis.
-          footError.y = 0.0;
+          footError.tr = plantLocations[j].tr - currStepPos.tr;
+          footError.ori = plantLocations[j].ori * currStepPos.ori.inverse();
+        }
+        footXfo.tr += footError.tr;
+        footXfo.ori = footError.ori * footXfo.ori;
+        lift = footError.tr.dot(upvector);
+        if(performRaycasting){
+          addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
         
         if(displayFootPinningDebugging){
           debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
-          debugFootMotion.drawLine(currStepPos, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
-          
-          Xfo temp = baseFootXfo;
-          temp.tr = plantLocations[j];
-          debugFootMotion.drawCircle(temp * rot90, 0.15, Color(0.0, 1.0, 0.5, 1.0));
+          debugFootMotion.drawLine(currStepPos.tr, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
+          debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.5, Color(1.0, 0.0, 0.0, 1.0));
         }
-        
         if(t >= currStep.midPlantTime){
+          
           /////////////////////////////////////////////////
           // Clip Deactivation
-          if(animationLibrary.size > 1){
-            Scalar targetClipRatio = 0.55;
-            Integer activeTrackSet = trackcontroller.activeTrackSet;
-            Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
-            for(Integer clipId=0; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
-              // Note: here we block blending from a clip onto its self, but soon we will enable this.
-              if(clipId == activeTrackSet){
-                continue;
-              }
-              for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                Scalar clipDelta = calcClipParamsDelta(locomotionMarkers[clipId][j][l].params, trackcontroller.comParams);
-                Scalar ratio = currClipDelta / clipDelta;
-              //  report(activeTrackSet + " to " + clipId + " comParams:"+ comParams  + " clip Params:"+ trackcontroller.comParams + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " ratio:"+ ratio);
-                if(ratio > targetClipRatio){
-                //  report("deactivate from:"+activeTrackSet+ " to:" + clipId);
-                  trackcontroller.deactivate = true;
-                  trackcontroller.pivotFoot = j;
-                  trackcontroller.pivotStepId = l;
-                  trackcontroller.activeTrackSet = clipId;
-                  trackcontroller.time = t - currStep.midPlantTime;
-                  targetClipRatio = ratio;
+          if(animationLibrary.size > 1 && !trackcontroller.deactivate){
+            if(currSpeed < 0.001){
+              trackcontroller.deactivate = true;
+              trackcontroller.activeTrackSet = 0;
+              trackcontroller.time = 0.0;
+            }
+            else{
+              Integer activeTrackSet = trackcontroller.activeTrackSet;
+              Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
+          //  report("comParams:"+ comParams  + " curr clip Params:"+ trackcontroller.comParams + " currClipDelta:"+ currClipDelta);
+         
+              for(Integer clipId=1; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
+                // Note: here we block blending from a clip onto its self, but soon we will enable this.
+                if(clipId == activeTrackSet){
+                  continue;
+                }
+                for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
+                  Scalar clipDelta = calcClipParamsDelta(comParams, locomotionMarkers[clipId][j][l].params);
+                  if(clipDelta < currClipDelta){
+                  //  report("deactivate from:"+activeTrackSet+ " to:" + clipId);
+                  //  report(activeTrackSet + " to " + clipId + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " clipDelta:"+ clipDelta);
+                    trackcontroller.deactivate = true;
+                    trackcontroller.pivotFoot = j;
+                    trackcontroller.pivotStepId = l;
+                    trackcontroller.activeTrackSet = clipId;
+                    trackcontroller.time = t - currStep.midPlantTime;
+                    currClipDelta = clipDelta;
+                  }
                 }
               }
             }
@@ -615,9 +662,12 @@ operator evaluateLocomotionPoseVariables(
             trackcontroller.pivotStepId = 0;
             trackcontroller.time -= currStep.midPlantTime;
           }
-          
           if(!trackcontroller.deactivate){
             trackcontroller.stepIds[j]++;
+          }else{
+            if(trackcontroller.activeTrackSet == 0){
+              state = 0;
+            }
           }
         }
       }
@@ -625,33 +675,38 @@ operator evaluateLocomotionPoseVariables(
       if(displayRaycastingDebugging){
         debugFootMotion.drawCircle(footXfo * rot90, 0.04, Color(0.5, 1.0, 0.0, 1.0));
       }
-        
+      
       footXfo = invcontrollerXfo * footXfo;
-      // Apply the error in COM space. 
-      footXfo.tr += footError;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       
     }
-    if(performRaycasting && legLiftWeight > 0.0){
-    
-      if(legs.size != 2){
-        controllerparams.lift /= legLiftWeight;
-      }
-      
-      if(displayRaycastingDebugging){
-        debugRaycasting.drawLine(controllerXfo.tr, controllerXfo.tr + (upvector * controllerparams.lift), Color(0.0, 1.0, 1.0, 1.0));
-      }
-              
-      // Smooth out the com motion by scalaing the lift parameter.
-      // Slightly hackey. The applied lift could be calculated better instead of this.
-      controllerparams.lift *= 0.4;
-      // Note: this is highly illegal. We are copying data back to one of our dependencies.
-      // This will be eliminated with nested sub-graphs.
-      controllerparamsSet[index] = controllerparams;
-    }
   }
-  trackcontroller.tick++;  
+  if(performRaycasting && legLiftWeight > 0.0){
+  
+    if(legs.size != 2){
+      controllerparams.lift /= legLiftWeight;
+    }
+    
+    if(displayRaycastingDebugging){
+      debugRaycasting.drawLine(controllerXfo.tr, controllerXfo.tr + (upvector * controllerparams.lift), Color(0.0, 1.0, 1.0, 1.0));
+    }
+            
+    // Smooth out the com motion by scalaing the lift parameter.
+    // Slightly hackey. The applied lift could be calculated better instead of this.
+    controllerparams.lift *= 0.4;
+    // Note: this is highly illegal. We are copying data back to one of our dependencies.
+    // This will be eliminated with nested sub-graphs.
+    controllerparamsSet[index] = controllerparams;
+  }
+  
+    
+  // Store the final model space transforms of the feet.
+  for(Integer j=0; j < locomotionFeet.size; j++){
+    Limb leg = legs[locomotionFeet[j].limbId];
+    footXfos[j] = poseVariables.xfoValues[leg.ikGoalXfoId];
+  }
+  trackcontroller.tick++;
 }
 
 

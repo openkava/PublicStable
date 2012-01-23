@@ -4,7 +4,8 @@
 
 
 
-FABRIC.Characters.COM = function(xfoId, parameterVarIds) {
+FABRIC.RT.COM = function(boneId, xfoId, parameterVarIds) {
+  this.boneId = boneId != undefined ? boneId : -1;
   this.xfoId = xfoId != undefined ? xfoId : -1;
   this.parameterVarIds = parameterVarIds != undefined ? parameterVarIds : [];
 };
@@ -12,10 +13,11 @@ FABRIC.Characters.COM = function(xfoId, parameterVarIds) {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('COM', {
     members: {
+      boneId: 'Integer',
       xfoId: 'Integer',
       parameterVarIds: 'Integer[]'
     },
-    constructor: FABRIC.Characters.COM
+    constructor: FABRIC.RT.COM
   });
 });
 
@@ -24,28 +26,63 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
   constructSolver: function(options, scene) {
     
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      solver = {};
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
+      
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+    var boneId = solver.generateBoneMapping( { bone: options.bone }, ['bone']);
 
     var comXfoId = rigNode.addVariable('Xfo');
-    // stepFrequency
-    var comParam0VarId = rigNode.addVariable('Scalar');
-    // speed
-    var comParam1VarId = rigNode.addVariable('Scalar');
-    // gradient
-    var comParam2VarId = rigNode.addVariable('Scalar');
-    // direction
-    var comParam3VarId = rigNode.addVariable('Scalar');
+    var comParam0VarId = rigNode.addVariable('Scalar'); // stepFrequency
+    var comParam1VarId = rigNode.addVariable('Scalar'); // speed
+    var comParam2VarId = rigNode.addVariable('Scalar'); // gradient
+    var comParam3VarId = rigNode.addVariable('Scalar'); // direction
     
-    var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
+    var com = new FABRIC.RT.COM(boneId.bone, comXfoId, [
+      comParam0VarId,
+      comParam1VarId,
+      comParam2VarId,
+      comParam3VarId
+    ]);
     skeletonNode.addMember('com', 'COM', com);
+      
+    rigNode.addSolverOperator({
+          operatorName: 'solveCOM',
+          srcCode: 'operator solveCOM( io Xfo pose[], io Bone bones[], io COM com, Size index, io PoseVariables poseVariableSlices<> ) {\n\
+  pose[com.boneId] = poseVariableSlices[index].xfoValues[com.xfoId];\n\
+}',
+          entryFunctionName: 'solveCOM',
+          parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.com',
+        'self.index',
+        'variables.poseVariables<>'
+          ]
+        });
+    
+    
+    solver.invert = function(variablesNode){
+      variablesNode.getDGNode().bindings.append(scene.constructOperator({
+          operatorName: 'invertCOM',
+          srcCode: 'operator invertCOM( io Xfo pose[], io Bone bones[], io COM com, io PoseVariables poseVariables ) {\n\
+  poseVariables.xfoValues[com.xfoId] = pose[com.boneId];\n\
+}',
+          entryFunctionName: 'invertCOM',
+          parameterLayout: [
+            'sourcerig.pose',
+            'skeleton.bones',
+            'skeleton.com',
+            'self.poseVariables'
+          ]
+        }));
+    }
     
     return solver; 
   }
 });
 
 
-FABRIC.Characters.LocomotionFoot = function(limbId, stepTimeVarId) {
+FABRIC.RT.LocomotionFoot = function(limbId, stepTimeVarId) {
   this.limbId = limbId != undefined ? limbId : -1;
   this.stepTimeVarId = stepTimeVarId != undefined ? stepTimeVarId : -1;
 };
@@ -56,11 +93,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       limbId: 'Integer',
       stepTimeVarId: 'Integer'
     },
-    constructor: FABRIC.Characters.LocomotionFoot
+    constructor: FABRIC.RT.LocomotionFoot
   });
 });
-
-
 
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
   constructSolver: function(options, scene) {
@@ -71,11 +106,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
 
     var limbs = skeletonNode.getData('legs');
     var locomotionFeet = [];
-    var stepTimeVarIds = [];
     for(var i=0; i<limbs.length; i++){
       var stepTimeVarId = rigNode.addVariable('Scalar');
-      locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
-      stepTimeVarIds.push(stepTimeVarId);
+      locomotionFeet.push(new FABRIC.RT.LocomotionFoot(i, stepTimeVarId));
     }
     skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
     
@@ -177,10 +210,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
       paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
       
-      
-      paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+    //  paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
       paramsdgnode.addMember('poseVariables', 'PoseVariables', rigNode.getVariables());
-      dgnode.addMember('bindings', 'KeyframeTrackBindings');
       
       dgnode.addMember('debugGeometry', 'DebugGeometry' );
       debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
@@ -232,13 +263,32 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       animationLibraryNode.pub.preProcessTracks = function(){
         dgnode.evaluate();
       }
-      
     }
+    
+    var parentWriteData = animationLibraryNode.writeData;
+    var parentReadData = animationLibraryNode.readData;
+    animationLibraryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      nodeData.markers = [];
+      nodeData.footStepTracks = [];
+      for(var i=0; i<nodeData.numTracks; i++){
+        nodeData.markers.push(dgnode.getData('markers', i));
+        nodeData.footStepTracks.push(dgnode.getData('footStepTracks', i));
+      }
+    };
+    animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      for(var i=0; i<nodeData.numTracks; i++){
+        dgnode.setData('markers', i, nodeData.markers[i]);
+        dgnode.setData('footStepTracks', i, nodeData.footStepTracks[i]);
+      }
+    };
+    
     return animationLibraryNode;
   }});
 
 
-FABRIC.Characters.CharacterControllerParams = function() {
+FABRIC.RT.CharacterControllerParams = function() {
   this.displacement = new FABRIC.RT.Xfo();
   this.displacementDir = new FABRIC.RT.Vec3(0,0,1);
   this.trail = [];
@@ -261,7 +311,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       lift: 'Scalar',
       state: 'Integer'
     },
-    constructor: FABRIC.Characters.CharacterControllerParams
+    constructor: FABRIC.RT.CharacterControllerParams
   });
 });
 
@@ -290,7 +340,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     var characterControllerNode = scene.constructNode('CharacterController', options);
     var dgnode = characterControllerNode.getDGNode();
     
-    var controllerparams = new FABRIC.Characters.CharacterControllerParams();
+    var controllerparams = new FABRIC.RT.CharacterControllerParams();
     if(options.numTrailSegments > 0){
       var trailDir = options.controllerXfo.ori.rotateVector(new FABRIC.RT.Vec3(0,0,-1));
       var trail = [];
@@ -527,11 +577,13 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       var bulletWorldNode = scene.getPrivateInterface(options.bulletWorldNode);
       dgnode.setDependency(bulletWorldNode.getDGNode(), 'bulletworld');
     }
+    dgnode.addMember('state', 'Integer');
     dgnode.addMember('trackcontroller', 'TrackSetController');
     dgnode.addMember('plantedFeet', 'Boolean[]');
-    dgnode.addMember('plantLocations', 'Vec3[]');
-    dgnode.addMember('hitPositions', 'Vec3[]');
-    dgnode.addMember('hitPositionsPrevStep', 'Vec3[]');
+    dgnode.addMember('plantLocations', 'Xfo[]');
+    dgnode.addMember('hitPositions', 'Xfo[]');
+    dgnode.addMember('hitPositionsPrevStep', 'Xfo[]');
+    dgnode.addMember('footXfos', 'Xfo[]');
     
     
     var poseError = locomotionVariables.getVariables();
@@ -582,11 +634,13 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'charactercontroller.controllerparams<>',
         'charactercontroller.comParams<>',
         
+        'self.state',
         'self.trackcontroller',
         'self.plantedFeet',
         'self.plantLocations',
         'self.hitPositions',
         'self.hitPositionsPrevStep',
+        'self.footXfos',
         
         'self.poseVariables',
         'self.prevUpdatePose',
@@ -613,33 +667,20 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       }
     }));
     
-    locomotionVariables.pub.setCharacterController = function(characterController){
-      if (!characterController.isTypeOf('LocomotionCharacterController')) {
-        throw ('Incorrect type assignment. Must assign a LocomotionCharacterController');
-      }
-      characterController = scene.getPrivateInterface(characterController);
-      dgnode.setDependency(characterController.getDGNode(), 'charactercontroller');
-    };
+    locomotionVariables.addReferenceInterface('CharacterController', 'LocomotionCharacterController',
+      function(nodePrivate){
+        dgnode.setDependency(characterController.getDGNode(), 'charactercontroller');
+      });
     
-    locomotionVariables.pub.setAnimationLibrary = function(animationLibraryNode, keyframeTrackBindings){
-      if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
-      }
-      animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
-      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-    };
+    locomotionVariables.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
+      function(nodePrivate){
+        dgnode.setDependency(nodePrivate.getDGNode(), 'animationlibrary');
+      });
     
-    var skeletonNode;
-    locomotionVariables.pub.setSkeletonNode = function(node) {
-      if (!node.isTypeOf('CharacterSkeleton')) {
-        throw ('Incorrect type assignment. Must assign a CharacterSkeleton');
-      }
-      skeletonNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
-    }
-    locomotionVariables.pub.getSkeletonNode = function() {
-      return scene.getPublicInterface(skeletonNode);
-    };
+    locomotionVariables.addReferenceInterface('Skeleton', 'CharacterSkeleton',
+      function(nodePrivate){
+      dgnode.setDependency(nodePrivate.getDGNode(), 'skeleton');
+    });
     
     locomotionVariables.pub.setMatchCountNode = function(node){
       dgnode.bindings.append(scene.constructOperator({

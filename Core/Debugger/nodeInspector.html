@@ -110,6 +110,12 @@ $(document).ready(function() {
   if ($("#nodeDataTable").width() > 640){
     $("#dataContainer").width( $("#nodeDataTable").width() );
   }
+  
+  var closeWindow = function(){
+    window.opener.removeEventListener('unload', closeWindow, true);
+    window.close();
+  }
+  window.opener.addEventListener('unload', closeWindow, true);
 
 });
 

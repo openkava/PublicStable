@@ -70,12 +70,12 @@ $(document).ready(function() {
   });
   
   // create an image node
-  var image = scene.constructNode('Image', {
+  var image = scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/tomatoes_960_640.png'
   });
   
   // set the image as a background for the viewport
-  viewport.setBackgroundTextureImage(image);
+  viewport.setBackgroundTextureNode(image);
   
 
   // Wait for all the operators to be compiled. 

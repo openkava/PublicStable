@@ -7,7 +7,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
   var draggable = options.draggable!=undefined ? options.draggable : true;
   var zoomable = options.zoomable!=undefined ? options.zoomable : true;
   var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 1);
-  trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
+  var trackId =  options.trackId!=undefined ? options.trackId : 0;
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -22,8 +22,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
   gradientRect.attr('stroke', "black");
   gradientRect.attr('stroke-width', 2);
 
-  var tracksData = colorKeyTrackLibraryNode.getTrackSet(trackSetId);
-  var trackData = tracksData.tracks[0];
+  var trackData = colorKeyTrackLibraryNode.getTrack(trackId);
   var selectedKeyIndex = -1;
   var addKey = function(index, param, color){
     var gradientKey = gradient.addKey(param, color);
@@ -51,7 +50,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
           var time = evt.localPos.x / windowWidth;
           gradientKey.setParam(time);
           trackData.keys[index].time = time;
-          colorKeyTrackLibraryNode.setTrackSet(tracksData);
+          colorKeyTrackLibraryNode.setTrack(trackData, trackId);
           gradientWidget.fireEvent('gradientchanged');
         });
     
@@ -66,7 +65,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
       gradientKeySetColor(col);
       keyRect.attr('fill', col.toHex());
       trackData.keys[index].value = col;
-      colorKeyTrackLibraryNode.setTrackSet(tracksData);
+      colorKeyTrackLibraryNode.setTrack(trackData);
       
       gradientWidget.fireEvent('gradientchanged');
     }
@@ -104,7 +103,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
       newKey = FABRIC.RT.colorKeyframe(newKeyT, trackData.keys[trackData.keys.length-1].value);
       trackData.keys.push(newKey);
     }
-    colorKeyTrackLibraryNode.setTrackSet(tracksData);
+    colorKeyTrackLibraryNode.setTrack(trackData);
     displayGradient();
     
     gradientWidget.fireEvent('keyclicked', {
@@ -117,7 +116,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
     if(evt.keyIdentifier == "U+007F"){
       if(selectedKeyIndex >= 0){
         trackData.keys.splice(selectedKeyIndex, 1);
-        colorKeyTrackLibraryNode.setTrackSet(tracksData);
+        colorKeyTrackLibraryNode.setTrack(trackData);
         displayGradient();
         gradientWidget.fireEvent('gradientchanged');
       }
@@ -132,8 +131,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
 
   var gradientWidget = {
     redraw: function(){
-      tracksData = colorKeyTrackLibraryNode.getTrackSet(trackSetId);
-      trackData = tracksData.tracks[0];
+      trackData = colorKeyTrackLibraryNode.getTrack(trackId);
       displayGradient();
     },
     addEventListener: function(type, fn) {

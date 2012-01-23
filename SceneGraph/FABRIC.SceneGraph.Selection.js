@@ -248,7 +248,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
 
     /////
     // Propagate the manipulation to all selected members.
-    var dragStartGlobalXfo = undefined, dragStartSelGlobalXfos = undefined;
+    var dragStartGlobalXfo, dragStartSelGlobalXfos;
     var dragStartFn = function(evt) {
       dragStartGlobalXfo = groupTransform.pub.getGlobalXfo();
       var selection = selectionManager.getSelection();
@@ -286,12 +286,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       }
     }
     
-    // store the original setter
-    groupTransform.originalSetGlobalXfo = groupTransform.pub.setGlobalXfo;
-    
     groupTransform.pub.setGlobalXfo = function(xfo){
-      groupTransform.originalSetGlobalXfo(xfo);
-
       var xform = xfo.multiply(dragStartGlobalXfo.inverse());
       var selection = selectionManager.getSelection();
       for(var i=0; i<selection.length; i++){
@@ -299,6 +294,58 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       }
       selectionManager.fireEvent('groupTransformChanged',{selection: selection});
     };
+    
+    groupTransform.getDGNode().addMember('xfoOffsets','Xfo[]');
+    groupTransform.addMemberInterface(groupTransform.getDGNode(), 'xfoOffsets', true);
+
+   // Create a list of known operators for each selection count
+   var operatorAssigned = false;
+   var generatedOperator;
+   var generateTransformOperator = function(){
+    
+    if(generatedOperator)
+      return generatedOperator;
+    
+     var parameterLayout = [
+       'self.globalXfo',
+       'self.xfoOffsets',
+       'minX.globalXfo',
+       'maxX.globalXfo',
+       'minY.globalXfo',
+       'maxY.globalXfo',
+       'minZ.globalXfo',
+       'maxZ.globalXfo'
+     ]
+     
+     var srcCodeHeader = 'use Xfo, Mat44;\noperator selMgrCalcAverageXfo( \n  io Xfo xfo';
+     srcCodeHeader += ',\n  io Xfo xfoOffsets[]';
+     srcCodeHeader += ',\n  io Xfo minX';
+     srcCodeHeader += ',\n  io Xfo maxX';
+     srcCodeHeader += ',\n  io Xfo minY';
+     srcCodeHeader += ',\n  io Xfo maxY';
+     srcCodeHeader += ',\n  io Xfo minZ';
+     srcCodeHeader += ',\n  io Xfo maxZ\n) {\n';
+     var srcCodeBody = '  xfo.setIdentity();\n  Scalar weight = 1.0/6.0;\n';
+     srcCodeBody += '  xfo.tr += (minX * xfoOffsets[0]).tr * weight;\n'
+     srcCodeBody += '  xfo.tr += (maxX * xfoOffsets[1]).tr * weight;\n'
+     srcCodeBody += '  xfo.tr += (minY * xfoOffsets[2]).tr * weight;\n'
+     srcCodeBody += '  xfo.tr += (maxY * xfoOffsets[3]).tr * weight;\n'
+     srcCodeBody += '  xfo.tr += (minZ * xfoOffsets[4]).tr * weight;\n'
+     srcCodeBody += '  xfo.tr += (maxZ * xfoOffsets[5]).tr * weight;\n'
+     srcCodeBody += '  xfo.ori = minX.ori;\n'
+     srcCodeBody += '  \n}';
+     
+     var operatorName = 'selMgrCalcAverageXfo';
+     generatedOperator = scene.constructOperator( {
+         operatorName: operatorName,
+         srcCode: (srcCodeHeader + srcCodeBody),
+         parameterLayout: parameterLayout,
+         entryFunctionName: 'selMgrCalcAverageXfo',
+         async: false
+       });
+     
+     return generatedOperator;
+   }
 
     // retrieve the list of manipulators    
     var manipulators = options.manipulators;
@@ -314,21 +361,63 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
 
     var prevSelectionCount = 0;
     selectionManager.addEventListener('selectionChanged', function(evt){
+      if(operatorAssigned){
+        groupTransform.getDGNode().bindings.remove(0);
+        operatorAssigned = false;
+      }
       if(evt.selection.length==0){
         toggleManipulatorsDisplay(false);
       }
       else{
         toggleManipulatorsDisplay(true);
-
-        var weight = 1.0 / evt.selection.length;
-        var xfo = new FABRIC.RT.Xfo();
-        xfo.ori = evt.selection[0].getTransformNode()[options.transformGetter]().ori;
-        for(var i=0; i<evt.selection.length; i++){
-          var selXfo = evt.selection[i].getTransformNode()[options.transformGetter]();
-          xfo.tr = xfo.tr.add(selXfo.tr.multiplyScalar(weight));
+        
+        var minX = scene.getPrivateInterface(evt.selection[0].getTransformNode());
+        var maxX = scene.getPrivateInterface(evt.selection[0].getTransformNode());
+        var minY = scene.getPrivateInterface(evt.selection[0].getTransformNode());
+        var maxY = scene.getPrivateInterface(evt.selection[0].getTransformNode());
+        var minZ = scene.getPrivateInterface(evt.selection[0].getTransformNode());
+        var maxZ = scene.getPrivateInterface(evt.selection[0].getTransformNode());
+        for(var i=1;i<evt.selection.length;i++) {
+          var selectionXfo = evt.selection[i].getTransformNode()[options.transformGetter]();
+          if(selectionXfo.tr.x < minX.pub[options.transformGetter]().tr.x)
+            minX = scene.getPrivateInterface(evt.selection[i].getTransformNode());
+          if(selectionXfo.tr.x > maxX.pub[options.transformGetter]().tr.x)
+            maxX = scene.getPrivateInterface(evt.selection[i].getTransformNode());
+          if(selectionXfo.tr.y < minY.pub[options.transformGetter]().tr.y)
+            minY = scene.getPrivateInterface(evt.selection[i].getTransformNode());
+          if(selectionXfo.tr.y > maxY.pub[options.transformGetter]().tr.y)
+            maxY = scene.getPrivateInterface(evt.selection[i].getTransformNode());
+          if(selectionXfo.tr.z < minZ.pub[options.transformGetter]().tr.z)
+            minZ = scene.getPrivateInterface(evt.selection[i].getTransformNode());
+          if(selectionXfo.tr.z > maxZ.pub[options.transformGetter]().tr.z)
+            maxZ = scene.getPrivateInterface(evt.selection[i].getTransformNode());
         }
         
-        groupTransform.originalSetGlobalXfo(xfo);
+        // compute the offsets
+        var offsets = [];
+        var centroid = new FABRIC.RT.Xfo();
+        centroid.ori = minX.pub[options.transformGetter]().ori;
+        centroid.tr.x = (minX.pub[options.transformGetter]().tr.x + maxX.pub[options.transformGetter]().tr.x) * 0.5;
+        centroid.tr.y = (minY.pub[options.transformGetter]().tr.y + maxY.pub[options.transformGetter]().tr.y) * 0.5;
+        centroid.tr.z = (minZ.pub[options.transformGetter]().tr.z + maxZ.pub[options.transformGetter]().tr.z) * 0.5;
+        offsets.push(minX.pub[options.transformGetter]().inverse().multiply(centroid));
+        offsets.push(maxX.pub[options.transformGetter]().inverse().multiply(centroid));
+        offsets.push(minY.pub[options.transformGetter]().inverse().multiply(centroid));
+        offsets.push(maxY.pub[options.transformGetter]().inverse().multiply(centroid));
+        offsets.push(minZ.pub[options.transformGetter]().inverse().multiply(centroid));
+        offsets.push(maxZ.pub[options.transformGetter]().inverse().multiply(centroid));
+        
+        groupTransform.pub.setXfoOffsets(offsets);
+        
+        groupTransform.getDGNode().setDependency(minX.getDGNode(), 'minX');
+        groupTransform.getDGNode().setDependency(maxX.getDGNode(), 'maxX');
+        groupTransform.getDGNode().setDependency(minY.getDGNode(), 'minY');
+        groupTransform.getDGNode().setDependency(maxY.getDGNode(), 'maxY');
+        groupTransform.getDGNode().setDependency(minZ.getDGNode(), 'minZ');
+        groupTransform.getDGNode().setDependency(maxZ.getDGNode(), 'maxZ');
+        
+        groupTransform.getDGNode().bindings.append(generateTransformOperator());
+        operatorAssigned = true;
 
         prevSelectionCount = evt.selection.length;
       }
@@ -414,7 +503,7 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
           selectableInstance.pub.removeMaterialNode( mainMaterialNode );
           removedMainMaterial = true;
         }
-        selectableInstance.pub.setMaterialNode( options.highlightMaterial );
+        selectableInstance.pub.addMaterialNode( options.highlightMaterial );
         highlighted = true;
       }
     });
@@ -422,7 +511,7 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
       if(highlighted){
         selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
         if(removedMainMaterial) {
-          selectableInstance.pub.setMaterialNode( mainMaterialNode );
+          selectableInstance.pub.addMaterialNode( mainMaterialNode );
           removedMainMaterial = undefined;
         }
         highlighted = false;
@@ -438,13 +527,13 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
         selectableInstance.pub.removeMaterialNode( mainMaterialNode );
         removedMainMaterial = true;
       }
-      selectableInstance.pub.setMaterialNode( options.selectMaterial );
+      selectableInstance.pub.addMaterialNode( options.selectMaterial );
       selected = true;
     });
     selectableInstance.pub.addEventListener('deselected', function(evt) {
       selectableInstance.pub.removeMaterialNode( options.selectMaterial );
       if(removedMainMaterial) {
-        selectableInstance.pub.setMaterialNode( mainMaterialNode );
+        selectableInstance.pub.addMaterialNode( mainMaterialNode );
         removedMainMaterial = undefined;
       }
       selected = false;

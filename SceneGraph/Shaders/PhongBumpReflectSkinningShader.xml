@@ -21,7 +21,9 @@
 		<uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
 		<uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 		
-		<uniform name="u_skinningMatrices" constant="skinningMatrices" type="Mat44" owner="characterInstance"/>
+		<uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
+		<uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar" owner="geometry"/>
+		
 	</uniforms>
 	
 	<attributes>
@@ -44,10 +46,6 @@
 		<texture binding="normalTexture"/>
 	</textures>
 	
-	<preprocessordirectives>
-		<preprocessordirective name="NUM_BONES" binding="numBones"/>
-	</preprocessordirectives>
-	
 	<vertexshader>
 		<source>
 			<![CDATA[
@@ -57,7 +55,8 @@
 			uniform vec4 u_lightPosition;
 			
 			// This is an array of all the bones in a skeleton.
-			uniform mat4 u_skinningMatrices[NUM_BONES];
+			uniform sampler2D u_samplerSkinningMatrices;
+			uniform float u_transformTextureHeight;
 			
 			attribute vec4 a_position;
 			attribute vec4 a_texCoord;
@@ -77,6 +76,7 @@
 			
 			]]>
 		</source>
+		<include file="matrices.txt"/>
 		<include file="skinning.txt"/>
 		<source>
 			<![CDATA[
@@ -84,7 +84,7 @@
 			void main()
 			{
 				gl_TexCoord[0].xy = a_texCoord.xy;
-				skinPositionsNormalsAndTangents();
+				skinPositionsNormalsAndTangents(u_samplerSkinningMatrices, u_transformTextureHeight);
 			}
 			
 			

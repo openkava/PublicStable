@@ -69,7 +69,7 @@ $(document).ready(function() {
     rayIntersectionThreshold: 0.8
   });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -110,7 +110,13 @@ $(document).ready(function() {
         lightNode: light
       })
     });
-  scene.constructNode('3AxisTranslationManipulator', { targetNode: cube2Draw });
+  scene.constructNode('3AxisTranslationManipulator', {
+    targetNode: cube2Draw,
+    size: 10,
+    linearTranslationManipulators: true,
+    planarTranslationManipulators: true,
+    screenTranslationManipulators: true
+  });
 
   // Screen Space Translation
   var cube2Draw = scene.constructNode('Instance', {

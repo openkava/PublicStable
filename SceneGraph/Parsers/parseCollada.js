@@ -10,6 +10,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
   
+  // Load animations in the collada file into an animation library using an existing rig.
+  if(options.loadAnimationUsingRig == undefined) options.loadAnimationUsingRig = false;
+  if(options.loadPoseOntoRig == undefined) options.loadPoseOntoRig = false;
+  if(options.constructRigFromHierarchy == undefined) options.constructRigFromHierarchy = false;
+  
+  // options.rigNode;
+  // options.rigHierarchyRootNodeName;
+  if(options.flipUVs == undefined) options.flipUVs = true;
+  var animationLibrary = options.animationLibrary;
+  var controllerNode = options.controllerNode;
+  
   
 
   var assetNodes = {};
@@ -231,6 +242,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   
   var parsePolygons = function(node){
     var polygons = {
+      material: node.getAttribute('material'),
       count: parseInt(node.getAttribute('count')),
       inputs: {},
       indices: []
@@ -524,10 +536,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         }
         case 'matrix':
           nodeData.xfo.setFromMat44(parseMatrix(child));
-          if(nodeData.xfo.sc.length() > 1.01 && options.logWarnings){
-            console.warn("collada file contains non uniform scaling in its matrices.");
-          }
-          nodeData.xfo.sc.set(1,1,1);
           break;
         case 'instance_geometry':
           nodeData.instance_geometry = parseInstanceGeometry(child);
@@ -650,13 +658,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   
   //////////////////////////////////////////////////////////////////////////////
   // SceneGraph Construction
-  /*
-  var defaultLight = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var defaultMaterial = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
-      lightNode: defaultLight
-    });
-  */
   // This method returns an array of values from the given source data. 
   var getSourceData = function(source, id){
     var accessor = source.technique.accessor;
@@ -676,6 +677,22 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       },
       vertexRemapping: []
     };
+    var constructUVs = function(args){
+      if(options.flipUVs){
+        return new FABRIC.RT.Vec2(args[0],1.0-args[1]);
+      }else{
+        return new FABRIC.RT.Vec2(args[0],args[1]);
+      }
+    }
+    var constructVec3 = function(args){
+      return new FABRIC.RT.Vec3(args[0],args[1],args[2]);
+    }
+    var constructScaledVec3 = function(args){
+      return new FABRIC.RT.Vec3(args[0]*options.scaleFactor,args[1]*options.scaleFactor,args[2]*options.scaleFactor);
+    }
+    var constructColor = function(args){
+      return new FABRIC.RT.Color(args[0],args[1],args[2],args[3]);
+    }
     for(var semantic in trianglesData.inputs){
       var input = trianglesData.inputs[semantic];
       var sourceName = input.source.slice(1);
@@ -683,17 +700,14 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         case 'VERTEX':
           meshTriangleSourceData.positions = {
             source: meshData.sources[meshData.vertices.source.slice(1)],
-            constructorFn: FABRIC.RT.Vec3
+            constructorFn: constructScaledVec3
           };
-          for(var i=0; i< meshTriangleSourceData.positions.source.data.length; i++){
-            meshTriangleSourceData.positions.source.data[i] *= options.scaleFactor;
-          }
           processedData.geometryData.positions = [];
           break;
         case 'NORMAL':
           meshTriangleSourceData.normals = {
             source: meshData.sources[sourceName],
-            constructorFn: FABRIC.RT.Vec3
+            constructorFn: constructVec3
           };
           processedData.geometryData.normals = [];
           break;
@@ -701,12 +715,19 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var uvset = 'uvs' + numUVsets;
           meshTriangleSourceData[uvset] = {
             source: meshData.sources[sourceName],
-            constructorFn: FABRIC.RT.Vec2
+            constructorFn: constructUVs
           };
           processedData.geometryData[uvset] = [];
           processedData.constructionOptions.tangentsFromUV = numUVsets;
           numUVsets++;
           processedData.constructionOptions.uvSets = numUVsets;
+          break;
+        case 'COLOR':
+          meshTriangleSourceData.vertexColors = {
+            source: meshData.sources[sourceName],
+            constructorFn: constructColor
+          };
+          processedData.geometryData.vertexColors = [];
           break;
         default:
           throw "Error: unhandled semantic '" + semantic +"'";
@@ -732,7 +753,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             var elementid = attributeDataIndices[vattrid];
             var sourceData = getSourceData(meshTriangleSourceData[inputid].source, elementid);
             var constructorFn = meshTriangleSourceData[inputid].constructorFn;
-            processedData.geometryData[inputid].push(makeRT(constructorFn, sourceData));
+            processedData.geometryData[inputid].push(constructorFn(sourceData));
             vattrid++;
           }
           processedData.geometryData.indices.push(vcount);
@@ -751,37 +772,35 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return processedData;
   }
   
-  var constructGeometry = function(geometryData){
-    var name = geometryData.name;
-    var geometryNode;
+  var constructGeometries = function(geometryData){
+    var geometryNodes = [];
     if(geometryData.mesh){
       var meshData = geometryData.mesh;
+      var constructGeometryNode = function(polygons){
+        var name = geometryData.name;
+        if(polygons.material != null){
+          name += polygons.material;
+        }
+        var processedData = processGeometryData(meshData, polygons);
+        processedData.constructionOptions.name = name;
+        var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
+        if(processedData.geometryData.vertexColors){
+          geometryNode.addVertexAttributeValue('vertexColors', 'Color', {
+            genVBO:true
+          });
+        }
+        geometryNode.loadGeometryData(processedData.geometryData);
+        assetNodes[name] = geometryNode;
+        geometryNodes.push(geometryNode);
+      }
       if(meshData.triangles){
         for(var i=0; i<meshData.triangles.length; i++){
-          if(i>0){
-            alert("This collada importer only supports one triangle mesh per instance.");
-            throw "This collada importer only supports one triangle mesh per instance."
-          }
-          
-          var processedData = processGeometryData(meshData, meshData.triangles[i]);
-          processedData.constructionOptions.name = name+i
-          var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
-          geometryNode.loadGeometryData(processedData.geometryData);
-          assetNodes[processedData.constructionOptions.name] = geometryNode;
+          constructGeometryNode(meshData.triangles[i]);
         }
       }
       if(meshData.polygons){
         for(var i=0; i<meshData.polygons.length; i++){
-          if(i>0){
-            alert("This collada importer only supports one polygon mesh per instance.");
-            throw "This collada importer only supports one polygon mesh per instance."
-          }
-          
-          var processedData = processGeometryData(meshData, meshData.polygons[i]);
-          processedData.constructionOptions.name = name+i
-          var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
-          geometryNode.loadGeometryData(processedData.geometryData);
-          assetNodes[processedData.constructionOptions.name] = geometryNode;
+          constructGeometryNode(meshData.polygons[i]);
         }
       }
     }
@@ -789,17 +808,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       alert("This collada importer only supports polygon and triangle meshes.");
       throw "This collada importer only supports polygon and triangle meshes."
     }
-    return geometryNode;
+    return geometryNodes;
   }
 
-  var libraryAnimations = options.animationLibrary;
-  var controllerNode = options.controllerNode;
   
   var loadRigAnimation = function(rigNode){
     if(colladaData.libraryAnimations){
-      if(!libraryAnimations){
-        libraryAnimations = scene.constructNode('LinearKeyAnimationLibrary');
-        assetNodes[libraryAnimations.getName()] = libraryAnimations;
+      if(!animationLibrary){
+        animationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
+        assetNodes[animationLibrary.getName()] = animationLibrary;
       }
       if(!controllerNode){
         controllerNode = scene.constructNode('AnimationController');
@@ -837,9 +854,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var inputSource = animation.sources[sampler.INPUT.source.slice(1)];
           var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
           var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
-          var scaleFactor = 1.0;
           
-          var generateKeyframeTrack = function(channelName, keytimes, keyvalues){
+          var generateKeyframeTrack = function(channelName, keytimes, keyvalues, scaleFactor){
             var color;
             switch (channelName.substr(channelName.lastIndexOf('.')+1)) {
             case 'x': color = FABRIC.RT.rgb(1, 0, 0);        break;
@@ -852,7 +868,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             
             // now let's reformat the linear data
             var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
-            var key = FABRIC.RT.linearKeyframe;
+            var key = function(t, v){ return new FABRIC.RT.LinearKeyframe(t, v); }
             for (var j = 0; j < keytimes.length; j++) {
               track.keys.push(key(keytimes[j], keyvalues[j] * scaleFactor));
             }
@@ -898,20 +914,19 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
               ori_z_keyvalues.push(xfo.ori.v.z);
               ori_w_keyvalues.push(xfo.ori.w);
             }
-            scaleFactor = options.scaleFactor;
-            generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues);
-            generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues);
-            generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues);
+            generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues, options.scaleFactor);
+            generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues, options.scaleFactor);
+            generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues, options.scaleFactor);
             
-            scaleFactor = 1.0;
-            generateKeyframeTrack('ori.v.x', inputSource.data, ori_x_keyvalues);
-            generateKeyframeTrack('ori.v.y', inputSource.data, ori_y_keyvalues);
-            generateKeyframeTrack('ori.v.z', inputSource.data, ori_z_keyvalues);
-            generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues);
+            generateKeyframeTrack('ori.v.x', inputSource.data, ori_x_keyvalues, 1.0);
+            generateKeyframeTrack('ori.v.y', inputSource.data, ori_y_keyvalues, 1.0);
+            generateKeyframeTrack('ori.v.z', inputSource.data, ori_z_keyvalues, 1.0);
+            generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues, 1.0);
             
             continue;
           }
         
+          var scaleFactor = 1.0;
           // remap the target names
           switch(channelName){
           case 'rotation_x.ANGLE':
@@ -952,18 +967,18 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             break;
           }
           
-          generateKeyframeTrack(channelName, inputSource.data, outputSource.data);
+          generateKeyframeTrack(channelName, inputSource.data, outputSource.data, scaleFactor);
         }
         trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
       }
       
-      var trackSetID = libraryAnimations.addTrackSet(trackSet);
+      var trackSetID = animationLibrary.addTrackSet(trackSet, trackBindings);
       var variablesNode = rigNode.getVariablesNode();
       if(!variablesNode){
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
+      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID);
       
     }
   }
@@ -981,6 +996,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     
     // recurse on the hierarchy
     var boneIndicesMap = {};
+    var globalXfos = [];
     var bones = [];
     var traverseChildren = function(nodeData, parentName) {
       var boneOptions = { name: nodeData.name, parent: -1, length: 0 };
@@ -991,11 +1007,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       boneOptions.referenceLocalPose = nodeData.xfo;
       if (boneOptions.parent !== -1) {
         boneOptions.referencePose = bones[boneOptions.parent].referencePose.multiply(nodeData.xfo);
-
+        
         // set the length of the parent bone based on the child bone local offset.
-        if(nodeData.xfo.tr.x > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
-          nodeData.xfo.tr.x > bones[boneOptions.parent].length) {
-          bones[boneOptions.parent].length = nodeData.xfo.tr.x;
+        if(Math.abs(nodeData.xfo.tr.x) > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
+           Math.abs(nodeData.xfo.tr.x) > Math.abs(bones[boneOptions.parent].length)) {
+          bones[boneOptions.parent].length = nodeData.xfo.tr.x;// * bones[boneOptions.parent].referencePose.sc.x;
         }
       }
       else {
@@ -1018,7 +1034,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         // shorten the bone till it touches the floor.
         var downVec = new FABRIC.RT.Vec3(0, -1, 0);
         var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
-        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
+        if(bones[i].referencePose.tr.y > 0 && boneVec.dot(downVec) > bones[i].referencePose.tr.y){
           bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
         }
       }
@@ -1055,31 +1071,39 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return rigData;
   }
 
+
+  var loadPoseOntoRig = function(sceneData, rigNode, rootNodeName){
+    // recurse on the hierarchy
+    var pose = [];
+    var traverseChildren = function(nodeData, parentXfo) {
+      var xfo = nodeData.xfo;
+      if (parentXfo) {
+        xfo = parentXfo.multiply(xfo);
+      }
+      pose.push(xfo);
+      if (nodeData.children) {
+        for (var i = 0; i < nodeData.children.length; i++) {
+          traverseChildren(nodeData.children[i], xfo);
+        }
+      }
+    };
+    traverseChildren(sceneData.nodeLibrary[rootNodeName]);
+    
+    rigNode.setPose(pose);
+  }
+
+
     
   var libraryControllers = {};
   var constructController = function(sceneData, url, name){
     
     // Lazy construction of geometries
     if(libraryControllers[url]){
-      return libraryControllers[skinid];
+      return libraryControllers[url];
     }
     
     var controllerData = colladaData.libraryControllers[url].skin;
     
-    // Get the geometry data that this skin mesh is based on
-    var geometryData = colladaData.libraryGeometries[controllerData.source.slice(1)];
-    
-    var sourceMeshArray = geometryData.mesh.triangles ? geometryData.mesh.triangles : geometryData.mesh.polygons;
-    if(!sourceMeshArray){
-      throw "No gometry specified";
-    }
-    if(sourceMeshArray.length !== 1){
-      alert("This collada importer only supports one triangle mesh per instance.");
-      throw "This collada importer only supports one triangle mesh per instance."
-    }
-    var meshData = sourceMeshArray[0];
-    
-    var processedData = processGeometryData(geometryData.mesh, meshData);
     
     ////////////////////////////////////////////////////////////////////////////
     // Construct the Rig
@@ -1092,6 +1116,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     }
     var skeletonData = constructRigFromHierarchy(sceneData, joint.name, name);
     
+    
+    var bindPoseDataSource = controllerData.sources[controllerData.joints.INV_BIND_MATRIX.source.slice(1)];
+    var invmatrices = [];
+    for (var j = 0; j < jointDataSource.data.length; j++) {
+      var bindPoseValues = getSourceData(bindPoseDataSource, j);
+      var mat = makeRT(FABRIC.RT.Mat44, bindPoseValues);//.transpose();
+      mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
+      invmatrices[j] = mat.multiply(controllerData.bind_shape_matrix);
+    }
+    
+  
     ////////////////////////////////////////////////////////////////////////////
     // Set up the vertex weights.
     // In fabric we store the bind skinning wieghts and indices in 2 vec4 values
@@ -1153,21 +1188,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       boneWeights.push(makeVec4(boneWeightsArray));
     }
     
-    // Now remap the generated arrays to the vertices in the mesh we store.
-    processedData.geometryData.boneIds = [];
-    processedData.geometryData.boneWeights = [];
-    var vid = 0;
-    for (var i = 0; i < processedData.vertexRemapping.length; i++) {
-      var vid = processedData.vertexRemapping[i];
-      processedData.geometryData.boneIds.push(boneIds[vid]);
-      processedData.geometryData.boneWeights.push(boneWeights[vid]);
-    }
-    
-    processedData.constructionOptions.name = name;
-    var characterMeshNode = scene.constructNode('CharacterMesh', processedData.constructionOptions);
-    characterMeshNode.loadGeometryData(processedData.geometryData);
-    
-    
     /////////////////////////////////////
     // set inverse binding matrices
     var jointRemapping = [];
@@ -1184,21 +1204,55 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       }
     }
     
-    var bindPoseDataSource = controllerData.sources[controllerData.joints.INV_BIND_MATRIX.source.slice(1)];
-    var invmatrices = [];
-    for (var j = 0; j < jointDataSource.data.length; j++) {
-      var bindPoseValues = getSourceData(bindPoseDataSource, j);
-      var mat = makeRT(FABRIC.RT.Mat44, bindPoseValues);//.transpose();
-      mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
-      invmatrices[j] = mat.multiply(controllerData.bind_shape_matrix);
-    }
-    characterMeshNode.setInvMatrices(invmatrices, jointRemapping);
+    ////////////////////////////////////////////////////////////////////////////
+    // Get the geometry data that this skin mesh is based on
+    var geometryData = colladaData.libraryGeometries[controllerData.source.slice(1)];
     
- 
-    assetNodes[geometryData.name] = characterMeshNode;
+    var sourceMeshArray = geometryData.mesh.triangles ? geometryData.mesh.triangles : geometryData.mesh.polygons;
+    if(!sourceMeshArray){
+      throw "No gometry specified";
+    }
+      
+    
+    var constructSkinnedGeometry = function(polygons){
+      var name = geometryData.name;
+      if(polygons.material != null){
+        name += polygons.material;
+      }
+      var processedData = processGeometryData(geometryData.mesh, polygons);
+      
+      // Now remap the generated arrays to the vertices in the mesh we store.
+      processedData.geometryData.boneIds = [];
+      processedData.geometryData.boneWeights = [];
+      var vid = 0;
+      for (var i = 0; i < processedData.vertexRemapping.length; i++) {
+        var vid = processedData.vertexRemapping[i];
+        processedData.geometryData.boneIds.push(boneIds[vid]);
+        processedData.geometryData.boneWeights.push(boneWeights[vid]);
+      }
+      
+      processedData.constructionOptions.name = name;
+      var characterMeshNode = scene.constructNode('CharacterMesh', processedData.constructionOptions);
+      if(processedData.geometryData.vertexColors){
+        characterMeshNode.addVertexAttributeValue('vertexColors', 'Color', {
+          genVBO:true
+        });
+      }
+      characterMeshNode.loadGeometryData(processedData.geometryData);
+      
+      characterMeshNode.setInvMatrices(invmatrices, jointRemapping);
+      assetNodes[name] = characterMeshNode;
+      return characterMeshNode;
+    }
+    
+    
+    var geometries = [];
+    for(var i=0; i<sourceMeshArray.length; i++){
+      geometries.push(constructSkinnedGeometry(sourceMeshArray[i]));
+    }
     
     var controllerNodes = {
-      characterMeshNode:characterMeshNode,
+      geometries: geometries,
       skeletonData: skeletonData,
       controllerData: controllerData
     }
@@ -1209,10 +1263,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   
   // Construct the Geometries.
   var libraryGeometries = {};
-  var getGeometryNode = function(geomid){
+  var getGeometryNodes = function(geomid){
     // Lazy construction of geometries
     if(!libraryGeometries[geomid]){
-      libraryGeometries[geomid] = constructGeometry(colladaData.libraryGeometries[geomid]);
+      libraryGeometries[geomid] = constructGeometries(colladaData.libraryGeometries[geomid]);
     }
     return libraryGeometries[geomid];
   }
@@ -1222,70 +1276,60 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   var constructScene = function(sceneData){
     
     var constructInstance = function(instanceData, parentTransformNode){
-      var geometryNode;//, materialNode = defaultMaterial;
       if(instanceData.instance_geometry){
         var url = instanceData.instance_geometry.url.slice(1);
-        geometryNode = getGeometryNode(url);
-        if(instanceData.instance_geometry.instance_material){
-          // TODO:
-        }
-        
-        var transformNodeOptions = { name: instanceData.name +"Transform" };
-        if(parentTransformNode){
-          transformNodeOptions.hierarchical = true;
-          transformNodeOptions.localXfo = instanceData.xfo;
-          transformNodeOptions.parentTransformNode = parentTransformNode;
-        }else{
-          if(options.parentTransformNode){
-            transformNodeOptions.hierarchical = true;
-            transformNodeOptions.parentTransformNode = options.parentTransformNode;
-          }else{
-            transformNodeOptions.hierarchical = false;
-            transformNodeOptions.globalXfo = instanceData.xfo;
+        var geometries = getGeometryNodes(url);
+        for(var i=0; i<geometries.length; i++){
+          var geometryNode = geometries[i];
+          var materialNode;
+          if(instanceData.instance_geometry.instance_material){
+            // TODO:
           }
-        }
-        var transformNode = scene.constructNode('Transform', transformNodeOptions );
-        if(geometryNode/* && materialNode*/){
-          var instanceNode = scene.constructNode('Instance', {
-            name: instanceData.name, 
-            transformNode: transformNode,
-            geometryNode: geometryNode /*,
-            materialNode: materialNode */
-          });
-          assetNodes[instanceData.name] = instanceNode;
+          
+          var transformNodeOptions = { name: instanceData.name +"Transform" };
+          if(parentTransformNode){
+            transformNodeOptions.hierarchical = true;
+            transformNodeOptions.localXfo = instanceData.xfo;
+            transformNodeOptions.parentTransformNode = parentTransformNode;
+          }else{
+            if(options.parentTransformNode){
+              transformNodeOptions.hierarchical = true;
+              transformNodeOptions.parentTransformNode = options.parentTransformNode;
+            }else{
+              transformNodeOptions.hierarchical = false;
+              transformNodeOptions.globalXfo = instanceData.xfo;
+            }
+          }
+          var transformNode = scene.constructNode('Transform', transformNodeOptions );
+          if(geometryNode/* && materialNode*/){
+            var instanceNode = scene.constructNode('Instance', {
+              name: instanceData.name, 
+              transformNode: transformNode,
+              geometryNode: geometryNode,
+              materialNode: materialNode
+            });
+            assetNodes[instanceData.name] = instanceNode;
+          }
         }
       
       }
       else if(instanceData.instance_controller){
         var url = instanceData.instance_controller.url.slice(1);
         var controllerNodes = constructController(sceneData, url, instanceData.name);
-        geometryNode = controllerNodes.characterMeshNode;
-        /*
-        materialNode = scene.constructNode('PhongSkinningMaterial', {
-          lightNode: defaultLight,
-          diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-          numBones: controllerNodes.skeletonData.skeletonNode.getNumBones()
-        });
-        */
-        if(instanceData.instance_controller.instance_material){
-          // TODO: materialNode =
+        
+        for(var i=0; i<controllerNodes.geometries.length; i++){
+          geometryNode = controllerNodes.geometries[i];
+          if(instanceData.instance_controller.instance_material){
+            // TODO: materialNode =
+          }
+          var characterNode = scene.constructNode('CharacterInstance', {
+              name: geometryNode.getName()+'CharacterInstance',
+              geometryNode: geometryNode,
+              materialNode: materialNode,
+              rigNode: controllerNodes.skeletonData.rigNode
+            });
+          assetNodes[characterNode.getName()] = characterNode;
         }
-        /*
-        var xfo = new FABRIC.RT.Xfo();
-        xfo.setFromMat44(controllerNodes.controllerNodes.bind_shape_matrix);
-        var transformNode = scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: xfo
-        });
-        */
-        var characterNode = scene.constructNode('CharacterInstance', {
-            name: instanceData.name+'CharacterInstance',
-            geometryNode: controllerNodes.characterMeshNode,
-          /*  materialNode: materialNode, 
-            transformNode: transformNode, */
-            rigNode: controllerNodes.skeletonData.rigNode
-          });
-        assetNodes[characterNode.getName()] = characterNode;
       }
       
       for(var i=0; i<instanceData.children.length; i++){
@@ -1308,13 +1352,16 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       
       // The file may contain a hierarchy that can be used to generate a skeleton
       if (options.constructRigFromHierarchy) {
-        constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
+        constructRigFromHierarchy(sceneData, options.rigHierarchyRootNodeName);
       }
     }
     else{
       
       if (options.loadAnimationUsingRig) {
-        loadRigAnimation(options.loadAnimationUsingRig);
+        loadRigAnimation(options.rigNode);
+      }
+      if (options.loadPoseOntoRig) {
+        loadPoseOntoRig(sceneData, options.rigNode, options.rigHierarchyRootNodeName);
       }
     }
   }

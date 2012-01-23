@@ -78,7 +78,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -202,7 +202,7 @@ $(document).ready(function() {
           materialNode: scene.constructNode('PhongInstancingExtMaterial', {
             diffuseColor: FABRIC.RT.rgb255(220,220,220),
             lightNode: light,
-            transformTextureNode: slicedTransform.getTransformTexture(true)
+            transformTextureNode: scene.constructNode("TransformTexture", { transformNode: slicedTransform })
           }),
           transformNode: slicedTransform,
           enableRaycasting: true

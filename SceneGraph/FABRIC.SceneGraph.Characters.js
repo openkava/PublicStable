@@ -57,12 +57,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     var parentWriteData = characterMeshNode.writeData;
     var parentReadData = characterMeshNode.readData;
     characterMeshNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
-      characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
+    //  characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
+      nodeData.invmatrices = characterMeshNode.getUniformsDGNode().getData('invmatrices');
+      nodeData.boneMapping = characterMeshNode.getUniformsDGNode().getData('boneMapping');
     };
     characterMeshNode.readData = function(sceneDeserializer, nodeData) {
-      characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
       parentReadData(sceneDeserializer, nodeData);
+    //  characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
+      characterMeshNode.getUniformsDGNode().setData('invmatrices', 0, nodeData.invmatrices);
+      characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, nodeData.boneMapping);
     };
     
     return characterMeshNode;
@@ -183,7 +187,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
         }
       }
 
-      var bone = new FABRIC.Characters.Bone(boneOptions);
+      var bone = new FABRIC.RT.Bone(boneOptions);
       bones.push(bone);
       dgnode.setData('bones', skeletonId ? skeletonId : 0, bones );
       return bone;
@@ -192,7 +196,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     characterSkeletonNode.pub.setBones = function(boneOptions, skeletonId) {
       var bones = [];
       for (var i = 0; i < boneOptions.length; i++) {
-        bones.push(new FABRIC.Characters.Bone(boneOptions[i]));
+        bones.push(new FABRIC.RT.Bone(boneOptions[i]));
       }
       dgnode.setData('bones', skeletonId ? skeletonId : 0, bones );
     };
@@ -285,8 +289,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeletonDebug', {
       characterSkeletonDebug.pub.addUniformValue('offsetpose', 'Xfo', options.offsetpose);
 
       // now append the operator to create the lines
-      
-      // now append the operator to create the lines
       characterSkeletonDebug.getAttributesDGNode().bindings.append(scene.constructOperator({
           operatorName: 'setSkeletonVertexCount',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateSkeleton.kl',
@@ -352,6 +354,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
     dgnode.addMember('poseVariables', 'PoseVariables', options.poseVariables);
+    dgnode.addMember('keyIndices', 'Integer[]');
+    dgnode.addMember('trackSetId', 'Integer', -1);
+    dgnode.addMember('enableTrackEvaluation', 'Boolean', true);
+      
+    characterVariablesNode.addMemberInterface(dgnode, 'enableTrackEvaluation', true);
+    characterVariablesNode.addMemberInterface(dgnode, 'trackSetId', true);
+    
     // extend the private interface
     characterVariablesNode.setVariables = function(poseVariables) {
       dgnode.setData('poseVariables', 0, poseVariables);
@@ -361,57 +370,194 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       return dgnode.getData('poseVariables');
     };
     
-    var animationLibrary;
+  //  characterVariablesNode.setBindings = function(bindings){
+  //    dgnode.setData('bindings', 0, bindings);
+  //  }
+  
+      
+    scene.pub.addEventListener('beginmanipulation', function(evt){
+      characterVariablesNode.pub.setEnableTrackEvaluation(false);
+      m_animationLibraryNode.beginManipulation(m_trackSetId);
+      
+    });
+    scene.pub.addEventListener('endmanipulation', function(evt){
+      m_animationLibraryNode.endManipulation();
+      characterVariablesNode.pub.setEnableTrackEvaluation(true);
+    });
     
-    characterVariablesNode.setBindings = function(bindings){
-      if(dgnode.getMembers().bindings){
-        dgnode.setData('bindings', 0, bindings);
-      }
-      else{
-        dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
-      }
-    }
-    var boundToAnimationTracks = false;
-    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, keyframeTrackBindings){
+    var m_animationLibraryNode;
+    var m_animationControllerNode;
+    var m_trackSetId;
+    var m_keyframeTrackBindings;
+    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId){
       if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
       if (!animationControllerNode.isTypeOf('AnimationController')) {
         throw ('Incorrect type assignment. Must assign a AnimationController');
       }
-      animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
-      animationControllerNode = scene.getPrivateInterface(animationControllerNode);
-      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-      dgnode.setDependency(animationControllerNode.getDGNode(), 'controller');
-      if(boundToAnimationTracks){
-        dgnode.setData('trackSetId', 0, trackSetId);
-        return;
-      }
+      m_animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
+      m_animationControllerNode = scene.getPrivateInterface(animationControllerNode);
+      m_trackSetId = trackSetId;
       
-      dgnode.addMember('keyIndices', 'Integer[]');
-      dgnode.addMember('trackSetId', 'Integer', trackSetId);
-      characterVariablesNode.setBindings(keyframeTrackBindings);
+      dgnode.setDependency(m_animationLibraryNode.getDGNode(), 'animationlibrary');
+      dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
+      dgnode.setData('trackSetId', 0, m_trackSetId);
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'evaluatePoseTracks',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
         preProcessorDefinitions: {
-          KEYFRAMETRACKSETTYPE: 'LinearKeyframeTrackSet'
+          KEYFRAMETRACKSETTYPE: m_animationLibraryNode.getTrackSetType()
         },
         entryFunctionName: 'evaluatePoseTracks',
         parameterLayout: [
           'animationlibrary.trackSet<>',
+          'animationlibrary.bindings<>',
           'controller.localTime',
           'self.trackSetId',
-          'self.bindings',
           'self.keyIndices',
-          'self.poseVariables'
+          'self.poseVariables',
+          'self.enableTrackEvaluation'
         ]
       }));
+      
       characterVariablesNode.pub.setBoundTrack = function(trackSetId){
+        m_trackSetId = trackSetId;
         dgnode.setData('trackSetId', 0, trackSetId);
       }
+      
+      scene.pub.addEventListener('beginmanipulation', function(evt){
+        characterVariablesNode.pub.setEnableTrackEvaluation(false);
+        m_animationLibraryNode.beginManipulation(m_trackSetId);
+        
+      });
+      scene.pub.addEventListener('endmanipulation', function(evt){
+        m_animationLibraryNode.endManipulation();
+        characterVariablesNode.pub.setEnableTrackEvaluation(true);
+      });
       boundToAnimationTracks = true;
+    }
+    
+    characterVariablesNode.getValue = function(type, index) {
+      var poseVariables = characterVariablesNode.getVariables();
+      switch(type){
+      case 'Number':
+        return poseVariables.scalarValues[index];
+        break;
+      case 'FABRIC.RT.Vec3':
+        return poseVariables.scalarValues[index];
+        break;
+      case 'FABRIC.RT.Quat':
+        return poseVariables.quatValues[index];
+        break;
+      case 'FABRIC.RT.Xfo':
+        return poseVariables.xfoValues[index];
+        break;
+      default:
+        throw 'Unhandled type:' + val;
+      }
+    }
+    characterVariablesNode.setValue = function(value, index, xfoTrackFilter) {
+      var type = (typeof value == 'number') ? 'Number' : value.getType();
+    //  if(!boundToAnimationTracks){
+        var poseVariables = characterVariablesNode.getVariables();
+        switch(type){
+        case 'Number':
+          poseVariables.scalarValues[index] = value;
+          break;
+        case 'FABRIC.RT.Vec3':
+          poseVariables.scalarValues[index] = value;
+          break;
+        case 'FABRIC.RT.Quat':
+          poseVariables.quatValues[index] = value;
+          break;
+        case 'FABRIC.RT.Xfo':
+          poseVariables.xfoValues[index] = value;
+          break;
+        default:
+          throw 'Unhandled type:' + val;
+        }
+        characterVariablesNode.setVariables(poseVariables);
+    //  }
+    //  else{
+      if(m_animationLibraryNode){
+        m_keyframeTrackBindings = m_animationLibraryNode.pub.getBindings(m_trackSetId);
+        var findBinding = function(bindingsList){
+          for(var i=0; i<bindingsList.length; i++){
+            if(bindingsList[i].varId == index){
+              return bindingsList[i];
+            }
+          }
+          throw "Binding not found";
+        }
+        var binding, values;
+        var trackIds;
+        switch(type){
+        case 'Number':
+          binding = findBinding(m_keyframeTrackBindings.scalarBindings);
+          values = [value];
+          trackIds = binding.trackIds;
+          break;
+        case 'FABRIC.RT.Vec3':
+          binding = findBinding(m_keyframeTrackBindings.vec3Bindings);
+          values = [value.x, value.y, value.z];
+          trackIds = binding.trackIds;
+          break;
+        case 'FABRIC.RT.Quat':
+          binding = findBinding(m_keyframeTrackBindings.quatBindings);
+          if(binding.trackIds.length == 3){
+            var euler = new FABRIC.RT.Euler();
+            euler.setFromQuat(value);
+            values = [euler.x, euler.y, euler.z];
+          }else if(binding.trackIds.length == 4){
+            values = [value.w, value.x, value.y, value.z];
+          }
+          trackIds = binding.trackIds;
+          break;
+        case 'FABRIC.RT.Xfo':
+          binding = findBinding(m_keyframeTrackBindings.xfoBindings);
+          trackIds = binding.trackIds;
+          if(binding.trackIds.length == 6){
+            var euler = new FABRIC.RT.Euler();
+            euler.setFromQuat(value.ori);
+            values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
+          }else if(binding.trackIds.length == 7){
+            
+            if(xfoTrackFilter){
+              var filteredValues = [];
+              var filteredTrackIds = [];
+              if(xfoTrackFilter.tr){
+                filteredValues = [value.tr.x, value.tr.y, value.tr.z];
+                filteredTrackIds = [trackIds[0], trackIds[1], trackIds[2]]
+              }
+              if(xfoTrackFilter.ori){
+                filteredValues = filteredValues.concat([value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w]);
+                filteredTrackIds = filteredTrackIds.concat([trackIds[3], trackIds[4], trackIds[5], trackIds[6]]);
+              }
+              if(xfoTrackFilter.sc){
+                filteredValues = [value.sc.x, value.sc.y, value.sc.z];
+                filteredTrackIds = [trackIds[6], trackIds[7], trackIds[8]]
+              }
+              values = filteredValues;
+              trackIds = filteredTrackIds;
+            }
+            else{
+              values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
+              trackIds = binding.trackIds;
+            }
+          }
+          break;
+        default:
+          throw 'Unhandled type:' + val;
+        }
+        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
+      }
+    }
+    characterVariablesNode.setValues = function(values, indices) {
+      for(var i in values){
+        characterVariablesNode.setValue(values[i], indices[i]);
+      }
     }
     
     
@@ -501,6 +647,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       
     dgnode.addMember('debug', 'Boolean', options.debug );
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
+    dgnode.addMember('pose', 'Xfo[]');
     
     
     dgnode.bindings.append(scene.constructOperator({
@@ -514,49 +661,30 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       async: false
     }));
     // extend the public interface
-    characterRigNode.addMemberInterface(dgnode, 'pose', true);
     
-    characterRigNode.pub.setSkeletonNode = function(node) {
-      if (!node.isTypeOf('CharacterSkeleton')) {
-        throw ('Incorrect type assignment. Must assign a CharacterSkeleton');
-      }
-      skeletonNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
+    characterRigNode.addReferenceInterface('Skeleton', 'CharacterSkeleton',
+      function(nodePrivate){
+        skeletonNode = nodePrivate;
+        dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
+  
+        // This member will store the computed pose.
+        var referencePose = skeletonNode.pub.getReferencePose();
+        dgnode.setData('pose', 0, referencePose);
+      });
 
-      // This member will store the computed pose.
-      var referencePose = skeletonNode.pub.getReferencePose();
-      dgnode.addMember('pose', 'Xfo[]', referencePose);
-    }
-    characterRigNode.pub.getSkeletonNode = function() {
-      return scene.getPublicInterface(skeletonNode);
-    };
-
-    characterRigNode.pub.setControllerNode = function(node) {
-      if (!node || !node.isTypeOf('CharacterController')) {
-        throw ('Incorrect type assignment. Must assign a CharacterController');
-      }
-      controllerNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
-    };
-    characterRigNode.pub.getControllerNode = function() {
-      return scene.getPublicInterface(controllerNode);
-    };
+    characterRigNode.addReferenceInterface('Controller', 'CharacterController',
+      function(nodePrivate){
+        controllerNode = nodePrivate;
+        dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
+      });
     
     //////////////////////////////////////////
     // Variables
-    characterRigNode.pub.setVariablesNode = function(node) {
-      if (!node || !node.isTypeOf('CharacterVariables')) {
-        throw ('Incorrect type assignment. Must assign a CharacterVariables');
-      }
-      variablesNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(variablesNode.getDGNode(), 'variables');
-    };
-    characterRigNode.pub.getVariablesNode = function() {
-      if(variablesNode){
-        return scene.getPublicInterface(variablesNode);
-      }
-      return undefined;
-    };
+    characterRigNode.addReferenceInterface('Variables', 'CharacterVariables',
+      function(nodePrivate){
+        variablesNode = nodePrivate;
+        dgnode.setDependency(variablesNode.getDGNode(), 'variables');
+      });
     characterRigNode.addVariable = function(type, value) {
       var id = poseVariables.addVariable(type, value);
       if(variablesNode){
@@ -577,6 +705,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       return node;
     };
+    
     //////////////////////////////////////////
     // Solver Interfaces
     var solverParams = [];
@@ -634,38 +763,82 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       return invertedVariablesNode.pub;
     };
+    
+    var m_pose;
+    characterRigNode.pub.getPose = function() {
+      if(solvers.length > 0){
+        return dgnode.getData('pose');
+      }else{
+        if(!m_pose)
+          m_pose = dgnode.getData('pose');
+        return m_pose;
+      }
+    };
+    characterRigNode.pub.setPose = function(pose) {
+      if(solvers.length > 0){
+        for (var i = 0; i < solvers.length; i++) {
+          if(!solvers[i].setPose)
+            continue;
+          solvers[i].setPose(pose, variablesNode);
+        }
+      }else{
+        m_pose = pose;
+        dgnode.setData('pose', 0, pose);
+      }
+    };
+    
     //////////////////////////////////////////
-    characterRigNode.pub.addMember = function(name, type, value) {
-      dgnode.addMember(name, type, value);
-    };
-    characterRigNode.pub.getData = function(name, index) {
-      var xfo = dgnode.getData(name, 0);
-      if (index != undefined) {
-        xfo = xfo[index];
+    // Animation Tracks
+    characterRigNode.pub.generateAnimationTracks = function(node, trackSetName, bindForPlayback, controllerNode){
+      if (!node.isTypeOf('AnimationLibrary')) {
+        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
-      return xfo;
-    };
-    characterRigNode.pub.setData = function(name, value, index) {
-      var xfo;
-      if (index != undefined) {
-        xfo = dgnode.getData(name, 0);
-        xfo[index] = value;
+      var animationLibrary = scene.getPrivateInterface(node);
+      
+      var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
+      var trackSet = animationLibrary.newTrackSet(trackSetName);
+      for (var i = 0; i < solvers.length; i++) {
+        if(solvers[i].generateTracks){
+          solvers[i].generateTracks(trackSet, trackBindings);
+        }
       }
-      else {
-        xfo = value;
+      var trackSetId = animationLibrary.pub.addTrackSet(trackSet);
+      if(bindForPlayback==true){
+        
+        if(!poseVariables){
+          characterRigNode.constructVariablesNode('Variables', true);
+        }
+        trackSet.setPoseValues(0, poseVariables, trackBindings);
+        
+        if(!controllerNode){
+          controllerNode = scene.pub.constructNode('AnimationController');
+        }
+        variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
+        animationLibrary.pub.setBindings(trackBindings);
       }
-      dgnode.setData(name, 0, xfo);
+      return trackSetId;
+    }
+    characterRigNode.pub.setBoundTrackSet = function(trackSetId){
+      if(!poseVariables){
+        throw "animation library not configured yet.";
+      }
+      variablesNode.pub.setBoundTrack(trackSetId);
     }
     
     //////////////////////////////////////////
     // Persistence
+    var parentAddDependencies = characterRigNode.addDependencies;
+    characterRigNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      sceneSerializer.addNode(skeletonNode.pub);
+      sceneSerializer.addNode(variablesNode.pub);
+    };
+    
     var parentWriteData = characterRigNode.writeData;
     var parentReadData = characterRigNode.readData;
     characterRigNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.debug = options.debug;
-      sceneSerializer.addNode(skeletonNode.pub);
-      sceneSerializer.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
       nodeData.solvers = [];
@@ -717,98 +890,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
 
 
 
-FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
-  briefDesc: 'The CharacterRigDebug node is used to draw debug information of a CharacterRig on screen.',
-  detailedDesc: 'The CharacterRigDebug node is used to draw debug information of a CharacterRig on screen.',
-  parentNodeDesc: 'Points',
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-
-    scene.assignDefaults(options, {
-      dynamic: true,
-      color: FABRIC.RT.rgba(0.0, 1.0, 1.0, 1.0),
-      size: 5.0,
-      offsetpose: new FABRIC.RT.Xfo(),
-      constructInstanceNode: true
-      });
-
-    var characterRigDebugNode = scene.constructNode('Points', options);
-    var rigNode,
-      instanceNode;
-
-    // extend public interface
-    characterRigDebugNode.pub.setRigNode = function(node) {
-
-      rigNode = scene.getPrivateInterface(node);
-      characterRigDebugNode.pub.addVertexAttributeValue('vertexColors', 'Color', { genVBO:true } );
-      characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getDGNode(), 'rig');
-      characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getVariablesNode().getDGNode(), 'variables');
-      characterRigDebugNode.pub.addUniformValue('debugpose', 'Xfo[]');
-      characterRigDebugNode.pub.addUniformValue('singlecolor', 'Color', options.color);
-      characterRigDebugNode.pub.addUniformValue('offsetpose', 'Xfo', options.offsetpose);
-
-      // now append the operator to create the lines
-      var operators = characterRigDebugNode.getUniformsDGNode().bindings;
-      operators.append(scene.constructOperator({
-          operatorName: 'clearDebugXfos',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterDebug.kl',
-          entryFunctionName: 'clearDebugXfos',
-          parameterLayout: [
-            'self.debugpose'
-          ]
-        }));
-
-      characterRigDebugNode.getAttributesDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'generateDebugPoints',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterDebug.kl',
-          entryFunctionName: 'generateDebugPoints',
-          parameterLayout: [
-            'uniforms.debugpose',
-            'uniforms.offsetpose',
-            'self.positions<>',
-            'self.vertexColors[]',
-            'uniforms.singlecolor'
-          ]
-        }));
-    };
-    characterRigDebugNode.pub.getRigNode = function() {
-      return rigNode;
-    };
-    characterRigDebugNode.pub.constructInstanceNode = function() {
-      if (instanceNode)
-        return instanceNode;
-      if (!rigNode)
-        return undefined;
-
-      var material = scene.constructNode('VertexColorMaterial', {
-        prototypeMaterialType: 'PointMaterial',
-        pointSize: 10.0,
-        color: FABRIC.RT.rgb(0.8, 0, 0, 1)
-      });
-
-      instanceNode = scene.constructNode('Instance', {
-          geometryNode: characterRigDebugNode.pub,
-          materialNode: material
-        });
-      return instanceNode;
-    };
-    characterRigDebugNode.pub.getInstanceNode = function() {
-      return scene.getPublicInterface(instanceNode);
-    };
-
-    characterRigDebugNode.pub.characterRigDebugNode.setAttributeDynamic('positions');
-
-    if (options.characterRigNode) {
-      characterRigDebugNode.pub.setRigNode(options.characterRigNode);
-    }
-    if (options.constructInstanceNode) {
-      characterRigDebugNode.pub.constructInstanceNode();
-    }
-
-    return characterRigDebugNode;
-  }});
-
 // The character instance draws a deformed mesh on screen.
 FABRIC.SceneGraph.registerNodeType('CharacterInstance', {
   briefDesc: 'The CharacterInstance node is used to draw a deformed CharacterMesh on screen.',
@@ -824,27 +905,29 @@ FABRIC.SceneGraph.registerNodeType('CharacterInstance', {
     var rigNode;
 
     // extend public interface
-    characterInstanceNode.pub.setRigNode = function(node) {
-      if (!node.isTypeOf('CharacterRig')) {
-        throw ('Incorrect type assignment. Must assign a CharacterRig');
-      }
-      rigNode = scene.getPrivateInterface(node);
-      characterInstanceNode.getRedrawEventHandler().setScope('rig', rigNode.getDGNode());
-    };
-    characterInstanceNode.pub.getRigNode = function() {
-      return scene.getPublicInterface(rigNode);
-    };
+    characterInstanceNode.addReferenceInterface('Rig', 'CharacterRig',
+      function(nodePrivate){
+        rigNode = nodePrivate;
+        characterInstanceNode.getRedrawEventHandler().setScope('rig', rigNode.getDGNode());
+      });
     var parentSetGeometryNode = characterInstanceNode.pub.setGeometryNode;
-    characterInstanceNode.pub.setGeometryNode = function(node) {
-      if (!node.isTypeOf('CharacterMesh')) {
-        throw ('Incorrect type assignment. Must assign a CharacterMesh.');
-      }
-      parentSetGeometryNode(node);
+    characterInstanceNode.addReferenceInterface('Geometry', 'CharacterMesh',
+      function(nodePrivate){
+        parentSetGeometryNode(nodePrivate.pub);
+      });
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentWriteData = characterInstanceNode.writeData;
+    var parentReadData = characterInstanceNode.readData;
+    characterInstanceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      sceneSerializer.addNode(rigNode.pub);
+      nodeData.rigNode = rigNode.pub.getName();
     };
-    characterInstanceNode.pub.getTransformNode = function() {
-    };
-    characterInstanceNode.pub.setTransformNode = function(node, member) {
-      throw 'Character Instance does not support the transformNode';
+    characterInstanceNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      characterInstanceNode.pub.setRigNode(sceneDeserializer.getNode(nodeData.rigNode));
     };
 
     if (options.rigNode) {
@@ -853,3 +936,290 @@ FABRIC.SceneGraph.registerNodeType('CharacterInstance', {
     return characterInstanceNode;
   }});
 
+
+// The character instance draws a deformed mesh on screen.
+FABRIC.SceneGraph.registerNodeType('Attachment', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'Transform',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      rigNode: undefined,
+      attachmentBone: "boneName",
+      maintainInitialXfo: true
+    });
+
+    options.hierarchical = false;
+    var attachmentNode = scene.constructNode('Transform', options);
+    var dgnode = attachmentNode.getDGNode();
+    var boneIndex = options.boneIndex;
+    
+    dgnode.addMember('localXfo', 'Xfo', options.localXfo);
+    dgnode.addMember('boneIndex', 'Size', options.boneIndex);
+    dgnode.bindings.append(scene.constructOperator( {
+        operatorName: 'calcIndexedGlobalXfo',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
+        parameterLayout: [
+          'self.localXfo',
+          'characterrig.pose',
+          'self.boneIndex',
+          'self.globalXfo'
+        ],
+        entryFunctionName: 'calcIndexedGlobalXfo'
+      }));
+
+    attachmentNode.addMemberInterface(dgnode, 'localXfo', true, true);
+
+    // use a custom getter
+    attachmentNode.pub.setGlobalXfo = function(val) {
+      if (parentTransformNode) {
+        var parentXfo = parentTransformNode.getGlobalXfo();
+        val = val.multiply(parentXfo.inverse());
+        dgnode.setData('localXfo', val);
+      }
+      else {
+        dgnode.setData('globalXfo', val);
+      }
+    };
+    
+    var boneIndex;
+    attachmentNode.pub.setRigNode = function(node) {
+      if (!node.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type assignment. Must assign a CharacterRig');
+      }
+      rigNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(rigNode.getDGNode(), 'characterrig');
+      boneIndex = rigNode.pub.getSkeletonNode().getBoneIndex(options.attachmentBone);
+      if(boneIndex == -1){
+        throw("Bone not found:"+options.attachmentBone);
+      }
+      dgnode.setData('boneIndex', 0, boneIndex);
+      if(options.maintainInitialXfo){
+        var pose = rigNode.pub.getPose();
+        // by setting the offset to the inverse of the bone global pose,
+        // the attachment will stay in place when bound.
+        dgnode.setData('localXfo', 0, pose[boneIndex].inverse());
+      }
+    };
+    
+    attachmentNode.pub.getAttachmentBoneXfo = function() {
+      return rigNode.pub.getPose()[boneIndex];
+    }
+      
+    if(options.rigNode){
+      attachmentNode.pub.setRigNode(options.rigNode);
+    }
+    return attachmentNode;
+  }});
+
+
+ 
+// The character instance draws a deformed mesh on screen.
+FABRIC.SceneGraph.registerNodeType('ManipulatorAttachment', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'Transform',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      rigNode: undefined,
+      attachmentBone: undefined,
+      xfoIndex: -1
+    });
+
+    options.hierarchical = false;
+    var attachmentNode = scene.constructNode('Transform', options);
+    var dgnode = attachmentNode.getDGNode();
+    var xfoIndex = options.xfoIndex;
+    var variablesNode;
+    
+    if(options.xfoIndex == -1)
+      throw "xfo Index not specified";
+    
+    dgnode.addMember('xfoIndex', 'Size', options.xfoIndex);
+    dgnode.addMember('boneIndex', 'Size', options.boneIndex);
+    dgnode.addMember('structIndex', 'Size', options.structIndex);
+    dgnode.addMember('extraIndex', 'Size', options.extraIndex);
+    dgnode.addMember('extraIndexArray', 'Size[]', options.extraIndexArray);
+    dgnode.addMember('localXfo', 'Xfo', options.localXfo);
+    dgnode.addMember('targetXfo', 'Xfo');
+    dgnode.addMember('parentXfo', 'Xfo');
+    
+    attachmentNode.getTargetXfo = function(){ return dgnode.getData('targetXfo'); }
+    attachmentNode.getParentXfo = function(){ return dgnode.getData('parentXfo'); }
+    
+    dgnode.bindings.append(scene.constructOperator(
+      options.attachmentOperator ? options.attachmentOperator : {
+        operatorName: 'calcManipulatorAttachmentXfo',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+        parameterLayout: [
+          'charactercontroller.xfo',
+          'variables.poseVariables',
+          'self.xfoIndex',
+          
+          'self.localXfo',
+          'self.parentXfo',
+          'self.targetXfo',
+          'self.globalXfo'
+        ],
+        entryFunctionName: 'calcManipulatorAttachmentXfo'
+      }));
+
+    attachmentNode.pub.setRigNode = function(node, boneName) {
+      if (!node.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type assignment. Must assign a CharacterRig');
+      }
+      var rigNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(rigNode.getDGNode(), 'rig');
+      var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
+      dgnode.setDependency(variablesNode.getDGNode(), 'variables');
+      var skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
+      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
+      var controllerNode = scene.getPrivateInterface(rigNode.pub.getControllerNode());
+      dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
+    };
+    if(options.rigNode){
+       attachmentNode.pub.setRigNode(options.rigNode);
+    }
+    
+    return attachmentNode;
+  }});
+
+
+FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'Manipulator',
+  optionsDesc: {
+  },
+  manipulating: false,
+  factoryFn: function(options, scene) {
+    
+    scene.assignDefaults(options, {
+      rigNode: undefined,
+      attachmentBone: "boneName",
+      xfoIndex: -1,
+      localXfo: new FABRIC.RT.Xfo(),
+      targetName: ""
+    });
+    if(!options.rigNode){
+      throw "Rig Node not specified";
+    }
+    
+    // get the target node (the one we are manipulating)
+    var rigNode = options.rigNode;
+    var xfoIndex = options.xfoIndex;
+    var xfoTrackFilter = options.xfoFilter;
+
+    var transformNode = scene.constructNode('ManipulatorAttachment', {
+      name: options.name + 'ManipulatorAttachment',
+      rigNode: options.rigNode,
+      
+      xfoIndex: options.xfoIndex,
+      boneIndex: options.boneIndex,
+      structIndex: options.structIndex,
+      extraIndex: options.extraIndex,
+      extraIndexArray: options.extraIndexArray,
+      localXfo: options.localXfo,
+      attachmentOperator: options.attachmentOperator,
+    
+      maintainInitialXfo: false
+    });
+    
+    options.transformNode = transformNode.pub;
+    options.raycastOverlaid = options.drawOverlaid;
+    var manipulatorNode = scene.constructNode('Manipulator', options );
+    var xfoIndex = options.xfoIndex;
+    var variablesNode;
+
+    manipulatorNode.pub.setRigNode = function(node, boneName) {
+      if (!node.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type assignment. Must assign a CharacterRig');
+      }
+      var rigNode = scene.getPrivateInterface(node);
+      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
+    };
+    
+    
+    manipulatorNode.pub.getVariableXfo = function(val) {
+      return transformNode.getTargetXfo();
+    };
+    manipulatorNode.pub.setVariableXfo = function(val) {
+      var parentXfo = transformNode.getParentXfo();
+      val = parentXfo.inverse().multiply(val);
+      variablesNode.setValue(val, xfoIndex, xfoTrackFilter);
+    };
+    
+    
+    manipulatorNode.pub.addEventListener('mousedblclick_geom', function(evt) {
+      // if the manipulator gets double-clicked on, we create a keyframe in place. 
+      variablesNode.setValue(variablesNode.getValue('FABRIC.RT.Xfo', xfoIndex), xfoIndex, xfoTrackFilter);
+    });
+    
+    ///////////////////////////////////////////////////////////
+    manipulatorNode.getTargetNode = function() {
+      return rigNode;
+    };
+    manipulatorNode.getParentXfo = function() {
+      return transformNode.getParentXfo();
+    }
+    manipulatorNode.getTargetXfo = function() {
+      return manipulatorNode.pub.getVariableXfo();
+    }
+    manipulatorNode.setTargetXfo = function(xfo) {
+      manipulatorNode.pub.setVariableXfo(xfo);
+    }
+    manipulatorNode.setTargetOri = function(ori) {
+      var xfo = this.getTargetXfo();
+      xfo.ori = ori;
+      this.setTargetXfo(xfo);
+    }
+    manipulatorNode.getManipulationSpaceXfo = function() {
+      return transformNode.pub.getGlobalXfo();
+    }
+    manipulatorNode.pub.getTargetName = function() {
+      return options.targetName;
+    }
+    
+    // Thia function is used to find the closest local axis to
+    // the given vec. The local axis can then be used in manipulation.
+    // Manipulators can then determine the best local axis based on the
+    // camera facing direction. 
+    manipulatorNode.findClosestLocalAxis = function(vec) {
+      var manipulationSpaceOri = this.getManipulationSpaceXfo().ori,
+        localX = manipulationSpaceOri.rotateVector(new FABRIC.RT.Vec3(1, 0, 0)),
+        localY = manipulationSpaceOri.rotateVector(new FABRIC.RT.Vec3(0, 1, 0)),
+        localZ = manipulationSpaceOri.rotateVector(new FABRIC.RT.Vec3(0, 0, 1)),
+        deltaX = vec.angleTo(localX),
+        deltaY = vec.angleTo(localY),
+        deltaZ = vec.angleTo(localZ);
+
+      if (deltaX > Math.HALF_PI) {
+        deltaX = Math.PI - deltaX;
+        localX = localX.negate();
+      }
+      if (deltaY > Math.HALF_PI) {
+        deltaY = Math.PI - deltaY;
+        localY = localY.negate();
+      }
+      if (deltaZ > Math.HALF_PI) {
+        deltaZ = Math.PI - deltaZ;
+        localZ = localZ.negate();
+      }
+      if (deltaX < deltaY && deltaX < deltaZ) {
+        return localX;
+      }
+      else if (deltaY < deltaX && deltaY < deltaZ) {
+        return localY;
+      }
+      return localZ;
+    }
+
+    if(options.rigNode){
+       manipulatorNode.pub.setRigNode(options.rigNode);
+    }
+    return manipulatorNode;
+  }});

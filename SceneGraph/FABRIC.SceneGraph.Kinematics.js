@@ -59,19 +59,14 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
         }
       };
 
-      transformNode.pub.getParentNode = function() {
-        return scene.getPublicInterface(parentTransformNode);
-      };
-      transformNode.pub.setParentNode = function(node, reciprocate) {
-        if (!node.isTypeOf('Transform')) {
-          throw ('Incorrect type assignment. Must assign a Transform');
-        }
-        parentTransformNode = scene.getPrivateInterface(node);
-        dgnode.setDependency(parentTransformNode.getDGNode(), 'parent');
-        if (reciprocate !== false && node.addChild) {
-          node.addChild(this, false);
-        }
-      };
+      transformNode.addReferenceInterface('Parent', 'Transform',
+        function(nodePrivate, reciprocate){
+          parentTransformNode = nodePrivate;
+          dgnode.setDependency(parentTransformNode.getDGNode(), 'parent');
+          if (reciprocate !== false && nodePrivate.pub.addChild) {
+            nodePrivate.pub.addChild(this, false);
+          }
+      });
       transformNode.pub.addChild = function(node, reciprocate) {
         children.push(node);
         if (reciprocate !== false) {
@@ -97,35 +92,21 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       };
     }
     
-    
-    transformNode.pub.getTransformTexture = function(dynamic) {
-      if(!textureNode){
-        if(dgnode.getCount() <= 1){
-          throw "Transform node has only 1 slices";
-        }
-        // create the operator to convert the matrices into a texture
-        dgnode.addMember('textureMatrix', 'Mat44');
-        dgnode.bindings.append(scene.constructOperator( {
-            operatorName: 'calcGlobalTransposedMatrix',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
-            parameterLayout: [
-              'self.globalXfo',
-              'self.textureMatrix'
-            ],
-            entryFunctionName: 'calcGlobalTransposedMatrix'
-          }));
-        textureNode = scene.constructNode('TransformTexture', {transformNode: transformNode.pub, dynamic: dynamic});
+    //////////////////////////////////////////
+    // Persistence
+    var parentAddDependencies = transformNode.addDependencies;
+    transformNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      if(parentTransformNode){
+        sceneSerializer.addNode(parentTransformNode.pub);
       }
-      return textureNode.pub;
-    }
-    
+    };
     
     var parentWriteData = transformNode.writeData;
     var parentReadData = transformNode.readData;
     transformNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.hierarchical = options.hierarchical;
       if(parentTransformNode){
-        sceneSerializer.addNode(parentTransformNode.pub);
         nodeData.parentTransformNode = parentTransformNode.pub.getName();
       }
       nodeData.globalXfo = transformNode.pub.getGlobalXfo();
@@ -147,7 +128,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
 FABRIC.SceneGraph.registerNodeType('TransformTexture', {
   briefDesc: 'The TransformTexture node is an Image node which can be used for storing matrices into a texture buffer.',
   detailedDesc: 'The TransformTexture node is an Image node which can be used for storing matrices into a texture buffer. This is used for efficient instance rendering.',
-  parentNodeDesc: 'Texture',
+  parentNodeDesc: 'Image',
   optionsDesc: {
     transformNode: 'A sliced transform node storing all of the transform to store.',
     dynamic: 'If set to true, the texture will be reloaded every frame.'
@@ -155,55 +136,59 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       transformNode: undefined,
-      dynamic: undefined
+      dynamic: true
     });
     
-    if(!options.transformNode) {
-      throw('You need to specify a transformNode for this constructor!');
-    }
-    if(!options.transformNode.isTypeOf('Transform')) {
-      throw('The specified transformNode is not of type \'Transform\'.');
-    }
-    var transformdgnode = scene.getPrivateInterface(options.transformNode).getDGNode();
-    var textureNode = scene.constructNode('Texture', options);
+    var textureNode = scene.constructNode('Image', options);
     
+    var dgnode = textureNode.constructDGNode('DGNode');
+    // create the operator to convert the matrices into a texture
+    dgnode.addMember('textureMatrix', 'Mat44');
+    
+      
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'transforms.count',
+        'self.newCount'
+      ],
+      async: false
+    }));
+    dgnode.bindings.append(scene.constructOperator( {
+      operatorName: 'calcGlobalTransposedMatrix',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTransformTexture.kl',
+      preProcessorDefinitions: {
+        TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('transformTextureHeight')
+      },
+      parameterLayout: [
+        'transforms.globalXfo<>',
+        'self.textureMatrix',
+        'self.index',
+      ],
+      entryFunctionName: 'calcGlobalTransposedMatrix'
+    }));
+        
     var redrawEventHandler = textureNode.constructEventHandlerNode('Redraw');
     textureNode.getRedrawEventHandler = function() { return redrawEventHandler; }
     
     var tex = FABRIC.RT.oglMatrixBuffer2D();
-    if(!options.dynamic)
-      tex.forceRefresh = false;
+    tex.forceRefresh = options.dynamic;
+      
     redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', tex);
     redrawEventHandler.addMember('matricesTempBuffer', 'Mat44[]');
     redrawEventHandler.addMember('textureHeight', 'Size');
 
-    redrawEventHandler.setScope('transform', transformdgnode);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'prepareTextureMatrix',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTransformTexture.kl',
       preProcessorDefinitions: {
         TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('transformTextureHeight')
       },
-      srcCode: 'use OGLShaderProgram, OGLTexture2D;\n'+
-               'operator prepareTextureMatrix(io Mat44 matrices<>, io Mat44 matricesTempBuffer[], io Size textureHeight, io OGLTexture2D oglTexture2D, io OGLShaderProgram shaderProgram, io Integer textureUnit){\n' +
-               '  if(textureUnit > -1) {\n' +
-               '    Size height = 0;\n' +
-               '    oglTexture2D.bindImageMatrix(matrices, matricesTempBuffer, textureUnit, height);\n' +
-               '    if(height != 0)//height == 0 if texture is already bound\n' +
-               '      textureHeight = height;\n' +
-               '  }else{\n' +
-               '    report("debugging instance matrices: ");\n' +
-               '    for(Size i=0;i<10;i++)\n' +
-               '      report("matrix "+i+": "+matrices[i]);\n' +
-               '    report("matrix "+(matrices.size()-1)+": "+matrices[matrices.size()-1]);\n' +
-               '   }\n'+
-               '  shaderProgram.numInstances = Integer(matrices.size());\n' +
-               '  Integer location = shaderProgram.getUniformLocation( TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID );\n' +
-               '  if(location != -1)\n' +
-               '    shaderProgram.loadScalarUniform(location, Scalar(textureHeight));\n' +
-               '}',
       entryFunctionName: 'prepareTextureMatrix',
       parameterLayout: [
-        'transform.textureMatrix<>',
+        'textureMatrix.textureMatrix<>',
         'self.matricesTempBuffer',
         'self.textureHeight',
         'self.oglTexture2D',
@@ -211,6 +196,21 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
         'textureStub.textureUnit'
       ]
     }));
+    
+    redrawEventHandler.setScope('textureMatrix', dgnode);
+    
+    
+    textureNode.pub.setTransformNode = function(node) {
+      if (!node.isTypeOf('Transform')) {
+        throw ('Incorrect type assignment. Must assign a Transform');
+      }
+      var transformNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(transformNode.getDGNode(), 'transforms');
+    };
+    
+    if(options.transformNode) {
+      textureNode.pub.setTransformNode(options.transformNode);
+    }
 
     return textureNode;
   }});

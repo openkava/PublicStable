@@ -31,9 +31,6 @@ FABRIC.RT.LinearKeyframe.prototype = {
  * @param {number} time The time of the keyframe.
  * @return {object} The linear key frame object.
  */
-FABRIC.RT.linearKeyframe = function(value, time) {
-  return new FABRIC.RT.LinearKeyframe(value, time);
-};
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframe', {
@@ -52,6 +49,19 @@ if(!FABRIC.RT.KeyframeTrack){
   throw("please include the SceneGraph/RT/KeyframeTrack.js file before this one.");
 }
 
+FABRIC.RT.LinearKeyframeTrack = function(name, color, keys) {
+  this.name = name ? name : "linearKeyTrack";
+  this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
+  this.keys = keys ? keys : [];
+};
+
+FABRIC.RT.LinearKeyframeTrack.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrack.prototype,
+  newKey: function(value, time) {
+    return new FABRIC.RT.LinearKeyframe(value, time);
+  }
+}
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrack', {
     members: {
@@ -59,7 +69,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       color: 'Color',
       keys: 'LinearKeyframe[]'
     },
-    constructor: FABRIC.RT.KeyframeTrack,
+    constructor: FABRIC.RT.LinearKeyframeTrack,
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
@@ -72,6 +82,21 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+
+FABRIC.RT.LinearKeyframeTrackSet = function(name) {
+  this.name = name ? name : 'linearKeyTrackSet';
+  this.timeRange = new FABRIC.RT.Vec2(0,0);
+  this.tracks = [];
+};
+
+FABRIC.RT.LinearKeyframeTrackSet.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrackSet.prototype,
+  newTrack: function(name, color, keys) {
+    return new FABRIC.RT.LinearKeyframeTrack(name, color, keys);
+  }
+}
+
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
     members: {
@@ -79,7 +104,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       timeRange: 'Vec2',
       tracks: 'LinearKeyframeTrack[]'
     },
-    constructor: FABRIC.RT.KeyframeTrackSet,
+    constructor: FABRIC.RT.LinearKeyframeTrackSet,
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
@@ -89,6 +114,27 @@ FABRIC.appendOnCreateContextCallback(function(context) {
           KEYFRAMEDATADEFAULTVALUE: '0.0'
         }
       )
+    }
+  });
+});
+
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('LinearKeyframeTrackSetBindings', {
+    members: {
+      scalarBindings: 'KeyframeTrackBinding[]',
+      vec3Bindings: 'KeyframeTrackBinding[]',
+      quatBindings: 'KeyframeTrackBinding[]',
+      xfoBindings: 'KeyframeTrackBinding[]'
+    },
+    constructor: FABRIC.RT.KeyframeTrackBindings,
+    klBindings: {
+      filename: 'KeyframeTrackBindings.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrackBindings.kl'), {
+          KEYFRAMEDATATYPE:'Scalar',
+          KEYFRAMETYPE: 'LinearKeyframe'
+        })
     }
   });
 });

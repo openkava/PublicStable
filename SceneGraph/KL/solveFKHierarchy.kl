@@ -12,9 +12,9 @@ operator solveFKHierarchy(
   io PoseVariables poseVariableSlices<>,
 ) {
   PoseVariables poseVariables = poseVariableSlices[index];
-  for (var Integer i = 0; i < bindings.boneIds.size; i++) {
-    if (bones[bindings.boneIds[i]].parent == - 1) {
-      pose[bindings.boneIds[i]] = poseVariables.xfoValues[i];
+  for (Integer i = 0; i < bindings.boneIds.size; i++) {
+    if (bones[bindings.boneIds[i]].parent == -1) {
+      pose[bindings.boneIds[i]] = poseVariables.xfoValues[bindings.xfoIds[i]];
     }
     else {
       pose[bindings.boneIds[i]] = pose[bones[bindings.boneIds[i]].parent] * poseVariables.xfoValues[bindings.xfoIds[i]];
@@ -29,8 +29,8 @@ operator invertFKHierarchy(
   io FKHierarchy bindings,
   io PoseVariables poseVariables
 ) {
-  for (var Integer i = 0; i < bindings.boneIds.size; i++) {
-    if (bones[bindings.boneIds[i]].parent == - 1)
+  for (Integer i = 0; i < bindings.boneIds.size; i++) {
+    if (bones[bindings.boneIds[i]].parent == -1)
       poseVariables.xfoValues[bindings.xfoIds[i]] = pose[bindings.boneIds[i]];
     else
       poseVariables.xfoValues[bindings.xfoIds[i]] = pose[bones[bindings.boneIds[i]].parent].inverse() * pose[bindings.boneIds[i]];

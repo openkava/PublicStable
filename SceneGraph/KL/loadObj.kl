@@ -12,9 +12,10 @@ function decodeObj(
   Boolean splitByObject,
   Boolean splitByGroup,
   Boolean splitByMaterial,
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   
   io String objectNames[],
+  io String groupNames[],
   io String materialNames[]
 ) {
   FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
@@ -34,8 +35,10 @@ function decodeObj(
     FabricOBJGetNbEntities(objParseHandle, nbEntities);
     for( Size i = 0; i < nbEntities; ++i ) {
       String objName, groupName, matName;
+      FabricOBJGetEntityObjectName(objParseHandle, i, objName);
+      objectNames.push(objName);
       FabricOBJGetEntityGroupName(objParseHandle, i, groupName);
-      objectNames.push(groupName);
+      groupNames.push(groupName);
       FabricOBJGetEntityMaterialName(objParseHandle, i, matName);
       materialNames.push(matName);
     }
@@ -52,6 +55,7 @@ function decodeObj(
     report "  Materials libraries: " + values;
     FabricOBJGetMaterialNames(objParseHandle, values);
     report "  Materials: " + values;
+    
     for( Size i = 0; i < nbEntities; ++i ) {
       String objName, groupName, matName;
       FabricOBJGetEntityObjectName(objParseHandle, i, objName);
@@ -61,11 +65,12 @@ function decodeObj(
       FabricOBJGetNbEntityTriangles(objParseHandle, i, nbTris);
       report "  Entity #" + i + ": objName: " + (objName != "" ? objName : "(none)") + ", groupName: " + (groupName != "" ? groupName : "(none)") + ", matName: " + (matName != "" ? matName : "(none)") + ", " + nbPts + " vertices, " + nbTris + " triangles";
     }
+    
   }
 }
 operator parseObj(
   io FabricResource resource,
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   io Boolean splitByObject,
   io Boolean splitByGroup,
   io Boolean splitByMaterial,
@@ -73,17 +78,18 @@ operator parseObj(
   io Boolean printDetailedInfo,
   
   io String objectNames[],
+  io String groupNames[],
   io String materialNames[]
 ) {
   Boolean validHandle;
   FabricOBJIsHandleValid( objParseHandle, validHandle );
   if( !validHandle )
-    decodeObj( resource, true, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, materialNames);
+    decodeObj( resource, printDetailedInfo, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, groupNames, materialNames);
 }
 
 
 operator setVertexCount(
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   io Integer entityIndex,
   io Boolean reload,
   io Size newCount
@@ -92,7 +98,7 @@ operator setVertexCount(
 }
 
 operator setObjGeom(
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   io Integer entityIndex,
   io Integer indices[],
   io Vec3 positions<>,
@@ -113,7 +119,7 @@ operator setObjGeom(
 }
 
 operator freeObjParsedData(
-  io Data objParseHandle
+  io OBJDataHandle objParseHandle
 ) {
   FabricOBJFreeParsedData(objParseHandle);
 }
