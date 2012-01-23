@@ -31,8 +31,9 @@ ut = new FABRIC.UnitTest;
           eventHandlerTwo.setScope( 'self', nodeTwo );
           eventHandlerTwo.setSelector( 'self', bindingTwo );
           eventHandler.appendChildEventHandler( eventHandlerTwo );
-          
-          var result = event.select( 'Scalar' );
+         
+          event.setSelectType( 'Scalar' );
+          var result = event.select();
           ut.expect( "Correct number of results", result.length, 1 );
           ut.expect( "Correct result value", result[0].value, 7 );
         } );

@@ -275,7 +275,7 @@ extern "C" {
 // (see methods 'CImg[List]<T>::{load,save}_tiff()').
 #ifdef cimg_use_tiff
 extern "C" {
-#include "tiffio.h"
+#include <libtiff/tiffio.h>
 }
 #endif
 

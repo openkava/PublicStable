@@ -213,7 +213,7 @@ namespace Fabric
       compileOptions.setGuarded( false );
 
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
-      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true );
+      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true, true );
 #if defined(FABRIC_MODULE_OPENCL)
       OCL::registerTypes( dgContext->getRTManager() );
 #endif

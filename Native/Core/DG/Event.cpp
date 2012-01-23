@@ -27,11 +27,16 @@ namespace Fabric
   namespace DG
   {
     
+    EventTaskGroup::~EventTaskGroup()
+    {
+      clear();
+    }
+    
     void EventTaskGroup::clear()
     {
       for ( size_t i=0; i<m_tasks.size(); ++i )
       {
-        delete m_tasks[i];
+        delete (EventHandlerTask*)m_tasks[i];
       }
       m_tasks.resize(0);
     }
@@ -184,10 +189,11 @@ namespace Fabric
     
     void Event::collectErrors( Scope *scope )
     {
+      Errors &errors = getErrors();
       for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
       {
         RC::Handle<EventHandler> const &eventHandler = *it;
-        eventHandler->collectErrorsForScope( scope );
+        eventHandler->collectErrorsForScope( scope, errors );
       }
     }
     
