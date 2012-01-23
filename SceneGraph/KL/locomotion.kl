@@ -198,7 +198,7 @@ operator evaluateLocomotionPoseVariables(
     );
   }
 
-  LinearKeyframeTrackSetBindings trackSet = animationLibrary[trackcontroller.activeTrackSet];
+  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
   FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
   LinearKeyframeTrackSetBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
   
@@ -216,7 +216,7 @@ operator evaluateLocomotionPoseVariables(
     t += timestep;
     trackcontroller.time = t;
     
-    poseVariables.evaluateKeyframeTracks(t, trackSet, bindings, trackcontroller.currKeys);
+    bindings.evaluateTracks(t, poseVariables, trackSet, trackcontroller.currKeys);
     
     /////////////////////////////////////////////////
     // Now store the com params for the next update.
@@ -371,12 +371,7 @@ operator evaluateLocomotionPoseVariables(
     t += timeIncrement;
     trackcontroller.time = t;
     
-    poseVariables.evaluateKeyframeTracks(
-      trackcontroller.time,
-      trackSet,
-      bindings,
-      trackcontroller.currKeys
-    );
+    bindings.evaluateTracks(t, poseVariables, trackSet, trackcontroller.currKeys);
     
     /////////////////////////////////////////////////
     // Now store the com params for the next update.
