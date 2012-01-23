@@ -424,8 +424,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
       if (!blendBoneParams.blendWeight) {
         throw ('Error in BlendBoneSolver: blendWeight not specified ');
       }
-
-      // first, we will compute the local transform of the end inside the start's space
+      
       var boneXfo = referencePose[boneIDs.bone];
       var baseXfo = referencePose[boneIDs.base];
       var targetXfo = referencePose[boneIDs.target];
@@ -464,6 +463,74 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
 });
 
 
+
+/*
+  The Blend Bone solver is usefull for procedural bones such as knee caps.
+  It interpolates 2 source bones onto a set of blend bones
+*/
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose();
+    
+    var verletBones = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var blendWeights = [];
+    var trPrev = [];
+    for(j=0; j<options.verletBones.length; j++){
+      var verletBoneParams = options.verletBones[j];
+      var boneIDs = solver.generateBoneMapping(verletBoneParams, ['bone']);
+      
+      if (!verletBoneParams.springStrength) {
+        throw ('Error in BlendBoneSolver: springStrength not specified ');
+      }
+      if (!verletBoneParams.dampening) {
+        throw ('Error in BlendBoneSolver: dampening not specified ');
+      }
+      var boneXfo = referencePose[boneIDs.bone];
+      
+      verletBones.push(boneIDs.bone);
+      simulationWeights.push(verletBoneParams.simulationWeight);
+      springStrengths.push(verletBoneParams.springStrength);
+      dampening.push(verletBoneParams.dampening);
+      trPrev.push(boneXfo.tr);
+    }
+    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletBone',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletBone',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        'skeleton.' + name + 'verletBones',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening'
+      ]
+    });
+      
+    return solver;
+  }
+});
 
 
 FABRIC.RT.Limb = function(boneIds, ankleId, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikGoalReferenceXfo, ikblendId) {

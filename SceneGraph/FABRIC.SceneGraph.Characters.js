@@ -742,11 +742,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       return undefined;
     };
     
-    characterRigNode.getSolverParams = function() {
-      return solverParams;
-    };
     characterRigNode.pub.getSolvers = function() {
       return solvers;
+    };
+    characterRigNode.addMember = function(name, type, value) {
+      dgnode.addMember(name, type, value);
     };
     characterRigNode.addSolverOperator = function(operatorDef) {
       operatorBinding = scene.constructOperator(operatorDef);
