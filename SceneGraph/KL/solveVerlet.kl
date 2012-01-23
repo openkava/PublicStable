@@ -1,0 +1,33 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use Vec3, Xfo;
+
+operator solveVerletBone(
+  io Scalar deltaT,
+  io Xfo pose[],
+  io Vec3 trPrev[],
+  io Vec3 gravity,
+  io Bone bones[],
+  io Integer verletBones[],
+  io Scalar simulationWeights[],
+  io Scalar springStrengths[],
+  io Scalar dampening[],
+) {
+  for (Integer i = 0; i < verletBones.size; i++) {
+    Scalar mass = 1.0;
+    Vec3 force = gravity;
+    Vec3 trCurr = pose[verletBones[i]].tr;
+    Vec3 temp = trCurr;
+    trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
+    Xfo attachedXfo = pose[bones[verletBones[i]].parent] * bones[verletBones[i]].referenceLocalPose;
+    force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
+    pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
+    pose[verletBones[i]].tr = pose[verletBones[i]].tr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
+    trPrev[i] = temp;
+  }
+}
+
+
+

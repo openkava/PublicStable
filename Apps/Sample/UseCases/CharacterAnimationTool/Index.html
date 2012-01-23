@@ -362,12 +362,11 @@ $(document).ready(function() {
       }
     });
     
-    rigNode.addSolver('moobs', 'FKHierarchySolver', {
-      bones: {
-        bones:[
-          '_LMoob','_RMoob'
-        ]
-      }
+    rigNode.addSolver('moobs', 'VerletBoneSolver', {
+      verletBones: [
+	{ bone:'_LMoob', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
+	{ bone:'_RMoob', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 }
+      ]
     });
     
   });
