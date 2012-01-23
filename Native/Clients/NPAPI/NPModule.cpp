@@ -1,5 +1,5 @@
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/Core/MT/Impl.h>

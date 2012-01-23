@@ -4,8 +4,8 @@
 
 #include <Fabric/Clients/NPAPI/IOStream.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Assert.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Assert.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/MT/LogCollector.h>
 
 namespace Fabric

@@ -4,8 +4,6 @@
 
 #include "Inst.h"
 
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Decode.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
@@ -19,7 +17,6 @@
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Plug/Helpers.h>
 #include <Fabric/Core/Build.h>
-#include <Fabric/Base/JSON/String.h>
 #include <Fabric/EDK/Common.h>
 
 namespace Fabric
@@ -57,11 +54,14 @@ namespace Fabric
     {
       try
       {
-        RC::ConstHandle<JSON::Value> value = JSON::decode( jsonDesc );
-        if ( !value->isObject() )
-          throw Exception( "top level must be a JSON object" );
-        RC::ConstHandle<JSON::Object> object = RC::ConstHandle<JSON::Object>::StaticCast( value );
-        m_desc = parseDesc( object );
+        JSON::Decoder jsonDecode( jsonDesc.data(), jsonDesc.length() );
+        JSON::Entity jsonEntity;
+        if ( !jsonDecode.getNext( jsonEntity ) )
+          throw Exception( "missing JSON entity" );
+        jsonEntity.requireObject();
+        m_desc = parseDesc( jsonEntity );
+        if ( jsonDecode.getNext( jsonEntity ) )
+          throw Exception( "extra JSON entity" );
       }
       catch ( Exception e )
       {
@@ -133,7 +133,7 @@ namespace Fabric
       {
         std::string const &codeEntry = *it;
         
-        if ( filename.length() == 0 )
+        if ( filename.empty() )
           filename = codeEntry;
           
         std::string code;
@@ -246,16 +246,16 @@ namespace Fabric
     }
       */
 
-    void Inst::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Inst::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "code", 4 );
-        memberJG.makeString( m_code );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "code", 4 );
+        memberEncoder.makeString( m_code );
       }
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "jsConstants", 11 );
-        memberJG.makeString( m_jsConstants );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "jsConstants", 11 );
+        memberEncoder.makeString( m_jsConstants );
       }
     }
 

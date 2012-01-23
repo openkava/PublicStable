@@ -15,15 +15,9 @@
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/Value.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/Util/Base64.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
-#include <Fabric/Base/JSON/Decode.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -149,7 +143,7 @@ namespace Fabric
 
     void Container::addMember( std::string const &name, RC::ConstHandle<RT::Desc> const &desc, void const *defaultData )
     {
-      if ( name.length() == 0 )
+      if ( name.empty() )
         throw Exception( "name must be non-empty" );
       
       RC::Handle<Member> member = Member::Create( m_context->getRTManager(), desc, m_count, defaultData );
@@ -161,7 +155,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescMembers( jg );
       }
       jsonNotifyMemberDelta( "members", 7, json );
@@ -178,7 +172,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescMembers( jg );
       }
       jsonNotifyMemberDelta( "members", 7, json );
@@ -213,7 +207,7 @@ namespace Fabric
       
         Util::SimpleString json;
         {
-          Util::JSONGenerator jg( &json );
+          JSON::Encoder jg( &json );
           jsonDescCount( jg );
         }
         jsonNotifyMemberDelta( "count", 5, json );
@@ -258,17 +252,17 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
-        Util::JSONObjectGenerator jog = jg.makeObject();
+        JSON::Encoder jsonEncoder( &json );
+        JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
         
         {
-          Util::JSONGenerator memberNameJG = jog.makeMember( "memberName", 10 );
-          memberNameJG.makeString( name );
+          JSON::Encoder memberNameEncoder = jsonObjectEncoder.makeMember( "memberName", 10 );
+          memberNameEncoder.makeString( name );
         }
         
         {
-          Util::JSONGenerator memberNameJG = jog.makeMember( "sliceIndex", 10 );
-          memberNameJG.makeInteger( index );
+          JSON::Encoder memberIndexEncoder = jsonObjectEncoder.makeMember( "sliceIndex", 10 );
+          memberIndexEncoder.makeInteger( index );
         }
       }
       jsonNotify( "dataChange", 10, &json );
@@ -284,12 +278,12 @@ namespace Fabric
       return member->getDesc()->setData( member->getImmutableElementData( index ), dstData );
     }
 
-    void Container::getDataJSON( std::string const &name, size_t index, Util::JSONGenerator &resultJG ) const
+    void Container::getDataJSON( std::string const &name, size_t index, JSON::Encoder &resultEncoder ) const
     {
       if ( index >= m_count )
         throw Exception( "index out of range" );
       RC::ConstHandle<Member> member = getMember( name );
-      return member->getDesc()->generateJSON( member->getImmutableElementData( index ), resultJG );
+      return member->getDesc()->encodeJSON( member->getImmutableElementData( index ), resultEncoder );
     }
     
     void Container::setData( std::string const &name, size_t index, void const *data )
@@ -303,57 +297,57 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
-        Util::JSONObjectGenerator jog = jg.makeObject();
+        JSON::Encoder jsonEncoder( &json );
+        JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
         
         {
-          Util::JSONGenerator memberNameJG = jog.makeMember( "memberName", 10 );
-          memberNameJG.makeString( name );
+          JSON::Encoder memberNameEncoder = jsonObjectEncoder.makeMember( "memberName", 10 );
+          memberNameEncoder.makeString( name );
         }
         
         {
-          Util::JSONGenerator memberNameJG = jog.makeMember( "sliceIndex", 10 );
-          memberNameJG.makeInteger( index );
+          JSON::Encoder memberIndexEncoder = jsonObjectEncoder.makeMember( "sliceIndex", 10 );
+          memberIndexEncoder.makeInteger( index );
         }
       }
       jsonNotify( "dataChange", 10, &json );
     }
     
-    void Container::generateJSON( Util::JSONGenerator &jsonGenerator ) const
+    void Container::encodeJSON( JSON::Encoder &encoder ) const
     {
-      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
         std::string const &name = it->first;
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
-        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( name );
-        Util::JSONArrayGenerator memberJAG = memberJG.makeArray();
+        JSON::Encoder memberEncoder = objectEncoder.makeMember( name );
+        JSON::ArrayEncoder memberArrayEncoder = memberEncoder.makeArray();
         for ( size_t i=0; i<m_count; ++i )
         {
-          Util::JSONGenerator elementJG = memberJAG.makeElement();
-          memberDesc->generateJSON( member->getImmutableElementData(i), elementJG );
+          JSON::Encoder elementEncoder = memberArrayEncoder.makeElement();
+          memberDesc->encodeJSON( member->getImmutableElementData(i), elementEncoder );
         }
       }
     }
     
-    void Container::generateSliceJSON( size_t index, Util::JSONGenerator &jsonGenerator ) const
+    void Container::generateSliceJSON( size_t index, JSON::Encoder &encoder ) const
     {
       if ( index >= m_count )
         throw Exception( "index "+_(index)+" out of range (slice count is "+_(m_count)+")" );
         
-      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
         std::string const &name = it->first;
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
-        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember(name);
-        memberDesc->generateJSON( member->getImmutableElementData( index ), memberJG );
+        JSON::Encoder memberEncoder = objectEncoder.makeMember(name);
+        memberDesc->encodeJSON( member->getImmutableElementData( index ), memberEncoder );
       }
     }
     
-    void Container::generateMemberJSON( std::string const &memberName, Util::JSONGenerator &jsonGenerator ) const
+    void Container::generateMemberJSON( std::string const &memberName, JSON::Encoder &encoder ) const
     {
       Members::const_iterator it = m_members.find( memberName );
       if ( it == m_members.end() )
@@ -362,32 +356,36 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
       
       size_t sliceCount = member->size();
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
       for ( size_t sliceIndex=0; sliceIndex<sliceCount; ++sliceIndex )
       {
-        Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
-        memberDesc->generateJSON( member->getImmutableElementData( sliceIndex ), elementJG );
+        JSON::Encoder elementEncoder = jsonArrayEncoder.makeElement();
+        memberDesc->encodeJSON( member->getImmutableElementData( sliceIndex ), elementEncoder );
       }
     }
 
-    void Container::setJSON( RC::ConstHandle<JSON::Value> const &value )
+    void Container::setJSON( JSON::Entity const &entity )
     {
-      if ( value->isArray() )
+      if ( entity.isArray() )
       {
-        RC::ConstHandle<JSON::Array> const &arrayValue = RC::ConstHandle<JSON::Array>::StaticCast( value );
-        setCount( arrayValue->size() );
-        
+        setCount( entity.arraySize() );
+        JSON::ArrayDecoder arrayDecoder( entity );
+        JSON::Entity elementEntity;
         for ( size_t i=0; i<m_count; ++i )
-          setSliceJSON( i, arrayValue->get(i) );
-      }
-      else if ( value->isObject() )
-      {
-        RC::ConstHandle<JSON::Object> objectValue = RC::ConstHandle<JSON::Object>::StaticCast( value );
-        
-        bool first = true;
-        for ( JSON::Object::const_iterator it=objectValue->begin(); it!=objectValue->end(); ++it )
         {
-          std::string const &name = it->first;
+          FABRIC_VERIFY( arrayDecoder.getNext( elementEntity ) );
+          setSliceJSON( i, elementEntity );
+        }
+        FABRIC_ASSERT( !arrayDecoder.getNext( elementEntity ) );
+      }
+      else if ( entity.isObject() )
+      {
+        bool first = true;
+        JSON::ObjectDecoder objectDecoder( entity );
+        JSON::Entity keyString, valueEntity;
+        while ( objectDecoder.getNext( keyString, valueEntity ) )
+        {
+          std::string name = keyString.stringToStdString();
           Members::const_iterator jt = m_members.find( name );
           if ( jt == m_members.end() )
             throw Exception( "node does not have member named '" + name + "'" );
@@ -395,21 +393,27 @@ namespace Fabric
           
           try
           {
-            RC::ConstHandle<JSON::Array> const &arrayValue = it->second->toArray();
+            valueEntity.requireArray();
             if ( first )
             {
-              setCount( arrayValue->size() );
+              setCount( valueEntity.arraySize() );
               first = false;
             }
             else
             {
-              if ( arrayValue->size() != m_count )
+              if ( valueEntity.arraySize() != m_count )
                 throw Exception( "inconsistent array length" );
             }
-          
+            
             RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
+            JSON::ArrayDecoder arrayDecoder( valueEntity );
+            JSON::Entity elementEntity;
             for ( size_t i=0; i<m_count; ++i )
-              memberDesc->setDataFromJSONValue( arrayValue->get(i), member->getMutableElementData(i) );
+            {
+              FABRIC_VERIFY( arrayDecoder.getNext( elementEntity ) );
+              memberDesc->decodeJSON( elementEntity, member->getMutableElementData(i) );
+            }
+            FABRIC_ASSERT( !arrayDecoder.getNext( elementEntity ) );
             setOutOfDate();
           }
           catch ( Exception e )
@@ -421,18 +425,18 @@ namespace Fabric
       else throw Exception( "JSON must be an object or an array" );
     }
 
-    void Container::setSliceJSON( size_t index, RC::ConstHandle<JSON::Value> const &value )
+    void Container::setSliceJSON( size_t index, JSON::Entity const &entity )
     {
       if ( index >= m_count )
         throw Exception( "index "+_(index)+" out of range (slice count is "+_(m_count)+")" );
-        
-      if ( !value->isObject() )
-        throw Exception( "malformed JSON" );
-      RC::ConstHandle<JSON::Object> objectValue = RC::ConstHandle<JSON::Object>::StaticCast( value );
       
-      for ( JSON::Object::const_iterator it=objectValue->begin(); it!=objectValue->end(); ++it )
+      entity.requireObject();
+      
+      JSON::ObjectDecoder objectDecoder( entity );
+      JSON::Entity keyString, valueEntity;
+      while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
-        std::string const &name = it->first;
+        std::string name = keyString.stringToStdString();
         Members::const_iterator jt = m_members.find( name );
         if ( jt == m_members.end() )
           throw Exception( "node does not have member named " + _(name) );
@@ -440,7 +444,7 @@ namespace Fabric
         
         try
         {
-          member->getDesc()->setDataFromJSONValue( it->second, member->getMutableElementData(index) );
+          member->getDesc()->decodeJSON( valueEntity, member->getMutableElementData(index) );
           setOutOfDate();
         }
         catch ( Exception e )
@@ -464,130 +468,133 @@ namespace Fabric
       return binding->bind( errors, selfScope, newCount, prefixCount, prefixes );
     }
     
-    void Container::jsonDescMembers( Util::JSONGenerator &resultJG ) const
+    void Container::jsonDescMembers( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJSONObject = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
         std::string const &name = it->first;
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
-        Util::JSONGenerator memberJG = resultJSONObject.makeMember( name );
-        Util::JSONObjectGenerator memberJOG = memberJG.makeObject();
-        memberJOG.makeMember( "type", 4 ).makeString( memberDesc->getUserName() );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( name );
+        JSON::ObjectEncoder memberObjectEncoder = memberEncoder.makeObject();
+        memberObjectEncoder.makeMember( "type", 4 ).makeString( memberDesc->getUserName() );
       }
     }
       
-    void Container::jsonDescCount( Util::JSONGenerator &resultJG ) const
+    void Container::jsonDescCount( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeInteger( getCount() );
+      resultEncoder.makeInteger( getCount() );
     }
       
-    void Container::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Container::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      NamedObject::jsonDesc( resultJG );
+      NamedObject::jsonDesc( resultEncoder );
     }
       
-    void Container::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void Container::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      NamedObject::jsonDesc( resultJOG );
+      NamedObject::jsonDesc( resultObjectEncoder );
       
       {
-        Util::JSONGenerator membersJG = resultJOG.makeMember( "members", 7 );
-        jsonDescMembers( membersJG );
+        JSON::Encoder membersEncoder = resultObjectEncoder.makeMember( "members", 7 );
+        jsonDescMembers( membersEncoder );
       }
       
       {
-        Util::JSONGenerator countJG = resultJOG.makeMember( "count", 5 );
-        jsonDescCount( countJG );
+        JSON::Encoder countEncoder = resultObjectEncoder.makeMember( "count", 5 );
+        jsonDescCount( countEncoder );
       }
     }
     
-    void Container::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExec(
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
+      )
     {
-      if ( cmd == "getData" )
-        jsonExecGetData( arg, resultJAG );
-      else if ( cmd == "getDataJSON" )
-        jsonExecGetDataJSON( arg, resultJAG );
-      else if ( cmd == "getDataJSON" )
-        jsonExecGetDataJSON( arg, resultJAG );
-      else if ( cmd == "getDataSize" )
-        jsonExecGetDataSize( arg, resultJAG );
-      else if ( cmd == "getDataElement" )
-        jsonExecGetDataElement( arg, resultJAG );
-      else if ( cmd == "putResourceToUserFile" )
-        jsonExecPutResourceToFile( arg, true, resultJAG );
-      else if ( cmd == "getResourceFromUserFile" )
-        jsonExecGetResourceFromFile( arg, true, resultJAG );
-      else if ( cmd == "putResourceToFile" )
-        jsonExecPutResourceToFile( arg, false, resultJAG );
-      else if ( cmd == "getResourceFromFile" )
-        jsonExecGetResourceFromFile( arg, false, resultJAG );
-      else if ( cmd == "setData" )
-        jsonExecSetData( arg, resultJAG );
-      else if ( cmd == "getBulkData" )
-        jsonExecGetBulkData( resultJAG );
-      else if ( cmd == "setBulkData" )
-        jsonExecSetBulkData( arg, resultJAG );
-      else if ( cmd == "getBulkDataJSON" )
-        jsonExecGetBulkDataJSON( resultJAG );
-      else if ( cmd == "setBulkDataJSON" )
-        jsonExecSetBulkDataJSON( arg, resultJAG );
-      else if ( cmd == "getSlicesBulkData" )
-        jsonExecGetSlicesBulkData( arg, resultJAG );
-      else if ( cmd == "setSlicesBulkData" )
-        jsonExecSetSlicesBulkData( arg, resultJAG );
-      else if ( cmd == "getMembersBulkData" )
-        jsonExecGetMembersBulkData( arg, resultJAG );
-      else if ( cmd == "addMember" )
-        jsonExecAddMember( arg, resultJAG );
-      else if ( cmd == "removeMember" )
-        jsonExecRemoveMember( arg, resultJAG );
-      else if ( cmd == "setCount" )
-        jsonSetCount( arg, resultJAG );
+      if ( cmd.stringIs( "getData", 7 ) )
+        jsonExecGetData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getDataJSON", 11 ) )
+        jsonExecGetDataJSON( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getDataSize", 11 ) )
+        jsonExecGetDataSize( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getDataElement", 14 ) )
+        jsonExecGetDataElement( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "putResourceToUserFile", 21 ) )
+        jsonExecPutResourceToFile( arg, true, resultArrayEncoder );
+      else if ( cmd.stringIs( "getResourceFromUserFile", 23 ) )
+        jsonExecGetResourceFromFile( arg, true, resultArrayEncoder );
+      else if ( cmd.stringIs( "putResourceToFile", 17 ) )
+        jsonExecPutResourceToFile( arg, false, resultArrayEncoder );
+      else if ( cmd.stringIs( "getResourceFromFile", 19 ) )
+        jsonExecGetResourceFromFile( arg, false, resultArrayEncoder );
+      else if ( cmd.stringIs( "setData", 7 ) )
+        jsonExecSetData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getBulkData", 11 ) )
+        jsonExecGetBulkData( resultArrayEncoder );
+      else if ( cmd.stringIs( "setBulkData", 11 ) )
+        jsonExecSetBulkData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getBulkDataJSON", 15 ) )
+        jsonExecGetBulkDataJSON( resultArrayEncoder );
+      else if ( cmd.stringIs( "setBulkDataJSON", 15 ) )
+        jsonExecSetBulkDataJSON( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getSlicesBulkData", 17 ) )
+        jsonExecGetSlicesBulkData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "setSlicesBulkData", 17 ) )
+        jsonExecSetSlicesBulkData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getMembersBulkData", 18 ) )
+        jsonExecGetMembersBulkData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "addMember", 9 ) )
+        jsonExecAddMember( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "removeMember", 12 ) )
+        jsonExecRemoveMember( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "setCount", 8 ) )
+        jsonSetCount( arg, resultArrayEncoder );
       else
-        NamedObject::jsonExec( cmd, arg, resultJAG );
+        NamedObject::jsonExec( cmd, arg, resultArrayEncoder );
     }
 
-    void Container::jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecAddMember( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
       std::string name;
-      try
-      {
-        name = argJSONObject->get( "name" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'name': " + e;
-      }
-      
       RC::ConstHandle<RT::Desc> desc;
-      try
-      {
-        std::string type = argJSONObject->get( "type" )->toString()->value();
-        desc = m_context->getRTManager()->getDesc( type );
-      }
-      catch ( Exception e )
-      {
-        throw "'desc': " + e;
-      }
-      
       std::vector<uint8_t> defaultValue;
-      try
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        RC::ConstHandle<JSON::Value> defaultValueJSONValue = argJSONObject->maybeGet( "defaultValue" );
-        if ( defaultValueJSONValue )
+        try
         {
-          defaultValue.resize( desc->getAllocSize() );
-          desc->setDataFromJSONValue( defaultValueJSONValue, &defaultValue[0] );
+          if ( keyString.stringIs( "name", 4 ) )
+          {
+            valueEntity.requireString();
+            name = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "type", 4 ) )
+          {
+            valueEntity.requireString();
+            std::string typeName = valueEntity.stringToStdString();
+            desc = m_context->getRTManager()->getDesc( typeName );
+          }
+          else if ( keyString.stringIs( "defaultValue", 12 ) )
+          {
+            defaultValue.resize( desc->getAllocSize(), 0 );
+            desc->decodeJSON( valueEntity, &defaultValue[0] );
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
         }
       }
-      catch ( Exception e )
-      {
-        throw "'defaultValue': " + e;
-      }
+      
+      if ( name.empty() )
+        throw Exception( "missing 'name'" );
+      if ( !desc )
+        throw Exception( "missing 'desc'" );
       
       addMember( name, desc, defaultValue.size()>0? &defaultValue[0]: 0 );
 
@@ -595,315 +602,410 @@ namespace Fabric
         desc->disposeData( &defaultValue[0] );
     }
 
-    void Container::jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecRemoveMember( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      removeMember( arg->toString()->value() );
+      arg.requireString();
+      std::string name = arg.stringToStdString();
+      removeMember( name );
     }
 
-    void Container::jsonSetCount( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonSetCount( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      int32_t newCount = arg->toInteger()->value();
+      arg.requireInteger();
+      int32_t newCount = arg.integerValue();
       if ( newCount < 0 )
         throw Exception( "count must be non-negative" );
       setCount( size_t( newCount ) );
     }
     
-    void Container::jsonGenerateMemberSliceJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONGenerator &resultJG )
+    void Container::jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
       RC::ConstHandle<Member> member;
-      try
+      size_t sliceIndex = SIZE_MAX;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        std::string memberName = argJSONObject->get( "memberName" )->toString()->value();
-        member = getMember( memberName );
-      }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
+        try
+        {
+          if ( keyString.stringIs( "memberName", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string memberName = valueEntity.stringToStdString();
+            member = getMember( memberName );
+          }
+          else if ( keyString.stringIs( "sliceIndex", 10 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t sliceIndexInt32 = valueEntity.integerValue();
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+              throw Exception( "out of range" );
+            sliceIndex = size_t( sliceIndexInt32 );
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
 
-      size_t sliceIndex;
-      try
-      {
-        sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
-        if ( sliceIndex >= m_count )
-          throw Exception( "out of range" );
-      }
-      catch ( Exception e )
-      {
-        throw "'sliceIndex': " + e;
-      }
+      if ( !member )
+        throw Exception( "missing 'memberName'" );
+      if ( sliceIndex == SIZE_MAX )
+        throw Exception( "missing 'sliceIndex'" );
 
-      member->getDesc()->generateJSON( member->getImmutableElementData( sliceIndex ), resultJG );
+      member->getDesc()->encodeJSON( member->getImmutableElementData( sliceIndex ), resultEncoder );
     }
       
-    void Container::jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecGetData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      jsonGenerateMemberSliceJSON( arg, resultJG );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      jsonGenerateMemberSliceJSON( arg, resultEncoder );
     }
       
-    void Container::jsonExecGetDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecGetDataJSON( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
-        jsonGenerateMemberSliceJSON( arg, jg );
+        JSON::Encoder jsonEncoder( &json );
+        jsonGenerateMemberSliceJSON( arg, jsonEncoder );
       }
       
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( json );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( json );
     }
       
-    void Container::jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecGetDataSize( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
       std::string memberName;
-      try
-      {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
-      }
-      
-      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
-      if ( !RT::isArray( desc->getType() ) )
-        throw Exception( "member type is not an array" );
-      RC::ConstHandle<RT::ArrayDesc> arrayDesc = RC::ConstHandle<RT::ArrayDesc>::StaticCast( desc );
-      
-      size_t sliceIndex;
-      try
-      {
-        sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'sliceIndex': " + e;
-      }
-      
-      void const *data = getConstData( memberName, sliceIndex );
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeInteger( arrayDesc->getNumMembers( data ) );
-    }
-      
-    void Container::jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
-    {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
-      std::string memberName;
-      try
-      {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
-      }
-      
-      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
-      if ( !RT::isArray( desc->getType() ) )
-        throw Exception( "member type is not an array" );
-      RC::ConstHandle<RT::ArrayDesc> arrayDesc = RC::ConstHandle<RT::ArrayDesc>::StaticCast( desc );
-      
-      size_t sliceIndex;
-      try
-      {
-        sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'sliceIndex': " + e;
-      }
-      
-      void const *data = getConstData( memberName, sliceIndex );
+      size_t sliceIndex = SIZE_MAX;
 
-      size_t elementIndex;
-      try
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        elementIndex = argJSONObject->get( "elementIndex" )->toInteger()->value();
+        try
+        {
+          if ( keyString.stringIs( "memberName", 10 ) )
+          {
+            valueEntity.requireString();
+            memberName = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sliceIndex", 10 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t sliceIndexInt32 = valueEntity.integerValue();
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+              throw Exception( "out of range" );
+            sliceIndex = size_t( sliceIndexInt32 );
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
-      catch ( Exception e )
+      
+      if ( memberName.empty() )
+        throw Exception( "missing 'memberName'" );
+      if ( sliceIndex == SIZE_MAX )
+        throw Exception( "missing 'sliceIndex'" );
+      
+      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
+      if ( !RT::isArray( desc->getType() ) )
+        throw Exception( "member type is not an array" );
+      RC::ConstHandle<RT::ArrayDesc> arrayDesc = RC::ConstHandle<RT::ArrayDesc>::StaticCast( desc );
+      
+      void const *data = getConstData( memberName, sliceIndex );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeInteger( arrayDesc->getNumMembers( data ) );
+    }
+      
+    void Container::jsonExecGetDataElement( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
+    {
+      std::string memberName;
+      size_t sliceIndex = SIZE_MAX;
+      size_t elementIndex = SIZE_MAX;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        throw "'elementIndex': " + e;
+        try
+        {
+          if ( keyString.stringIs( "memberName", 10 ) )
+          {
+            valueEntity.requireString();
+            memberName = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sliceIndex", 10 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t sliceIndexInt32 = valueEntity.integerValue();
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+              throw Exception( "out of range" );
+            sliceIndex = size_t( sliceIndexInt32 );
+          }
+          else if ( keyString.stringIs( "elementIndex", 12 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t elementIndexInt32 = valueEntity.integerValue();
+            if ( elementIndexInt32 < 0 )
+              throw Exception( "out of range" );
+            elementIndex = size_t( elementIndexInt32 );
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
+      
+      if ( memberName.empty() )
+        throw Exception( "missing 'memberName'" );
+      if ( sliceIndex == SIZE_MAX )
+        throw Exception( "missing 'sliceIndex'" );
+      if ( elementIndex == SIZE_MAX )
+        throw Exception( "missing 'elementIndex'" );
+      
+      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
+      if ( !RT::isArray( desc->getType() ) )
+        throw Exception( "member type is not an array" );
+      RC::ConstHandle<RT::ArrayDesc> arrayDesc = RC::ConstHandle<RT::ArrayDesc>::StaticCast( desc );
+      
+      void const *data = getConstData( memberName, sliceIndex );
       
       void const *memberData = arrayDesc->getMemberData( data, elementIndex );
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      arrayDesc->getMemberDesc()->generateJSON( memberData, resultJG );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      arrayDesc->getMemberDesc()->encodeJSON( memberData, resultEncoder );
     }
       
-    void Container::jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecSetData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
       std::string memberName;
-      try
+      size_t sliceIndex = SIZE_MAX;
+      JSON::Entity dataEntity;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
+        try
+        {
+          if ( keyString.stringIs( "memberName", 10 ) )
+          {
+            valueEntity.requireString();
+            memberName = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sliceIndex", 10 ) )
+          {
+            valueEntity.requireInteger();
+            int32_t sliceIndexInt32 = valueEntity.integerValue();
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+              throw Exception( "out of range" );
+            sliceIndex = size_t( sliceIndexInt32 );
+          }
+          else if ( keyString.stringIs( "data", 4 ) )
+          {
+            dataEntity = valueEntity;
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
       
-      size_t sliceIndex;
-      try
-      {
-        sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'sliceIndex': " + e;
-      }
+      if ( memberName.empty() )
+        throw Exception( "missing 'memberName'" );
+      if ( sliceIndex == SIZE_MAX )
+        throw Exception( "missing 'sliceIndex'" );
+      if ( !dataEntity )
+        throw Exception( "missing 'data'" );
       
-      RC::ConstHandle<JSON::Value> dataJSONValue;
-      try
-      {
-        dataJSONValue = argJSONObject->get( "data" );
-      }
-      catch ( Exception e )
-      {
-        throw "'data': " + e;
-      }
-      
-      getDesc( memberName )->setDataFromJSONValue( dataJSONValue, getMutableData( memberName, sliceIndex ) );
+      getDesc( memberName )->decodeJSON( dataEntity, getMutableData( memberName, sliceIndex ) );
     }
       
-    void Container::jsonExecGetBulkData( Util::JSONArrayGenerator &resultJAG ) const
+    void Container::jsonExecGetBulkData( JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      generateJSON( resultJG );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      encodeJSON( resultEncoder );
     }
       
-    void Container::jsonExecGetBulkDataJSON( Util::JSONArrayGenerator &resultJAG ) const
+    void Container::jsonExecGetBulkDataJSON( JSON::ArrayEncoder &resultArrayEncoder ) const
     {
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
-        generateJSON( jg );
+        JSON::Encoder jg( &json );
+        encodeJSON( jg );
       }
       
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( json );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( json );
     }
       
-    void Container::jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecSetBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       setJSON( arg );
     }
       
-    void Container::jsonExecSetBulkDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecSetBulkDataJSON( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      std::string jsonString = arg->toString()->value();
-      RC::ConstHandle<JSON::Value> jsonValue = JSON::decode( jsonString );
-      setJSON( jsonValue );
+      arg.requireString();
+      std::string jsonString = arg.stringToStdString();
+      JSON::Decoder jsonStringDecoder( jsonString.data(), jsonString.length() );
+      JSON::Entity jsonEntity;
+      if ( !jsonStringDecoder.getNext( jsonEntity ) )
+        throw Exception( "missing JSON entity" );
+      setJSON( jsonEntity );
+      if ( jsonStringDecoder.getNext( jsonEntity ) )
+        throw Exception( "extra JSON entity" );
     }
       
-    void Container::jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Container::jsonExecGetSlicesBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
-      size_t argJSONArraySize = argJSONArray->size();
-      
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      Util::JSONArrayGenerator slicesJAG = resultJG.makeArray();
-      for ( size_t i=0; i<argJSONArraySize; ++i )
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ArrayEncoder slicesArrayEncoder = resultEncoder.makeArray();
+
+      arg.requireArray();
+      JSON::ArrayDecoder argArrayDecoder( arg );
+      JSON::Entity elementEntity;
+      size_t i = 0;
+      while ( argArrayDecoder.getNext( elementEntity ) )
       {
         try
         {
-          size_t index = argJSONArray->get( i )->toInteger()->value();
-          Util::JSONGenerator sliceJG = slicesJAG.makeElement();
-          generateSliceJSON( index, sliceJG );
+          elementEntity.requireInteger();
+          int32_t indexInt32 = elementEntity.integerValue();
+          size_t index = size_t(indexInt32);
+          if ( indexInt32 < 0 || index >= m_count )
+            throw Exception( "out of range" );
+          
+          JSON::Encoder sliceEncoder = slicesArrayEncoder.makeElement();
+          generateSliceJSON( index, sliceEncoder );
         }
         catch ( Exception e )
         {
           throw "index " + _(i) + ": " + e;
+        }
+        
+        ++i;
+      }
+    }
+      
+    void Container::jsonExecGetMembersBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
+    {
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder membersObjectEncoder = resultEncoder.makeObject();
+
+      arg.requireArray();
+      JSON::ArrayDecoder argArrayDecoder( arg );
+      JSON::Entity elementEntity;
+      while ( argArrayDecoder.getNext( elementEntity ) )
+      {
+        try
+        {
+          elementEntity.requireString();
+          std::string memberName = elementEntity.stringToStdString();
+          JSON::Encoder memberEncoder = membersObjectEncoder.makeMember( memberName );
+          generateMemberJSON( memberName, memberEncoder );
+        }
+        catch ( Exception e )
+        {
+          argArrayDecoder.rethrow( e );
         }
       }
     }
       
-    void Container::jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Container::jsonExecSetSlicesBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
-      size_t argJSONArraySize = argJSONArray->size();
-      
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      Util::JSONObjectGenerator membersJOG = resultJG.makeObject();
-      for ( size_t i=0; i<argJSONArraySize; ++i )
+      arg.requireArray();
+      JSON::ArrayDecoder argArrayDecoder( arg );
+      JSON::Entity elementEntity;
+      while ( argArrayDecoder.getNext( elementEntity ) )
       {
         try
         {
-          std::string memberName = argJSONArray->get(i)->toString()->value();
-          Util::JSONGenerator memberJG = membersJOG.makeMember( memberName );
-          generateMemberJSON( memberName, memberJG );
+          size_t sliceIndex = SIZE_MAX;
+          JSON::Entity dataEntity;
+
+          elementEntity.requireObject();
+          JSON::ObjectDecoder elementObjectDecoder( elementEntity );
+          JSON::Entity keyString, valueEntity;
+          while ( elementObjectDecoder.getNext( keyString, valueEntity ) )
+          {
+            try
+            {
+              if ( keyString.stringIs( "sliceIndex", 10 ) )
+              {
+                valueEntity.requireInteger();
+                int32_t sliceIndexInt32 = valueEntity.integerValue();
+                sliceIndex = size_t( sliceIndexInt32 );
+                if ( sliceIndexInt32 < 0 || sliceIndex >= m_count )
+                  throw Exception( "out of range" );
+              }
+              else if ( keyString.stringIs( "data", 4 ) )
+              {
+                dataEntity = valueEntity;
+              }
+            }
+            catch ( Exception e )
+            {
+              elementObjectDecoder.rethrow( e );
+            }
+          }
+          
+          if ( sliceIndex == SIZE_MAX )
+            throw Exception( "missing 'sliceIndex'" );
+          if ( !dataEntity )
+            throw Exception( "missing 'data'" );
+          
+          setSliceJSON( sliceIndex, dataEntity );
         }
         catch ( Exception e )
         {
-          throw "index " + _(i) + ": " + e;
-        }
-      }
-    }
-      
-    void Container::jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
-    {
-      RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
-      size_t argJSONArraySize = argJSONArray->size();
-      for ( size_t i=0; i<argJSONArraySize; ++i )
-      {
-        try
-        {
-          RC::ConstHandle<JSON::Object> argJSONObject = argJSONArray->get(i)->toObject();
-          
-          size_t sliceIndex;
-          try
-          {
-            sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
-          }
-          catch ( Exception e )
-          {
-            throw "'sliceIndex': " + e;
-          }
-          
-          RC::ConstHandle<JSON::Value> dataJSONValue;
-          try
-          {
-            dataJSONValue = argJSONObject->get( "data" );
-          }
-          catch ( Exception e )
-          {
-            throw "'data': " + e;
-          }
-          
-          setSliceJSON( sliceIndex, dataJSONValue );
-        }
-        catch ( Exception e )
-        {
-          throw "index " + _(i) + ": " + e;
+          argArrayDecoder.rethrow( e );
         }
       }
     }
 
-    void *Container::jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName )
+    void *Container::jsonGetResourceMember( JSON::Entity const &arg, std::string &memberName )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
+      bool haveMemberName = false;
       
-      try
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
+        try
+        {
+          if ( keyString.stringIs( "memberName", 10 ) )
+          {
+            valueEntity.requireString();
+            memberName = valueEntity.stringToStdString();
+            haveMemberName = true;
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
-      }
+      
+      if ( !haveMemberName )
+        throw Exception( "missing 'memberName'" );
 
       RC::Handle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
-      if( desc->getUserName() != "FabricResource" )
+      if ( desc->getUserName() != "FabricResource" )
       {
-        throw Exception( "member" + memberName + " is not of type FabricResource" );
+        throw Exception( "member " + _(memberName) + " is not of type FabricResource" );
       }
       return member->getMutableElementData( 0 );
     }
@@ -923,7 +1025,7 @@ namespace Fabric
       FabricResourceWrapper& m_resource;
     };
 
-    void Container::jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecGetResourceFromFile( JSON::Entity const &arg, bool userFile, JSON::ArrayEncoder &resultArrayEncoder )
     {
       std::string memberName;
       FabricResourceWrapper resourceMember( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
@@ -934,33 +1036,33 @@ namespace Fabric
 
       std::string filename, extension;
       if( userFile )
-        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension, resultJAG );
+        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension, resultArrayEncoder );
       else
-        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension, resultJAG );
+        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension, resultArrayEncoder );
 
       tempResource.setExtension( extension );
       tempResource.setURL( filename );
       setData( memberName, 0, tempResource.get() );
     }
 
-    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecPutResourceToFile( JSON::Entity const &arg, bool userFile, JSON::ArrayEncoder &resultArrayEncoder )
     {
       std::string memberName;
       FabricResourceWrapper resource( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
       if( userFile )
-        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str(), resultJAG );
+        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str(), resultArrayEncoder );
       else
-        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resultJAG );
+        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resultArrayEncoder );
     }
 
-    void Container::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const
+    void Container::jsonGetMemoryUsage( JSON::Encoder &encoder ) const
     {
-      Util::JSONObjectGenerator jog = jg.makeObject();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       for ( Members::const_iterator it = m_members.begin(); it != m_members.end(); ++it )
       {
-        Util::JSONGenerator memberJG = jog.makeMember( it->first );
+        JSON::Encoder memberEncoder = objectEncoder.makeMember( it->first );
         RC::Handle<Member> const &member = it->second;
-        memberJG.makeInteger( int32_t( member->getMemoryUsage() ) );
+        memberEncoder.makeInteger( int32_t( member->getMemoryUsage() ) );
       }
     }
   };

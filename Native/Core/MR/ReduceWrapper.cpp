@@ -10,8 +10,8 @@
 #include <Fabric/Core/KLC/ReduceOperatorWrapper.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
@@ -59,21 +59,21 @@ namespace Fabric
       return "Reduce";
     }
     
-    void ReduceWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ReduceWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "input" );
+        JSON::Encoder jg = objectEncoder.makeMember( "input" );
         m_inputWrapper->toJSON( jg );
       }
 
       {
-        Util::JSONGenerator jg = jog.makeMember( "operator" );
+        JSON::Encoder jg = objectEncoder.makeMember( "operator" );
         m_operatorWrapper->toJSON( jg );
       }
       
       if ( m_sharedWrapper )
       {
-        Util::JSONGenerator jg = jog.makeMember( "shared" );
+        JSON::Encoder jg = objectEncoder.makeMember( "shared" );
         m_sharedWrapper->toJSON( jg );
       }
     }

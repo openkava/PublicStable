@@ -25,7 +25,7 @@
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>

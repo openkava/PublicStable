@@ -7,7 +7,7 @@
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/IO/Helpers.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {

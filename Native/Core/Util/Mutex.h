@@ -6,7 +6,7 @@
 #define _FABRIC_UTIL_MUTEX_H
 
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Core/Util/Debug.h>
 
 #if defined(FABRIC_POSIX)
@@ -37,7 +37,7 @@ namespace Fabric
         pthread_mutexattr_init( &attr );
         pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
                 
-        FABRIC_CONFIRM( pthread_mutex_init( &m_mutex, &attr ) == 0 );
+        FABRIC_VERIFY( pthread_mutex_init( &m_mutex, &attr ) == 0 );
         
         pthread_mutexattr_destroy( &attr );
 #endif
@@ -48,7 +48,7 @@ namespace Fabric
 #if defined(FABRIC_OS_WINDOWS) 
         ::DeleteCriticalSection( &m_cs );
 #else
-        FABRIC_CONFIRM( pthread_mutex_destroy( &m_mutex ) == 0 );
+        FABRIC_VERIFY( pthread_mutex_destroy( &m_mutex ) == 0 );
 #endif
       }
       

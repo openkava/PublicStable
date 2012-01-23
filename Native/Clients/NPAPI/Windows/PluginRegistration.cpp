@@ -3,7 +3,7 @@
 // (C) 2011 Fabric Technologies, Inc.
 
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Base/Exception.h>
 
 #include <windows.h>

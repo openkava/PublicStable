@@ -34,26 +34,26 @@ namespace Fabric
     {
       Util::SimpleString ss;
       {
-        Util::JSONGenerator jsonGenerator( &ss );
-        generateJSON( includeLocation, jsonGenerator );
+        JSON::Encoder encoder( &ss );
+        encodeJSON( includeLocation, encoder );
       }
       return ss;
     }
     
-    void GlobalList::generateJSON( bool includeLocation, Util::JSONGenerator &jg ) const
+    void GlobalList::encodeJSON( bool includeLocation, JSON::Encoder &jg ) const
     {
-      Util::JSONArrayGenerator jsonArrayGenerator = jg.makeArray();
-      appendJSON( jsonArrayGenerator, includeLocation );
+      JSON::ArrayEncoder jsonArrayEncoder = jg.makeArray();
+      appendJSON( jsonArrayEncoder, includeLocation );
     }
     
-    void GlobalList::appendJSON( Util::JSONArrayGenerator const &jsonArrayGenerator, bool includeLocation ) const
+    void GlobalList::appendJSON( JSON::ArrayEncoder const &jsonArrayEncoder, bool includeLocation ) const
     {
       if ( m_before )
-        m_before->appendJSON( jsonArrayGenerator, includeLocation );
+        m_before->appendJSON( jsonArrayEncoder, includeLocation );
       if ( m_global )
-        m_global->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
+        m_global->appendJSON( jsonArrayEncoder.makeElement(), includeLocation );
       if ( m_after )
-        m_after->appendJSON( jsonArrayGenerator, includeLocation );
+        m_after->appendJSON( jsonArrayEncoder, includeLocation );
     }
     
     void GlobalList::collectUses( UseNameToLocationMap &uses ) const

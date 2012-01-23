@@ -11,10 +11,6 @@
 #include <Fabric/Core/DG/Node.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/Scalar.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
 
 #if defined(FABRIC_OS_WINDOWS)
 # include <intrin.h>
@@ -77,18 +73,18 @@ namespace Fabric
         NPN_ReleaseObject( m_redrawFinishedCallback );
     }
     
-    void ViewPort::jsonNotify( std::string const &cmd, Util::SimpleString const *arg ) const
+    void ViewPort::jsonNotify( char const *cmdData, size_t cmdLength, Util::SimpleString const *arg ) const
     {
       std::vector<std::string> src;
       src.push_back("VP");
       src.push_back("viewPort");
       
-      m_context->jsonNotify( src, cmd.data(), cmd.length(), arg );
+      m_context->jsonNotify( src, cmdData, cmdLength, arg );
     }
     
     void ViewPort::asyncRedrawFinished()
     {
-      jsonNotify( "redrawFinished", 0 );
+      jsonNotify( "redrawFinished", 14, 0 );
     }
 
     RC::Handle<MT::LogCollector> ViewPort::getLogCollector() const
@@ -202,49 +198,73 @@ namespace Fabric
       return m_interface;
     }
     
-    void ViewPort::jsonExecGetFPS( Util::JSONArrayGenerator &resultJAG ) const
+    void ViewPort::jsonExecGetFPS( JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeScalar( m_fps );
+      resultArrayEncoder.makeElement().makeScalar( m_fps );
     }
 
-    void ViewPort::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void ViewPort::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
       size_t width, height;
       getWindowSize( width, height );
       
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      resultJOG.makeMember( "fps", 3 ).makeScalar( m_fps );
-      resultJOG.makeMember( "width", 5 ).makeInteger( width );
-      resultJOG.makeMember( "height", 6 ).makeInteger( height );
-      resultJOG.makeMember( "windowNode", 10 ).makeString( m_windowNode->getName() );
-      resultJOG.makeMember( "redrawEvent", 11 ).makeString( m_redrawEvent->getName() );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      resultObjectEncoder.makeMember( "fps", 3 ).makeScalar( m_fps );
+      resultObjectEncoder.makeMember( "width", 5 ).makeInteger( width );
+      resultObjectEncoder.makeMember( "height", 6 ).makeInteger( height );
+      resultObjectEncoder.makeMember( "windowNode", 10 ).makeString( m_windowNode->getName() );
+      resultObjectEncoder.makeMember( "redrawEvent", 11 ).makeString( m_redrawEvent->getName() );
     }
 
-    void ViewPort::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void ViewPort::jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      if ( cmd == "needsRedraw" )
+      if ( cmd.stringIs( "needsRedraw", 11 ) )
         needsRedraw();
-      else if ( cmd == "getFPS" )
-        jsonExecGetFPS( resultJAG );
-      else if ( cmd == "addPopUpMenuItem" )
-        jsonExecAddPopupItem( arg, resultJAG );
+      else if ( cmd.stringIs( "getFPS", 6 ) )
+        jsonExecGetFPS( resultArrayEncoder );
+      else if ( cmd.stringIs( "addPopUpMenuItem", 16 ) )
+        jsonExecAddPopupItem( arg, resultArrayEncoder );
       else throw Exception( "unrecognized command" );
     }
     
-    void ViewPort::jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void ViewPort::jsonExecAddPopupItem( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       PopUpItem popUpItem;
-      popUpItem.desc = argObject->get("desc")->toString()->value();
-      popUpItem.value = argObject->get("arg");
+      
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
+      {
+        try
+        {
+          if ( keyString.stringIs( "desc", 4 ) )
+          {
+            valueEntity.requireString();
+            popUpItem.desc = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "arg", 3 ) )
+          {
+            popUpItem.argJSON = Util::SimpleString( valueEntity.data, valueEntity.length );
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
+      
+      if ( popUpItem.desc.empty() )
+        throw Exception( "missing 'desc'" );
+      if ( popUpItem.argJSON.empty() )
+        throw Exception( "missing 'arg'" );
+        
       m_popUpItems.push_back( popUpItem );
     }
     
     void ViewPort::jsonNotifyPopUpItem( Util::SimpleString const &arg ) const
     {
-      jsonNotify( "popUpMenuItemSelected", &arg );
+      jsonNotify( "popUpMenuItemSelected", 21, &arg );
     }
 
     void ViewPort::drawWatermark( size_t width, size_t height )

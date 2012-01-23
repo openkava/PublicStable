@@ -9,12 +9,8 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Clients/NPAPI/IOManager.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Decode.h>
 #include <Fabric/Core/Util/Timer.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
@@ -91,7 +87,7 @@ namespace Fabric
             
             Util::SimpleString jsonEncodedResults;
             {
-              Util::JSONGenerator jg( &jsonEncodedResults );
+              JSON::Encoder jg( &jsonEncodedResults );
               m_interface->jsonExec( npString.UTF8Characters, npString.UTF8Length, jg );
             }
             
@@ -369,11 +365,11 @@ namespace Fabric
       return m_context->getIOManager()->nppDestroyStream( npp, stream, reason );
     }
       
-    void Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength, Util::JSONGenerator &resultJG )
+    void Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength, JSON::Encoder &resultEncoder )
     {
       if ( m_viewPort )
         m_viewPort->pushOGLContext();
-      DG::Client::jsonExec( jsonEncodedCommandsData, jsonEncodedCommandsLength, resultJG );
+      DG::Client::jsonExec( jsonEncodedCommandsData, jsonEncodedCommandsLength, resultEncoder );
       if ( m_viewPort )
         m_viewPort->popOGLContext();
     }

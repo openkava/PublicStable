@@ -4,16 +4,13 @@
  
 #include "VariableArrayImpl.h"
 
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Bits.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 #include <algorithm>
 
@@ -63,45 +60,31 @@ namespace Fabric
       }
     }
 
-    RC::Handle<JSON::Value> VariableArrayImpl::getJSONValue( void const *data ) const
+    void VariableArrayImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       size_t numMembers = getNumMembers(data);
       
-      RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( numMembers );
-      for ( size_t i = 0; i < numMembers; ++i )
-      {
-        void const *srcMemberData = getImmutableMemberData_NoCheck( data, i );
-        arrayValue->set( i, m_memberImpl->getJSONValue( srcMemberData ) );
-      }
-      return arrayValue;
-    }
-    
-    void VariableArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      size_t numMembers = getNumMembers(data);
-      
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
       for ( size_t i = 0; i < numMembers; ++i )
       {
         void const *memberData = getImmutableMemberData_NoCheck( data, i );
-        Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
-        m_memberImpl->generateJSON( memberData, elementJG );
+        JSON::Encoder elementEncoder = jsonArrayEncoder.makeElement();
+        m_memberImpl->encodeJSON( memberData, elementEncoder );
       }
     }
     
-    void VariableArrayImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    void VariableArrayImpl::decodeJSON( JSON::Entity const &entity, void *data ) const
     {
-      if ( entityInfo.type != Util::ET_ARRAY )
-        throw Exception("JSON value is not an array");
+      entity.requireArray();
         
-      setNumMembers( data, entityInfo.value.array.size );
+      setNumMembers( data, entity.value.array.size );
         
       size_t membersFound = 0;
-      Util::JSONArrayParser arrayDecoder( entityInfo );
-      Util::JSONEntityInfo elementEntity;
+      JSON::ArrayDecoder arrayDecoder( entity );
+      JSON::Entity elementEntity;
       while ( arrayDecoder.getNext( elementEntity ) )
       {
-        FABRIC_ASSERT( membersFound < entityInfo.value.array.size );
+        FABRIC_ASSERT( membersFound < entity.value.array.size );
         try
         {
           void *memberData = getMutableMemberData_NoCheck( data, membersFound );
@@ -114,23 +97,7 @@ namespace Fabric
         ++membersFound;
       }
       
-      FABRIC_ASSERT( membersFound == entityInfo.value.array.size );
-    }
-    
-    void VariableArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
-    {
-      if ( !jsonValue->isArray() )
-        throw Exception( "JSON value is not array" );
-      RC::ConstHandle<JSON::Array> jsonArray = RC::ConstHandle<JSON::Array>::StaticCast( jsonValue );
-
-      size_t numMembers = jsonArray->size();
-      setNumMembers( data, numMembers );
-
-      for ( size_t i=0; i<numMembers; ++i )
-      {
-        void *memberData = getMutableMemberData_NoCheck( data, i );
-        getMemberImpl()->setDataFromJSONValue( jsonArray->get(i), memberData );
-      }
+      FABRIC_ASSERT( membersFound == entity.value.array.size );
     }
 
     void VariableArrayImpl::disposeDatasImpl( void *_data, size_t count, size_t stride ) const

@@ -13,7 +13,7 @@
 
 #include <Fabric/Core/RT/FloatDesc.h>
 #include <Fabric/Core/RT/FloatImpl.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
