@@ -8,24 +8,23 @@ use Bone;
 operator solveBlendBones(
   io Xfo pose[],
   io Bone bones[],
-  io Integer base,
-  io Integer end,
   io Integer blendBones[],
-  io Xfo blendBoneOffsets[],
-  io Scalar blendWeights[]
+  io Integer base[],
+  io Integer end[],
+  io Scalar blendWeights[],
+  io Quat blendBoneOffsets[]
 ) {
-  if (blendBones.size() != blendWeights.size()) {
-    // TODO: throw an assert once we are able to do that.
-    report('Error: blendBones count does not match blendWeights count');
-    return;
-  }
-
-  Xfo baseXfo = pose[base];
-  Xfo endXfo = pose[end];
-
   for (var Integer i = 0; i < blendBones.size(); i++) {
+
+    Xfo baseXfo = pose[base[i]];
+    Xfo endXfo = pose[end[i]];
+    Xfo blendedXfo = baseXfo;
+    blendedXfo.ori = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, blendWeights[i]);
+  
     pose[blendBones[i]].tr = baseXfo.transformVector(bones[blendBones[i]].referenceLocalPose.tr);
     pose[blendBones[i]].ori = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, blendWeights[i]);
+    
+    pose[blendBones[i]].ori = pose[blendBones[i]].ori * blendBoneOffsets[i];
   }
 }
 

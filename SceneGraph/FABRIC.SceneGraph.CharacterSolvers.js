@@ -401,57 +401,64 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
   The Blend Bone solver is usefull for procedural bones such as knee caps.
   It interpolates 2 source bones onto a set of blend bones
 */
+
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
   constructSolver: function(options, scene) {
 
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = rigNode.pub.getSkeletonNode(),
-      bones = skeletonNode.getBones(),
-      referencePose = skeletonNode.getReferencePose(),
-      boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['blendBones']]),
-      size,
-      name = options.name;
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose();
 
-    if (!options.blendWeights) {
-      throw ('Error in BlendBoneSolver: blendWeights not specified ');
-    }
-    if (options.blendWeights.length != boneIDs.blendBones.length) {
-      throw ('Error in BlendBoneSolver: blendWeights.length != blendBones.length ');
-    }
-
-    // first, we will compute the local transform of the end inside the start's space
-    var startXfo = referencePose[boneIDs.start];
-    var endXfo = referencePose[boneIDs.end];
-
+    var blendBones = [];
+    var baseBones = [];
+    var targetBones = [];
+    var blendWeights = [];
     var blendBoneOffsets = [];
-    for (var i = 0; i < boneIDs.blendBones.length; i++) {
-      var blendedXfo = startXfo.clone();
-      blendedXfo.ori.sphericalLinearInterpolate(startXfo.ori, options.blendWeights[i]);
-      blendBoneOffsets.push(startXfo.inverse().multiply(blendedXfo));
+    for(j=0; j<options.blendBones.length; j++){
+      var blendBoneParams = options.blendBones[j];
+      var boneIDs = solver.generateBoneMapping(blendBoneParams, ['bone', 'base', 'target']);
+      
+      if (!blendBoneParams.blendWeight) {
+        throw ('Error in BlendBoneSolver: blendWeight not specified ');
+      }
+
+      // first, we will compute the local transform of the end inside the start's space
+      var boneXfo = referencePose[boneIDs.bone];
+      var baseXfo = referencePose[boneIDs.base];
+      var targetXfo = referencePose[boneIDs.target];
+
+      var blendedQuat = baseXfo.ori.sphericalLinearInterpolate(targetXfo.ori, blendBoneParams.blendWeight);
+      blendBoneOffsets.push(blendedQuat.inverse().multiply(boneXfo.ori));
+      
+      blendBones.push(boneIDs.bone);
+      baseBones.push(boneIDs.base);
+      targetBones.push(boneIDs.target);
+      blendWeights.push(blendBoneParams.blendWeight);
     }
-    skeletonNode.addMember(name + 'start', 'Integer', boneIDs.start);
-    skeletonNode.addMember(name + 'end', 'Integer', boneIDs.end);
-    skeletonNode.addMember(name + 'blendBones', 'Integer[]', boneIDs.blendBones);
-    skeletonNode.addMember(name + 'blendBoneOffsets', 'Xfo[]', blendBoneOffsets);
-    skeletonNode.addMember(name + 'blendWeights', 'Scalar[]', options.blendWeights);
-
+    skeletonNode.addMember(name + 'blendBones', 'Integer[]', blendBones);
+    skeletonNode.addMember(name + 'baseBones', 'Integer[]', baseBones);
+    skeletonNode.addMember(name + 'targetBones', 'Integer[]', targetBones);
+    skeletonNode.addMember(name + 'blendWeights', 'Scalar[]', blendWeights);
+    skeletonNode.addMember(name + 'blendBoneOffsets', 'Quat[]', blendBoneOffsets);
+    
     rigNode.addSolverOperator({
-        operatorName: 'solveBlendBones',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
-        entryFunctionName: 'solveBlendBones',
-        parameterLayout: [
-          'self.pose',
-          'skeleton.bones',
-          'skeleton.' + name + 'start',
-          'skeleton.' + name + 'end',
-          'skeleton.' + name + 'blendBones',
-          'skeleton.' + name + 'blendBoneOffsets',
-          'skeleton.' + name + 'blendWeights'
-        ]
-      });
-
+      operatorName: 'solveBlendBones',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
+      entryFunctionName: 'solveBlendBones',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.' + name + 'blendBones',
+        'skeleton.' + name + 'baseBones',
+        'skeleton.' + name + 'targetBones',
+        'skeleton.' + name + 'blendWeights',
+        'skeleton.' + name + 'blendBoneOffsets'
+      ]
+    });
+      
     return solver;
   }
 });
@@ -1183,7 +1190,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         }
       }
     }
-    
+    ''
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
         operatorName: 'invertHubRigs',
