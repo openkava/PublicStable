@@ -56,6 +56,15 @@ function KEYFRAMEDATATYPE KEYFRAMETYPETrack.evaluate(
 }
 */
 
+// PT 02-01-12 TODO: once KL arrays support 'insert' remove this function.
+function KEYFRAMETYPETrack.keysInsert(Integer index, KEYFRAMETYPE key){
+  this.keys.resize(this.keys.size + 1);
+  for(Integer i=this.keys.size-1; i>index; i--){
+    this.keys[i-1] = this.keys[i];
+  }
+  this.keys[index] = key;
+}
+
 function KEYFRAMETYPETrack.setValue(
   in Scalar time,
   in KEYFRAMEDATATYPE value
@@ -67,21 +76,16 @@ function KEYFRAMETYPETrack.setValue(
   else {
     Integer keyIndex = -1;
     for (var Integer i = 0; i < numKeys; i++) {
-      if (this.keys[i].time == time) {
+      if (this.keys[i].time >= time) {
         keyIndex = i;
         break;
       }
     }
-    if(keyIndex != -1){
+    if(this.keys[keyIndex].time == time){
       this.keys[keyIndex].value = value;
     }
     else{
-      // This ensures that the last key always has the greatest time value.
-      // this optimizes the common case where we are incrementaly keying 
-      // forwards through time. 
-      this.keys.push(this.keys[numKeys - 1]);
-      this.keys[numKeys - 1] = KEYFRAMETYPE(time, value);
-      // needs sorting == true
+      this.keysInsert(keyIndex, KEYFRAMETYPE(time, value));
     }
   }
 }
@@ -89,46 +93,6 @@ function KEYFRAMETYPETrack.setValue(
 /////////////////////////////////////////////////
 // KEYFRAMETYPETrackSet
 use Color, Vec3, Quat, Xfo;
-
-
-function KEYFRAMETYPETrackSet.addTrack(
-  in String name,
-  in Color color,
-  io Integer trackId
-){
-  trackId = this.tracks.size;
-  this.tracks.resize(trackId+1);
-  this.tracks[trackId].name = name;
-  this.tracks[trackId].color = color;
-}
-
-function KEYFRAMETYPETrackSet.addXfoTracks(
-  in String name,
-  in Boolean storeEulerAngles,
-  io Integer binding[]
-){
-  Integer trackId;
-  Color red(1.0, 0.0, 0.0, 1.0);
-  Color green(0.0, 0.0, 0.0, 1.0);
-  Color blue(0.0, 0.0, 1.0, 1.0);
-  Color cyan(0.0, 1.0, 1.0, 1.0);
-  this.addTrack(name+'tr.x', red, trackId);   binding.push(trackId);
-  this.addTrack(name+'tr.y', green, trackId); binding.push(trackId);
-  this.addTrack(name+'tr.z', blue, trackId);  binding.push(trackId);
-  
-  if(storeEulerAngles){
-    this.addTrack(name+'euler.x', red, trackId);   binding.push(trackId);
-    this.addTrack(name+'euler.y', green, trackId); binding.push(trackId);
-    this.addTrack(name+'euler.z', blue, trackId);  binding.push(trackId);
-  }
-  else{
-    this.addTrack(name+'ori.x', red, trackId);   binding.push(trackId);
-    this.addTrack(name+'ori.y', green, trackId); binding.push(trackId);
-    this.addTrack(name+'ori.z', blue, trackId);  binding.push(trackId);
-    this.addTrack(name+'ori.z', cyan, trackId);  binding.push(trackId);
-  }
-}
-
 
 function Vec2 KEYFRAMETYPETrackSet.getTimeRange() {
   return this.timeRange;
@@ -163,3 +127,4 @@ function KEYFRAMETYPETrackSet.clearTracks(
     this.tracks[trackIds[i]].clear();
   }
 }
+

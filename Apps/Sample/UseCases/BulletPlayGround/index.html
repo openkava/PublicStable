@@ -398,7 +398,7 @@ $(document).ready(function() {
         removeMainMaterial: true
       });
       instance.setSelectable(false);
-      instance.setMaterialNode(shadowMapMaterial);
+      instance.addMaterialNode(shadowMapMaterial);
       instance.addEventListener("mousedown_geom",forceManipulatorNode.getMouseDownFn());
 
       // store it to the map    

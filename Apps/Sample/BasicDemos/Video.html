@@ -76,7 +76,7 @@ $(document).ready(function() {
     enableRaycasting: true
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -148,6 +148,12 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
+  scene.addEventListener('timechanged', function(evt){
+    if(evt.playing){
+      $('#globalTime').slider('value', videoNode.getAnimationController().getLocalTime());
+    }
+  });
+  
   $('#play').button({
     text: true,
     icons: {
@@ -162,10 +168,7 @@ $(document).ready(function() {
           primary: 'ui-icon-pause'
         }
       });
-      scene.animation.play(function(){
-        $('#globalTime').slider('value',
-          videoNode.getAnimationController().getLocalTime());
-      });
+      scene.animation.play();
     } else {
       $(this).button('option', {
         label: 'Play',

@@ -33,8 +33,8 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -89,7 +89,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
 
@@ -118,14 +118,13 @@ $(document).ready(function() {
   var assetNodes = scene.importAssetFile('Models/envelope.dae');
   
   var rigNode = assetNodes.polymshCharacterRig;
-  var rigInstanceNode = assetNodes.polymshCharacterInstance;
+  var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
 
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-      numBones: rigNode.getSkeletonNode().getNumBones()
+      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
-  rigInstanceNode.setMaterialNode(materialNode);
+  rigInstanceNode.addMaterialNode(materialNode);
   
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:rigNode,

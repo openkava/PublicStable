@@ -2,17 +2,16 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Vec2, KEYFRAMETYPE, TRACKTYPE, TRACKSETTYPE;
+use Vec2, KEYFRAMETYPE, KEYFRAMETYPETrack;
 
-operator evaluateCurve(
-  io TRACKSETTYPE trackSets<>,
-  io Integer trackSetId,
+operator evaluateTrackCurve(
+  io KEYFRAMETYPETrack tracks<>,
   io Vec2 timeRange,
   io Size segmentCount,
   io KEYFRAME_EVALUATEDTYPE values[],
   Size index,
 ) {
-  TRACKTYPE track = trackSets[trackSetId].tracks[index];
+  KEYFRAMETYPETrack track = tracks[index];
   Integer keyIndex;
   values.resize(segmentCount);
   Scalar time;
@@ -21,3 +20,6 @@ operator evaluateCurve(
     values[i] = track.evaluate(time, keyIndex);
   }
 }
+
+
+

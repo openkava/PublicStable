@@ -4,7 +4,7 @@
 //
 use Math;
 use Vec2, Vec3, Quat, Xfo, Ray;
-use PoseVariables, KeyframeTrackBindings;
+use PoseVariables, LinearKeyframeTrackSetBindings;
 use DebugGeometry;
 
 
@@ -16,7 +16,7 @@ function Boolean detectFootSteps(
   io Scalar movementThreshold,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  io LinearKeyframeTrackSetBindings bindings,
   
   io LinearKeyframeTrackSet trackSet,
   io Vec3 footSteps[][],
@@ -38,7 +38,7 @@ function Boolean detectFootSteps(
   
   for(Integer t=0; t <= numSamples; t++){
     Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
-    poseVariables.evaluateKeyframeTracks(time, trackSet, bindings, currKeys);
+    bindings.evaluateTracks(time, poseVariables, trackSet, currKeys);
     
     for(Integer i=0; i < legs.size; i++){
       Limb leg = legs[i];
@@ -115,6 +115,7 @@ function Boolean detectFootSteps(
   
   report("averageFootPlantTime:"+averageFootPlantTime);
   report("averageFootLiftedTime:"+averageFootLiftedTime);
+  report("averageStrideLength:"+averageStrideLength);
   
   // If a foot was planted at the end of the clip, then set the plant time as
   for(Integer i=0; i < legs.size; i++){
@@ -207,268 +208,107 @@ function Boolean detectFootSteps(
 }
 
 
-function Xfo calcComXfoFromSkeleton(
-  in Bone bones[],
-  in Hub hubs[],
-  in Limb legs[]
-){
-  Quat alignment;
-  Xfo comXfo;
-  comXfo.setIdentity();
-  
-  comXfo = bones[hubs[0].boneId].referencePose;
-  if(legs.size == 2){
-    comXfo.tr.y = 0.0;
-  }
-  else{
-    Vec3 avgFootPos;
-    Scalar weight = 0.0;
-    for(Integer j=0; j < legs.size; j++){
-      Limb leg = legs[j];
-      if(leg.hubId < 0){
-        avgFootPos += leg.ikGoalReferenceXfo.tr;
-        weight += 1.0;
-      }
-    }
-    if(weight > 0.0){
-      avgFootPos *= 1.0/weight;
-      alignment.setFrom2Vectors(comXfo.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
-      comXfo.ori = alignment * comXfo.ori;
-      comXfo.tr = avgFootPos;
-    }else{
-      comXfo.tr.y = 0.0;
-    }
-  }
-  return comXfo;
-}
-
-function Xfo calcComXfoFromPose(
-  in Hub hubs[],
-  in Limb legs[],
-  in PoseVariables poseVariables
-){
-  Quat alignment;
-  Xfo comXfo;
-  comXfo.setIdentity();
-  comXfo = poseVariables.xfoValues[hubs[0].xfoId];
-  if(legs.size == 2){
-      comXfo.tr.y = 0.0;
-  }
-  else{
-    Vec3 avgFootPos;
-    Scalar weight = 0.0;
-    for(Integer j=0; j < legs.size; j++){
-      Limb leg = legs[j];
-      if(leg.hubId < 0){
-        avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
-        weight += 1.0;
-      }
-    }
-    if(weight > 0.0){
-      avgFootPos *= 1.0/weight;
-      comXfo.tr = avgFootPos;
-      alignment.setFrom2Vectors(comXfo.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
-      comXfo.ori = alignment * comXfo.ori;
-    }else{
-      comXfo.tr.y = 0.0;
-    }
-  }
-  return comXfo;
-}
-
-function Boolean calcComStepBasedTracks(
+function Boolean generateCOMTracks(
   in Bone bones[],
   in Hub hubs[],
   in Limb legs[],
   in COM com,
   in Vec2 timeRange,
+  in Integer numSamples,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  io LinearKeyframeTrackSetBindings bindings,
   
   in Integer leadingFoot,
   io LinearKeyframeTrackSet trackSet,
   in Vec3 footSteps[][],
   in FootStepTrack footStepTracks[],
   
-  in KeyframeTrackBindings comParamBindings,
-  in KeyframeTrackBindings comXfoBindings,
+  io LinearKeyframeTrackSetBindings comParamBindings,
+  io LinearKeyframeTrackSetBindings comXfoBindings,
   
   io DebugGeometry debugGeometry
 ){
-
   Integer currKeys[];
-
-  ///////////////////////////////////////////////////
-  // Calculate the COM.
-  Xfo comXfo, prevComXfo;
-  Scalar comParams[];
-  Scalar prevStepComParams[];
-  Integer footId, stepId;
-  comParams.resize(com.parameterVarIds.size);  
-  Scalar prevKeyt, currKeyt, startT;
-  startT = timeRange.x;
-  footId = leadingFoot;
-  
-  Scalar prevStepSpeed = 0.0;
+  Xfo prevComXfo;
+  Scalar prevStepSpeed, prevtime;
+  Scalar speed = 0.0;
   Scalar acceleration = 0.0;
-  
-  prevKeyt = currKeyt = startT;
-  
-  Quat alignment;
-  Xfo comAlignment = calcComXfoFromSkeleton(bones, hubs, legs).inverse();
+  Scalar gradient = 0.0;
+  Scalar direction = 0.0;
+  Scalar timeSmoothing[5];
+  Scalar speedSmoothing[5];
+  Scalar gradientSmoothing[5];
+  Scalar directionSmoothing[5];
+  Integer circularArrayIndex = 0;
+  for(Integer t=0; t <= numSamples; t++){
+    Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
+    bindings.evaluateTracks(time, poseVariables, trackSet, currKeys);
     
-  comXfo.setIdentity();
-  Xfo comXfos[];
-  Scalar comXfoKeyTimes[];
-  Integer keyCount = 0;
-  Scalar stepFrequency;
-  while(currKeyt <= timeRange.y){
-  //  report("currKeyt:"+currKeyt + " footId:" + footId + " stepId:"+ stepId);
-    poseVariables.evaluateKeyframeTracks(currKeyt, trackSet, bindings, currKeys);
-    
-    comXfo = calcComXfoFromPose(hubs, legs, poseVariables);
-    
-    //////////////////////////////////////
-    debugGeometry.drawLine(poseVariables.xfoValues[hubs[0].xfoId].tr, comXfo.tr, Color(1.0, 1.0, 1.0, 1.0));
-    
-    comXfo = comXfo * comAlignment;
-    // TODO: raycast the groud plane here. 
-    comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
-    
-    
-    
-    // Force the axis to point straight up. 
-    alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
-    comXfo.ori = alignment * comXfo.ori;
-    
-    comXfos.push(comXfo);
-    comXfoKeyTimes.push(currKeyt);
-      
-    if(keyCount>0){
+    Xfo comXfo = poseVariables.xfoValues[com.xfoId];
+    if(t>0){
       Vec3 displacement = comXfo.tr - prevComXfo.tr;
       
-      Scalar deltaT = currKeyt - prevKeyt;
-      Vec3 velocity = displacement/deltaT;
-      Scalar speed = velocity.length();
+      Scalar timestep = time - prevtime;
+      Vec3 velocity = displacement/timestep;
+      speed = velocity.length();
+      
       Scalar climb = velocity.y;
       velocity.y = 0.0;
-      Scalar gradient = climb / velocity.length();
+      gradient = climb / velocity.length();
       
-      Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
-      facingVec.y = 0.0;
-      facingVec.setUnit();
-      velocity.setUnit();
-      Scalar direction = facingVec.angleTo(velocity);
-      if(facingVec.cross(velocity).y > 0.0){
-        direction = -direction;
-      }
-      report("speed:"+speed);
-      if(false && footSteps[footId].size <= 2){
-        stepFrequency = timeRange.y - timeRange.x;
-      }
-      else{
-        Vec3 step = footSteps[footId][stepId];
-        if(stepId > 0){
-          Vec3 prevstep = footSteps[footId][stepId-1];
-          stepFrequency = step.y - prevstep.y;
+      
+      if(speed > 0.001){
+        Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
+        facingVec.y = 0.0;
+        facingVec.setUnit();
+        velocity.setUnit();
+      //  report("velocity:"+velocity + " facingVec:"+facingVec);
+        direction = facingVec.angleTo(velocity);
+        if(facingVec.cross(velocity).y > 0.0){
+          direction = -direction;
         }
-        else if(stepId < footSteps[footId].size-1){
-          Vec3 nextstep = footSteps[footId][stepId+1];
-          stepFrequency = nextstep.y - step.y;
-        } 
       }
-      report("stepFrequency:"+stepFrequency);
       
-      comParams[0] = stepFrequency;
-      comParams[1] = speed;
-      comParams[3] = gradient;
-    //  comParams[4] = direction;
-      prevStepSpeed = speed;
+      timeSmoothing[circularArrayIndex] = time;
+      speedSmoothing[circularArrayIndex] = speed;
+      gradientSmoothing[circularArrayIndex] = gradient;
+      directionSmoothing[circularArrayIndex] = direction;
+      circularArrayIndex = (circularArrayIndex + 1) % 5;
       
-      if(keyCount>1){
-        prevStepComParams[2] = (speed - prevStepComParams[1])/stepFrequency;
-        for(Integer i=0; i < com.parameterVarIds.size; i++){
-          poseVariables.scalarValues[com.parameterVarIds[i]] = prevStepComParams[i];
+      if(t > 4){
+        Scalar keyT = 0.0;
+        speed = 0.0;
+        gradient = 0.0;
+        direction = 0.0;
+        for(Integer i=0; i<5; i++){
+          keyT += timeSmoothing[i];
+          speed += speedSmoothing[i];
+          gradient += gradientSmoothing[i];
+          direction += directionSmoothing[i];
         }
-        report("currKeyt:"+comXfoKeyTimes[keyCount-2] );
-        poseVariables.setTrackValues(comXfoKeyTimes[keyCount-2], trackSet, comParamBindings);
+        keyT /= 5.0;
+        speed /= 5.0;
+        gradient /= 5.0;
+        direction /= 5.0;
+        
+        if(t > 5){
+          acceleration = (speed - prevStepSpeed)/timestep;
+        }
+        poseVariables.scalarValues[com.parameterVarIds[0]] = speed;
+        poseVariables.scalarValues[com.parameterVarIds[1]] = acceleration;
+        poseVariables.scalarValues[com.parameterVarIds[2]] = gradient;
+        poseVariables.scalarValues[com.parameterVarIds[3]] = direction;
+        report(" t:"+keyT + " timestep:"+timestep + " smoothed speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
+        comParamBindings.setTrackValues(keyT, poseVariables, trackSet);
+        
+        
+        prevStepSpeed = speed;
       }
-      prevStepComParams = comParams;
     }
     prevComXfo = comXfo;
-    keyCount++;
-    
-    // Search for the next midplant for any foot.
-    prevKeyt = currKeyt;
-    
-    
-    if(false && footSteps[0].size <= 2){
-      currKeyt = timeRange.y;
-    }
-    else{
-      currKeyt = timeRange.y + 1.0;
-      for(Integer i=0; i < legs.size; i++){
-        for(Integer j=0; j < footSteps[i].size; j++){
-          Vec3 step = footSteps[i][j];
-          if(step.y > prevKeyt && step.y < currKeyt){
-            currKeyt = step.y;
-            footId = i;
-            stepId = j;
-          }
-        }
-      }
-    }
+    prevtime = time;
   }
-  
-  
-        report("currKeyt:"+prevKeyt);
-  for(Integer i=0; i < com.parameterVarIds.size; i++){
-    poseVariables.scalarValues[com.parameterVarIds[i]] = prevStepComParams[i];
-  }
-  poseVariables.setTrackValues(prevKeyt, trackSet, comParamBindings);
-  
-  
-  Vec3 smoothedComPos[];
-  smoothedComPos.resize(comXfoKeyTimes.size);
-  for(Integer i=0; i < comXfoKeyTimes.size; i++){
-    smoothedComPos[i] = comXfos[i].tr;
-    if(i>0 && i<comXfoKeyTimes.size-1 && false){
-      smoothedComPos[i] += comXfos[i-1].tr;
-      smoothedComPos[i] += comXfos[i+1].tr;
-      smoothedComPos[i] /= 3.0;
-    }
-  }
-  
-  Vec3 displacement;
-  Vec3 alignmentVec;
-  for(Integer i=0; i < comXfoKeyTimes.size; i++){
-    if(i==0){
-      displacement = (smoothedComPos[i+1] - smoothedComPos[i]);
-    }else{
-      displacement = (smoothedComPos[i] - smoothedComPos[i-1]);
-      comXfos[i].ori.alignWith(comXfos[i-1].ori);
-    }
-    Vec3 horizontalDisplacement = displacement;
-    horizontalDisplacement.y = 0.0;
-    
-    alignmentVec.setNull();
-    if(i>0){
-      alignmentVec += (smoothedComPos[i] - smoothedComPos[i-1]);
-    }
-    if(i<comXfoKeyTimes.size-1){
-      alignmentVec += (smoothedComPos[i+1] - smoothedComPos[i]);
-    }
-    comXfo = comXfos[i];
-    comXfo.tr = smoothedComPos[i];
-    alignment.setFrom2Vectors(comXfos[i].ori.getZaxis(), alignmentVec.unit());
-    comXfo.ori = alignment * comXfos[i].ori;
-      
-    debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
-    poseVariables.xfoValues[com.xfoId] = comXfo;
-    poseVariables.setTrackValues(comXfoKeyTimes[i], trackSet, comXfoBindings);
-  }
-  
   
   report("com.parameterVarIds:"+com.parameterVarIds);
   for(Integer i=0; i < com.parameterVarIds.size; i++){
@@ -494,23 +334,26 @@ function Boolean modifyHubAndFootTracks(
   in Integer numSamples,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  io LinearKeyframeTrackSetBindings bindings,
   
   io LinearKeyframeTrackSet trackSet,
   
-  in KeyframeTrackBindings comParamBindings,
-  in KeyframeTrackBindings comXfoBindings,
+  io LinearKeyframeTrackSetBindings comParamBindings,
+  io LinearKeyframeTrackSetBindings comXfoBindings,
   
   io DebugGeometry debugGeometry
 ){
+  report("modifyHubAndFootTracks:"+com);
   Xfo comXfo;
   Integer currKeys[];
+  PoseVariables poseVariables2 = poseVariables;
+  Integer currKeys2[];
   ///////////////////////////////////////////////////
   // Finally, modify the hub and foot motions
   Boolean drawFootMotionDebugging = false;
   LinearKeyframeTrackSet sourceTrackSet = trackSet;//sourceAnimationLibrary[index];
-  KeyframeTrackBindings hubValueBindings;
-  KeyframeTrackBindings limbValueBindings;
+  LinearKeyframeTrackSetBindings hubValueBindings;
+  LinearKeyframeTrackSetBindings limbValueBindings;
   PoseVariables comVariables = poseVariables;
   Integer comKeyCache[];
   
@@ -540,29 +383,41 @@ function Boolean modifyHubAndFootTracks(
     }
   }
   
+  Vec3 displacementDir = comXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
   for(Integer t=0; t <= numSamples; t++){
     Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
-    poseVariables.evaluateKeyframeTracks(time, sourceTrackSet, bindings, currKeys);
+    bindings.evaluateTracks(time, poseVariables, sourceTrackSet, currKeys);
+    
+    Scalar time2 = ((Scalar(t+1)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
+    bindings.evaluateTracks(time2, poseVariables, sourceTrackSet, currKeys2);
     
     comXfo = poseVariables.xfoValues[com.xfoId];
+  //  debugGeometry.drawAxis(comXfo, 1.0, Color(0.0, 0.5, 0.0, 1.0));
+    
+    // calculate the displacementDir based on the com movement;
+    Vec3 temp = poseVariables2.xfoValues[com.xfoId].tr - comXfo.tr;
+    Scalar displacement = temp.length();
+    if(displacement > 0.001){
+      displacementDir = temp/displacement;
+    }
+    debugGeometry.drawPoint(comXfo.tr, Color(1.0, 0.0, 0.5, 1.0));
+    
     for(Integer i=0; i < hubs.size; i++){
       Hub hub = hubs[i];
       Xfo hubXfo = poseVariables.xfoValues[hub.xfoId];
+        
+      if(drawFootMotionDebugging){
+        debugGeometry.drawPoint(hubXfo.tr, Color(0.0, 0.0, 0.5, 1.0));
+      }
       poseVariables.xfoValues[hub.xfoId] = comXfo.inverse() * hubXfo;
-      poseVariables.setTrackValues(time, trackSet, hubValueBindings);
-      
-      
-        debugGeometry.drawPoint(hubXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
+      hubValueBindings.setTrackValues(time, poseVariables, trackSet);
     }
-    
     
     for(Integer i=0; i < locomotionFeet.size; i++){
       LocomotionFoot foot = locomotionFeet[i];
       Limb leg = legs[foot.limbId];
       Xfo footXfo = poseVariables.xfoValues[leg.ikGoalXfoId];
       
-      // TODO: calculate the displacementDir based on the com movement;
-      Vec3 displacementDir(0.0,0.0,1.0);
       Xfo footParentSpaceXfo;
       if(leg.hubId < 0){
         footParentSpaceXfo = comXfo;
@@ -576,7 +431,7 @@ function Boolean modifyHubAndFootTracks(
         debugGeometry.drawLine(footXfo.tr, footParentSpaceXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       }
       
-      Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;
+      Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;      
       baseFootXfo.ori = comXfo.ori;
       if(drawFootMotionDebugging){
         debugGeometry.drawLine(footXfo.tr, baseFootXfo.tr, Color(0.5, 0.5, 0.75, 1.0));
@@ -593,7 +448,7 @@ function Boolean modifyHubAndFootTracks(
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
       poseVariables.xfoValues[leg.ikGoalXfoId] = footMotionDelta;
     }
-    poseVariables.setTrackValues(time, trackSet, limbValueBindings);
+    limbValueBindings.setTrackValues(time, poseVariables, trackSet);
   }
   return true;
 }
@@ -603,13 +458,13 @@ function Boolean addLocomotionMarkers(
   in Vec2 timeRange,
   
   io PoseVariables poseVariables,
-  in KeyframeTrackBindings bindings,
+  io LinearKeyframeTrackSetBindings bindings,
   
   in LinearKeyframeTrackSet trackSet,
   in FootStepTrack footStepTracks[],
   io LocomotionMarker locomotionMarkers[][],
   
-  in KeyframeTrackBindings comParamBindings,
+  io LinearKeyframeTrackSetBindings comParamBindings,
   
   io DebugGeometry debugGeometry
 ){
@@ -623,14 +478,20 @@ function Boolean addLocomotionMarkers(
       if(footStepTracks[i].footSteps[j].prevStepMidPlantTime < timeRange.x){
         continue;
       }
+      
+      if(locomotionMarkers[i].size > 0){
+        break;
+      }
       // 
       Integer markerStepId = j;
       LocomotionMarker marker;
-      Scalar t = footStepTracks[i].footSteps[markerStepId].prevStepMidPlantTime;
+      FootStep step = footStepTracks[i].footSteps[markerStepId];
+      Scalar t = step.prevStepMidPlantTime;
       marker.time = t;
       report("time:"+t + " stepId:"+markerStepId);
       
-      poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
+      comParamBindings.evaluateTracks(step.liftTime, poseVariables, trackSet, currKeys);
+    
       marker.params.resize(comParamBindings.scalarBindings.size);
       for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
         marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];
@@ -681,7 +542,7 @@ function Boolean addLocomotionMarkers(
 
 function Boolean addStationaryMarkers(
   in Vec2 timeRange,
-  in KeyframeTrackBindings comParamBindings,
+  io LinearKeyframeTrackSetBindings comParamBindings,
   in FootStepTrack footStepTracks[],
   io LocomotionMarker locomotionMarkers[][]
 ){
@@ -706,7 +567,7 @@ function Boolean addStationaryMarkers(
 operator locomotionPreProcessing(
   io LinearKeyframeTrackSet sourceAnimationLibrary<>,
   io PoseVariables referenceVariables,
-  io KeyframeTrackBindings referenceBindings,
+  io LinearKeyframeTrackSetBindings referenceBindings,
   
   io Bone bones[],
   io Hub hubs[],
@@ -718,7 +579,7 @@ operator locomotionPreProcessing(
   io Scalar movementThreshold,
   
   io LinearKeyframeTrackSet trackSet,
-  io KeyframeTrackBindings bindings,
+  io LinearKeyframeTrackSetBindings bindings,
   
   io LocomotionMarker locomotionMarkers[][],
   io FootStepTrack footStepTracks[],
@@ -726,7 +587,7 @@ operator locomotionPreProcessing(
   
   io DebugGeometry debugGeometry
 ) {
-  report("locomotionPreProcessing <<<:" + index);
+  report("locomotionPreProcessing <<<===:" + index);
   
   debugGeometry.reset();
   
@@ -751,17 +612,17 @@ operator locomotionPreProcessing(
   
   ///////////////////////////////////////////////////
   // COM Bindings
-  KeyframeTrackBindings comParamBindings;
-  KeyframeTrackBindings comXfoBindings;
+  LinearKeyframeTrackSetBindings comParamBindings;
+  LinearKeyframeTrackSetBindings comXfoBindings;
   KeyframeTrackBinding comXfoBinding;
   for(Integer i=0; i < bindings.xfoBindings.size; i++){
     if(bindings.xfoBindings[i].varId == com.xfoId){
       comXfoBindings.xfoBindings.push(bindings.xfoBindings[i]);
       comXfoBinding = bindings.xfoBindings[i];
       
-      for(Integer j=0; j < comXfoBinding.trackIds.size; j++){
-        trackSet.tracks[comXfoBinding.trackIds[j]].clear();
-      }
+    //  for(Integer j=0; j < comXfoBinding.trackIds.size; j++){
+    //    trackSet.tracks[comXfoBinding.trackIds[j]].clear();
+    //  }
     }
   }
   if(comXfoBindings.xfoBindings.size == 0){
@@ -776,6 +637,8 @@ operator locomotionPreProcessing(
       }
     }
   }
+  
+  report("comXfoBindings:"+comXfoBindings);
   
   ///////////////////////////////////////////////////
   // Detect Foot Steps
@@ -794,12 +657,13 @@ operator locomotionPreProcessing(
     footStepTracks,
     debugGeometry)){
     
-    calcComStepBasedTracks(
+    generateCOMTracks(
       bones,
       hubs,
       legs,
       com,
       timeRange,
+      numSamples,
       
       poseVariables,
       bindings,
@@ -814,7 +678,6 @@ operator locomotionPreProcessing(
       
       debugGeometry
     );
-    
     
     modifyHubAndFootTracks(
       bones,
@@ -853,7 +716,7 @@ operator locomotionPreProcessing(
     report("Stationary Sequence");
     
     poseVariables.xfoValues[com.xfoId].setIdentity();
-    poseVariables.setTrackValues(timeRange.x, trackSet, comXfoBindings);
+    comXfoBindings.setTrackValues(timeRange.x, poseVariables, trackSet);
     
     addStationaryMarkers(timeRange, comParamBindings, footStepTracks, locomotionMarkers);
   }

@@ -24,7 +24,7 @@ operator loadProjectionMatrices(
     // The camera matrix is inverted. 
     shaderProgram.loadMat44Uniform(location, cameraMatrix.inverse());
   }
-  location = shaderProgram.getUniformLocation(CAMERAPOS_ATTRIBUTE_ID);
+  location = shaderProgram.getUniformLocation(CAMERAPOSITION_ATTRIBUTE_ID);
   if(location!=-1){
     shaderProgram.loadVec3Uniform(location, cameraMatrix.inverse().translation());
   }

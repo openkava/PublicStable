@@ -32,10 +32,10 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
@@ -76,6 +76,9 @@ s.parentNode.insertBefore(ga, s);
 </script>
 <script type="text/javascript">
 
+
+FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+
 $(document).ready(function() {
 
 
@@ -103,12 +106,10 @@ $(document).ready(function() {
       });
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
-    windowElement: document.getElementById('FabricContainer')
+    windowElement: document.getElementById('FabricContainer'),
+    backgroundColor: FABRIC.RT.rgb(0.3, 0.09, .3)
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
-    url: '../../Sample/BasicDemos/Resources/fabric-demo-gradient.png'
-  }));
   
   var camera = scene.constructNode('TargetCamera', {
       position: new FABRIC.RT.Vec3(3, 2.2, 3).multiplyScalar(6.5),
@@ -122,13 +123,14 @@ $(document).ready(function() {
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var phongMaterial = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
+      diffuseColor: FABRIC.RT.rgb(0.4, 0.45, 0.4, 1),
       lightNode: light
     });
 
   var constructBulletScene = true;
   
-  var rigName = 'walker';
+  var rigName = 'Spiedel';
+  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -139,8 +141,10 @@ $(document).ready(function() {
   }catch(e){}
   if(rigName =='centipede'){
     constructBulletScene = false;
+  }else if(rigName =='walker' || rigName =='walker'){
+    rigName = 'CMan0005';
   }
-
+  */
   if(constructBulletScene){
     
     // create a simulation world
@@ -150,7 +154,7 @@ $(document).ready(function() {
       groundPlanseSize: 30,
       connectToSceneTime: false
     } );
-    var createBoxes = false;
+    var createBoxes = true;
     if(createBoxes){
       // create several shapes. in bullet multiple instance of the same
       // shape share the scaling, so we have to create several shapes.
@@ -173,7 +177,7 @@ $(document).ready(function() {
           bulletWorldNode: bulletWorldNode,
           shapeName: 'Box0',
           rigidBody: new FABRIC.RT.BulletRigidBody({
-            transform: FABRIC.RT.xfo({
+            transform: new FABRIC.RT.Xfo({
               tr: new FABRIC.RT.Vec3(0, -2, 0),
               sc: new FABRIC.RT.Vec3(30, 2, 30),
             }),
@@ -275,15 +279,14 @@ $(document).ready(function() {
           })
         })
       });
-      
     }
     else{
       var scaleFactor = 0.1;
       var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
       var floorInstance = assetNodes.Plane001;
-      var floorMesh = assetNodes.Plane001Mesh0;
+      var floorMesh = assetNodes.Plane001Mesh;
       
-      floorInstance.setMaterialNode(phongMaterial);
+      floorInstance.addMaterialNode(phongMaterial);
 
       bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
       
@@ -298,9 +301,50 @@ $(document).ready(function() {
     }
   }
 
-  var locomotionControllerNode, diffuseColor;
+  var locomotionControllerNode, diffuseColor, material;
+  var rigFile, animationLibraryFile;
   var minFrequency = 0.0;
   switch(rigName){
+  case 'Spiedel':
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: 20,
+        maxLinearAcceleration: 15,
+        maxAngularVelocity: 1.6,
+        maxAngularAcceleration: 1.6,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: 0,
+        comHeight: 1.8,
+        circleSize: 1.6
+      });
+    /*
+    material = scene.constructNode('SpiedelShader', {
+      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
+    });
+    */
+    rigFile = 'Assets/Spiedel.json';
+    animationLibraryFile = 'Assets/SpiedelAnimation.json';
+    minFrequency = 0.75;
+    break;
+  case 'CMan0005':
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: 8,
+        maxLinearAcceleration: 10,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -30,
+        comHeight: 2.0,
+        circleSize: 0.6
+      });
+    rigFile = 'Assets/CMan0005.json';
+    animationLibraryFile = 'Assets/CMan0005_Animation.json';
+    minFrequency = 0.75;
+    break;
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -328,6 +372,7 @@ $(document).ready(function() {
         gravity: 0,
         circleSize: 1.6
       });
+    minFrequency = 0.0;
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
   case 'marama':
@@ -343,43 +388,40 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 0.6
       });
+    rigFile = 'Assets/marama.json';
+    animationLibraryFile = 'Assets/marama.json';
     minFrequency = 0.5;
     diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
   }
-
-  var rigLoader = scene.constructManager('SceneDeserializer');
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
-  var nodeMap = rigLoader.load(storage);
-
-  var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
-  var locomotionRig = nodeMap.LocomotionRig;
+  var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
+  var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
+  rigLoader.load(storage, function(nodeMap){
+    
   var ikrig = nodeMap.IKRig;
-  var characterMesh =  nodeMap.characterMesh;
-  var skeletonNode = ikrig.getSkeletonNode();
-  
-  ikrig.setControllerNode(locomotionControllerNode);
-  
-  var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    characterRigNode: ikrig,
-    bulletWorldNode: bulletWorldNode,
-    minFrequency: minFrequency
+//  var characterMesh =  nodeMap.characterMesh;
+
+  var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
+  var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+  animationLoader.load(storage, function(animationLoaderNodeMap){
+    var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
+    
+    ikrig.setControllerNode(locomotionControllerNode);
+    
+    var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+      characterRigNode: ikrig,
+      bulletWorldNode: bulletWorldNode,
+      minFrequency: minFrequency
+    });
+    locomotionVariables.setAnimationLibrary(libraryAnimations);
+    ikrig.setVariablesNode(locomotionVariables);
   });
-  locomotionVariables.setAnimationLibrary(libraryAnimations);
-  ikrig.setVariablesNode(locomotionVariables);
-  
-  var phongSkinningMaterial = scene.constructNode('PhongSkinningMaterial', {
-    lightNode: light,
-    diffuseColor: diffuseColor,
-    numBones: skeletonNode.getNumBones()
-  });
-  
-  var characterInstance = scene.constructNode("CharacterInstance", {
-    rigNode:ikrig,
-    geometryNode: characterMesh,
-    materialNode: phongSkinningMaterial
+    
+    
   });
   
+
+
   /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
@@ -408,7 +450,6 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
-  displayFootRaycastingDebugging
   
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
@@ -572,12 +613,14 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
-                <option value="walker">Walker
+                <option value="Spiedel">Quadruped
                 <option value="centipede">Centipede
-                <option value="marama">Human
+                <option value="CMan0005">Human
               </select>
+            -->
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>

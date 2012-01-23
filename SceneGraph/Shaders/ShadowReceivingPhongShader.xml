@@ -33,7 +33,7 @@
   </textures>
 
   <lights>
-    <light type="SpotLight" binding="light" shadowMap="shadowMap"/>
+    <light type="SpotLight|DirectionalLight" binding="light" shadowMap="shadowMap"/>
   </lights>
 
   <vertexshader>

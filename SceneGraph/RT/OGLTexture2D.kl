@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricOGL, FabricPNG, FabricTGA, FabricHDR;
+use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricCIMG;
 use Vec2, Vec3, OGLShaderProgram;
 
 function OGLTexture2D.configure(
@@ -24,11 +24,20 @@ function OGLTexture2D.configure(
     
     //Generate the texture
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    if (nbPixels == (width * height))
+    
+    if (this.buildMipmaps){
+      glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+      glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+    }
+      
+    if(nbPixels == (width * height)){
       glTexImage2D(GL_TEXTURE_2D, 0, this.glInternalFormat, width, height, 0, this.glFormat, this.glType, pixels);
-
+    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this.textureMinFilter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this.textureMaxFilter);
+    if (this.buildMipmaps){
+      glGenerateMipmap( GL_TEXTURE_2D );
+    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this.wrapS);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this.wrapT);
 
@@ -36,35 +45,23 @@ function OGLTexture2D.configure(
   }
 }
 
-
 function OGLTexture2D.bind(in Integer textureUnit){
 //  report("OGLTexture2D.bind bufferID:"+this.bufferID + " textureUnit:"+textureUnit  + " nbPixels:"+ this.nbPixels );
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_2D, this.bufferID);
-}
-
-
-function OGLTexture2D.bindImageLDR(
-  io Size width,
-  io Size height,
-  io RGBA bitmap[],
-  io Integer textureUnit
-) {
-  if (this.bufferID == 0 || this.forceRefresh) {
-    this.configure(width, height, bitmap.data(), bitmap.size(), textureUnit);
+  if (this.bufferID != 0) {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_2D, this.bufferID);
   }
-  this.bind(textureUnit);
 }
 
-
-function OGLTexture2D.bindImageHDR(
+function OGLTexture2D.bindImage(
   io Size width,
   io Size height,
-  io Color bitmap[],
+  Data bitmapData,
+  Size bitmapSize,
   io Integer textureUnit
 ) {
   if (this.bufferID == 0 || this.forceRefresh) {
-    this.configure(width, height, bitmap.data(), bitmap.size(), textureUnit);
+    this.configure(width, height, bitmapData, bitmapSize, textureUnit);
   }
   this.bind(textureUnit);
 }
@@ -183,50 +180,90 @@ function OGLTexture2D.genTexture(
 }
 
 
-function decodeLDRImageData(
+function Boolean decodeRGBAImageData(
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
-  io RGBA imageLDR[]
+  io RGBA bitmap[]
 ) {
   if(resource.data.size() == 0)
-    return;
+    return false;
   String ext = resource.extension ? resource.extension : resource.mimeType;
+  
   switch (ext) {
-    case'png':
-    case'image/png':
-      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
+    case 'jpg':
+    case 'jpeg':
+    case 'image/jpg':
+    case 'tif':
+    case 'tiff':
+    case 'image/tif':
+      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
-    case'tga':
-    case'image/tga':
-      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
+    case 'png':
+    case 'image/png':
+      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
+    case 'tga':
+    case 'image/tga':
+      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+      resource.data.resize(0);
+      break;
+    default:
+      report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
+      resource.data.resize(0);
+      return false;
   }
+  return true;
 }
 
-function decodeHDRImageData(
+function Boolean decodeColorImageData(
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
-  io Color imageHDR[]
+  io Color bitmap[]
 ) {
   if(resource.data.size() == 0)
-    return;
+    return false;
   String ext = resource.extension ? resource.extension : resource.mimeType;
   switch (ext) {
     case'hdr':
     case'image/hdr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageHDR);
+      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
     case'exr':
     case'image/exr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageHDR);
+      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
+    default:
+      report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
+      resource.data.resize(0);
+      return false;
   }
+  return true;
+}
+
+function decodeRGBImageData(
+  io FabricResource resource,
+  io Size imageWidth,
+  io Size imageHeight,
+  io RGB bitmap[]
+) {
+  // todo
+  return;
+}
+
+function decodeScalarImageData(
+  io FabricResource resource,
+  io Size imageWidth,
+  io Size imageHeight,
+  io Scalar bitmap[]
+) {
+  // todo
+  return;
 }
 
 function drawScreenQuad(
@@ -242,7 +279,7 @@ function drawScreenQuad(
   name = 'a_texCoord';
   var Integer texLocation = glGetAttribLocation(program, name);
 
-  glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
+  glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
   glEnable(GL_TEXTURE_2D);
@@ -250,6 +287,9 @@ function drawScreenQuad(
   glDepthMask(GL_TRUE);
   glDisable(GL_CULL_FACE); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);//Required to render properly depth textures
+  
+  glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+  glEnable( GL_BLEND );
 
   // Draw a quad in the upper left with debugging info
   var Vec3 p[4];

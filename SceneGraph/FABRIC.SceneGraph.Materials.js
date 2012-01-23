@@ -36,7 +36,7 @@ FABRIC.SceneGraph.registerNodeType('Shader', {
       });
     var shaderNode = scene.constructNode('SceneGraphNode', options),
       redrawEventHandler = shaderNode.constructEventHandlerNode('Redraw'),
-      shaderProgram = new FABRIC.RT.OGLShaderProgram(options.name);
+      shaderProgram = new FABRIC.RT.OGLShaderProgram(options.name),
       i;
     
     redrawEventHandler.setScopeName('shader');
@@ -314,17 +314,10 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         var lightStub = materialNode.constructEventHandlerNode('Draw_' + lightName);
         redrawEventHandler.appendChildEventHandler(lightStub);
         
-        var setLightNodeFn = function(node) {
-          if (!node.isTypeOf(lightDef.type)) {
-            throw ('Incorrect type assignment. Must assign a ' + lightDef.type);
-          }
-          node = scene.getPrivateInterface(node);
-          lightStub.appendChildEventHandler(node.getRedrawEventHandler());
-        };
-        materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'] = setLightNodeFn;
-        if (lightDef.node !== undefined) {
-          setLightNodeFn(lightDef.node);
-        }
+        var setLightNodeFn = materialNode.addReferenceInterface(lightName, lightDef.type,
+          function(nodePrivate){
+            lightStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+          });
       };
       for (i in options.lights) {
         addLightInterface(i, options.lights[i]);
@@ -351,24 +344,11 @@ FABRIC.SceneGraph.registerNodeType('Material', {
             'self.textureUnit'
           ]
         }));
-
-        // Now add a method to assign the texture to the material
-        var setTextureRedrawEventHandlerFn = function(handler) {
-          textureStub.appendChildEventHandler(handler);
-        };
-        var setTextureFn = function(node) {
-          if (!node.isTypeOf('Texture')) {
-            throw ('Incorrect type assignment. Must assign a Texture');
-          }
-          node = scene.getPrivateInterface(node);
-          setTextureRedrawEventHandlerFn(node.getRedrawEventHandler());
-        };
-        materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
-        materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
-
-        if (textureDef.node !== undefined) {
-          setTextureFn(textureDef.node);
-        }
+        
+        materialNode.addReferenceInterface(textureName, 'Image',
+          function(nodePrivate){
+            textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+          });
       };
       var textureUnit = 0;
       for (i in options.textures) {
@@ -384,12 +364,77 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         operatorName: 'unbindTextures',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
         entryFunctionName: 'unbindTextures',
+        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         parameterLayout: [
           'self.numTextures'
         ]
       }));
     }
     
+
+    //////////////////////////////////////////
+    // Persistence
+    var capitalizeFirstLetter = function(str) {
+      return str[0].toUpperCase() + str.substr(1);
+    };
+    
+    var parentAddDependencies = materialNode.addDependencies;
+    materialNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      for (var lightName in options.lights) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
+          var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
+          sceneSerializer.addNode(lightNode);
+        }
+      }
+      for (var textureName in options.textures) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
+          var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();
+          sceneSerializer.addNode(textureNode);
+        }
+      }
+    };
+    var parentWriteData = materialNode.writeData;
+    var parentReadData = materialNode.readData;
+    materialNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      
+      for (uniformName in options.shaderUniforms) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(uniformName)]) {
+          constructionOptions[uniformName] = materialNode.pub['get' + capitalizeFirstLetter(uniformName)]();
+        }
+      }
+      nodeData.lights = {};
+      for (var lightName in options.lights) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
+          var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
+          nodeData.lights[lightName] = lightNode.getName();
+        }
+      }
+      nodeData.textures = {};
+      for (var textureName in options.textures) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
+          var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();
+          sceneSerializer.addNode(textureNode);
+          nodeData.textures[textureName] = textureNode.getName();
+        }
+      }
+    };
+    materialNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      for (var lightName in nodeData.lights) {
+        var light = sceneDeserializer.getNode(nodeData.lights[lightName]);
+        if (light) {
+          materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'](light);
+        }
+      }
+      for (var textureName in nodeData.textures) {
+        var texture = sceneDeserializer.getNode(nodeData.textures[textureName]);
+        if (texture) {
+          materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'](texture);
+        }
+      }
+    };
     return materialNode;
   }});
 
@@ -455,6 +500,12 @@ FABRIC.SceneGraph.registerNodeType('LineMaterial', {
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawLines.kl',
         entryFunctionName: 'setLineWidth',
         parameterLayout: ['self.lineWidth']
+      }));
+    lineMaterial.getRedrawEventHandler().postDescendBindings.append(scene.constructOperator({
+        operatorName: 'resetLineWidth',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawLines.kl',
+        entryFunctionName: 'resetLineWidth',
+        parameterLayout: []
       }));
     return lineMaterial;
   }});
@@ -537,6 +588,19 @@ FABRIC.SceneGraph.registerNodeType('TransparentMaterial', {
   factoryFn: function(options, scene) {
     options.parentEventHandler = scene.getSceneRedrawTransparentObjectsEventHandler();
     var transparentMaterial = scene.constructNode('Material', options);
+    var redrawEventHandler = transparentMaterial.getRedrawEventHandler();
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'disableDepthMask',
+      srcCode: 'use FabricOGL; operator disableDepthMask() { glDepthMask(GL_FALSE);; }',
+      entryFunctionName: 'disableDepthMask',
+      parameterLayout: []
+    }));
+    redrawEventHandler.postDescendBindings.append(scene.constructOperator({
+      operatorName: 'enableDepthMask',
+      srcCode: 'use FabricOGL; operator enableDepthMask() { glDepthMask(GL_TRUE);; }',
+      entryFunctionName: 'enableDepthMask',
+      parameterLayout: []
+    }));
     return transparentMaterial;
   }});
 
@@ -701,7 +765,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.shaderUniforms = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         uniformNode = node.childNodes[j];
@@ -733,7 +797,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.shaderAttributes = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         attributeNode = node.childNodes[j];
@@ -748,7 +812,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.lights = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         lightNode = node.childNodes[j];
@@ -766,7 +830,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.textures = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         textureNode = node.childNodes[j];
@@ -785,7 +849,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.programParams = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         paramNode = node.childNodes[j];
@@ -807,6 +871,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
         paramNode = node.childNodes[j];
         switch (node.childNodes[j].nodeName ) {
           case '#text':
+          case '#comment':
             continue;
           case 'drawMode':
             effectParameters.drawParams.drawMode = paramNode.getAttribute('value');
@@ -827,6 +892,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
           paramNode = node.childNodes[j];
           switch (paramNode.nodeName ) {
             case '#text':
+            case '#comment':
               continue;
             default:
               vals.push(FABRIC.SceneGraph.OpenGLConstants[paramNode.firstChild.data]);
@@ -843,6 +909,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
         paramNode = node.childNodes[j];
         switch (paramNode.nodeName ) {
           case '#text':
+          case '#comment':
             continue;
           case 'disableOptions':
             effectParameters.disableOptions = collectParamArray(paramNode);
@@ -867,7 +934,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       var len, j, directiveNode;
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         directiveNode = node.childNodes[j];
@@ -899,6 +966,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       childNode = xmlRoot.childNodes[i];
       switch (childNode.nodeName) {
         case '#text':
+        case '#comment':
           continue;
         case 'name':
           effectParameters.name = childNode.firstChild.data;

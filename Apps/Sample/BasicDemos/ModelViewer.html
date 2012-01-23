@@ -66,7 +66,7 @@ $(document).ready(function() {
         console.log($(this).val());
       var assets = scene.importAssetFile($(this).val());
       for (i in assets) {
-        assets[i].setMaterialNode(redMaterial);
+        assets[i].addMaterialNode(redMaterial);
         drawNode.setGeometryNode(assets[i]);
       }
 
@@ -81,7 +81,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -100,8 +100,9 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
   var modelName = 'cow';
-  var loadMultipleGeometries = false;
-  var resourceLoadNode = scene.importAssetFile('Models/' + modelName + '.obj', { loadMultipleGeometries: loadMultipleGeometries });
+  var resourceLoadNode = scene.importAssetFile('Models/' + modelName + '.obj', {
+   splitMaterials: true
+  });
   resourceLoadNode.addEventListener('objparsesuccess', function(evt){
     /*
       // Load the mtl file, which will generate an array of materials.
@@ -116,22 +117,22 @@ $(document).ready(function() {
         materialNames: evt.materialNames
        });
      */
-    for(var i=0; i< evt.objectNames.length; i++){
-     var objectName = evt.objectNames[i];
-     var materialName = evt.materialNames[i];
-     var material = scene.constructNode('PhongMaterial', {
-       diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-       lightNode: light
-     });
-     var instance = scene.constructNode('Instance', {
-      geometryNode: evt.loadedGeometries[objectName],
-      materialNode: material,
-      transformNode: scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
-        }),
-     });
-    }
+     for(var i=0; i< evt.objectNames.length; i++){
+       var objectName = evt.objectNames[i];
+       var materialName = evt.materialNames[i];
+       var material = scene.constructNode('PhongMaterial', {
+         diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+         lightNode: light
+       });
+       var instance = scene.constructNode('Instance', {
+         geometryNode: evt.loadedGeometries[objectName],
+         materialNode: material,
+         transformNode: scene.constructNode('Transform', {
+             hierarchical: false,
+             globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+           }),
+       });
+      }
    });
   
 

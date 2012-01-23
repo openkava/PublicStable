@@ -34,9 +34,11 @@
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
 
@@ -428,32 +430,26 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////////////
   // Opacity Mapping
-  var linearkey = FABRIC.RT.linearKeyframe;
-  var opacityKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
-  var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
-  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+  var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
+  var opacityKeyAnimationTrack = scene.constructNode('LinearKeyAnimationTrack');
+  opacityKeyAnimationTrack.addTrack(new FABRIC.RT.LinearKeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(.1, 0),
       linearkey(.2, 0.75),
       linearkey(.4, 0.05),
       linearkey(.5, 1)
     ]));
   
-  var trackSetID = opacityKeyAnimationLibrary.addTrackSet(trackSet);
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
-      animationLibraryNode: opacityKeyAnimationLibrary,
+      animationTrackNode: opacityKeyAnimationTrack,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
   
   ///////////////////////////////////////////////////////////
   // Color Mapping
-  var colorkey = FABRIC.RT.colorKeyframe;
-  var gradientKeyTrackLibrary = scene.constructNode('ColorKeyAnimationLibrary', {
-    name:'GradientKeyTrack'
-  });
-  
-  var gradientKeyTrackSet = new FABRIC.RT.KeyframeTrackSet('GradientKeyTrack');
-  gradientKeyTrackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+  var colorkey = function(time, value){ return new FABRIC.RT.ColorKeyframe(time, value); };
+  var gradientKeyTrack = scene.constructNode('ColorKeyAnimationTrack');
+  gradientKeyTrack.addTrack(new FABRIC.RT.ColorKeyframeTrack('GradientKeyTrack', FABRIC.RT.rgb(0, 1, 0), [
       colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
       colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
       colorkey(.25, FABRIC.RT.rgb(0, .7, .7)),
@@ -461,9 +457,9 @@ $(document).ready(function() {
       colorkey(.4, FABRIC.RT.rgb(.7, 0, .7)),
       colorkey(.5, FABRIC.RT.rgb(0, 0, .7))
     ]));
-  var trackSetID = gradientKeyTrackLibrary.addTrackSet(gradientKeyTrackSet);
+  
   var gradientDisplayNode = scene.constructNode('TrackDisplay', {
-      animationLibraryNode: gradientKeyTrackLibrary,
+      animationTrackNode: gradientKeyTrack,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
@@ -495,7 +491,7 @@ $(document).ready(function() {
     globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(1.0, 1.0, 1.0)})
   });
 
-  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
+  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNodes: true });
   var borderSize = 0.01;
 
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: '', glRepeat: false, histogramResolution: 1024 });
@@ -503,6 +499,7 @@ $(document).ready(function() {
   var addOnLoadCallback = function (){
    opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function(){
      histogram.setData(opacityTexture.getHistogram(), 0.4);
+     viewport.show();
      viewport.redraw();
   })};
 
@@ -693,17 +690,18 @@ $(document).ready(function() {
 
   $( "#tabs" ).tabs();
 
-  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
+  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationTrack, {
     timeStripe: false,
     draggable: false,
     zoomable: false,
     valueRange: new FABRIC.RT.Vec2(0, 1),
     timeRange: new FABRIC.RT.Vec2(0, 1),
     fitEditorToKeyRanges: false,
+    displayTrackNames: false,
     volumerenderdemohack: true
   });
 
-  var colorGradient = constructColorGradient('colorMapping', gradientKeyTrackLibrary, {
+  var colorGradient = constructColorGradient('colorMapping', gradientKeyTrack, {
 
   });
   colorGradient.addEventListener('gradientchanged', function(evt){
@@ -731,7 +729,7 @@ $(document).ready(function() {
   var rebuildPresetNamesList = function(){
     $('#resourceSelector').empty();
     for(var i=0; i<localStorage.length; i++){
-      if(localStorage.key(i).split('.')[0]=='VolumeRenderingPresets'){
+      if(localStorage.key(i).split('.')[0]=='MedicalImagingPresetsVer1'){
       //  presetNames.push(localStorage.key(i).slipt('.')[1]);
         var presetName = localStorage.key(i).split('.')[1];
         $('#resourceSelector').append('<option value="'+presetName+'">'+presetName);
@@ -743,15 +741,15 @@ $(document).ready(function() {
   var savePreset = function(){
     var presetSaver = scene.constructManager('SceneSerializer');
     presetSaver.addNode(camera);
-    presetSaver.addNode(opacityKeyAnimationLibrary);
-    presetSaver.addNode(gradientKeyTrackLibrary);
+    presetSaver.addNode(opacityKeyAnimationTrack);
+    presetSaver.addNode(gradientKeyTrack);
     presetSaver.addNode(volumeNode);
     presetSaver.addNode(opacityTexture);
     presetSaver.addNode(texture2DSlice[0]);
     presetSaver.addNode(texture2DSlice[1]);
     presetSaver.addNode(texture2DSlice[2]);
     
-    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
     presetSaver.save(storage);
     
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
@@ -762,30 +760,32 @@ $(document).ready(function() {
     savedCropMin = undefined;
     savedCropMax = undefined;
 
-    var loadPresetTask;
-    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
-
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
-      viewport.startLoadMode();
+      viewport.hide();
       displayProgressBar();
     }
+    
+    var loadPresetTask;
+    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+    
+    loadPresetTask( true );
 
     var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
-    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
-    var nodeMap = presetLoader.load(storage);
+    var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
+    presetLoader.load(storage, function(nodeMap){
+      
+      addOnLoadCallback();
+  
+      $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+    //  curveEditor.redraw();
+      colorGradient.redraw();
+      localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  
+      viewport.redraw();
+  
+      
+    });
 
-    addOnLoadCallback();
-
-    $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
-    curveEditor.redraw();
-    colorGradient.redraw();
-    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
-
-    viewport.redraw();
-    viewport.redraw();
-    viewport.redraw();
-
-    loadPresetTask( true );
   }
   
   $("#resourceSelector").change(function() {
@@ -837,8 +837,8 @@ $(document).ready(function() {
       presetInitialized = true;
       initialLoad = false;
       if(!presetsFound){
-        localStorage.setItem('VolumeRenderingPresets.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
-        localStorage.setItem('VolumeRenderingPresets.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
+        localStorage.setItem('MedicalImagingPresetsVer1.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
+        localStorage.setItem('MedicalImagingPresetsVer1.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
         currPresetName = 'Chest';
         loadPreset();
         rebuildPresetNamesList();
@@ -907,7 +907,7 @@ $(document).ready(function() {
               <p id="brushColor"></p>
 
               <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert">Invert Colors</label><br>
-              <input type="checkbox" id="enableCropping" style="margin-top:10px;" /><label for="invert">Enable Cropping</label><br>
+              <input type="checkbox" id="enableCropping" style="margin-top:10px;" /><label for="enableCropping">Enable Cropping</label><br>
            <!-- </div>content-->
             </div><!--box-->
           </div><!--volumeRenderTab-->
