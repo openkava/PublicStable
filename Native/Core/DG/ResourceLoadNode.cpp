@@ -39,11 +39,12 @@ namespace Fabric
     
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
-      , m_streamGeneration( 0 )
       , m_fabricResourceStreamData( context->getRTManager() )
-      , m_keepMemoryCache( false )
       , m_firstEvalAfterLoad( false )
+      , m_keepMemoryCache( false )
+      , m_asFile( false )
       , m_inProgress( false )
+      , m_streamGeneration( 0 )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       RC::ConstHandle<RT::BooleanDesc> booleanDesc = context->getRTManager()->getBooleanDesc();

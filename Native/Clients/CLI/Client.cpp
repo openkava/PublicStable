@@ -9,6 +9,8 @@
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/ResourceManager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
@@ -39,23 +41,23 @@ namespace Fabric
         if( strncmp( "testfile://", url, 11 ) != 0 )
             throw Exception( "Error: URL not properly formatted for local files" );//Don't put filename as it might be private
 
-        std::string fileWithPath = ChangeSeparatorsURLToFile( std::string( url+11 ) );
-        if( !FileExists( fileWithPath ) )
+        std::string fileWithPath = IO::ChangeSeparatorsURLToFile( std::string( url+11 ) );
+        if( !IO::FileExists( fileWithPath ) )
             throw Exception( "Error: file doesn't exist" );//Don't put filename as it might be private
 
-        std::string extension = GetExtension( fileWithPath );
-        size_t fileSize = GetFileSize( fileWithPath );
+        std::string extension = IO::GetExtension( fileWithPath );
+        size_t fileSize = IO::GetFileSize( fileWithPath );
 
         if( getAsFile )
         {
-          ResourceManager::onFileAsynchThreadCall( fileWithPath.c_str(), userData );
-          ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
+          IO::ResourceManager::onFileAsynchThreadCall( fileWithPath.c_str(), userData );
+          IO::ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
         }
         else
         {
           FILE *fp = fopen( fileWithPath.c_str(), "rb" );
           if ( fp == NULL )
-            ResourceManager::onFailureAsynchThreadCall( "Unable to open file", userData );
+            IO::ResourceManager::onFailureAsynchThreadCall( "Unable to open file", userData );
 
           static const size_t maxReadSize = 1<<16;//64K buffers
           uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
@@ -64,10 +66,10 @@ namespace Fabric
           {
             size_t readSize = fread( &data[0], 1, maxReadSize, fp );
             if ( ferror( fp ) )
-              ResourceManager::onFailureAsynchThreadCall( "Error while reading file", userData );
+              IO::ResourceManager::onFailureAsynchThreadCall( "Error while reading file", userData );
 
-            ResourceManager::onDataAsynchThreadCall( offset, readSize, data, userData );
-            ResourceManager::onProgressAsynchThreadCall( "text/plain", offset+readSize, fileSize, userData );
+            IO::ResourceManager::onDataAsynchThreadCall( offset, readSize, data, userData );
+            IO::ResourceManager::onProgressAsynchThreadCall( "text/plain", offset+readSize, fileSize, userData );
 
             offset += readSize;
             if ( offset == fileSize )
