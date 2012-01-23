@@ -184,7 +184,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
           materialNode: scene.constructNode('PhongInstancingExtMaterial', {
             diffuseColor: FABRIC.RT.rgb255(10,10,255),
             lightNode: light,
-            transformTextureNode: slicedTransform.getTransformTexture()
+            transformTextureNode: scene.constructNode("TransformTexture", { transformNode: slicedTransform })
           }),
           transformNode: slicedTransform,
           enableRaycasting: true
