@@ -105,6 +105,7 @@ s.parentNode.insertBefore(ga, s);
     <script type="text/javascript">
     
     
+FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader.xml');
     
 $(document).ready(function() {
 
@@ -156,12 +157,28 @@ $(document).ready(function() {
   
   layerManager.addLayer('geometries');
   layerManager.addLayer('rig');
+	
+	var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+     
+	bodyMaterial = scene.constructNode('MonsterMaterial', {
+		wireColor: FABRIC.RT.rgb(0.7, 0.7, 0.7, 1),
+		wireOpacity: 1.0,
+		lightNode: light,
+		displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
+		diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
+		normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
+		displacementMin: -0.35,
+		displacementMax: 0.35
+	});
   
-  
+	var materialNode = scene.constructNode('PhongSkinningMaterial', {
+		lightNode: light,
+		diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
+	});
+    
   var rigNode, rigInstances = {};
   
-  scene.importAssetFile('Resources/Monster.DAE', {
-  }, function(assetNodes){
+  scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
     
     rigNode = assetNodes.BodyCharacterRig;
     
@@ -170,13 +187,12 @@ $(document).ready(function() {
     rigInstances['eyes'] = assetNodes.eyesMeshMaterial__56CharacterInstance;
     rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
     
-    var materialNode = scene.constructNode('PhongSkinningMaterial', {
-      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
-    });
-    
     for(var i in rigInstances){
+		 if(i=='body'){
+      rigInstances[i].addMaterialNode(bodyMaterial);
+		 }else{
       rigInstances[i].addMaterialNode(materialNode);
+		 }
     }
     
     var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{

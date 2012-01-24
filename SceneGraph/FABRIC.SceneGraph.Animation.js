@@ -397,9 +397,6 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     dgnode.addMember('trackSet', keyframeTrackSetType);
     dgnode.addMember('bindings', keyframeTrackSetBindingsType);
     
-    animationLibraryNode.addMemberInterface(dgnode, 'trackSet',true);
-    animationLibraryNode.addMemberInterface(dgnode, 'bindings',true);
-    
     var firstTrackAdded = false;
     animationLibraryNode.pub.addTrackSet = function(trackset, bindings) {
       var trackSetId;
@@ -452,9 +449,11 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
     };
-    animationLibraryNode.pub.setTrackSet = function(trackSet, trackSetId) {
-      return dgnode.setData('trackSet', trackSetId ? trackSetId : 0, trackSet);
+    
+    animationLibraryNode.getBindings = function(trackSetId) {
+      return dgnode.getData('bindings', trackSetId);
     };
+    
     animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;
     };
@@ -463,14 +462,14 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       return dgnode.getData('trackSet', trackSetId).tracks;
     };
     animationLibraryNode.pub.setTracks = function(tracks, trackSetId) {
-      var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+      var trackSet = dgnode.getData('trackSet', trackSetId);
       trackSet.tracks = tracks;
-      return animationLibraryNode.pub.setTrackSet(trackSet, trackSetId);
+      dgnode.setData('trackSet', trackSetId, trackSet);
     };
     animationLibraryNode.pub.setTrack = function(track, trackId, trackSetId) {
-      var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+      var trackSet = dgnode.getData('trackSet', trackSetId);
       trackSet.tracks[trackId] = track;
-      return animationLibraryNode.pub.setTrackSet(trackSet, trackSetId);
+      dgnode.setData('trackSet', trackSetId, trackSet);
     };
     
     // Because we store all tracks in a track set, getting and setting the
@@ -488,10 +487,10 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     };
     animationLibraryNode.beginManipulation = function(trackSetId) {
       m_trackSetId = trackSetId;
-      m_trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+      m_trackSet = dgnode.getData('trackSet', trackSetId);
     }
     animationLibraryNode.endManipulation = function() {
-      animationLibraryNode.pub.setTrackSet(m_trackSet, m_trackSetId);
+      dgnode.setData('trackSet', m_trackSetId, m_trackSet);
       animationLibraryNode.pub.fireEvent('valuechanged', {});
     }
     
