@@ -9,12 +9,16 @@
 #include <Fabric/Core/Build.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 
+#include <map>
 #include <time.h>
 
 namespace Fabric
 {
   namespace Python
   {
+    // FIXME this shouldn't be global
+    std::map<const char*, Util::SimpleString*> g_stringMap;
+
     extern "C" FABRIC_CLI_EXPORT void* createClient()
     {
       FABRIC_LOG( "%s version %s", Fabric::buildName, Fabric::buildFullVersion );
@@ -37,7 +41,6 @@ namespace Fabric
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
       FABRIC_LOG("GOT: %s", data);
 
-      // FIXME track these pointers
       Util::SimpleString *jsonEncodedResults = new Util::SimpleString();
       Util::JSONGenerator resultJSON( jsonEncodedResults );
       
@@ -53,6 +56,9 @@ namespace Fabric
       *rlength = jsonEncodedResults->length();
       *result = jsonEncodedResults->c_str();
 
+      // FIXME verify doesn't exist already
+      g_stringMap[ jsonEncodedResults->c_str() ] = jsonEncodedResults;
+
       FABRIC_LOG( "result ptr = %x", *result );
 
       FABRIC_LOG( "OUTPUT: %s", jsonEncodedResults->c_str() );
@@ -62,8 +68,9 @@ namespace Fabric
     {
       FABRIC_LOG( "received freeString: %x", string );
 
-      Util::SimpleString *sstring = (Util::SimpleString*)string;
-      //delete sstring;
+      // FIXME error handling
+      Util::SimpleString *sstring = g_stringMap.find( (const char*) string )->second;
+      delete sstring;
     }
 
     extern "C" FABRIC_CLI_EXPORT void close( void *client_ )
