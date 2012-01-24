@@ -39,10 +39,10 @@ namespace Fabric
     {
     }
     
-    void InitializedVarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void InitializedVarDecl::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      VarDecl::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ), includeLocation );
+      VarDecl::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_args->appendJSON( jsonObjectEncoder.makeMember( "args" ), includeLocation );
     }
     
     void InitializedVarDecl::registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

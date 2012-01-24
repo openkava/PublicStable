@@ -8,7 +8,7 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {

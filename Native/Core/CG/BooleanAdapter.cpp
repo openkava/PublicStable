@@ -15,7 +15,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/BooleanDesc.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 
 namespace Fabric
 {

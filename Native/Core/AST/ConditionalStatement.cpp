@@ -43,14 +43,14 @@ namespace Fabric
     {
     }
     
-    void ConditionalStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void ConditionalStatement::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_expr->appendJSON( jsonObjectGenerator.makeMember( "testExpr" ), includeLocation );
+      Statement::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_expr->appendJSON( jsonObjectEncoder.makeMember( "testExpr" ), includeLocation );
       if ( m_trueStatement )
-        m_trueStatement->appendJSON( jsonObjectGenerator.makeMember( "ifTrue" ), includeLocation );
+        m_trueStatement->appendJSON( jsonObjectEncoder.makeMember( "ifTrue" ), includeLocation );
       if ( m_falseStatement )
-        m_falseStatement->appendJSON( jsonObjectGenerator.makeMember( "ifFalse" ), includeLocation );
+        m_falseStatement->appendJSON( jsonObjectEncoder.makeMember( "ifFalse" ), includeLocation );
     }
     
     void ConditionalStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

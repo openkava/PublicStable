@@ -2,14 +2,15 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
 #include <math.h>
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
     static const Exception malformedJSONException( "malformed JSON" );
 
@@ -130,11 +131,11 @@ namespace Fabric
       return result;
     }
     
-    static inline void jsonStringAppendASCII( char ch, JSONEntityInfo &entityInfo )
+    static inline void jsonStringAppendASCII( char ch, Entity &entity )
     {
-      if ( entityInfo.value.string.length < jsonDecoderShortStringMaxLength )
-        entityInfo.value.string.shortData[entityInfo.value.string.length] = ch;
-      ++entityInfo.value.string.length;
+      if ( entity.value.string.length < DecoderShortStringMaxLength )
+        entity.value.string.shortData[entity.value.string.length] = ch;
+      ++entity.value.string.length;
     }
     
     static inline size_t jsonUCS2ToUTF8( uint16_t ucs2, char utf8[3] )
@@ -159,26 +160,26 @@ namespace Fabric
       }
     }
     
-    static inline void jsonStringAppendUCS2( uint16_t ucs2, JSONEntityInfo &entityInfo )
+    static inline void jsonStringAppendUCS2( uint16_t ucs2, Entity &entity )
     {
       char utf8[3];
       size_t utf8Length = jsonUCS2ToUTF8( ucs2, utf8 );
-      jsonStringAppendASCII( utf8[0], entityInfo );
+      jsonStringAppendASCII( utf8[0], entity );
       if ( utf8Length > 1 )
       {
-        jsonStringAppendASCII( utf8[1], entityInfo );
+        jsonStringAppendASCII( utf8[1], entity );
         if ( utf8Length > 2 )
-          jsonStringAppendASCII( utf8[2], entityInfo );
+          jsonStringAppendASCII( utf8[2], entity );
       }
     }
       
-    bool jsonGetEntity( char const *&data, size_t &length, JSONEntityInfo &entityInfo )
+    bool GetEntity( char const *&data, size_t &length, Entity &entity )
     {
       jsonSkipWhitespace( data, length );
       if ( length == 0 )
         return false;
       
-      entityInfo.data = data;
+      entity.data = data;
       switch ( data[0] )
       {
         case 'n':
@@ -191,7 +192,7 @@ namespace Fabric
             throw malformedJSONException;
           data += 4;
           length -= 4;
-          entityInfo.type = ET_NULL;
+          entity.type = Entity::ET_NULL;
         }
         break;
         
@@ -205,8 +206,8 @@ namespace Fabric
             throw malformedJSONException;
           data += 4;
           length -= 4;
-          entityInfo.type = ET_BOOLEAN;
-          entityInfo.value.boolean = true;
+          entity.type = Entity::ET_BOOLEAN;
+          entity.value.boolean = true;
         }
         break;
         
@@ -221,8 +222,8 @@ namespace Fabric
             throw malformedJSONException;
           data += 5;
           length -= 5;
-          entityInfo.type = ET_BOOLEAN;
-          entityInfo.value.boolean = false;
+          entity.type = Entity::ET_BOOLEAN;
+          entity.value.boolean = false;
         }
         break;
         
@@ -278,14 +279,14 @@ namespace Fabric
 
           if ( length == 0 || (data[0] != '.' && data[0] != 'e' && data[0] != 'E') )
           {
-            entityInfo.type = ET_INTEGER;
+            entity.type = Entity::ET_INTEGER;
             if ( mantissaNeg )
-              entityInfo.value.integer = -int32_t(mantissaInt);
-            else entityInfo.value.integer = int32_t(mantissaInt);
+              entity.value.integer = -int32_t(mantissaInt);
+            else entity.value.integer = int32_t(mantissaInt);
           }
           else
           {
-            entityInfo.type = ET_SCALAR;
+            entity.type = Entity::ET_SCALAR;
             
             double mantissa;
             if ( data[0] == '.' )
@@ -310,7 +311,7 @@ namespace Fabric
               mantissa = -mantissa;
               
             if ( length == 0 || (data[0] != 'e' && data[0] != 'E') )
-              entityInfo.value.scalar = mantissa;
+              entity.value.scalar = mantissa;
             else
             {
               ++data; --length;
@@ -339,7 +340,7 @@ namespace Fabric
               if ( exponentNeg )
                 exponent = -exponent;
               
-              entityInfo.value.scalar = mantissa * pow( 10.0, exponent );
+              entity.value.scalar = mantissa * pow( 10.0, exponent );
             }
           }
         }
@@ -347,8 +348,8 @@ namespace Fabric
         
         case '"':
         {
-          entityInfo.type = ET_STRING;
-          entityInfo.value.string.length = 0;
+          entity.type = Entity::ET_STRING;
+          entity.value.string.length = 0;
           ++data; --length;
           
           bool done = false;
@@ -373,34 +374,34 @@ namespace Fabric
                   case '"':
                   case '/':
                   case '\\':
-                    jsonStringAppendASCII( data[0], entityInfo );
+                    jsonStringAppendASCII( data[0], entity );
                     ++data; --length;
                     break;
                   
                   case 'b':
-                    jsonStringAppendASCII( '\b', entityInfo );
+                    jsonStringAppendASCII( '\b', entity );
                     ++data; --length;
                     break;
                   case 'f':
-                    jsonStringAppendASCII( '\f', entityInfo );
+                    jsonStringAppendASCII( '\f', entity );
                     ++data; --length;
                     break;
                   case 'n':
-                    jsonStringAppendASCII( '\n', entityInfo );
+                    jsonStringAppendASCII( '\n', entity );
                     ++data; --length;
                     break;
                   case 'r':
-                    jsonStringAppendASCII( '\r', entityInfo );
+                    jsonStringAppendASCII( '\r', entity );
                     ++data; --length;
                     break;
                   case 't':
-                    jsonStringAppendASCII( '\t', entityInfo );
+                    jsonStringAppendASCII( '\t', entity );
                     ++data; --length;
                     break;
                   
                   case 'u':
                     ++data; --length;
-                    jsonStringAppendUCS2( jsonConsumeUCS2( data, length ), entityInfo );
+                    jsonStringAppendUCS2( jsonConsumeUCS2( data, length ), entity );
                     break;
                   
                   default:
@@ -410,7 +411,7 @@ namespace Fabric
               break;
               
               default:
-                jsonStringAppendASCII( data[0], entityInfo );
+                jsonStringAppendASCII( data[0], entity );
                 ++data; --length;
                 break;
             }
@@ -420,15 +421,15 @@ namespace Fabric
         
         case '{':
         {
-          entityInfo.type = ET_OBJECT;
-          entityInfo.value.object.size = 0;
+          entity.type = Entity::ET_OBJECT;
+          entity.value.object.size = 0;
           ++data, --length;
 
           jsonSkipWhitespace( data, length );
           if ( length == 0 )
             throw malformedJSONException;
           if ( data[0] != '}' )
-            ++entityInfo.value.array.size;
+            ++entity.value.array.size;
           
           size_t nestCount = 1;
           while ( nestCount > 0 )
@@ -445,7 +446,7 @@ namespace Fabric
               
               case ',':
                 if ( nestCount == 1 )
-                  ++entityInfo.value.array.size;
+                  ++entity.value.array.size;
                 ++data, --length;
                 break;
               
@@ -469,15 +470,15 @@ namespace Fabric
         
         case '[':
         {
-          entityInfo.type = ET_ARRAY;
-          entityInfo.value.array.size = 0;
+          entity.type = Entity::ET_ARRAY;
+          entity.value.array.size = 0;
           ++data, --length;
 
           jsonSkipWhitespace( data, length );
           if ( length == 0 )
             throw malformedJSONException;
           if ( data[0] != ']' )
-            ++entityInfo.value.array.size;
+            ++entity.value.array.size;
           
           size_t nestCount = 1;
           while ( nestCount > 0 )
@@ -494,7 +495,7 @@ namespace Fabric
               
               case ',':
                 if ( nestCount == 1 )
-                  ++entityInfo.value.array.size;
+                  ++entity.value.array.size;
                 ++data, --length;
                 break;
               
@@ -520,22 +521,24 @@ namespace Fabric
           throw malformedJSONException;
       }
       
-      entityInfo.length = data - entityInfo.data;
+      entity.length = data - entity.data;
       return true;
     }
 
-    static inline void jsonConsumeEntity( char const *&data, size_t &length, JSONEntityInfo &entityInfo )
+    static inline void jsonConsumeEntity( char const *&data, size_t &length, Entity &entity )
     {
-      if ( !jsonGetEntity( data, length, entityInfo ) )
+      if ( !GetEntity( data, length, entity ) )
         throw malformedJSONException;
     }
     
-    bool JSONObjectParser::getNext( JSONEntityInfo &memberKeyEntityInfo, JSONEntityInfo &memberValueEntityInfo )
+    bool ObjectDecoder::getNext( Entity &keyString, Entity &valueEntity )
     {
       if ( m_length == 0 || m_data[0] == '}' )
         return false;
         
-      jsonConsumeEntity( m_data, m_length, memberKeyEntityInfo );
+      jsonConsumeEntity( m_data, m_length, keyString );
+      if ( !keyString.isString() )
+        throw malformedJSONException;
       
       switch ( jsonConsumeToken( m_data, m_length ) )
       {
@@ -546,7 +549,7 @@ namespace Fabric
           throw malformedJSONException;
       }
       
-      jsonConsumeEntity( m_data, m_length, memberValueEntityInfo );
+      jsonConsumeEntity( m_data, m_length, valueEntity );
       
       switch ( jsonConsumeToken( m_data, m_length ) )
       {
@@ -562,11 +565,18 @@ namespace Fabric
           throw malformedJSONException;
       }
       
-      ++m_count;
+      m_lastKeyShortData = keyString.value.string.shortData;
+      m_lastKeyLength = keyString.value.string.length;
+
       return true;
     }
+
+    void ObjectDecoder::rethrow( Exception const &e ) const
+    {
+      throw _( m_lastKeyShortData, m_lastKeyLength, DecoderShortStringMaxLength ) + ": " + e;
+    }
     
-    bool JSONArrayParser::getNext( JSONEntityInfo &elementEntityInfo )
+    bool ArrayDecoder::getNext( Entity &elementEntityInfo )
     {
       if ( m_length == 0 || m_data[0] == ']' )
         return false;
@@ -587,117 +597,126 @@ namespace Fabric
           throw malformedJSONException;
       }
       
-      ++m_count;
+      m_lastIndex = ++m_count;
       return true;
     }
 
-    bool jsonEntityStringIsEqual( JSONEntityInfo const &entityInfo, char const *data, size_t length )
+    void ArrayDecoder::rethrow( Exception const &e ) const
     {
-      FABRIC_ASSERT( entityInfo.type == ET_STRING );
-      if ( length != entityInfo.value.string.length )
-        return false;
-      if ( memcmp( data, entityInfo.value.string.shortData, std::min( length, jsonDecoderShortStringMaxLength ) ) != 0 )
-        return false;
-      if ( length > jsonDecoderShortStringMaxLength )
+      throw "index " + _(m_lastIndex) + ": " + e;
+    }
+
+    bool Entity::stringIs_Long( char const *thatData, size_t thatLength ) const
+    {
+      char const *entityData = data;
+      size_t entityLength = length;
+      FABRIC_ASSERT( entityLength > 0 );
+      FABRIC_ASSERT( entityData[0] == '"' );
+      ++entityData, --entityLength;
+      while ( thatLength > 0 )
       {
-        char const *entityData = entityInfo.data;
-        size_t entityLength = entityInfo.length;
         FABRIC_ASSERT( entityLength > 0 );
-        FABRIC_ASSERT( entityData[0] == '"' );
-        ++entityData, --entityLength;
-        while ( length > 0 )
+        switch ( entityData[0] )
         {
-          FABRIC_ASSERT( entityLength > 0 );
-          switch ( entityData[0] )
-          {
+          case '"':
+            FABRIC_ASSERT( false );
+            return false;
+            
+          case '\\':
+            ++entityData, --entityLength;
+            FABRIC_ASSERT( entityLength > 0 );
+            switch ( entityData[0] )
+            {
             case '"':
-              FABRIC_ASSERT( false );
-              return false;
-              
+            case '/':
             case '\\':
-              ++entityData, --entityLength;
-              FABRIC_ASSERT( entityLength > 0 );
-              switch ( entityData[0] )
-              {
-              case '"':
-              case '/':
-              case '\\':
-                if ( data[0] != entityData[0] )
-                  return false;
-                ++entityData, --entityLength;
-                ++data, --length;
-                break;
-              
-              case 'b':
-                if ( data[0] != '\b' )
-                  return false;
-                ++entityData, --entityLength;
-                ++data, --length;
-                break;
-              case 'f':
-                if ( data[0] != '\f' )
-                  return false;
-                ++entityData, --entityLength;
-                ++data, --length;
-                break;
-              case 'n':
-                if ( data[0] != '\n' )
-                  return false;
-                ++entityData, --entityLength;
-                ++data, --length;
-                break;
-              case 'r':
-                if ( data[0] != '\r' )
-                  return false;
-                ++entityData, --entityLength;
-                ++data, --length;
-                break;
-              case 't':
-                if ( data[0] != '\t' )
-                  return false;
-                ++entityData, --entityLength;
-                ++data, --length;
-                break;
-              
-              case 'u':
-              {
-                ++entityData, --entityLength;
-                FABRIC_ASSERT( entityLength >= 4 );
-                uint16_t ucs2 = jsonConsumeUCS2( entityData, entityLength );
-                
-                char utf8[3];
-                size_t utf8Length = jsonUCS2ToUTF8( ucs2, utf8 );
-                if ( length < utf8Length
-                  || memcmp( utf8, data, utf8Length ) != 0 )
-                  return false;
-                data += utf8Length, length -= utf8Length;
-              }
-              break;
-              
-              default:
-                FABRIC_ASSERT( false );
+              if ( thatData[0] != entityData[0] )
                 return false;
+              ++entityData, --entityLength;
+              ++thatData, --thatLength;
+              break;
+            
+            case 'b':
+              if ( thatData[0] != '\b' )
+                return false;
+              ++entityData, --entityLength;
+              ++thatData, --thatLength;
+              break;
+            case 'f':
+              if ( thatData[0] != '\f' )
+                return false;
+              ++entityData, --entityLength;
+              ++thatData, --thatLength;
+              break;
+            case 'n':
+              if ( thatData[0] != '\n' )
+                return false;
+              ++entityData, --entityLength;
+              ++thatData, --thatLength;
+              break;
+            case 'r':
+              if ( thatData[0] != '\r' )
+                return false;
+              ++entityData, --entityLength;
+              ++thatData, --thatLength;
+              break;
+            case 't':
+              if ( thatData[0] != '\t' )
+                return false;
+              ++entityData, --entityLength;
+              ++thatData, --thatLength;
+              break;
+            
+            case 'u':
+            {
+              ++entityData, --entityLength;
+              FABRIC_ASSERT( entityLength >= 4 );
+              uint16_t ucs2 = jsonConsumeUCS2( entityData, entityLength );
+              
+              char utf8[3];
+              size_t utf8Length = jsonUCS2ToUTF8( ucs2, utf8 );
+              if ( thatLength < utf8Length
+                || memcmp( utf8, thatData, utf8Length ) != 0 )
+                return false;
+              thatData += utf8Length, thatLength -= utf8Length;
             }
+            break;
             
             default:
-              if ( entityData[0] != data[0] )
-                return false;
-              ++entityData, --entityLength;
-              ++data, --length;
-              break;
+              FABRIC_ASSERT( false );
+              return false;
           }
+          
+          default:
+            if ( entityData[0] != thatData[0] )
+              return false;
+            ++entityData, --entityLength;
+            ++thatData, --thatLength;
+            break;
         }
-        FABRIC_ASSERT( entityLength == 0 );
       }
+      FABRIC_ASSERT( entityLength == 1 );
+      FABRIC_ASSERT( entityData[0] == '"' );
+
       return true;
     }
-
-    void jsonParseString( JSONEntityInfo const &entityInfo, char *data )
+    
+    std::string Entity::stringToStdString() const
     {
-      FABRIC_ASSERT( entityInfo.type == ET_STRING );
+      size_t length = stringLength();
       
-      char const *entityData = entityInfo.data;
-      size_t entityLength = entityInfo.length;
+      std::string result;
+      result.resize( length );
+      stringGetData( &result[0] );
+      return result;
+    }
+
+    void Entity::stringGetData_Long( char *dstData ) const
+    {
+      FABRIC_ASSERT( type == ET_STRING );
+      
+      char const *entityData = data;
+      size_t entityLength = length;
       
       FABRIC_ASSERT( entityLength > 0 );
       FABRIC_ASSERT( entityData[0] == '"' );
@@ -712,7 +731,6 @@ namespace Fabric
         {
           case '"':
             done = true;
-            ++entityData, --entityLength;
             break;
           
           case '\\':
@@ -723,28 +741,28 @@ namespace Fabric
               case '"':
               case '/':
               case '\\':
-                *data++ = entityData[0];
+                *dstData++ = entityData[0];
                 ++entityData, --entityLength;
                 break;
               
               case 'b':
-                *data++ = '\b';
+                *dstData++ = '\b';
                 ++entityData, --entityLength;
                 break;
               case 'f':
-                *data++ = '\f';
+                *dstData++ = '\f';
                 ++entityData, --entityLength;
                 break;
               case 'n':
-                *data++ = '\n';
+                *dstData++ = '\n';
                 ++entityData, --entityLength;
                 break;
               case 'r':
-                *data++ = '\r';
+                *dstData++ = '\r';
                 ++entityData, --entityLength;
                 break;
               case 't':
-                *data++ = '\t';
+                *dstData++ = '\t';
                 ++entityData, --entityLength;
                 break;
               
@@ -752,7 +770,7 @@ namespace Fabric
               {
                 ++entityData, --entityLength;
                 uint16_t ucs2 = jsonConsumeUCS2( entityData, entityLength );
-                data += jsonUCS2ToUTF8( ucs2, data );
+                dstData += jsonUCS2ToUTF8( ucs2, dstData );
               }
               break;
               
@@ -764,13 +782,14 @@ namespace Fabric
             break;
           
           default:
-            *data++ = entityData[0];
+            *dstData++ = entityData[0];
             ++entityData, --entityLength;
             break;
         }
       }
       
-      FABRIC_ASSERT( entityLength == 0 );
+      FABRIC_ASSERT( entityLength == 1 );
+      FABRIC_ASSERT( entityData[0] == '"' );
     }
   }
 }

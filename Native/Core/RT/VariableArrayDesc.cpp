@@ -5,10 +5,8 @@
 #include "VariableArrayDesc.h"
 #include "VariableArrayImpl.h"
 
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -50,11 +48,11 @@ namespace Fabric
       return RC::ConstHandle<RT::VariableArrayImpl>::StaticCast( Desc::getImpl() );
     }
     
-    void VariableArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void VariableArrayDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      ArrayDesc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "variableArray" );
-      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
+      ArrayDesc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "variableArray" );
+      resultObjectEncoder.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
   };
 };

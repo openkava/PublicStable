@@ -5,7 +5,7 @@
 #include "ExprValue.h"
 #include "Adapter.h"
 
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Base/Exception.h>

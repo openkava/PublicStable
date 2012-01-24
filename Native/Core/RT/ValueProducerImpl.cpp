@@ -4,10 +4,9 @@
  
 #include <Fabric/Core/RT/ValueProducerImpl.h>
 #include <Fabric/Core/MR/ValueProducer.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -52,22 +51,12 @@ namespace Fabric
       return lhsBits == rhsBits;
     }
     
-    RC::Handle<JSON::Value> ValueProducerImpl::getJSONValue( void const *src ) const
+    void ValueProducerImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       throw Exception( "unable to convert ValueProducer to JSON" );
     }
     
-    void ValueProducerImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      throw Exception( "unable to convert ValueProducer to JSON" );
-    }
-    
-    void ValueProducerImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
-    {
-      throw Exception( "unable to convert ValueProducer from JSON" );
-    }
-    
-    void ValueProducerImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    void ValueProducerImpl::decodeJSON( JSON::Entity const &entity, void *dst ) const
     {
       throw Exception( "unable to convert ValueProducer from JSON" );
     }
