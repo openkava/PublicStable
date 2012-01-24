@@ -19,7 +19,7 @@ namespace Fabric
     class Decoder;
     class JSONGenerator;
     class JSONObjectGenerator;
-    class JSONEntityInfo;
+    struct JSONEntityInfo;
   };
   
   namespace JSON
