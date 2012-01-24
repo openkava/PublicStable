@@ -328,6 +328,18 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricVIDEOOpenFileHandle(
+  KL::String file,
+  videoHandle &handle
+)
+{
+  if(handle.pointer == NULL)
+  {
+    KL::FileHandleWrapper wrapper(file);
+    return FabricVIDEOOpenFileName(wrapper.getPath(),handle);
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricVIDEOSeekTime(
   videoHandle & handle,
   KL::Scalar &time
