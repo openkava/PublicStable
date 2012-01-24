@@ -369,12 +369,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     characterVariablesNode.getVariables = function(){
       return dgnode.getData('poseVariables');
     };
-    
-  //  characterVariablesNode.setBindings = function(bindings){
-  //    dgnode.setData('bindings', 0, bindings);
-  //  }
-  
       
+      
+    var boundToAnimationTracks = false;
     var m_animationLibraryNode;
     var m_animationControllerNode;
     var m_trackSetId;
@@ -409,6 +406,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
       dgnode.setData('trackSetId', 0, m_trackSetId);
       
+      if(boundToAnimationTracks){
+        return
+      }
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'evaluatePoseTracks',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
@@ -487,7 +487,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     //  }
     //  else{
       if(m_animationLibraryNode){
-        m_keyframeTrackBindings = m_animationLibraryNode.pub.getBindings(m_trackSetId);
+        m_keyframeTrackBindings = m_animationLibraryNode.getBindings(m_trackSetId);
         var findBinding = function(bindingsList){
           for(var i=0; i<bindingsList.length; i++){
             if(bindingsList[i].varId == index){
@@ -572,15 +572,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var parentReadData = characterVariablesNode.readData;
     characterVariablesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
-      if(dgnode.getMembers().bindings){
-        nodeData.bindings = dgnode.getData('bindings');
-      }
     };
     characterVariablesNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      if(nodeData.bindings){
-        characterVariablesNode.setBindings(nodeData.bindings);
-      }
     };
     // If a base Vaiables node is provided, we clone the values. 
     if(options.baseVariables){
@@ -590,10 +584,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       var baseVariables = scene.getPrivateInterface(options.baseVariables);
       poseVariables = baseVariables.getVariables();
       dgnode.setData('poseVariables', 0, poseVariables);
-      
-      if(baseVariables.getDGNode().getMembers().bindings){
-        characterVariablesNode.setBindings(baseVariables.getDGNode().getData('bindings'));
-      }
     }
 
     return characterVariablesNode;
@@ -742,11 +732,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       return undefined;
     };
     
-    characterRigNode.getSolverParams = function() {
-      return solverParams;
-    };
     characterRigNode.pub.getSolvers = function() {
       return solvers;
+    };
+    characterRigNode.addMember = function(name, type, value) {
+      dgnode.addMember(name, type, value);
     };
     characterRigNode.addSolverOperator = function(operatorDef) {
       operatorBinding = scene.constructOperator(operatorDef);
@@ -807,7 +797,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
           solvers[i].generateTracks(trackSet, trackBindings);
         }
       }
-      var trackSetId = animationLibrary.pub.addTrackSet(trackSet);
+      var trackSetId = animationLibrary.pub.addTrackSet(trackSet, trackBindings);
       if(bindForPlayback==true){
         
         if(!poseVariables){
@@ -819,7 +809,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
           controllerNode = scene.pub.constructNode('AnimationController');
         }
         variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
-        animationLibrary.pub.setBindings(trackBindings);
+        
       }
       return trackSetId;
     }
