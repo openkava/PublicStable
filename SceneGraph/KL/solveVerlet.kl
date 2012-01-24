@@ -3,6 +3,7 @@
 //
 
 use Vec3, Xfo;
+use DebugGeometry;
 
 operator solveVerletBone(
   io Scalar deltaT,
@@ -30,7 +31,6 @@ operator solveVerletBone(
   }
 }
 
-/*
 
 operator solveVerletMuscleBone(
   io Scalar deltaT,
@@ -40,6 +40,11 @@ operator solveVerletMuscleBone(
   io Bone bones[],
   io Integer verletBones[],
   
+  io Scalar simulationWeights[],
+  io Scalar springStrengths[],
+  io Scalar dampening[],
+  
+  
   io Integer baseAttachBones[],
   io Vec3 baseAttachOffset[],
   io Integer tipAttachBones[],
@@ -48,20 +53,21 @@ operator solveVerletMuscleBone(
   io Scalar referenceLength[],
   io Scalar referenceBias[],
   
-  io Scalar simulationWeights[],
-  io Scalar springStrengths[],
-  io Scalar dampening[],
+  io DebugGeometry debugGeometry
 ) {
   for (Integer i = 0; i < verletBones.size; i++) {
   
-    Vec3 baseAttachment = pose[bones[baseAttachBones[i]]].transformVector(baseAttachOffset[i]);
-    Vec3 tipAttachment = pose[bones[tipAttachBones[i]]].transformVector(tipAttachOffset[i]);
+    Xfo boneXfo = pose[bones[verletBones[i]].parent] * bones[verletBones[i]].referenceLocalPose;
+  
+    Vec3 baseAttachment = pose[baseAttachBones[i]].transformVector(baseAttachOffset[i]);
+    Vec3 tipAttachment = pose[tipAttachBones[i]].transformVector(tipAttachOffset[i]);
     
     Vec3 attachedTr = baseAttachment.linearInterpolate(tipAttachment, referenceBias[i]);
+  
     Scalar stretch = baseAttachment.distanceTo(tipAttachment) / referenceLength[i];
     Vec3 scl;
     scl.x = stretch;
-    scl.y = scl.z = 1.0/stretch;
+    scl.y = scl.z = (1.0/stretch) * 1.4;
     
   //  Scalar mass = 1.0;
   //  Vec3 force = gravity;
@@ -72,13 +78,22 @@ operator solveVerletMuscleBone(
   //  pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
   //  pose[verletBones[i]].tr = pose[verletBones[i]].tr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
   //  trPrev[i] = temp;
+  
+    boneXfo.tr = attachedTr;
+    boneXfo.sc = scl;
     
-    pose[verletBones[i]].tr = attachedTr;
-    pose[verletBones[i]].scl = scl;
+    pose[verletBones[i]] = boneXfo;
+    
+    //////////////////////////////////////////////
+    // Debugging
+    if(debugGeometry.enabled){
+      debugGeometry.drawLine(baseAttachment, tipAttachment, Color(1.0, 0.0, 0.0, 1.0));
+    }
   }
 }
 
 
+/*
 
 
 operator solveVerletChain(

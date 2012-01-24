@@ -335,9 +335,6 @@ $(document).ready(function() {
     rigNode.addSolver('muscles', 'FKHierarchySolver', {
       bones: {
         bones:[
-          '_LLat',
-          '_LBicep',
-          '_LTricep',
           '_RLat',
           '_RBicep',
           '_RTricep',
@@ -353,6 +350,32 @@ $(document).ready(function() {
       }
     });
     
+    rigNode.addSolver('verletMuscles', 'VerletMuscleBoneSolver', {
+        muscles:[
+          { bone:'_LLat', baseAttachment:'_LArm1', tipAttachment:'_Neck2', muscleBaseLength:1, muscleTipLength:3, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+          { bone:'_LBicep', baseAttachment:'_LArm1', tipAttachment:'_LArm21', muscleBaseLength:2, muscleTipLength:3, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+          { bone:'_LTricep', baseAttachment:'_LArmCollarbone', tipAttachment:'_LArm21', muscleBaseLength:1, muscleTipLength:5, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+	  
+          { bone:'_RLat', baseAttachment:'_RArm1', tipAttachment:'_Neck2', muscleBaseLength:1, muscleTipLength:3, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+          { bone:'_RBicep', baseAttachment:'_RArm1', tipAttachment:'_RArm21', muscleBaseLength:2, muscleTipLength:3, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+          { bone:'_RTricep', baseAttachment:'_RArmCollarbone', tipAttachment:'_RArm21', muscleBaseLength:1, muscleTipLength:5, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+	  
+	  
+/*
+          { bone:'_LThighAnterior', baseAttachment:'_RArm1', tipAttachment:'_Neck2', muscleBaseLength:1, muscleTipLength:3, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+          { bone:'_LThighPosterior', baseAttachment:'_RArm1', tipAttachment:'_RArm21', muscleBaseLength:2, muscleTipLength:3, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+          { bone:'_LCalf', baseAttachment:'_RArmCollarbone', tipAttachment:'_RArm21', muscleBaseLength:1, muscleTipLength:5, simulationWeight:0.3, springStrength:40.0, dampening:0.2 },
+	  
+          { bone:'_LThighAnterior' },
+          { bone:'_LThighPosterior' },
+          { bone:'_LCalf' },
+          
+          { bone:'_RThighAnterior' },
+          { bone:'_RThighPosterior' },
+          { bone:'_RCalf' }
+*/
+        ]
+    });
     
     rigNode.addSolver('buttocks', 'BlendBoneSolver', {
       blendBones:[
