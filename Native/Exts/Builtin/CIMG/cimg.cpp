@@ -147,6 +147,11 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(fileHandle);
+  if(wrapper.isReadOnly())
+  {
+    Fabric::EDK::throwException("CIMG extension: Cannot write to a readOnly FileHandle.");
+    return;
+  }
   
   CImg<unsigned char> image(imageWidth,imageHeight,1,4);
   KL::Size offsetR = 0;
