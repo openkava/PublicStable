@@ -158,23 +158,23 @@ $(document).ready(function() {
   layerManager.addLayer('geometries');
   layerManager.addLayer('rig');
 	
-	var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-     
-	bodyMaterial = scene.constructNode('MonsterMaterial', {
-		wireColor: FABRIC.RT.rgb(0.7, 0.7, 0.7, 1),
-		wireOpacity: 1.0,
-		lightNode: light,
-		displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
-		diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
-		normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
-		displacementMin: -0.35,
-		displacementMax: 0.35
-	});
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-	var materialNode = scene.constructNode('PhongSkinningMaterial', {
-		lightNode: light,
-		diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
-	});
+  bodyMaterial = scene.constructNode('MonsterMaterial', {
+    wireColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
+    wireOpacity: 1.0,
+    lightNode: light,
+    displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
+    diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
+    normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
+    displacementMin: -0.35,
+    displacementMax: 0.35
+  });
+  
+  var materialNode = scene.constructNode('PhongSkinningMaterial', {
+    lightNode: light,
+    diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
+  });
     
   var rigNode, rigInstances = {};
   
@@ -357,7 +357,7 @@ $(document).ready(function() {
     rigNode.addSolver('buttocks', 'BlendBoneSolver', {
       blendBones:[
         { bone:'_LButtock', base:'_Pelvis', target:'_LLeg1', blendWeight: 0.6 },
-        { bone:'_LButtock_ncl1_1', base:'_Pelvis', target:'_RLeg1', blendWeight: 0.6 }
+        { bone:'_RButtock', base:'_Pelvis', target:'_RLeg1', blendWeight: 0.6 }
       ]
     });
     
@@ -551,6 +551,22 @@ $(document).ready(function() {
     layerManager.setGeometries(checked);
     viewport.redraw();
   });
+  $("#displayWireframe").attr('checked', true).change(function(event, ui) {
+    var checked = $('#displayWireframe').attr('checked') === 'checked';
+    bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
+    viewport.redraw();
+  });
+  var tesslationSlider = $('#tesslation').slider({
+      min: 1,
+      max: 12.0,
+      step: 1.0,
+      value: bodyMaterial.getTesselationInner()
+  }).bind('slide',
+    function(event, ui) {
+      bodyMaterial.setTesselationInner(ui.value);
+      bodyMaterial.setTesselationOuter(ui.value);
+      viewport.redraw();
+    });
   
   var setPlayButtonToPlay = function(){
     $('#play').button('option', {
@@ -713,17 +729,20 @@ $(document).ready(function() {
               </ol>
               <button id="curveEditor" style="margin-top:10px;">Open Curve Editor</button><br>
            <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
-            -->  <input type="checkbox" id="displayGeometry" style="margin-top:10px;" /><label for="displayGeometry">Display Geometry</label><br>
+            -->
+	      <label for="displayGeometry">Display Geometry</label><input type="checkbox" id="displayGeometry" style="margin-top:10px;" /><br>
+	      <label for="displayWireframe">Display Wireframe</label><input type="checkbox" id="displayWireframe" style="margin-top:10px;" /><br>
             
+              <label for="ikblendLArm">Tesselation Level</label><div id='tesslation'></div><br>
             </div><!--content-->
           </div><!--box-->
 	  
 	  
           <div class="box">
-            <h2>CONTROLS</h2>
+            <h2>SOLVER CONTROLS</h2>
             <div class="content">
-              <div id='ikblendLArm'></div>
-              <div id='ikblendRArm'></div>
+              <label for="ikblendLArm">Left Arm IK Blend</label><div id='ikblendLArm'></div><br>
+              <label for="ikblendRArm">Right Arm IK Blend</label><div id='ikblendRArm'></div><br>
             </div><!--content-->
           </div><!--box-->
           
