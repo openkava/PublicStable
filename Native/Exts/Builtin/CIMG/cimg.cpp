@@ -109,3 +109,58 @@ FABRIC_EXT_EXPORT void FabricCIMGOpenFileHandle(
   return readImageFromFile(wrapper.getPath(),imageWidth,imageHeight,imagePixels);
 }
 
+FABRIC_EXT_EXPORT void FabricCIMGCreateFromText(
+  KL::String text,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  unsigned char foreground = 255;
+  unsigned char background = 0;
+  CImg<unsigned char> image;
+  image.draw_text(
+    0,
+    0,
+    text.data(),
+    &foreground,
+    &background,
+    1.0f,
+    24
+  );
+ 
+  // resize the image
+  imageWidth = (KL::Size)image.width();
+  imageHeight = (KL::Size)image.height();
+  imagePixels.resize(imageWidth*imageHeight);
+ 
+  // copy the image over
+  for(KL::Size i=0;i<imagePixels.size();i++)
+    imagePixels[i].r = imagePixels[i].g = imagePixels[i].b = imagePixels[i].a = image.data()[i];
+}
+
+FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
+  KL::String fileHandle,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  KL::FileHandleWrapper wrapper(fileHandle);
+  
+  CImg<unsigned char> image(imageWidth,imageHeight,1,4);
+  KL::Size offsetR = 0;
+  KL::Size offsetG = offsetR + imagePixels.size();
+  KL::Size offsetB = offsetG + imagePixels.size();
+  KL::Size offsetA = offsetB + imagePixels.size();
+  
+  for(KL::Size i=0;i<imagePixels.size();i++)
+  {
+    image.data()[offsetR++] = imagePixels[i].r;
+    image.data()[offsetG++] = imagePixels[i].g;
+    image.data()[offsetB++] = imagePixels[i].b;
+    image.data()[offsetA++] = imagePixels[i].a;
+  }
+  
+  image.save(wrapper.getPath().data());
+}
