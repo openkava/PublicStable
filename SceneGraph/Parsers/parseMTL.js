@@ -7,7 +7,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
 
   var materialName,
     materialData = {},
-    results = {},
+    materialLibrary = options.materialLibrary ? options.materialLibrary : {},
     imageLibrary = options.imageLibrary ? options.imageLibrary : {},
     materialNames = options.materialNames;
     
@@ -54,7 +54,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
       materialOptions[materialMaps[i]+'Node'] = data[materialMaps[i]];
     }
     var graphNode = scene.constructNode(materialType, materialOptions);
-    results[assetName] = graphNode;
+    materialLibrary[assetName] = graphNode;
   }
 
 
@@ -119,7 +119,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
     onMaterialParsed(materialType, materialData, materialName);
   }
 
-  return results;
+  return materialLibrary;
 });
 
 
