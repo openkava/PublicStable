@@ -76,6 +76,12 @@ namespace Fabric
           value.string.length = that.value.string.length;
           memcpy( value.string.shortData, that.value.string.shortData, std::min( value.string.length, DecoderShortStringMaxLength ) );
           break;
+        case ET_OBJECT:
+          value.object.size = that.value.object.size;
+          break;
+        case ET_ARRAY:
+          value.array.size = that.value.array.size;
+          break;
         default:
           break;
         }
