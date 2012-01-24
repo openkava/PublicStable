@@ -22,6 +22,23 @@ class INTERFACE( object ):
     self.MR = MR( self.__client )
     self.RT = RT( self.__client )
 
+  def flush( self ):
+    self.__client.executeQueuedCommands();
+
+  def close( self ):
+    self.__client.close()
+
+  def getMemoryUsage( self ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    memoryUsage = { '_': None }
+    def __getMemoryUsage( result ):
+      memoryUsage[ '_' ] = result
+
+    self.__client.queueCommand( [], 'getMemoryUsage', None, None, __getMemoryUsage )
+    self.flush()
+
+    return memoryUsage[ '_' ]
+
 class CLIENT( object ):
   def __init__( self, fabric ):
     self.__fabric_client = fabric.createClient()
@@ -236,7 +253,7 @@ class RT( object ):
       }
       members.append( member )
 
-    defaultValue = None
+    defaultValue = desc[ 'constructor' ]()
 
     arg = {
       'name': name,
