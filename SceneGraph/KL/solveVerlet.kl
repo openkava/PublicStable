@@ -16,12 +16,13 @@ operator solveVerletBone(
   io Scalar dampening[],
 ) {
   for (Integer i = 0; i < verletBones.size; i++) {
+    Xfo attachedXfo = pose[bones[verletBones[i]].parent] * bones[verletBones[i]].referenceLocalPose;
+    
     Scalar mass = 1.0;
     Vec3 force = gravity;
     Vec3 trCurr = pose[verletBones[i]].tr;
     Vec3 temp = trCurr;
     trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
-    Xfo attachedXfo = pose[bones[verletBones[i]].parent] * bones[verletBones[i]].referenceLocalPose;
     force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
     pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
     pose[verletBones[i]].tr = pose[verletBones[i]].tr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
@@ -29,5 +30,111 @@ operator solveVerletBone(
   }
 }
 
+/*
 
+operator solveVerletMuscleBone(
+  io Scalar deltaT,
+  io Xfo pose[],
+  io Vec3 trPrev[],
+  io Vec3 gravity,
+  io Bone bones[],
+  io Integer verletBones[],
+  
+  io Integer baseAttachBones[],
+  io Vec3 baseAttachOffset[],
+  io Integer tipAttachBones[],
+  io Vec3 tipAttachOffset[],
+  
+  io Scalar referenceLength[],
+  io Scalar referenceBias[],
+  
+  io Scalar simulationWeights[],
+  io Scalar springStrengths[],
+  io Scalar dampening[],
+) {
+  for (Integer i = 0; i < verletBones.size; i++) {
+  
+    Vec3 baseAttachment = pose[bones[baseAttachBones[i]]].transformVector(baseAttachOffset[i]);
+    Vec3 tipAttachment = pose[bones[tipAttachBones[i]]].transformVector(tipAttachOffset[i]);
+    
+    Vec3 attachedTr = baseAttachment.linearInterpolate(tipAttachment, referenceBias[i]);
+    Scalar stretch = baseAttachment.distanceTo(tipAttachment) / referenceLength[i];
+    Vec3 scl;
+    scl.x = stretch;
+    scl.y = scl.z = 1.0/stretch;
+    
+  //  Scalar mass = 1.0;
+  //  Vec3 force = gravity;
+  //  Vec3 trCurr = pose[verletBones[i]].tr;
+  //  Vec3 temp = trCurr;
+  //  trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
+  //  force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
+  //  pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
+  //  pose[verletBones[i]].tr = pose[verletBones[i]].tr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
+  //  trPrev[i] = temp;
+    
+    pose[verletBones[i]].tr = attachedTr;
+    pose[verletBones[i]].scl = scl;
+  }
+}
+
+
+
+
+operator solveVerletChain(
+  io Scalar deltaT,
+  io Xfo pose[],
+  io Vec3 trPrev[][],
+  io Vec3 gravity,
+  io Bone bones[],
+  io Integer verletChains[][],
+  io Scalar chainLengths[][],
+  
+  io Integer baseAttachBones[],
+  io Vec3 baseAttachOffset[],
+  io Integer tipAttachBones[],
+  io Vec3 tipAttachOffset[],
+  
+  io Scalar referenceLength[],
+  io Scalar referenceBias[],
+  
+  io Scalar simulationWeights[],
+  io Scalar springStrengths[],
+  io Scalar dampening[],
+) {
+  for (Integer i = 0; i < verletChains.size; i++) {
+    Vec3 baseAttachment = pose[bones[baseAttachBones[i]]].transformVector(baseAttachOffset[i]);
+    Vec3 tipAttachment = pose[bones[tipAttachBones[i]]].transformVector(tipAttachOffset[i]);
+    
+    for (Integer j = 0; j < verletChains[i].size; j++) {
+      Scalar mass = 1.0;
+      Vec3 force = gravity;
+      
+      Vec3 trCurr = pose[verletChains[i][j]].tr;
+      Vec3 temp = trCurr;
+      
+      Vec3 prev, next;
+      if(i==0)
+        prev = trCurr - baseAttachment;
+      else
+        prev = trCurr - trPrev[i][j];
+      if(i==verletChains[i].size-1)
+        next = tipAttachment - trCurr;
+      else
+        next = trPrev[i][j] - trCurr;
+      
+      Scalar distPrev = prev.length();
+      trCurr += prev * (distPrev - chainLengths[i][j]);
+      Scalar distNext = prev.length();
+      trCurr += next * (distNext - chainLengths[i][j]);
+    
+      trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
+      force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
+      pose[verletChains[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
+      trPrev[i] = temp;
+    }
+  }
+}
+
+*/
 
