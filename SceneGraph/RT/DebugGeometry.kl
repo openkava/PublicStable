@@ -4,8 +4,7 @@
 //
 
 use Math;
-use Color;
-
+use Color, Vec3, Quat, Xfo;
 
 function DebugGeometry.reset() {
   this.positions.resize(0);
