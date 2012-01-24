@@ -25,7 +25,7 @@ namespace Fabric
 {
   namespace CLI
   {
-//#define FABRIC_CLI_LOG
+#define FABRIC_CLI_LOG
 
 #if defined(FABRIC_CLI_LOG)    
     static v8::Handle<v8::Value> LogCallbackV8FunctionCallback( v8::Arguments const &args )
