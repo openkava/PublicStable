@@ -130,7 +130,7 @@ $(document).ready(function() {
   var constructBulletScene = true;
   
   var rigName = 'Spiedel';
-  /*
+  
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -144,7 +144,7 @@ $(document).ready(function() {
   }else if(rigName =='walker' || rigName =='walker'){
     rigName = 'CMan0005';
   }
-  */
+  
   if(constructBulletScene){
     
     // create a simulation world
@@ -342,7 +342,7 @@ $(document).ready(function() {
         circleSize: 0.6
       });
     rigFile = 'Assets/CMan0005.json';
-    animationLibraryFile = 'Assets/CMan0005_Animation.json';
+    animationLibraryFile = 'Assets/CMan0005Animation.json';
     minFrequency = 0.75;
     break;
   case 'walker':
@@ -613,14 +613,14 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="Spiedel">Quadruped
+              <!--
                 <option value="centipede">Centipede
+            -->
                 <option value="CMan0005">Human
               </select>
-            -->
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
