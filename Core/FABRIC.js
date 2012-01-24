@@ -5,7 +5,7 @@
 
 FABRIC = (function() {
 
-  var requiredVersion = [1,0,17];
+  var requiredVersion = [1,0,19];
   // we keep an array of context ids,
   // so we can open the debugger with one
   var contextIDs = [];
