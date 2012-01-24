@@ -2,15 +2,11 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "BooleanImpl.h"
-
-#include <Fabric/Base/JSON/Boolean.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Core/RT/BooleanImpl.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
 
 namespace Fabric
 {
@@ -20,15 +16,10 @@ namespace Fabric
       : SimpleImpl( codeName, DT_BOOLEAN, sizeof(bool) )
     {
     }
-
-    RC::Handle<JSON::Value> BooleanImpl::getJSONValue( void const *src ) const
-    {
-      return JSON::Boolean::Create( getValue(src) );
-    }
     
-    void BooleanImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    void BooleanImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
-      jsonGenerator.makeBoolean( getValue(data) );
+      encoder.makeBoolean( getValue(data) );
     }
     
     void BooleanImpl::setData( void const *src, void *dst ) const
@@ -41,20 +32,11 @@ namespace Fabric
       static bool const defaultData = 0;
       return &defaultData;
     }
-
-    void BooleanImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
-    {
-      if ( !jsonValue->isBoolean() )
-        throw Exception("value is not boolean");
-      RC::ConstHandle<JSON::Boolean> jsonBoolean = RC::ConstHandle<JSON::Boolean>::StaticCast( jsonValue );
-      setValue( jsonBoolean->value(), dst );
-    }
     
-    void BooleanImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    void BooleanImpl::decodeJSON( JSON::Entity const &entity, void *dst ) const
     {
-      if ( entityInfo.type != Util::ET_BOOLEAN )
-        throw Exception("value is not boolean");
-      setValue( entityInfo.value.boolean, dst );
+      entity.requireBoolean();
+      setValue( entity.booleanValue(), dst );
     }
     
     std::string BooleanImpl::descData( void const *data ) const

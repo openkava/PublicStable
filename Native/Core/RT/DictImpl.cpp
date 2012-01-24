@@ -5,15 +5,10 @@
 #include "DictImpl.h"
 #include <Fabric/Core/RT/ComparableImpl.h>
 #include <Fabric/Core/RT/StringImpl.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Encode.h>
-#include <Fabric/Base/JSON/Decode.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Bits.h>
@@ -273,38 +268,14 @@ namespace Fabric
       void *result = getMutable( bits, bucket, keyData, keyHash );
       return result;
     }
-
-    RC::Handle<JSON::Value> DictImpl::getJSONValue( void const *data ) const
-    {
-      RC::ConstHandle<StringImpl> keyImplAsStringImpl;
-      if ( isString( m_keyImpl->getType() ) )
-        keyImplAsStringImpl = RC::ConstHandle<StringImpl>::StaticCast( m_keyImpl );
-        
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      bits_t const *bits = reinterpret_cast<bits_t const *>( data );
-      if ( bits )
-      {
-        node_t *node = bits->firstNode;
-        while ( node )
-        {
-          void const *keyData = immutableKeyData( node );
-          std::string keyString = keyImplAsStringImpl
-            ? std::string( keyImplAsStringImpl->getValueData( keyData ), keyImplAsStringImpl->getValueLength( keyData ) )
-            : JSON::encode( m_keyImpl->getJSONValue( keyData ) );
-          result->set( keyString, m_valueImpl->getJSONValue( immutableValueData( node ) ) );
-          node = node->bitsNextNode;
-        }
-      }
-      return result;
-    }
     
-    void DictImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    void DictImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       RC::ConstHandle<StringImpl> keyImplAsStringImpl;
       if ( isString( m_keyImpl->getType() ) )
         keyImplAsStringImpl = RC::ConstHandle<StringImpl>::StaticCast( m_keyImpl );
       
-      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       bits_t const *bits = reinterpret_cast<bits_t const *>( data );
       if ( bits )
       {
@@ -315,29 +286,27 @@ namespace Fabric
           void const *valueData = immutableValueData( node );
           if ( keyImplAsStringImpl )
           {
-            Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( keyImplAsStringImpl->getValueData( keyData ), keyImplAsStringImpl->getValueLength( keyData ) );
-            m_valueImpl->generateJSON( valueData, memberJG );
+            JSON::Encoder memberEncoder = objectEncoder.makeMember( keyImplAsStringImpl->getValueData( keyData ), keyImplAsStringImpl->getValueLength( keyData ) );
+            m_valueImpl->encodeJSON( valueData, memberEncoder );
           }
           else
           {
             Util::SimpleString encodedKey;
             {
-              Util::JSONGenerator encodedKeyJG( &encodedKey );
-              m_keyImpl->generateJSON( keyData, encodedKeyJG );
+              JSON::Encoder encodedKeyEncoder( &encodedKey );
+              m_keyImpl->encodeJSON( keyData, encodedKeyEncoder );
             }
-            Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( encodedKey );
-            m_valueImpl->generateJSON( valueData, memberJG );
+            JSON::Encoder memberEncoder = objectEncoder.makeMember( encodedKey );
+            m_valueImpl->encodeJSON( valueData, memberEncoder );
           }
           node = node->bitsNextNode;
         }
       }
     }
     
-    void DictImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
+    void DictImpl::decodeJSON( JSON::Entity const &entity, void *data ) const
     {
-      if ( !jsonValue->isObject() )
-        throw Exception( "JSON value is not object" );
-      RC::ConstHandle<JSON::Object> jsonObject = RC::ConstHandle<JSON::Object>::StaticCast( jsonValue );
+      entity.requireObject();
 
       RC::ConstHandle<StringImpl> keyImplAsStringImpl;
       if ( isString( m_keyImpl->getType() ) )
@@ -348,60 +317,29 @@ namespace Fabric
         
       void *keyData = alloca( m_keySize );
       memset( keyData, 0, m_keySize );
-      for ( JSON::Object::const_iterator it=jsonObject->begin(); it!=jsonObject->end(); ++it )
+      JSON::ObjectDecoder jsonObjectDecoder( entity );
+      JSON::Entity keyString, valueEntity;
+      while ( jsonObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        std::string const &keyString = it->first;
-        if ( keyImplAsStringImpl )
-          StringImpl::SetValue( keyString.data(), keyString.length(), keyData );
-        else m_keyImpl->setDataFromJSONValue( JSON::decode( keyString ), keyData );
-        
-        RC::ConstHandle<JSON::Value> const &valueJSONValue = it->second;
-        void *valueData = getMutable( data, keyData );
-        m_valueImpl->setDataFromJSONValue( valueJSONValue, valueData );
-      }
-      m_keyImpl->disposeData( keyData );
-    }
-    
-    void DictImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
-    {
-      if ( entityInfo.type != Util::ET_OBJECT )
-        throw Exception( "JSON value is not object" );
-
-      RC::ConstHandle<StringImpl> keyImplAsStringImpl;
-      if ( isString( m_keyImpl->getType() ) )
-        keyImplAsStringImpl = RC::ConstHandle<StringImpl>::StaticCast( m_keyImpl );
-      
-      disposeData( data );
-      memset( data, 0, sizeof(bits_t) );
-        
-      void *keyData = alloca( m_keySize );
-      memset( keyData, 0, m_keySize );
-      Util::JSONObjectParser jsonObjectDecoder( entityInfo );
-      Util::JSONEntityInfo keyEntityInfo, valueEntityInfo;
-      while ( jsonObjectDecoder.getNext( keyEntityInfo, valueEntityInfo ) )
-      {
-        FABRIC_ASSERT( keyEntityInfo.type == Util::ET_STRING );
-        
         if ( keyImplAsStringImpl )
         {
-          if ( keyEntityInfo.value.string.length <= Util::jsonDecoderShortStringMaxLength )
-            StringImpl::SetValue( keyEntityInfo.value.string.shortData, keyEntityInfo.value.string.length, keyData );
-          else
-            Util::jsonParseString( keyEntityInfo, StringImpl::GetMutableValueData( keyData, keyEntityInfo.value.string.length ) );
+          keyString.stringGetData( StringImpl::GetMutableValueData( keyData, keyString.stringLength() ) );
         }
         else
         {
-          char *data;
-          if ( keyEntityInfo.value.string.length <= Util::jsonDecoderShortStringMaxLength )
-            data = keyEntityInfo.value.string.shortData;
+          char *mutableData;
+          char const *data;
+          if ( keyString.stringIsShort() )
+            data = keyString.stringShortData();
           else
           {
-            data = reinterpret_cast<char *>( alloca( keyEntityInfo.value.string.length ) );
-            jsonParseString( keyEntityInfo, data );
+            mutableData = reinterpret_cast<char *>( alloca( keyString.stringLength() ) );
+            keyString.stringGetData( mutableData );
+            data = mutableData;
           }
           
-          Util::JSONDecoder jsonDecoder( data, keyEntityInfo.value.string.length );
-          Util::JSONEntityInfo jsonDecodedEntity;
+          JSON::Decoder jsonDecoder( data, keyString.value.string.length );
+          JSON::Entity jsonDecodedEntity;
           if ( !jsonDecoder.getNext( jsonDecodedEntity ) )
             throw Exception( "invalid JSON key" );
           m_keyImpl->decodeJSON( jsonDecodedEntity, keyData );
@@ -410,7 +348,7 @@ namespace Fabric
         }
         
         void *valueData = getMutable( data, keyData );
-        m_valueImpl->decodeJSON( valueEntityInfo, valueData );
+        m_valueImpl->decodeJSON( valueEntity, valueData );
       }
       m_keyImpl->disposeData( keyData );
     }

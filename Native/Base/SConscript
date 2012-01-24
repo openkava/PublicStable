@@ -11,4 +11,4 @@ if buildOS != 'Windows':
 
 Export( 'baseEnv' );
 
-SConscript( dirs=['RC','JSON'] )
+SConscript( dirs=['RC','JSON','Util'] )

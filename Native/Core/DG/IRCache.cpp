@@ -8,13 +8,12 @@
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Encode.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
+
+#include <map>
 
 #define FABRIC_IR_CACHE_EXPIRY_SEC (30*24*60*60)
 

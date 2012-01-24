@@ -19,14 +19,12 @@ namespace Fabric
   namespace Util
   {
     class SimpleString;
-    class Encoder;
-    class Decoder;
   };
   
   namespace JSON
   {
-    class Value;
-    class Array;
+    class Encoder;
+    class Decoder;
   };
   
   namespace RT
@@ -83,17 +81,17 @@ namespace Fabric
 
       RC::Handle<Context> getContext() const;
 
-      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAddDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecEvaluate( Util::JSONArrayGenerator &resultJAG );
-      void jsonExecEvaluateAsync( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
-      void jsonDescDependencies( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonRoute( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      static void jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecAddDependency( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecRemoveDependency( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecEvaluate( JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecEvaluateAsync( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      virtual void jsonDescType( JSON::Encoder &resultEncoder ) const;
+      void jsonDescDependencies( JSON::Encoder &resultEncoder ) const;
       
     protected:
     

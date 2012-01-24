@@ -2,12 +2,13 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-.PHONY: default build test
+.PHONY: default xcode test
 
-default: build
+default:
+	$(MAKE) -C Native default
 
-build:
-	$(MAKE) -C Native build
+xcode:
+	$(MAKE) -C Native xcode
 
 test:
 	$(MAKE) -C Native test

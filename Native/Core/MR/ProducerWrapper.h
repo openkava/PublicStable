@@ -9,10 +9,10 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
-    class JSONObjectGenerator;
+    class Encoder;
+    class ObjectEncoder;
   };
   
   namespace MR
@@ -26,9 +26,9 @@ namespace Fabric
     public:
     
       virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
     protected:
@@ -36,19 +36,19 @@ namespace Fabric
       ProducerWrapper( FABRIC_GC_OBJECT_CLASS_PARAM ); 
     
       virtual char const *getKind() const = 0;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const = 0;
+      virtual void toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const = 0;
       
       // Non-virtual functions
     
     public:
     
-      void toJSON( Util::JSONGenerator &jg ) const;
+      void toJSON( JSON::Encoder &jg ) const;
       
     private:
 
       void jsonExecGetJSONDesc(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     };
   }

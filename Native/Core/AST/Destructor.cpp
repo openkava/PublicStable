@@ -46,10 +46,10 @@ namespace Fabric
     {
     }
     
-    void Destructor::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void Destructor::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Function::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "thisTypeName" ).makeString( m_thisTypeName );
+      Function::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "thisTypeName" ).makeString( m_thisTypeName );
     }
     
     std::string Destructor::getThisTypeName() const
