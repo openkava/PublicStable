@@ -4,186 +4,167 @@
  
 #include "Desc.h"
 
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
   namespace Plug
   {
-    static HostSpec parseHostSpec( RC::ConstHandle<JSON::Value> value )
+    static HostSpec parseHostSpec( JSON::Entity const &entity )
     {
-      RC::ConstHandle<JSON::Array> array;
-      if ( value->isString() )
+      HostSpec result;
+      if ( entity.isString() )
+        result.push_back( entity.stringToStdString() );
+      else if ( entity.isArray() )
       {
-        RC::Handle<JSON::Array> mutableArray = JSON::Array::Create();
-        mutableArray->push_back( value );
-        array = mutableArray;
+        JSON::ArrayDecoder arrayDecoder( entity );
+        JSON::Entity elementEntity;
+        while ( arrayDecoder.getNext( elementEntity ) )
+        {
+          try
+          {
+            elementEntity.requireString();
+            result.push_back( elementEntity.stringToStdString() );
+          }
+          catch ( Exception e )
+          {
+            arrayDecoder.rethrow( e );
+          }
+        }
       }
-      else if ( value->isArray() )
-        array = RC::ConstHandle<JSON::Array>::StaticCast( value );
       else
         throw Exception( "must be a string or an array" );
-      
-      HostSpec result;
-      size_t size = array->size();
-      for ( size_t i=0; i<size; ++i )
-      {
-        try
-        {
-          RC::ConstHandle<JSON::String> elementString = array->get(i)->toString();
-          result.push_back( std::string( elementString->data(), elementString->length() ) );
-        }
-        catch ( Exception e )
-        {
-          throw "element "+_(i+1)+": "+e;
-        }
-      }
       return result;
     }
     
-    static void parseHostStrings( RC::ConstHandle<JSON::Value> value, HostStrings &result )
+    static void parseHostStrings( JSON::Entity const &entity, HostStrings &result )
     {
-      RC::ConstHandle<JSON::Object> object;
-      if ( value->isString() )
+      if ( entity.isString() )
       {
-        RC::ConstHandle<JSON::String> string = RC::ConstHandle<JSON::String>::StaticCast( value );
-        
-        RC::Handle<JSON::Object> mutableObject = JSON::Object::Create();
-        mutableObject->set( std::string( string->data(), string->length() ), JSON::String::Create( "*", 1 ) );
-        object = mutableObject;
-      }
-      else if ( value->isObject() )
-        object = RC::ConstHandle<JSON::Object>::StaticCast( value );
-      else throw Exception( "must be a string or object" );
-      
-      for ( JSON::Object::const_iterator it=object->begin(); it!=object->end(); ++it )
-      {
-        std::string const &lib = it->first;
         HostSpec hostSpec;
-        try
-        {
-          hostSpec = parseHostSpec( it->second );
-        }
-        catch ( Exception e )
-        {
-          throw "lib "+_(lib)+" host spec: "+e;
-        }
-        result.insert( HostStrings::value_type( lib, hostSpec ) );
+        hostSpec.push_back( "*" );
+        result.insert( HostStrings::value_type( entity.stringToStdString(), hostSpec ) );
       }
+      else if ( entity.isObject() )
+      {
+        JSON::ObjectDecoder objectDecoder( entity );
+        JSON::Entity keyString, valueEntity;
+        while ( objectDecoder.getNext( keyString, valueEntity ) )
+        {
+          try
+          {
+            HostSpec hostSpec = parseHostSpec( valueEntity );
+            result.insert( HostStrings::value_type( keyString.stringToStdString(), hostSpec ) );
+          }
+          catch ( Exception e )
+          {
+            objectDecoder.rethrow( e );
+          }
+        }
+      }
+      else throw Exception( "must be a string or an object" );
     }
 
-    static void parseHostStringsVector( RC::ConstHandle<JSON::Value> value, HostStringsVector &result )
+    static void parseHostStringsVector( JSON::Entity const &entity, HostStringsVector &result )
     {
-      if ( value->isArray() )
+      if ( entity.isArray() )
       {
-        RC::ConstHandle<JSON::Array> array = RC::ConstHandle<JSON::Array>::StaticCast( value );
-        size_t size = array->size();
-        for ( size_t i=0; i<size; ++i )
+        JSON::ArrayDecoder arrayDecoder( entity );
+        JSON::Entity elementEntity;
+        while ( !arrayDecoder.getNext( elementEntity ) )
         {
           try
           {
             HostStrings hostStrings;
-            parseHostStrings( array->get(i), hostStrings );
+            parseHostStrings( elementEntity, hostStrings );
             result.push_back( hostStrings );
           }
           catch ( Exception e )
           {
-            throw "element "+_(i+1)+": "+e;
+            arrayDecoder.rethrow( e );
           }
         }
       }
       else
       {
         HostStrings hostStrings;
-        parseHostStrings( value, hostStrings );
+        parseHostStrings( entity, hostStrings );
         result.push_back( hostStrings );
       }
     }
     
-    void parseMethods( RC::ConstHandle<JSON::Array> const &methodsArray, std::vector<std::string> &methods )
+    void parseMethods( JSON::Entity const &methodsArray, std::vector<std::string> &methods )
     {
-      size_t numMethods = methodsArray->size();
-      for ( size_t i=0; i<numMethods; ++i )
+      JSON::ArrayDecoder methodArrayDecoder( methodsArray );
+      JSON::Entity methodEntity;
+      while ( methodArrayDecoder.getNext( methodEntity ) )
       {
         try
         {
-          RC::ConstHandle<JSON::String> methodString = methodsArray->get(i)->toString();
-          methods.push_back( std::string( methodString->data(), methodString->length() ) );
+          methodEntity.requireString();
+          methods.push_back( methodEntity.stringToStdString() );
         }
         catch ( Exception e )
         {
-          throw "element "+_(i+1)+": "+e;
+          methodArrayDecoder.rethrow( e );
         }
       }
     }
     
-    void parseInterface( RC::ConstHandle<JSON::Object> const &interfaceObject, Interface &interface )
+    void parseInterface( JSON::Entity const &interfaceObject, Interface &interface )
     {
-      RC::ConstHandle<JSON::Value> methodsValue = interfaceObject->maybeGet( "methods" );
-      if ( methodsValue )
+      JSON::ObjectDecoder interfaceObjectDecoder( interfaceObject );
+      JSON::Entity keyString, valueEntity;
+      while ( interfaceObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          RC::ConstHandle<JSON::Array> methodsArray = methodsValue->toArray();
-          parseMethods( methodsArray, interface.methods );
+          if ( keyString.stringIs( "methods", 7 ) )
+          {
+            valueEntity.requireArray();
+            parseMethods( valueEntity, interface.methods );
+          }
         }
         catch ( Exception e )
         {
-          throw "methods: " + e;
+          interfaceObjectDecoder.rethrow( e );
         }
       }
     }
     
-    Desc parseDesc( RC::ConstHandle<JSON::Object> const &object )
+    Desc parseDesc( JSON::Entity const &object )
     {
       Desc result;
       
-      try
-      {
-        parseHostStringsVector( object->get( "libs" ), result.libs );
-      }
-      catch ( Exception e )
-      {
-        throw "libs: " + e;
-      }
-      
-      try
-      {
-        parseHostStringsVector( object->get( "code" ), result.code );
-      }
-      catch ( Exception e )
-      {
-        throw "code: " + e;
-      }
-      
-      RC::ConstHandle<JSON::Value> jsConstantsJSONValue = object->maybeGet( "jsConstants" );
-      if ( jsConstantsJSONValue )
+      JSON::ObjectDecoder objectDecoder( object );
+      JSON::Entity keyString, valueEntity;
+      while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          parseHostStringsVector( jsConstantsJSONValue, result.jsConstants );
+          if ( keyString.stringIs( "libs", 4 ) )
+          {
+            parseHostStringsVector( valueEntity, result.libs );
+          }
+          else if ( keyString.stringIs( "code", 4 ) )
+          {
+            parseHostStringsVector( valueEntity, result.code );
+          }
+          else if ( keyString.stringIs( "jsConstants", 11 ) )
+          {
+            parseHostStringsVector( valueEntity, result.jsConstants );
+          }
+          else if ( keyString.stringIs( "interface", 9 ) )
+          {
+            valueEntity.requireObject();
+            parseInterface( valueEntity, result.interface );
+          }
         }
         catch ( Exception e )
         {
-          throw "jsConstants: " + e;
-        }
-      }
-      
-      RC::ConstHandle<JSON::Value> interfaceValue = object->maybeGet( "interface" );
-      if ( interfaceValue )
-      {
-        try
-        {
-          RC::ConstHandle<JSON::Object> interfaceObject = interfaceValue->toObject();
-          parseInterface( interfaceObject, result.interface );
-        }
-        catch ( Exception e )
-        {
-          throw "interface: " + e;
+          objectDecoder.rethrow( e );
         }
       }
       

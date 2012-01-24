@@ -9,7 +9,7 @@
 #include <Fabric/Core/MR/ArrayProducerWrapper.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperatorWrapper.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -56,21 +56,21 @@ namespace Fabric
       return "ArrayGenerator";
     }
     
-    void ArrayGeneratorWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ArrayGeneratorWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "count" );
+        JSON::Encoder jg = objectEncoder.makeMember( "count" );
         m_countValueProducer->toJSON( jg );
       }
 
       {
-        Util::JSONGenerator jg = jog.makeMember( "operator" );
+        JSON::Encoder jg = objectEncoder.makeMember( "operator" );
         m_operator->toJSON( jg );
       }
 
       if ( m_sharedValueProducer )
       {
-        Util::JSONGenerator jg = jog.makeMember( "shared" );
+        JSON::Encoder jg = objectEncoder.makeMember( "shared" );
         m_sharedValueProducer->toJSON( jg );
       }
     }

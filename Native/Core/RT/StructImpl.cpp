@@ -2,16 +2,13 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "StructImpl.h"
-#include "Desc.h"
+#include <Fabric/Core/RT/StructImpl.h>
 
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
-#include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
@@ -82,71 +79,30 @@ namespace Fabric
       }
     }
     
-    RC::Handle<JSON::Value> StructImpl::getJSONValue( void const *data ) const
+    void StructImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       for ( size_t i=0; i<m_numMembers; ++i )
       {
         StructMemberInfo const &memberInfo = m_memberInfos[i];
         void const *memberData = static_cast<uint8_t const *>(data) + m_memberOffsets[i];
-        result->set( memberInfo.name, memberInfo.desc->getJSONValue( memberData ) );
-      }
-      return result;
-    }
-    
-    void StructImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
-      for ( size_t i=0; i<m_numMembers; ++i )
-      {
-        StructMemberInfo const &memberInfo = m_memberInfos[i];
-        void const *memberData = static_cast<uint8_t const *>(data) + m_memberOffsets[i];
-        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( memberInfo.name );
-        memberInfo.desc->generateJSON( memberData, memberJG );
+        JSON::Encoder memberEncoder = objectEncoder.makeMember( memberInfo.name );
+        memberInfo.desc->encodeJSON( memberData, memberEncoder );
       }
     }
     
-    void StructImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
+    void StructImpl::decodeJSON( JSON::Entity const &entity, void *data ) const
     {
-      if ( !jsonValue->isObject() )
-        throw Exception("value is not an object");
-      RC::ConstHandle<JSON::Object> jsonObject = RC::ConstHandle<JSON::Object>::StaticCast( jsonValue );
-      
-      for ( size_t i=0; i<m_numMembers; ++i )
-      {
-        StructMemberInfo const &memberInfo = m_memberInfos[i];
-
-        RC::ConstHandle<JSON::Value> memberValue = jsonObject->maybeGet( memberInfo.name );
-        if ( !memberValue )
-          throw Exception( "value has no member named '" + memberInfo.name + "'" );
-          
-        void *memberData = static_cast<uint8_t *>(data) + m_memberOffsets[i];
-        memberInfo.desc->setDataFromJSONValue( memberValue, memberData );
-      }
-    }
-    
-    void StructImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
-    {
-      if ( entityInfo.type != Util::ET_OBJECT )
-        throw Exception("JSON value is not an object");
+      entity.requireObject();
         
       size_t membersFound = 0;
-      Util::JSONObjectParser objectDecoder( entityInfo );
-      Util::JSONEntityInfo keyEntity, valueEntity;
-      while ( objectDecoder.getNext( keyEntity, valueEntity ) )
+      JSON::ObjectDecoder objectDecoder( entity );
+      JSON::Entity keyString, valueEntity;
+      while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
-        FABRIC_ASSERT( keyEntity.type == Util::ET_STRING );
-        
         std::string name;
-        if ( keyEntity.value.string.length < Util::jsonDecoderShortStringMaxLength )
-        {
-          name = std::string( keyEntity.value.string.shortData, keyEntity.value.string.length );
-        }
-        else
-        {
-          name.reserve( keyEntity.value.string.length );
-          Util::jsonParseString( keyEntity, &name[0] );
-        }
+        name.resize( keyString.stringLength() );
+        keyString.stringGetData( &name[0] );
         
         try
         {

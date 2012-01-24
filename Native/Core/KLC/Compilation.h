@@ -53,9 +53,9 @@ namespace Fabric
       RC::Handle<Executable> run() const;
         
       virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
 
     protected:
@@ -73,20 +73,20 @@ namespace Fabric
     private:
     
       void jsonExecAddSource(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       void jsonExecRemoveSource(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       void jsonExecGetSources(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       void jsonExecRun(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
 
       GC::Container *m_gcContainer;

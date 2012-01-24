@@ -2104,11 +2104,11 @@ function (fabricClient, logCallback, debugLogCallback) {
         
         var arg = {
           id: reduce.id,
-          inputArrayProducerID: inputArrayProducer.getID(),
-          reduceOperatorID: reduceOperator.getID()
+          inputID: inputArrayProducer.getID(),
+          operatorID: reduceOperator.getID()
         };
         if (sharedValueProducer)
-          arg.sharedValueProducerID = sharedValueProducer.getID();
+          arg.sharedID = sharedValueProducer.getID();
         
         queueCommand(['MR'], 'createReduce', arg, function () {
           delete reduce.id;

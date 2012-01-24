@@ -28,11 +28,11 @@ namespace Fabric
     {
     }
     
-    void StatementVector::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
+    void StatementVector::appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const
     {
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
+        (*it)->appendJSON( jsonArrayEncoder.makeElement(), includeLocation );
     }
     
     void StatementVector::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

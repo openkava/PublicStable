@@ -21,11 +21,10 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/Plug/Manager.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
-#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/EDK/Common.h>
@@ -343,7 +342,7 @@ namespace Fabric
           
           Util::SimpleString json;
           {
-            Util::JSONGenerator jg( &json );
+            JSON::Encoder jg( &json );
             viewPort->jsonDesc( jg );
           }
           context->jsonNotify( src, "delta", 5, &json ); 
