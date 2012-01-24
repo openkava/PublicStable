@@ -481,6 +481,7 @@ namespace Fabric
     void Manager::jsonExecRegisterType( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       std::string name;
+      bool haveMembers = false;
       RT::StructMemberInfoVector memberInfos;
       std::map< std::string, size_t > memberNameToIndexMap;
       JSON::Entity defaultValueObject;
@@ -545,6 +546,8 @@ namespace Fabric
                 membersArrayDecoder.rethrow( e );
               }
             }
+            
+            haveMembers = true;
           }
           else if ( keyString.stringIs( "defaultValue", 12 ) )
           {
@@ -591,7 +594,7 @@ namespace Fabric
       
       if ( name.empty() )
         throw Exception( "missing 'name'" );
-      if ( memberInfos.empty() )
+      if ( !haveMembers )
         throw Exception( "missing or empty 'members'" );
       
       try
