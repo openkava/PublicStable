@@ -89,9 +89,9 @@ s.parentNode.insertBefore(ga, s);
   height:105px;
 }
 
-.ui-slider { margin-left: 5em; margin-right: 5em; }
-.ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
-.ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
+#timeControls .ui-slider { margin-left: 5em; margin-right: 5em; }
+#timeControls .ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
+#timeControls .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
 
 
   #feedback { font-size: 1.4em; }
@@ -242,7 +242,7 @@ $(document).ready(function() {
          { bones:['_RLeg1', '_RLeg2'], ankle:'_RLegAnkle' }
       ],
       createManipulators: true,
-      manipulatorSizes: [ 0.8, 1.0, 0.9 ],
+      manipulatorSizes: [ 1.8, 2.0, 1.9 ],
       ikGoalManipulatorSizes: [ new FABRIC.RT.Vec2(6.0, 3.0), new FABRIC.RT.Vec2(6.0, 3.0) ]
     });
     
@@ -264,12 +264,15 @@ $(document).ready(function() {
       }
     });
     
-    rigNode.addSolver('Arms', 'ArmSolver', {
-      limbs: [ { bones:['_LArmCollarbone', '_LArm1', '_LArm21'], wrist:'_LArmPalm' },
-               { bones:['_RArmCollarbone', '_RArm1', '_RArm21'], wrist:'_RArmPalm' } ],
-      createManipulators: true
+    var armsSolver = rigNode.addSolver('Arms', 'ArmSolver', {
+      limbs: [
+	{ bones:['_LArmCollarbone', '_LArm1', '_LArm21'], wrist:'_LArmPalm' },
+        { bones:['_RArmCollarbone', '_RArm1', '_RArm21'], wrist:'_RArmPalm' }
+      ],
+      createManipulators: true,
+      manipulatorSizes: [ 1.0, 2.0, 1.9, 1.9 ],
+      ikGoalManipulatorSizes: [ 2.0, 2.0 ]
     });
-    
     
     rigNode.addSolver('shoulderBlades', 'FKHierarchySolver', {
       bones: {
@@ -279,12 +282,13 @@ $(document).ready(function() {
       }
     });
     
-    rigNode.addSolver('FatJiggle', 'FKHierarchySolver', {
-      bones: {
-        bones:[
-          '_LFat1','_LFat2','_RFat1','_RFat2'
-        ]
-      }
+    rigNode.addSolver('FatJiggle', 'VerletBoneSolver', {
+      verletBones: [
+	{ bone:'_LFat1', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
+	{ bone:'_LFat2', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
+	{ bone:'_RFat1', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
+	{ bone:'_RFat2', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 }
+      ]
     });
     
     rigNode.addSolver('fingers', 'FKHierarchySolver', {
@@ -322,18 +326,23 @@ $(document).ready(function() {
           '_RBicep',
           '_RTricep',
           
-          
-          '_LButtock',
           '_LThighAnterior',
           '_LThighPosterior',
           '_LCalf',
           
-          '_LButtock_ncl1_1',
           '_RThighAnterior',
           '_RThighPosterior',
           '_RCalf',
         ]
       }
+    });
+    
+    
+    rigNode.addSolver('buttocks', 'BlendBoneSolver', {
+      blendBones:[
+        { bone:'_LButtock', base:'_Pelvis', target:'_LLeg1', blendWeight: 0.6 },
+        { bone:'_LButtock_ncl1_1', base:'_Pelvis', target:'_RLeg1', blendWeight: 0.6 }
+      ]
     });
     
     rigNode.addSolver('kneeCaps', 'BlendBoneSolver', {
@@ -362,6 +371,26 @@ $(document).ready(function() {
       ]
     });
     
+    
+    var leftarmIKBlendSlider = $('#ikblendLArm').slider({
+	min: 0,
+	max: 1.0,
+	step: 0.1
+    }).bind('slide',
+      function(event, ui) {
+	armsSolver.setIKBlend0(ui.value);
+	viewport.redraw();
+      });
+    
+    var rightarmIKBlendSlider = $('#ikblendRArm').slider({
+	min: 0,
+	max: 1.0,
+	step: 0.1
+    }).bind('slide',
+      function(event, ui) {
+	armsSolver.setIKBlend1(ui.value);
+	viewport.redraw();
+      });
   });
   /*
   
@@ -507,19 +536,21 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
-   
+  var setPlayButtonToPlay = function(){
+    $('#play').button('option', {
+      label: 'Play',
+      icons: {
+	primary: 'ui-icon-play'
+      }
+    });
+  }
   var timeSlider = $('#timeSlider').slider({
       min: 0,
       max: 10,
-      step: 0.2
+      step: 0.01
   }).bind('slide',
       function(event, ui) {
-        $('#play').button('option', {
-          label: 'Play',
-          icons: {
-            primary: 'ui-icon-play'
-          }
-        });
+	setPlayButtonToPlay();
         scene.animation.pause();
         scene.animation.setTime(ui.value);
         scene.redrawAllViewports();
@@ -537,8 +568,9 @@ $(document).ready(function() {
       }
     })
     .click(function() {
-      scene.animation.stop();
-      
+      scene.animation.reset();
+      setPlayButtonToPlay();
+      $('#timeSlider').slider().slider('value', scene.animation.getTime());
     });
     
   $('#play').button({
@@ -667,6 +699,15 @@ $(document).ready(function() {
            <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
             -->  <input type="checkbox" id="displayGeometry" style="margin-top:10px;" /><label for="displayGeometry">Display Geometry</label><br>
             
+            </div><!--content-->
+          </div><!--box-->
+	  
+	  
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <div id='ikblendLArm'></div>
+              <div id='ikblendRArm'></div>
             </div><!--content-->
           </div><!--box-->
           

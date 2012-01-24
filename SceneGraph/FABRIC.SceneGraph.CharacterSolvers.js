@@ -415,7 +415,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       bones = skeletonNode.pub.getBones(),
-      referencePose = skeletonNode.pub.getReferencePose();
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
 
     var blendBones = [];
     var baseBones = [];
@@ -481,7 +482,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       bones = skeletonNode.pub.getBones(),
-      referencePose = skeletonNode.pub.getReferencePose();
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
     
     var verletBones = [];
     var simulationWeights = [];
@@ -719,11 +721,19 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       handControlXfo,
       ankleOffsetXfo,
       ankleTipXfo,
-      i,
       twistManipulators = [];
-
+      
+  var addBlendInterface = function(ikblendId){
+    solver['getIKBlend'+j] = function(){
+      return rigNode.getValue('Number', ikblendId);
+    }
+    solver['setIKBlend'+j] = function(val){
+      rigNode.setValue(val, ikblendId);
+    }
+  }
+  
   var arms = [];
-  for(j=0; j<options.limbs.length; j++){
+  for(var j=0; j<options.limbs.length; j++){
       var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'wrist']);
       
       // compute the target
@@ -741,6 +751,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       var handControlXfoId = rigNode.addVariable('Xfo', handControlXfo);
       var ikblendId = rigNode.addVariable('Scalar', 0.0);
       
+      addBlendInterface(ikblendId);
+      
       var arm = new FABRIC.RT.Limb(boneIDs.bones, boneIDs.wrist, xfoIds, handControlXfoId, wristOffsetXfo, handControlXfo, ikblendId);
       arms.push(arm);
       if (options.createManipulators) {
@@ -752,8 +764,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
           xfoIndex: handControlXfoId,
           color: FABRIC.RT.rgb(1, 0, 0),
           targetName: solver.getName()+j+'IKGoal',
-          size: 1.0,
-          radius: 0.6,
+          size: options.ikGoalManipulatorSizes[j],
+          radius: options.ikGoalManipulatorSizes[j],
           screenTranslationManipulators: true
         });
 
@@ -798,7 +810,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               boneIndex: boneIDs.bones[0],
               extraIndexArray: xfoIndexArray,
               targetName: solver.getName()+j+'Bone'+i,
-              radius: i==0 ? 0.3 : 0.6,
+              radius: options.manipulatorSizes[i],
               attachmentOperator:{
                 operatorName: 'calcManipulatorChainAttachmentXfo',
                 srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
@@ -831,7 +843,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               localXfo: new FABRIC.RT.Xfo({
                 ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
               }),
-              radius: 0.6,
+              radius: options.manipulatorSizes[i],
               attachmentOperator:{
                 operatorName: 'calcManipulatorChainAttachmentXfo',
                 srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
