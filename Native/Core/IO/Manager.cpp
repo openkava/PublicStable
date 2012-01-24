@@ -77,10 +77,10 @@ namespace Fabric
         jsonExecCreateFileHandleFromRelativePath( arg, resultJAG );
       else if ( cmd == "createFolderHandleFromRelativePath" )
         jsonExecCreateFolderHandleFromRelativePath( arg, resultJAG );
-      else if ( cmd == "getTextFile" )
-        jsonExecGetTextFile( arg, resultJAG );
-      else if ( cmd == "putTextFile" )
-        jsonExecPutTextFile( arg, resultJAG );
+      else if ( cmd == "getTextFileContent" )
+        jsonExecGetTextFileContent( arg, resultJAG );
+      else if ( cmd == "putTextFileContent" )
+        jsonExecPutTextFileContent( arg, resultJAG );
       else
         throw Exception( "unknown command" );
     }
@@ -224,6 +224,7 @@ namespace Fabric
           memberJG.makeString( filename );
         }
 
+        if( exists )
         {
           Util::JSONGenerator memberJG = resultJOG.makeMember( "fileSize", 8 );
           memberJG.makeInteger( (int32_t)GetFileSize( fullPath ) );
@@ -253,7 +254,7 @@ namespace Fabric
         
       {
         Util::JSONGenerator memberJG = resultJOG.makeMember( "folder", 6 );
-        memberJG.makeInteger( GetFileSize( fullPath ) );
+        memberJG.makeString( dirHandle );
       }
     }
 
@@ -276,7 +277,7 @@ namespace Fabric
       std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, false );
 
       Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( handle );
+      resultJG.makeString( newHandle );
     }
 
     void Manager::jsonExecCreateFolderHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
@@ -285,10 +286,10 @@ namespace Fabric
       std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, true );
 
       Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( handle );
+      resultJG.makeString( newHandle );
     }
 
-    void Manager::jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecPutTextFileContent( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       RC::ConstHandle<JSON::String> content = argJSONObject->get( "content" )->toString( "content must be a String" );
@@ -303,7 +304,7 @@ namespace Fabric
       m_fileHandleManager->putFile( handle, content->length(), content->data(), append );
     }
 
-    void Manager::jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecGetTextFileContent( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       std::string handle = arg->toString( "File handle must be a String" )->value();
       std::string fullPath = m_fileHandleManager->getPath( handle );

@@ -95,9 +95,14 @@ namespace Fabric
       return m_desc;
     }
 
-    bool FabricResourceWrapper::isEqualTo( const void *other ) const
+    bool FabricResourceWrapper::isDataEqualTo( const void *other ) const
     {
-      return m_dataMemberDesc->equalsData( m_resource, other );
+      return m_dataMemberDesc->equalsData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX), m_desc->getMemberData( other, FABRIC_RESOURCE_DATA_MEMBER_INDEX) );
+    }
+
+    bool FabricResourceWrapper::isDataExternalLocationEqualTo( const void *other ) const
+    {
+      return m_rtManager->getStringDesc()->equalsData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX), m_desc->getMemberData( other, FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX) );
     }
 
     bool FabricResourceWrapper::isURLEqualTo( const void *otherStringData ) const

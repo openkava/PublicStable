@@ -59,8 +59,8 @@ namespace Fabric
       void jsonExecQueryUserFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
       void jsonExecCreateFileHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
       void jsonExecCreateFolderHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecPutTextFileContent( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecGetTextFileContent( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
 
       RC::Handle<ResourceManager> m_resourceManager;
       RC::Handle<FileHandleManager> m_fileHandleManager;
