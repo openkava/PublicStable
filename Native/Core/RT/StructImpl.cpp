@@ -101,7 +101,7 @@ namespace Fabric
       while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
         std::string name;
-        name.reserve( keyString.stringLength() );
+        name.resize( keyString.stringLength() );
         keyString.stringGetData( &name[0] );
         
         try
