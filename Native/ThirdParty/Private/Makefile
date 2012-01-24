@@ -321,11 +321,11 @@ Build/.tiff.build: Build/.tiff.configure
 Build/.tiff.configure: Build/.tiff.patch
 ifeq ($(BUILD_PLATFORM),Linux)
 	for ARCH in $(ARCHS); do \
-		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && CFLAGS="-fPIC" ./configure ); \
+		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && CFLAGS="-fPIC" ./configure --enable-static --disable-shared ); \
 	done
 else 
 	for ARCH in $(ARCHS); do \
-		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && CFLAGS="-arch $$ARCH" ./configure ); \
+		( cd Build/tiff-$(TIFF_VERSION)-$$ARCH && CFLAGS="-arch $$ARCH" ./configure --enable-static --disable-shared ); \
 	done
 endif
 	touch $@
