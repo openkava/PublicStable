@@ -28,6 +28,8 @@ namespace Fabric
     {
     public:
       
+      ~EventTaskGroup();
+      
       void clear();
       
       void execute( RC::Handle<MT::LogCollector> const &logCollector, void *userdata ) const;
