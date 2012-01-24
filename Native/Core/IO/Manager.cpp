@@ -25,16 +25,7 @@ namespace Fabric
       )
     {
       if ( dst.size() - dstOffset == 0 )
-      {
-        try
-        {
-          jsonExec( cmd, arg, resultArrayEncoder );
-        }
-        catch ( Exception e )
-        {
-          throw "command " + _(cmd) + ": " + e;
-        }
-      }
+        jsonExec( cmd, arg, resultArrayEncoder );
       else throw Exception( "unroutable" );
     }
 
