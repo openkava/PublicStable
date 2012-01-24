@@ -53,6 +53,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
       characterMeshNode.getUniformsDGNode().setData('invmatrices', 0, invmatrices);
       characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, boneMapping);
     };
+    characterMeshNode.pub.getNumBones = function(index) {
+      return characterMeshNode.getUniformsDGNode().getData('invmatrices', index).length;
+    };
     
     var parentWriteData = characterMeshNode.writeData;
     var parentReadData = characterMeshNode.readData;
@@ -675,10 +678,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     // Debug Geometries
     // Debugging enables solvers to draw lines on screen to illustrate behavior.
     dgnode.addMember('debugGeometry', 'DebugGeometry', new FABRIC.RT.DebugGeometry(options.debug) );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-      dgnode: dgnode,
-      debugGemetryMemberName: 'debugGeometry'
-    });
+    if(options.debug){
+      var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+        dgnode: dgnode,
+        debugGemetryMemberName: 'debugGeometry'
+      });
+    }
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'resetDebugDrawing',
       srcCode: 'use DebugGeometry; operator resetDebugDrawing(io DebugGeometry debugGeometry) { debugGeometry.reset(); }',
