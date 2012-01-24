@@ -632,7 +632,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       variablesNode: undefined,
       controllerNode: undefined,
       baseCharacterRigNode: undefined,
-      debug: false
+      debug: true
     });
     
     var characterRigNode = scene.constructNode('SceneGraphNode', options);
