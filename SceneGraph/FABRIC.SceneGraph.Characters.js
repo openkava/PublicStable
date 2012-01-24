@@ -629,7 +629,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       variablesNode: undefined,
       controllerNode: undefined,
       baseCharacterRigNode: undefined,
-      debug: true
+      debug: false
     });
     
     var characterRigNode = scene.constructNode('SceneGraphNode', options);
@@ -640,8 +640,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       poseVariables = new FABRIC.RT.PoseVariables(),
       solvers = [];
       
-    dgnode.addMember('debug', 'Boolean', options.debug );
-    dgnode.addMember('debugGeometry', 'DebugGeometry' );
     dgnode.addMember('pose', 'Xfo[]');
     
     
@@ -672,7 +670,26 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       ],
       async: false
     }));
-    // extend the public interface
+    
+    //////////////////////////////////////////
+    // Debug Geometries
+    // Debugging enables solvers to draw lines on screen to illustrate behavior.
+    dgnode.addMember('debugGeometry', 'DebugGeometry', new FABRIC.RT.DebugGeometry(options.debug) );
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+      dgnode: dgnode,
+      debugGemetryMemberName: 'debugGeometry'
+    });
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'resetDebugDrawing',
+      srcCode: 'use DebugGeometry; operator resetDebugDrawing(io DebugGeometry debugGeometry) { debugGeometry.reset(); }',
+      entryFunctionName: 'resetDebugDrawing',
+      parameterLayout: [
+        'self.debugGeometry'
+      ],
+      async: false
+    }));
+    
+    //////////////////////////////////////////
     
     characterRigNode.addReferenceInterface('Skeleton', 'CharacterSkeleton',
       function(nodePrivate){
@@ -877,11 +894,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         characterRigNode.pub.addSolver(nodeData.solvers[i].name, nodeData.solvers[i].type, nodeData.solvers[i].options);
       }
     };
-  
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-      dgnode: dgnode,
-      debugGemetryMemberName: 'debugGeometry'
-    });
     
     if (options.skeletonNode) {
       characterRigNode.pub.setSkeletonNode(options.skeletonNode);

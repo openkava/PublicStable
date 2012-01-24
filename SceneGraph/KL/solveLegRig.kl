@@ -182,21 +182,21 @@ operator solveHumanoidLegRig(
       
       //////////////////////////////////////////////
       // Debugging
-      /*
-      Xfo rot90;
-      rot90.setIdentity();
-      rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
-      debugGeometry.drawSquare(footControlXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
-      for (Integer j = 1; j <= leg.boneIds.size; j++) {
-        debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j].tr, Color(1.0, 1.0, 0.0, 1.0));
+      if(debugGeometry.enabled){
+        Xfo rot90;
+        rot90.setIdentity();
+        rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
+        debugGeometry.drawSquare(footControlXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
+        for (Integer j = 1; j <= leg.boneIds.size; j++) {
+          debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j].tr, Color(1.0, 1.0, 0.0, 1.0));
+        }
+        for (Integer j = 1; j < leg.boneIds.size; j++) {
+          debugGeometry.drawLine(pose[leg.boneIds[j - 1]].tr, pose[leg.boneIds[j]].tr, Color(0.0, 1.0, 1.0, 1.0));
+        }
+        debugGeometry.drawLine(pose[leg.boneIds[leg.boneIds.size - 1]].tr, pose[leg.ankleId].tr, Color(0.0, 1.0, 1.0, 1.0));
+        debugGeometry.drawAxis(pose[leg.ankleId], 1.0, Color(0.0, 1.0, 1.0, 1.0));
+        debugGeometry.drawAxis(targetXfo, 1.0, Color(0.0, 1.0, 1.0, 1.0));
       }
-      for (Integer j = 1; j < leg.boneIds.size; j++) {
-        debugGeometry.drawLine(pose[leg.boneIds[j - 1]].tr, pose[leg.boneIds[j]].tr, Color(0.0, 1.0, 1.0, 1.0));
-      }
-      debugGeometry.drawLine(pose[leg.boneIds[leg.boneIds.size - 1]].tr, pose[leg.ankleId].tr, Color(0.0, 1.0, 1.0, 1.0));
-      debugGeometry.drawAxis(pose[leg.ankleId], 1.0, Color(0.0, 1.0, 1.0, 1.0));
-      debugGeometry.drawAxis(targetXfo, 1.0, Color(0.0, 1.0, 1.0, 1.0));
-      */
     }
   }
 }
