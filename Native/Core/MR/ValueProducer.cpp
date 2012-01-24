@@ -8,7 +8,10 @@
 #include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/JSON/Encoder.h>
 
-#include <alloca.h>
+#if !defined(FABRIC_WIN32)
+# include <alloca.h>
+#endif
+
 #include <string.h>
 
 namespace Fabric

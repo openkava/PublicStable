@@ -825,7 +825,7 @@ io_parameter_usage
 ;
 
 in_parameter
-  : in_parameter_usage TOKEN_IDENTIFIER TOKEN_IDENTIFIER array_modifier
+  : in_parameter_usage simple_type TOKEN_IDENTIFIER array_modifier
   {
     std::string compoundTypeName( *$2 );
     delete $2;
@@ -838,7 +838,7 @@ in_parameter
 ;
 
 io_parameter
-  : io_parameter_usage TOKEN_IDENTIFIER TOKEN_IDENTIFIER array_modifier
+  : io_parameter_usage simple_type TOKEN_IDENTIFIER array_modifier
   {
     std::string compoundTypeName( *$2 );
     delete $2;
