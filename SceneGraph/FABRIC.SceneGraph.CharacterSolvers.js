@@ -337,29 +337,31 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKChainSolver',{
 
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
   constructSolver: function(options, scene) {
+    
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
-    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene),
-      parameterLayout,
-      bindToRig;
-
-    bindToRig = function() {
-
-      var rigNode = scene.getPrivateInterface(options.rigNode),
-        skeletonNode = rigNode.pub.getSkeletonNode(),
-        bones = skeletonNode.getBones(),
-        referencePose = skeletonNode.getReferencePose(),
-        boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['twistBones']]),
-        size,
-        name = options.name;
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+      
+    var twistBones = [];
+    var baseBones = [];
+    var targetBones = [];
+    var blendWeights = [];
+    var blendBoneOffsets = [];
+    for(j=0; j<options.twistBones.length; j++){
+      var twistBoneParams = options.twistBones[j];
+      var boneIDs = solver.generateBoneMapping(twistBoneParams, ['start', 'end', ['twistBones']]);
 
       // first, we will compute the local transform of the end inside the start's space
       var startXfo = referencePose[boneIDs.start];
       var endXfo = referencePose[boneIDs.end];
-
-      // check if we know the U values
-      var uValues = options.uValues;
-      if (!uValues) {
-        uValues = [];
+      
+      var weights = twistBoneParams.blendWeights;
+      if (!weights) {
+        weights = [];
         var boneLength = startXfo.inverse().multiply(endXfo).tr.length();
         for (var i = 0; i < boneIDs.twistBones.length; i++) {
           var local = startXfo.inverse().multiply(referencePose[boneIDs.twistBones[i]]);
@@ -367,30 +369,33 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
           if (u > 1.0) {
             throw ("Unexpected U value, twistBone '" + bones[boneIDs.twistBones[i]].name + "' outside of bone.");
           }
-          uValues.push(u);
+          weights.push(u);
         }
       }
-      skeletonNode.addMember(name + 'start', 'Integer', boneIDs.start);
-      skeletonNode.addMember(name + 'end', 'Integer', boneIDs.end);
-      skeletonNode.addMember(name + 'twistBones', 'Integer[]', boneIDs.twistBones);
-      skeletonNode.addMember(name + 'uvalues', 'Scalar[]', uValues);
+      baseBones.push(boneIDs.start);
+      targetBones.push(boneIDs.end);
+      twistBones.push(boneIDs.twistBones);
+      blendWeights.push(weights);
+    }
+    
+    skeletonNode.addMember(name + 'start', 'Integer[]', baseBones);
+    skeletonNode.addMember(name + 'end', 'Integer[]', targetBones);
+    skeletonNode.addMember(name + 'twistBones', 'Integer[][]', twistBones);
+    skeletonNode.addMember(name + 'blendWeights', 'Scalar[][]', blendWeights);
 
-      rigNode.addSolverOperator({
-          operatorName: 'solveTwistBones',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
-          entryFunctionName: 'solveTwistBones',
-          parameterLayout: [
-            'self.pose',
-            'skeleton.bones',
-            'skeleton.' + name + 'start',
-            'skeleton.' + name + 'end',
-            'skeleton.' + name + 'twistBones',
-            'skeleton.' + name + 'uvalues'
-          ]
-        });
-    };
-
-    bindToRig();
+    rigNode.addSolverOperator({
+        operatorName: 'solveTwistBones',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
+        entryFunctionName: 'solveTwistBones',
+        parameterLayout: [
+          'self.pose',
+          'skeleton.bones',
+          'skeleton.' + name + 'start',
+          'skeleton.' + name + 'end',
+          'skeleton.' + name + 'twistBones',
+          'skeleton.' + name + 'blendWeights'
+        ]
+      });
 
     return solver;
   }
@@ -401,57 +406,265 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
   The Blend Bone solver is usefull for procedural bones such as knee caps.
   It interpolates 2 source bones onto a set of blend bones
 */
+
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
   constructSolver: function(options, scene) {
 
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = rigNode.pub.getSkeletonNode(),
-      bones = skeletonNode.getBones(),
-      referencePose = skeletonNode.getReferencePose(),
-      boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['blendBones']]),
-      size,
-      name = options.name;
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose();
 
-    if (!options.blendWeights) {
-      throw ('Error in BlendBoneSolver: blendWeights not specified ');
-    }
-    if (options.blendWeights.length != boneIDs.blendBones.length) {
-      throw ('Error in BlendBoneSolver: blendWeights.length != blendBones.length ');
-    }
-
-    // first, we will compute the local transform of the end inside the start's space
-    var startXfo = referencePose[boneIDs.start];
-    var endXfo = referencePose[boneIDs.end];
-
+    var blendBones = [];
+    var baseBones = [];
+    var targetBones = [];
+    var blendWeights = [];
     var blendBoneOffsets = [];
-    for (var i = 0; i < boneIDs.blendBones.length; i++) {
-      var blendedXfo = startXfo.clone();
-      blendedXfo.ori.sphericalLinearInterpolate(startXfo.ori, options.blendWeights[i]);
-      blendBoneOffsets.push(startXfo.inverse().multiply(blendedXfo));
+    for(j=0; j<options.blendBones.length; j++){
+      var blendBoneParams = options.blendBones[j];
+      var boneIDs = solver.generateBoneMapping(blendBoneParams, ['bone', 'base', 'target']);
+      
+      if (!blendBoneParams.blendWeight) {
+        throw ('Error in BlendBoneSolver: blendWeight not specified ');
+      }
+      
+      var boneXfo = referencePose[boneIDs.bone];
+      var baseXfo = referencePose[boneIDs.base];
+      var targetXfo = referencePose[boneIDs.target];
+
+      var blendedQuat = baseXfo.ori.sphericalLinearInterpolate(targetXfo.ori, blendBoneParams.blendWeight);
+      blendBoneOffsets.push(blendedQuat.inverse().multiply(boneXfo.ori));
+      
+      blendBones.push(boneIDs.bone);
+      baseBones.push(boneIDs.base);
+      targetBones.push(boneIDs.target);
+      blendWeights.push(blendBoneParams.blendWeight);
     }
-    skeletonNode.addMember(name + 'start', 'Integer', boneIDs.start);
-    skeletonNode.addMember(name + 'end', 'Integer', boneIDs.end);
-    skeletonNode.addMember(name + 'blendBones', 'Integer[]', boneIDs.blendBones);
-    skeletonNode.addMember(name + 'blendBoneOffsets', 'Xfo[]', blendBoneOffsets);
-    skeletonNode.addMember(name + 'blendWeights', 'Scalar[]', options.blendWeights);
-
+    skeletonNode.addMember(name + 'blendBones', 'Integer[]', blendBones);
+    skeletonNode.addMember(name + 'baseBones', 'Integer[]', baseBones);
+    skeletonNode.addMember(name + 'targetBones', 'Integer[]', targetBones);
+    skeletonNode.addMember(name + 'blendWeights', 'Scalar[]', blendWeights);
+    skeletonNode.addMember(name + 'blendBoneOffsets', 'Quat[]', blendBoneOffsets);
+    
     rigNode.addSolverOperator({
-        operatorName: 'solveBlendBones',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
-        entryFunctionName: 'solveBlendBones',
-        parameterLayout: [
-          'self.pose',
-          'skeleton.bones',
-          'skeleton.' + name + 'start',
-          'skeleton.' + name + 'end',
-          'skeleton.' + name + 'blendBones',
-          'skeleton.' + name + 'blendBoneOffsets',
-          'skeleton.' + name + 'blendWeights'
-        ]
-      });
+      operatorName: 'solveBlendBones',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
+      entryFunctionName: 'solveBlendBones',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.' + name + 'blendBones',
+        'skeleton.' + name + 'baseBones',
+        'skeleton.' + name + 'targetBones',
+        'skeleton.' + name + 'blendWeights',
+        'skeleton.' + name + 'blendBoneOffsets'
+      ]
+    });
+      
+    return solver;
+  }
+});
 
+
+
+/*
+  The Verlet Bone solver is for generating jiggle motion.
+*/
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose();
+    
+    var verletBones = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var blendWeights = [];
+    var trPrev = [];
+    for(j=0; j<options.verletBones.length; j++){
+      var verletBoneParams = options.verletBones[j];
+      var boneIDs = solver.generateBoneMapping(verletBoneParams, ['bone']);
+      
+      if (!verletBoneParams.springStrength) {
+        throw ('Error in BlendBoneSolver: springStrength not specified ');
+      }
+      if (!verletBoneParams.dampening) {
+        throw ('Error in BlendBoneSolver: dampening not specified ');
+      }
+      var boneXfo = referencePose[boneIDs.bone];
+      
+      verletBones.push(boneIDs.bone);
+      simulationWeights.push(verletBoneParams.simulationWeight);
+      springStrengths.push(verletBoneParams.springStrength);
+      dampening.push(verletBoneParams.dampening);
+      trPrev.push(boneXfo.tr);
+    }
+    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletBone',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletBone',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        'skeleton.' + name + 'verletBones',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening'
+      ]
+    });
+      
+    return solver;
+  }
+});
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose();
+    
+    var verletBones = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var blendWeights = [];
+    var trPrev = [];
+    for(j=0; j<options.verletBones.length; j++){
+      var verletBoneParams = options.verletBones[j];
+      var boneIDs = solver.generateBoneMapping(verletBoneParams, ['bone']);
+      
+      if (!verletBoneParams.springStrength) {
+        throw ('Error in VerletMuscleBoneSolver: springStrength not specified ');
+      }
+      if (!verletBoneParams.dampening) {
+        throw ('Error in VerletMuscleBoneSolver: dampening not specified ');
+      }
+      if (!verletBoneParams.attachmentBaseOffset) {
+        throw ('Error in VerletMuscleBoneSolver: attachmentBaseOffset not specified ');
+      }
+      if (!verletBoneParams.attachmentTipOffset) {
+        throw ('Error in VerletMuscleBoneSolver: attachmentTipOffset not specified ');
+      }
+      var boneXfo = referencePose[boneIDs.bone];
+      
+      verletBones.push(boneIDs.bone);
+      simulationWeights.push(verletBoneParams.simulationWeight);
+      springStrengths.push(verletBoneParams.springStrength);
+      dampening.push(verletBoneParams.dampening);
+      trPrev.push(boneXfo.tr);
+    }
+    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletMuscleBone',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletMuscleBone',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        'skeleton.' + name + 'verletBones',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening'
+      ]
+    });
+      
+    return solver;
+  }
+});
+
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletChainSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose();
+    
+    var verletBones = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var blendWeights = [];
+    var trPrev = [];
+    for(j=0; j<options.verletBones.length; j++){
+      var verletBoneParams = options.verletBones[j];
+      var boneIDs = solver.generateBoneMapping(verletBoneParams, [['bones']]);
+      
+      if (!verletBoneParams.springStrength) {
+        throw ('Error in BlendBoneSolver: springStrength not specified ');
+      }
+      if (!verletBoneParams.dampening) {
+        throw ('Error in BlendBoneSolver: dampening not specified ');
+      }
+      var boneXfo = referencePose[boneIDs.bone];
+      
+      verletBones.push(boneIDs.bone);
+      simulationWeights.push(verletBoneParams.simulationWeight);
+      springStrengths.push(verletBoneParams.springStrength);
+      dampening.push(verletBoneParams.dampening);
+      trPrev.push(boneXfo.tr);
+    }
+    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletBone',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletBone',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        'skeleton.' + name + 'verletBones',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening'
+      ]
+    });
+      
     return solver;
   }
 });
@@ -1183,7 +1396,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         }
       }
     }
-    
+    ''
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
         operatorName: 'invertHubRigs',
