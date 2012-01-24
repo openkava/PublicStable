@@ -78,6 +78,8 @@ s.parentNode.insertBefore(ga, s);
 </script>
 <script type="text/javascript">
 
+FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+
 $(document).ready(function() {
 
 
@@ -114,7 +116,7 @@ $(document).ready(function() {
   $("#displayDebugging").attr('checked', crowdParams.displayDebugging);
   
 
-  var rigName = 'CMan0005';
+  var rigName = 'Spiedel';
   /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
@@ -136,7 +138,7 @@ $(document).ready(function() {
       break;
     case 'medium':
       agentCount = 600;
-      gridSize = 100;
+      gridSize = 400;
       cameraDist = 15;
       break;
     case 'huge':
@@ -194,7 +196,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   
   var crowdNode;
   switch(rigName){
-  case 'walker':
+  case 'Spiedel':
   var agentRadius = 3.0;
   var cellSize = 20.0;
     var crowdNode = scene.constructNode('Crowd', {
@@ -217,33 +219,10 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         agentCount: agentCount,
         displayDebugging: crowdParams.displayDebugging
       });
+    rigFile = 'Assets/Spiedel.json';
+    animationLibraryFile = 'Assets/SpiedelAnimation.json';
+    minFrequency = 0.75;
     break;
-  case 'marama':
-  var agentRadius = 0.9;
-  var cellSize = 8.0;
-    var crowdNode = scene.constructNode('Crowd', {
-        maxLinearVelocity: 3.5,
-        maxLinearAcceleration: 6,
-        maxAngularVelocity:  5,
-        maxAngularAcceleration: 5,
-        bulletWorldNode: bulletWorldNode,
-        numTrailSegments: 0,
-        gravity: -98,
-        comHeight: 1.8,
-        circleSize: 0.6,
-        
-        cellsize: cellSize,
-        agentRadius: agentRadius,
-        x_count: Math.ceil(gridSize/cellSize)+2,
-        y_count: 1,
-        z_count: Math.ceil(gridSize/cellSize)+2,
-        displayGrid: true,
-        agentCount: agentCount,
-        displayDebugging: crowdParams.displayDebugging,
-        enableDebugging: false
-      });
-    break;
-  
   case 'CMan0005':
   var agentRadius = 0.9;
   var cellSize = 8.0;
@@ -311,18 +290,15 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
       locomotionVariables.setAnimationLibraryNode(libraryAnimations);
     });
-  
-    var materialNode = scene.constructNode('PhongSkinnedInstancesMaterial', {
-      lightNode: light,
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0),
-      numBonesPerInstance: ikrig.getSkeletonNode().getNumBones(),
-      instanceCount: agentCount
-    });
-    
     
     for(var i in characterInstances){
       characterInstances[i].removeMaterialNode(0);
-      characterInstances[i].addMaterialNode(materialNode);
+      characterInstances[i].addMaterialNode(scene.constructNode('PhongSkinnedInstancesMaterial', {
+        lightNode: light,
+        diffuseColor: FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0),
+        numBonesPerInstance: characterInstances[i].getGeometryNode().getNumBones(),
+        instanceCount: agentCount
+      }));
     }
     /*
     var characterInstance = scene.constructNode("CharacterInstance", {
