@@ -13,6 +13,7 @@ namespace Fabric
   namespace IO
   {
     void validateEntry( std::string const &entry );
+    void validateAbsolutePath( std::string const &entry );
     
     std::string const &getRootPath();
     

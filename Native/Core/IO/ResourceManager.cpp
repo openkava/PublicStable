@@ -71,12 +71,12 @@ namespace Fabric
       requestInfo->m_client = client;
       requestInfo->m_clientUserData = userData;
       requestInfo->m_manager = this;
-      requestInfo->m_pendingRequestsListIter = m_pendingRequests.begin();
       requestInfo->m_url = url;
       requestInfo->m_lastProgressTimer.reset();
 
       client->retain();
       m_pendingRequests.push_front( requestInfo );
+      requestInfo->m_pendingRequestsListIter = m_pendingRequests.begin();
 
       try
       {
@@ -85,6 +85,8 @@ namespace Fabric
         int separatorPos = -1;
         while( *separator )
         {
+          if( *separator == '/')
+            break;
           if( *separator == ':')
           {
             separatorPos = separator-url;

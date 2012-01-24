@@ -112,7 +112,7 @@ Alembic::Abc::IObject getObjectFromArchive(Alembic::Abc::IArchive * archive, con
 }
 
 FABRIC_EXT_EXPORT void FabricALEMBICOpen(
-  KL::String fileName,
+  const KL::String& fileName,
   AlembicHandle &handle
   )
 {
@@ -148,36 +148,18 @@ FABRIC_EXT_EXPORT void FabricALEMBICOpen(
 
 
 FABRIC_EXT_EXPORT void FabricALEMBICDecode(
-  KL::Data objData,
-  KL::Size objDataSize,
+  const KL::String& fileHandle,
   AlembicHandle &handle
   )
 {
   Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
   if( archive == NULL )
   {
-#if defined(FABRIC_OS_WINDOWS)
-    char const *dir = getenv("APPDATA");
-    if(dir == NULL)
-      dir = getenv("TEMP");
-    if(dir == NULL)
-      dir = getenv("TMP");
-    if(dir == NULL)
-      Fabric::EDK::throwException("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
-    KL::String fileName( _tempnam( dir, "tmpfab_" ) );
-#else
-    KL::String fileName(tmpnam(NULL));
-#endif
+    KL::FileHandleWrapper fileWrapper( fileHandle );
+    if( fileWrapper.isFolder() )
+      throwException( "Invalid Fabric file handle" );
 
-    // save the file to disk
-    FILE * file = fopen(fileName.data(),"wb");
-    if(!file)
-      Fabric::EDK::throwException("Alembic extension: Cannot write to temporary file.");
-    fwrite(objData,objDataSize,1,file);
-    fclose(file);
-    file = NULL;
-
-    return FabricALEMBICOpen(fileName,handle);
+    return FabricALEMBICOpen(fileWrapper.getPath(),handle);
   }
 }
 

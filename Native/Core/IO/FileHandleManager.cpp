@@ -41,7 +41,7 @@ namespace Fabric
       data.m_isFolder = folder;
       data.m_readOnly = readOnly;
 
-      validateEntry( data.m_path );//Check basic syntax, but don't check if exists
+      validateAbsolutePath( data.m_path );//Ensure no '..'
 
       std::pair< PathToHandleMap::const_iterator, PathToHandleMap::const_iterator > existingRange = m_pathToHandle.equal_range( data.m_path );
       while( existingRange.first != existingRange.second )
@@ -58,7 +58,7 @@ namespace Fabric
         static const size_t folderIDByteCount = 24;
         uint8_t folderIDBytes[folderIDByteCount];
         Util::generateSecureRandomBytes( folderIDByteCount, folderIDBytes );
-        std::string handle = std::string( fileHandleSchemeAndSeparator ) + Util::encodeBase64( folderIDBytes, folderIDByteCount );
+        handle = std::string( fileHandleSchemeAndSeparator ) + Util::encodeBase64( folderIDBytes, folderIDByteCount );
 
         if( m_encodedHandleLength == 0 )
           m_encodedHandleLength = handle.size();
@@ -127,8 +127,8 @@ namespace Fabric
         if( relativePathPostfix[0] != '/' )
           throw Exception( "FileHandle relative paths must start with '/'" );
 
-        //For security reasons, make sure there's no ".." or such in the relative path:
-        validateEntry( relativePathPostfix );
+        relativePathPostfix = ChangeSeparatorsURLToFile( relativePathPostfix );
+        validateAbsolutePath( relativePathPostfix );//ensure no '..'
       }
       return iter->second;
     }
@@ -209,7 +209,7 @@ namespace Fabric
           throw Exception( "Error: cannot create file or folders flagged as read-only" );
 
         if( !relativePathPostfix.empty() )
-          throw Exception( "Error: ambiguous: handle's relative path could be a file or a folder; create a relative handle instead" );
+          throw Exception( "Error: ambiguous: handle's relative path could be a file or a folder; create a file handle from relative path" );
 
         if( data.m_isFolder )
           CreateDir( data.m_path );

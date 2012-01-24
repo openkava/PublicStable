@@ -54,7 +54,37 @@ namespace Fabric
 #endif
       }
     }
-    
+
+    void validateAbsolutePath( std::string const &entry )
+    {
+      // [JeromeCG 2012012] For now we mostly want to avoid having ".." in the path. However it should be made more robust to really ensure it is an absolute path.
+      if ( entry.length() == 0 )
+        throw Exception("paths cannot be empty");
+
+      bool hasDots = false;
+      bool hasOthers = false;
+      size_t length = entry.length();
+
+      size_t i = 0;
+      while( true )
+      {
+        if( i == length || entry[i] == s_pathSeparator[i] )
+        {
+          if( hasDots && !hasOthers )
+            throw Exception("paths cannot contain '.' or '..'");
+          if( i == length )
+            break;
+          hasDots = false;
+          hasOthers = false;
+        }
+        char ch = entry[i++];
+        if( ch == '.' )
+          hasDots = true;
+        else if( ch != ' ' )
+          hasOthers = true;
+      }
+    }
+
     std::string const &getRootPath()
     {
       static std::string s_rootPath;
