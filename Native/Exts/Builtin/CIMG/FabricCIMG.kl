@@ -6,3 +6,4 @@ struct RGBA {
 };
 
 function FabricCIMGDecode( Data data, Size dataSize, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
+function FabricCIMGOpenFileHandle( String fileHandle, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
