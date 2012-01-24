@@ -169,7 +169,7 @@ FABRIC_EXT_EXPORT void FabricFileHandle_SetAbsolutePath(
 {
   std::string str(path.data());
   KL::FileHandleWrapper handle;
-  handle.createFromFile(str.c_str(),true);
+  handle.createFromFile(str.c_str(),false);
   file = handle;
 }
 
