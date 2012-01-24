@@ -397,27 +397,24 @@ $(document).ready(function() {
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
   rigLoader.load(storage, function(nodeMap){
-    
-  var ikrig = nodeMap.IKRig;
-//  var characterMesh =  nodeMap.characterMesh;
-
-  var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
-  var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
-  animationLoader.load(storage, function(animationLoaderNodeMap){
-    var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
-    
-    ikrig.setControllerNode(locomotionControllerNode);
-    
-    var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-      characterRigNode: ikrig,
-      bulletWorldNode: bulletWorldNode,
-      minFrequency: minFrequency
+    var ikrig = nodeMap.IKRig;
+  //  var characterMesh =  nodeMap.characterMesh;
+  
+    var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
+    var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+    animationLoader.load(storage, function(animationLoaderNodeMap){
+      var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
+      
+      ikrig.setControllerNode(locomotionControllerNode);
+      
+      var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+        characterRigNode: ikrig,
+        bulletWorldNode: bulletWorldNode,
+        minFrequency: minFrequency
+      });
+      locomotionVariables.setAnimationLibraryNode(libraryAnimations);
+      ikrig.setVariablesNode(locomotionVariables);
     });
-    locomotionVariables.setAnimationLibraryNode(libraryAnimations);
-    ikrig.setVariablesNode(locomotionVariables);
-  });
-    
-    
   });
   
 

@@ -655,6 +655,23 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       ],
       async: false
     }));
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'initPose',
+      srcCode: 'operator initPose(io Xfo pose[], io Bone bones[]) { \n\
+        if(pose.size == 0){\n\
+          pose.resize(bones.size);\n\
+          for(Integer i=0; i<bones.size; i++){\n\
+            pose[i] = bones[i].referencePose;\n\
+          }\n\
+        }\n\
+      }',
+      entryFunctionName: 'initPose',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.bones'
+      ],
+      async: false
+    }));
     // extend the public interface
     
     characterRigNode.addReferenceInterface('Skeleton', 'CharacterSkeleton',
