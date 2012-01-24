@@ -32,8 +32,6 @@ namespace Fabric
       EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback );
       EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback, RC::Handle<Node> const &node, RC::ConstHandle<RT::Desc> const &selectorType );
       
-      void add( RC::Handle<MT::ParallelCall> &opParallelCall );
-      
       virtual void execute( void *userdata ) const;
       
       std::vector< RC::Handle<MT::ParallelCall> > m_evaluateParallelCallsPerOperator;
