@@ -40,6 +40,7 @@ class videoStream
 {
 private:
   static bool sRegistered;
+  bool mReadOnly;
   AVFormatContext * mFormatCtx;
   AVCodecContext * mCodecCtx;
   int mVideoStreamID;
@@ -83,16 +84,22 @@ public:
   
   KL::Size getWidth()
   {
+    if(!mReadOnly)
+      return 0;
     return mCodecCtx ? mCodecCtx->width : 0;
   }
   
   KL::Size getHeight()
   {
+    if(!mReadOnly)
+      return 0;
     return mCodecCtx ? mCodecCtx->height : 0;
   }
   
   KL::Scalar getDuration()
   {
+    if(!mReadOnly)
+      return 0;
     if(!mFormatCtx)
       return 0;
     return KL::Scalar(mFormatCtx->duration) / KL::Scalar(AV_TIME_BASE);
@@ -100,98 +107,108 @@ public:
 
   KL::Scalar getFPS()
   {
+    if(!mReadOnly)
+      return 0;
     return KL::Scalar(mFormatCtx->streams[mVideoStreamID]->r_frame_rate.num) / KL::Scalar(mFormatCtx->streams[mVideoStreamID]->r_frame_rate.den);
   }
   
   KL::Scalar getTime()
   {
+    if(!mReadOnly)
+      return 0;
     return mHandle->time;
   }
   
-  bool init(KL::String & filename)
+  bool init(KL::String & filename, bool in_readOnly)
   {
-    if(filename.data()== NULL){
-      printf("=======> VIDEO-ERROR: No filename specified.......\n");
-      return false;
-    }
-    
-    // open video file
-    if(av_open_input_file(&mFormatCtx, filename.data(), NULL, 0, NULL)!=0)
+    mReadOnly = in_readOnly;
+    if(mReadOnly)
     {
-      printf("=======> VIDEO-ERROR: Cannot open video file '%s'.\n",filename.data());
-      return false;
-    }
-
-    // retrieve stream information
-    if(av_find_stream_info(mFormatCtx)<0)
-    {
-      printf("=======> VIDEO-ERROR: Cannot read stream information in '%s'.\n",filename.data());
-      return false;
-    }
-
-    // find the first video stream
-    for(int i=0; i<int(mFormatCtx->nb_streams); i++)
-    {
-      if(mFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
-      {
-        mVideoStreamID=i;
-        break;
+      if(filename.data()== NULL){
+        printf("=======> VIDEO-ERROR: No filename specified.......\n");
+        return false;
       }
+      
+      // open video file
+      if(av_open_input_file(&mFormatCtx, filename.data(), NULL, 0, NULL)!=0)
+      {
+        printf("=======> VIDEO-ERROR: Cannot open video file '%s'.\n",filename.data());
+        return false;
+      }
+  
+      // retrieve stream information
+      if(av_find_stream_info(mFormatCtx)<0)
+      {
+        printf("=======> VIDEO-ERROR: Cannot read stream information in '%s'.\n",filename.data());
+        return false;
+      }
+  
+      // find the first video stream
+      for(int i=0; i<int(mFormatCtx->nb_streams); i++)
+      {
+        if(mFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+        {
+          mVideoStreamID=i;
+          break;
+        }
+      }
+      if(mVideoStreamID==-1)
+      {
+        printf("=======> VIDEO-ERROR: Didn't find a video stream in '%s'.\n",filename.data());
+        return false;
+      }
+      
+      // get a pointer to the codec context for the video stream
+      mCodecCtx = mFormatCtx->streams[mVideoStreamID]->codec;
+      
+      // find the decoder for the video stream
+      mCodec = avcodec_find_decoder(mCodecCtx->codec_id);
+      if(mCodec==NULL)
+      {
+        printf("=======> VIDEO-ERROR: Unsupported codec in '%s'.\n",filename.data());
+        return false;
+      }
+      
+      // open codec
+      if(avcodec_open(mCodecCtx, mCodec)<0)
+      {
+        printf("=======> VIDEO-ERROR: Could not open (supported) codec for '%s'.\n",filename.data());
+        return false;
+      }
+      
+      // allocate video frame (for YUV and RGB)
+      mFrameYUV = avcodec_alloc_frame();
+      mFrameRGB = avcodec_alloc_frame();
+  
+      // determine required buffer size and allocate buffer
+      int numBytes = avpicture_get_size( PIX_FMT_RGB24, getWidth(),getHeight());
+      mBuffer = (uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
+      
+      // check if we received the memory
+      if(!mFrameRGB || !mFrameYUV || !mBuffer)
+      {
+        printf("=======> VIDEO-ERROR: Couldn't allocate buffer in '%s'.\n",filename.data());
+        return false;
+      }
+  
+      // connect the picture frame with the buffer      
+      avpicture_fill((AVPicture *)mFrameRGB, mBuffer, PIX_FMT_RGB24, getWidth(), getHeight());
+      
+      // init the handle's values
+      mHandle->time = -10000.0;
+      mHandle->width = getWidth();
+      mHandle->height = getHeight();
+      mHandle->duration = getDuration();
+      mHandle->fps = getFPS();
     }
-    if(mVideoStreamID==-1)
-    {
-      printf("=======> VIDEO-ERROR: Didn't find a video stream in '%s'.\n",filename.data());
-      return false;
-    }
-    
-    // get a pointer to the codec context for the video stream
-    mCodecCtx = mFormatCtx->streams[mVideoStreamID]->codec;
-    
-    // find the decoder for the video stream
-    mCodec = avcodec_find_decoder(mCodecCtx->codec_id);
-    if(mCodec==NULL)
-    {
-      printf("=======> VIDEO-ERROR: Unsupported codec in '%s'.\n",filename.data());
-      return false;
-    }
-    
-    // open codec
-    if(avcodec_open(mCodecCtx, mCodec)<0)
-    {
-      printf("=======> VIDEO-ERROR: Could not open (supported) codec for '%s'.\n",filename.data());
-      return false;
-    }
-    
-    // allocate video frame (for YUV and RGB)
-    mFrameYUV = avcodec_alloc_frame();
-    mFrameRGB = avcodec_alloc_frame();
-
-    // determine required buffer size and allocate buffer
-    int numBytes = avpicture_get_size( PIX_FMT_RGB24, getWidth(),getHeight());
-    mBuffer = (uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-    
-    // check if we received the memory
-    if(!mFrameRGB || !mFrameYUV || !mBuffer)
-    {
-      printf("=======> VIDEO-ERROR: Couldn't allocate buffer in '%s'.\n",filename.data());
-      return false;
-    }
-
-    // connect the picture frame with the buffer      
-    avpicture_fill((AVPicture *)mFrameRGB, mBuffer, PIX_FMT_RGB24, getWidth(), getHeight());
-    
-    // init the handle's values
-    mHandle->time = -10000.0;
-    mHandle->width = getWidth();
-    mHandle->height = getHeight();
-    mHandle->duration = getDuration();
-    mHandle->fps = getFPS();
 
     return true;
   }
   
   bool readNextFrame(KL::Boolean &loop)
   {
+    if(!mReadOnly)
+      return false;
     AVPacket packet;
     av_init_packet(&packet);
     int frameFinished = 0;
@@ -240,6 +257,8 @@ public:
 
   bool seekTime(KL::Scalar &time)
   {
+    if(!mReadOnly)
+      return false;
     KL::Boolean loop = false;
 
     if(fabs(time - mHandle->time) < cFrameSkipTolerance)
@@ -264,6 +283,8 @@ public:
   
   bool getAllPixels(KL::VariableArray<KL::RGB> &pixels)
   {
+    if(!mReadOnly)
+      return false;
     mHandle->width = getWidth();
     mHandle->height = getHeight();
     pixels.resize(getHeight() * getWidth());
@@ -288,7 +309,7 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenFileName(
       handle.pointer = NULL;
       return;
     }
-    if(!handle.pointer->init(filename))
+    if(!handle.pointer->init(filename,true))
     {
       delete(handle.pointer);
       handle.pointer = NULL;
