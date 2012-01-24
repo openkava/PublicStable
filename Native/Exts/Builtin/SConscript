@@ -8,7 +8,7 @@ Import( 'baseEnv', 'buildOS' )
 dirs = [
   'ALEMBIC',
   'BULLET',
-  'CIMG',
+  #'CIMG',
   'EXR',
   'HDR',
   'KINECT',
