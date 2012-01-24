@@ -566,8 +566,8 @@ function Boolean addStationaryMarkers(
 
 operator locomotionPreProcessing(
   io LinearKeyframeTrackSet sourceAnimationLibrary<>,
+  io LinearKeyframeTrackSetBindings sourceAnimationLibraryBindings<>,
   io PoseVariables referenceVariables,
-  io LinearKeyframeTrackSetBindings referenceBindings,
   
   io Bone bones[],
   io Hub hubs[],
@@ -592,8 +592,9 @@ operator locomotionPreProcessing(
   debugGeometry.reset();
   
   trackSet = sourceAnimationLibrary[index];
+  bindings = sourceAnimationLibraryBindings[index];
+  
   PoseVariables poseVariables = referenceVariables;
-  bindings = referenceBindings;
   
   Xfo pose[];
   pose.resize(bones.size);
@@ -626,6 +627,8 @@ operator locomotionPreProcessing(
     }
   }
   if(comXfoBindings.xfoBindings.size == 0){
+    report bindings;
+    report com;
     report("COM Xfo variable not found");
     return;
   }

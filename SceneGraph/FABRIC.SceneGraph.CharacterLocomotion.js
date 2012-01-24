@@ -32,8 +32,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     var boneId = solver.generateBoneMapping( { bone: options.bone }, ['bone']);
 
     var comXfoId = rigNode.addVariable('Xfo');
-    var comParam0VarId = rigNode.addVariable('Scalar'); // stepFrequency
-    var comParam1VarId = rigNode.addVariable('Scalar'); // speed
+    var comParam0VarId = rigNode.addVariable('Scalar'); // speed
+    var comParam1VarId = rigNode.addVariable('Scalar'); // acceleration
     var comParam2VarId = rigNode.addVariable('Scalar'); // gradient
     var comParam3VarId = rigNode.addVariable('Scalar'); // direction
     
@@ -46,20 +46,29 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     skeletonNode.addMember('com', 'COM', com);
       
     rigNode.addSolverOperator({
-          operatorName: 'solveCOM',
-          srcCode: 'operator solveCOM( io Xfo pose[], io Bone bones[], io COM com, Size index, io PoseVariables poseVariableSlices<> ) {\n\
+      operatorName: 'solveCOM',
+      srcCode: 'operator solveCOM( io Xfo pose[], io Bone bones[], io COM com, Size index, io PoseVariables poseVariableSlices<> ) {\n\
   pose[com.boneId] = poseVariableSlices[index].xfoValues[com.xfoId];\n\
 }',
-          entryFunctionName: 'solveCOM',
-          parameterLayout: [
+      entryFunctionName: 'solveCOM',
+      parameterLayout: [
         'self.pose',
         'skeleton.bones',
         'skeleton.com',
         'self.index',
         'variables.poseVariables<>'
-          ]
-        });
+      ]
+    });
     
+    solver.generateTracks = function(trackSet, trackBindings){
+      var storeEulerAngles = false;
+      trackSet.addXfoTrack('comXfo', new FABRIC.RT.rgb(1, 0, 0), storeEulerAngles, trackBindings, comXfoId);
+      var color = FABRIC.RT.rgb(0, 1, 1);
+      trackSet.addScalarTrack('speed', color, trackBindings, comParam0VarId);
+      trackSet.addScalarTrack('acceleration', color, trackBindings, comParam1VarId);
+      trackSet.addScalarTrack('gradient', color, trackBindings, comParam2VarId);
+      trackSet.addScalarTrack('direction', color, trackBindings, comParam3VarId);
+    }
     
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
@@ -100,10 +109,11 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
   constructSolver: function(options, scene) {
     
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      solver = {};
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
 
+    
     var limbs = skeletonNode.getData('legs');
     var locomotionFeet = [];
     for(var i=0; i<limbs.length; i++){
@@ -111,6 +121,14 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
       locomotionFeet.push(new FABRIC.RT.LocomotionFoot(i, stepTimeVarId));
     }
     skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      for(j=0; j<limbs.length; j++){
+        var color = FABRIC.RT.rgb(1, 0, 0);
+        var storeEulerAngles = false;
+        trackSet.addScalarTrack(solver.getName()+j+'StepTime', color, trackBindings, locomotionFeet[j].stepTimeVarId);
+      }
+    }
     
     return solver; 
   }
@@ -236,8 +254,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
         entryFunctionName: 'locomotionPreProcessing',
         parameterLayout: [
           'sourceAnimationLibrary.trackSet<>',
+          'sourceAnimationLibrary.bindings<>',
           'params.poseVariables',
-          'params.bindings',
                           
           'skeleton.bones',
           'skeleton.hubs',
@@ -669,7 +687,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     
     locomotionVariables.addReferenceInterface('CharacterController', 'LocomotionCharacterController',
       function(nodePrivate){
-        dgnode.setDependency(characterController.getDGNode(), 'charactercontroller');
+        dgnode.setDependency(nodePrivate.getDGNode(), 'charactercontroller');
       });
     
     locomotionVariables.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
@@ -703,7 +721,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     }
     
     locomotionVariables.pub.setSkeletonNode(characterRigNode.pub.getSkeletonNode());
-    locomotionVariables.pub.setCharacterController(characterRigNode.pub.getControllerNode());
+    locomotionVariables.pub.setCharacterControllerNode(characterRigNode.pub.getControllerNode());
     
     return locomotionVariables;
   }});
