@@ -48,6 +48,8 @@ namespace Fabric
 
     void ValueCache::flush()
     {
+      (const_cast<ValueProducer *>(m_input.ptr()))->flush();
+
       if ( m_cacheData.size() > 0 )
       {
         Util::Mutex::Lock mutexLock( m_mutex );
