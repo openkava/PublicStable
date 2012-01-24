@@ -68,7 +68,7 @@ namespace Fabric
       FABRIC_ASSERT( npp == m_npp );
 
       HTTPStream *streamStruct = (HTTPStream*)stream->notifyData;
-      if( streamStruct->m_asFile )
+      if( !streamStruct->m_asFile )
         IO::ResourceManager::onData( offset, len, buffer, streamStruct->m_userData );
 
       streamStruct->m_nbReceived += len;

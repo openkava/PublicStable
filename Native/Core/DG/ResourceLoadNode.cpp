@@ -159,6 +159,10 @@ namespace Fabric
       if( (size_t)userData != m_streamGeneration )
         return;
 
+      size_t prevSize = m_fabricResourceStreamData.getDataSize();
+      if ( total < prevSize )
+        m_fabricResourceStreamData.resizeData( total );
+
       if( done < total )
       {
         std::vector<std::string> src;
@@ -218,7 +222,8 @@ namespace Fabric
       }
       m_fabricResourceStreamData.setExtension( extension );
 
-      if( !m_fabricResourceStreamData.isEqualTo( getConstData( "resource", 0 ) ) )
+      void const *prevResourceData = getConstData( "resource", 0 );
+      if( !m_fabricResourceStreamData.isDataEqualTo( prevResourceData ) || !m_fabricResourceStreamData.isDataExternalLocationEqualTo( prevResourceData ) )
       {
         void *resourceDataMember = getMutableData( "resource", 0 );
         m_fabricResourceStreamData.getDesc()->setData( m_fabricResourceStreamData.get(), resourceDataMember );

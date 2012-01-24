@@ -84,7 +84,7 @@ var path7 = {
   subFolders: ["SubDir"],
   fileName: "testfile5.txt"
   };
-node.putResourceToFile("resource", path7);
+node.putResourceToFile(path7,"resource");
 var body4 = FABRIC.IO.getTextFile(path7);
 console.log(body4);
 

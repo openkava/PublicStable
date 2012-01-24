@@ -33,7 +33,8 @@ namespace Fabric
       RC::ConstHandle<RT::StructDesc> getDesc() const;
     
       const void* get() const { return m_resource; }
-      bool isEqualTo( const void *other ) const;
+      bool isDataEqualTo( const void *other ) const;
+      bool isDataExternalLocationEqualTo( const void *other ) const;
 
       std::string getExtension() const;
       void setExtension( std::string const &value );
