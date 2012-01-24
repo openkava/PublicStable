@@ -451,7 +451,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         return poseVariables.scalarValues[index];
         break;
       case 'FABRIC.RT.Vec3':
-        return poseVariables.scalarValues[index];
+        return poseVariables.vec3Values[index];
         break;
       case 'FABRIC.RT.Quat':
         return poseVariables.quatValues[index];
@@ -472,7 +472,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           poseVariables.scalarValues[index] = value;
           break;
         case 'FABRIC.RT.Vec3':
-          poseVariables.scalarValues[index] = value;
+          poseVariables.vec3Values[index] = value;
           break;
         case 'FABRIC.RT.Quat':
           poseVariables.quatValues[index] = value;
@@ -710,6 +710,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       return node;
     };
+    
+    characterRigNode.getValue = function(type, index) {
+      if(variablesNode){
+        return variablesNode.getValue(type, index);
+      }
+    }
+    characterRigNode.setValue = function(value, index) {
+      if(variablesNode){
+        variablesNode.setValue(value, index);
+      }
+    }
     
     //////////////////////////////////////////
     // Solver Interfaces
