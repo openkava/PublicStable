@@ -467,16 +467,7 @@ namespace Fabric
     void Manager::jsonRoute( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       if ( dst.size() - dstOffset == 0 )
-      {
-        try
-        {
-          jsonExec( cmd, arg, resultArrayEncoder );
-        }
-        catch ( Exception e )
-        {
-          throw "command " + _(cmd) + ": " + e;
-        }
-      }
+        jsonExec( cmd, arg, resultArrayEncoder );
       else throw Exception( "unroutable" );
     }
 

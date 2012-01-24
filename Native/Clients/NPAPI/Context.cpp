@@ -108,14 +108,7 @@ namespace Fabric
         if ( it == m_viewPorts.end() )
           throw Exception( "unroutable" );
         
-        try
-        {
-          it->second->jsonExec( cmd, arg, resultArrayEncoder );
-        }
-        catch ( Exception e )
-        {
-          throw "command " + _(cmd) + ": " + e;
-        }
+        it->second->jsonExec( cmd, arg, resultArrayEncoder );
       }
       else throw Exception( "unroutable" );
     }
