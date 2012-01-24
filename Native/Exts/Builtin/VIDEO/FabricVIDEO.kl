@@ -17,6 +17,11 @@ function FabricVIDEOOpenResource(
   io VideoHandle handle
 );
 
+function FabricVIDEOOpenFileHandle(
+  FabricFileHandle file,
+  io VideoHandle handle
+);
+
 function FabricVIDEOFreeHandle( io VideoHandle handle );
   
 function FabricVIDEOSeekTime( io VideoHandle handle, io Scalar time);
