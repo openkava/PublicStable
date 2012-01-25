@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "mr-array-transform.py", line 1, in <module>
-    import fabric
-ImportError: No module named fabric
