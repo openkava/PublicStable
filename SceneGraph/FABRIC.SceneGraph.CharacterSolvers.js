@@ -658,36 +658,38 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
         var xfoIndexArray = [];
         for (i = 0; i < xfoIds.length; i++) {
           xfoIndexArray.push(xfoIds[i]);
-          /*
-          solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
-            baseManipulatorType: 'CharacterManipulator',
-            rigNode: rigNode.pub,
-            xfoIndex: xfoIds[i],
-            boneIndex: boneIDs.bones[0],
-            extraIndexArray: xfoIndexArray,
-            targetName: solver.getName()+j+'Bone'+i,
-            length: bones[boneIDs.bones[i]].length,
-            boneVector: new FABRIC.RT.Vec3(1, 0, 0),
-            color: FABRIC.RT.rgb(0, 0, 1),
-            attachmentOperator:{
-              operatorName: 'calcManipulatorChainAttachmentXfo',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
-              parameterLayout: [
-                'skeleton.bones',
-                'variables.poseVariables',
-                'rig.pose',
-                'self.boneIndex',
-                'self.extraIndexArray',
-                
-                'self.localXfo',
-                'self.parentXfo',
-                'self.targetXfo',
-                'self.globalXfo'
-              ],
-              entryFunctionName: 'calcManipulatorChainAttachmentXfo'
-            }
-          });
-          */
+          
+          if(i<xfoIds.length-1){
+            solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
+              baseManipulatorType: 'CharacterManipulator',
+              rigNode: rigNode.pub,
+              xfoIndex: xfoIds[i],
+              boneIndex: boneIDs.bones[0],
+              extraIndexArray: xfoIndexArray,
+              targetName: solver.getName()+j+'Bone'+i,
+              length: bones[boneIDs.bones[i]].length,
+              boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+              color: FABRIC.RT.rgb(0, 0, 1),
+              attachmentOperator:{
+                operatorName: 'calcManipulatorChainAttachmentXfo',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+                parameterLayout: [
+                  'skeleton.bones',
+                  'variables.poseVariables',
+                  'rig.pose',
+                  'self.boneIndex',
+                  'self.extraIndexArray',
+                  
+                  'self.localXfo',
+                  'self.parentXfo',
+                  'self.targetXfo',
+                  'self.globalXfo'
+                ],
+                entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+              }
+            });
+          }
+            
           if(i<2 || i==xfoIds.length-1){
             solver.constructManipulator(name+j+'BoneOri'+i, '3AxisRotationManipulator', {
               baseManipulatorType: 'CharacterManipulator',
@@ -717,7 +719,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
             });
           }
           else{
-            
             solver.constructManipulator(name+j+'BoneOri'+i, 'RotationManipulator', {
               baseManipulatorType: 'CharacterManipulator',
               rigNode: rigNode.pub,

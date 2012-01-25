@@ -1276,10 +1276,10 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
         angle = -angle;
       }
       
-      dragXfo.ori = dragXfo.ori.multiply(new FABRIC.RT.Quat().setFromAxisAndAngle(normal, angle));
+      dragXfo.ori = (new FABRIC.RT.Quat().setFromAxisAndAngle(normal, angle)).multiply(dragXfo.ori);
       
       if(parentManipulator){
-        manipulatorNode.setTargetOri(dragXfo.ori.multiply(parentXfo.ori.inverse()));
+        manipulatorNode.setTargetOri(parentXfo.ori.inverse().multiply(dragXfo.ori));
       }else{
         manipulatorNode.setTargetXfo(dragXfo);
       }
