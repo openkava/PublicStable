@@ -30,7 +30,7 @@ namespace Fabric
       virtual void release() const = 0;
     };
 
-    typedef void (*ScheduleAsynchCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
+    typedef void (*ScheduleAsyncCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
 
     class ResourceProvider : public RC::Object
     {
@@ -43,7 +43,7 @@ namespace Fabric
     {
     public:
 
-      static RC::Handle<ResourceManager> Create( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds = 0.3f );
+      static RC::Handle<ResourceManager> Create( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds = 0.3f );
 
       void registerProvider( RC::Handle<ResourceProvider> const &provider, bool setAsDefault = false );
       void get( char const *url, ResourceClient* client, bool getAsFile, void* userData );
@@ -53,15 +53,15 @@ namespace Fabric
       static void onFile( char const *fileName, void *userData );
       static void onFailure( char const *errorDesc, void *userData );
 
-      //Asynch, inter-thread call scheduling helpers
-      static void onProgressAsynchThreadCall( char const *mimeType, size_t done, size_t total, void *userData );
-      static void onDataAsynchThreadCall( size_t offset, size_t size, void const *data, void *userData );
-      static void onFileAsynchThreadCall( char const *fileName, void *userData );
-      static void onFailureAsynchThreadCall( char const *errorDesc, void *userData );
+      //Async, inter-thread call scheduling helpers
+      static void onProgressAsyncThreadCall( char const *mimeType, size_t done, size_t total, void *userData );
+      static void onDataAsyncThreadCall( size_t offset, size_t size, void const *data, void *userData );
+      static void onFileAsyncThreadCall( char const *fileName, void *userData );
+      static void onFailureAsyncThreadCall( char const *errorDesc, void *userData );
 
     private:
 
-      ResourceManager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds );
+      ResourceManager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds );
       ~ResourceManager();
 
       void onCompletedRequest( void *userData );
@@ -73,7 +73,7 @@ namespace Fabric
 
       std::list< void* > m_pendingRequests;
 
-      ScheduleAsynchCallbackFunc m_scheduleFunc;
+      ScheduleAsyncCallbackFunc m_scheduleFunc;
       void *m_scheduleFuncUserData;
       size_t m_progressMaxFrequencyMS;
     };

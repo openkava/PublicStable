@@ -28,7 +28,7 @@ namespace Fabric
     class ResourceManager;
     class FileHandleManager;
     class FileHandleResourceProvider;
-    typedef void (*ScheduleAsynchCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
+    typedef void (*ScheduleAsyncCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
 
     class Manager : public RC::Object
     {
@@ -42,7 +42,7 @@ namespace Fabric
       virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
 
     protected:
-      Manager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData );
+      Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData );
 
       virtual std::string queryUserFilePath(
         bool existingFile,
