@@ -25,8 +25,9 @@ operator solveVerletBone(
     Vec3 temp = trCurr;
     trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
     force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
-    pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
-    pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(pose[verletBones[i]].tr, simulationWeights[i]);
+    trCurr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
+    pose[verletBones[i]] = attachedXfo;
+    pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(trCurr, simulationWeights[i]);
     trPrev[i] = temp;
   }
 }
@@ -38,6 +39,7 @@ operator solveVerletMuscleBone(
   io Vec3 trPrev[],
   io Vec3 gravity,
   io Bone bones[],
+  
   io Integer verletBones[],
   
   io Scalar simulationWeights[],
@@ -75,8 +77,8 @@ operator solveVerletMuscleBone(
   //  Vec3 temp = trCurr;
   //  trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
   //  force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
-  //  pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
-  //  pose[verletBones[i]].tr = pose[verletBones[i]].tr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
+  //  trCurr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
+  //  pose[verletBones[i]].tr = trCurr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
   //  trPrev[i] = temp;
   
     boneXfo.tr = attachedTr;
@@ -93,63 +95,133 @@ operator solveVerletMuscleBone(
 }
 
 
-/*
-
-
 operator solveVerletChain(
   io Scalar deltaT,
   io Xfo pose[],
   io Vec3 trPrev[][],
   io Vec3 gravity,
   io Bone bones[],
+  
   io Integer verletChains[][],
-  io Scalar chainLengths[][],
+  io Scalar simulationWeights[],
+  io Scalar springStrengths[],
+  io Scalar dampening[],
+  
+  io Scalar referenceLength[],
+  io Scalar linkLengths[][],
   
   io Integer baseAttachBones[],
   io Vec3 baseAttachOffset[],
   io Integer tipAttachBones[],
   io Vec3 tipAttachOffset[],
   
-  io Scalar referenceLength[],
-  io Scalar referenceBias[],
   
-  io Scalar simulationWeights[],
-  io Scalar springStrengths[],
-  io Scalar dampening[],
+  io DebugGeometry debugGeometry
 ) {
+  Quat boneOffsetRotation;
   for (Integer i = 0; i < verletChains.size; i++) {
-    Vec3 baseAttachment = pose[bones[baseAttachBones[i]]].transformVector(baseAttachOffset[i]);
-    Vec3 tipAttachment = pose[bones[tipAttachBones[i]]].transformVector(tipAttachOffset[i]);
+  
+    Xfo chainBaseReference = bones[baseAttachBones[i]].referencePose;
+    chainBaseReference.tr = chainBaseReference.transformVector(baseAttachOffset[i]);
+    
+    Xfo chainTipReference = bones[tipAttachBones[i]].referencePose;
+    chainTipReference.tr = chainTipReference.transformVector(tipAttachOffset[i]);
+    
+    chainBaseReference.ori = bones[verletChains[i][0]].referencePose.ori;
+  
+    
+    Vec3 referenceBaseAttachment = bones[baseAttachBones[i]].referencePose.transformVector(baseAttachOffset[i]);
+    Vec3 referenceTipAttachment = bones[tipAttachBones[i]].referencePose.transformVector(tipAttachOffset[i]);
+    
+    boneOffsetRotation.setFrom2Vectors(chainBaseReference.ori.getXaxis(), (referenceTipAttachment - referenceBaseAttachment).unit());
+    chainBaseReference.ori = boneOffsetRotation * chainBaseReference.ori;
+    
+    ///////////
+    Vec3 baseAttachment = pose[baseAttachBones[i]].transformVector(baseAttachOffset[i]);
+    Vec3 tipAttachment = pose[tipAttachBones[i]].transformVector(tipAttachOffset[i]);
+    
+    Xfo chainBase = pose[baseAttachBones[i]];
+    chainBase.tr = baseAttachment;
+    
+    Xfo chainTip = pose[tipAttachBones[i]];
+    chainTip.tr = tipAttachment;
+    
+    chainBase.ori = (pose[baseAttachBones[i]] * bones[verletChains[i][0]].referenceLocalPose).ori;
+    
+    boneOffsetRotation.setFrom2Vectors(chainBase.ori.getXaxis(), (tipAttachment - baseAttachment).unit());
+    chainBase.ori = boneOffsetRotation * chainBase.ori;
+    chainBase.ori.alignWith(chainBaseReference.ori);
+    
+    Scalar stretch = baseAttachment.distanceTo(tipAttachment) / referenceLength[i];
+    Vec3 scl;
+    scl.x = stretch;
+    scl.y = scl.z = 1.0;// + ((1.0 - (1.0/stretch)) * 0.4);
+    
+    Scalar linkLengScl = Math_linearInterpolate(stretch, 1.0, 0.5);
+    Xfo attachmentXfo = chainBase * chainBaseReference.inverse();
     
     for (Integer j = 0; j < verletChains[i].size; j++) {
+      
+      Xfo attachedXfo = attachmentXfo * bones[verletChains[i][j]].referencePose;
+      
+      // Because our Xfo does not include scaling oerintation,
+      // I must calculate the local effect of scaling here,
+      // instead of including it in the chainBase Xfo.
+      attachedXfo.tr = chainBase.transformVector((chainBase.inverse() * attachedXfo).tr * Vec3(stretch, 1.0, 1.0));
+    //  attachedXfo.sc.x = stretch;
+      
+    //  pose[verletChains[i][j]] = attachedXfo;
+      
+      
       Scalar mass = 1.0;
       Vec3 force = gravity;
-      
       Vec3 trCurr = pose[verletChains[i][j]].tr;
       Vec3 temp = trCurr;
-      
-      Vec3 prev, next;
-      if(i==0)
-        prev = trCurr - baseAttachment;
-      else
-        prev = trCurr - trPrev[i][j];
-      if(i==verletChains[i].size-1)
-        next = tipAttachment - trCurr;
-      else
-        next = trPrev[i][j] - trCurr;
-      
-      Scalar distPrev = prev.length();
-      trCurr += prev * (distPrev - chainLengths[i][j]);
-      Scalar distNext = prev.length();
-      trCurr += next * (distNext - chainLengths[i][j]);
-    
-      trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
+      trPrev[i][j] = trPrev[i][j].linearInterpolate(trCurr, dampening[i]);
       force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
-      pose[verletChains[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
-      trPrev[i] = temp;
+      
+      trCurr += (trCurr - trPrev[i][j]) + ((force / mass) * (deltaT * deltaT));
+      
+      // Now apply the inter-link constraints that keep the chain together
+      Vec3 prevAnchor, nextAnchor;
+      if(j==0){
+        prevAnchor = baseAttachment;
+        nextAnchor = trPrev[i][j+1];
+      }
+      else if(j==(verletChains[i].size-1)){
+        prevAnchor = trPrev[i][j-1];
+        nextAnchor = tipAttachment;
+      }
+      else{
+        prevAnchor = trPrev[i][j-1];
+        nextAnchor = trPrev[i][j+1];
+      }
+      Vec3 prevVec = (prevAnchor - trCurr);
+      Vec3 nextVec = (nextAnchor - trCurr);
+      Scalar prevVecLength = prevVec.length();
+      Scalar nextVecLength = nextVec.length();
+      
+      trCurr += ((prevVec * ((prevVecLength - (linkLengths[i][j] * linkLengScl))/prevVecLength))
+               + (nextVec * ((nextVecLength - (linkLengths[i][j+1] * linkLengScl))/nextVecLength))) * 0.5;
+      
+      pose[verletChains[i][j]].tr = attachedXfo.tr.linearInterpolate(trCurr, simulationWeights[i]);
+      pose[verletChains[i][j]].sc = scl;
+      trPrev[i][j] = temp;
+      //////////////////////////////////////////////
+      // Debugging
+      if(debugGeometry.enabled){
+        debugGeometry.drawAxis(attachedXfo, 0.3, Color(1.0, 0.0, 0.0, 1.0));
+      // debugGeometry.drawLine(trCurr, prevVec, Color(1.0, 0.0, 0.0, 1.0));
+      //  debugGeometry.drawLine(trCurr, nextVec, Color(1.0, 0.0, 0.0, 1.0));
+      }
     }
+    
+    
+    if(debugGeometry.enabled){
+      debugGeometry.drawLine(baseAttachment, tipAttachment, Color(1.0, 0.0, 0.0, 0.3));
+    }
+    
   }
 }
 
-*/
 
