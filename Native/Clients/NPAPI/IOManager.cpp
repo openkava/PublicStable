@@ -28,8 +28,8 @@ namespace Fabric
     IOManager::IOManager( NPP npp )
       : IO::Manager( ScheduleAsyncCallback, npp )
       , m_npp( npp )
-      , m_context( NULL )
       , m_httpResourceProvider( HTTPResourceProvider::Create( npp ) )
+      , m_context( NULL )
     {
       getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_httpResourceProvider ), true );
     }
