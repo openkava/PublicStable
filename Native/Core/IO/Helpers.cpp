@@ -16,7 +16,9 @@
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <sys/types.h>
-# include <copyfile.h>
+# if defined(FABRIC_OS_MACOSX)
+#  include <copyfile.h>
+# endif
 #elif defined(FABRIC_WIN32)
 # include <windows.h>
 #endif 
@@ -352,9 +354,39 @@ namespace Fabric
 
     void CopyFile_( std::string const &sourceFullPath, std::string const &targetFullPath )
     {
-#if defined(FABRIC_POSIX)
+#if defined(FABRIC_OS_MACOSX)
       if( copyfile( sourceFullPath.c_str(), targetFullPath.c_str(), NULL, COPYFILE_ALL ) < 0 )
         throw Exception("file copy failed");
+#elif defined(FABRIC_OS_LINUX)
+      int file1, file2;
+      
+      if(!(file1 = open(sourceFullPath.c_str(), O_RDONLY)))
+      {
+        throw Exception("file copy failed");
+        return;
+      }
+      if(!(file2 = open(targetFullPath.c_str(), O_WRONLY | O_CREAT, 0600)))
+      {
+        throw Exception("file copy failed");
+        return;
+      }
+      
+      char buf[1024];
+      memset(buf, 0, 1024);
+
+      size_t size = read(file1, buf, 1024);
+      while(size != 0)
+      {
+        if(write(file2, buf, size) != size)
+        {
+          throw Exception("file copy failed");
+          break;
+        }
+        size = read(file1, buf, 1024);
+      }
+      
+      close(file1);
+      close(file2);
 #elif defined(FABRIC_WIN32)
       if( ::CopyFile( sourceFullPath.c_str(), targetFullPath.c_str(), FALSE ) == FALSE )
         throw Exception("file copy failed");
