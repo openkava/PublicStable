@@ -1019,7 +1019,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     // If any bones didn't get a size, then give them the length of the parent bone * 0.5
     for (i = 0; i < bones.length; i++) {
       if (bones[i].length === 0 && bones[i].parent != -1) {
-        bones[i].length = bones[bones[i].parent].length * 0.5;
+        bones[i].length = bones[bones[i].parent].length * 0.75;
         
         // If the tip of the bone is below the floor, then 
         // shorten the bone till it touches the floor.

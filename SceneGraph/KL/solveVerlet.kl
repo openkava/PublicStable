@@ -78,11 +78,11 @@ operator solveVerletMuscleBone(
     Vec3 temp = trCurr;
     trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
     // under contraction the spring strength is increaced so that we get higher frequency motion
-    force += ((attachedXfo.tr - trCurr) * (springStrengths[i] * contraction));
+    force += ((attachedXfo.tr - trCurr) * (springStrengths[i] * (contraction > 1.0 ? contraction : 1.0)));
     trCurr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
     pose[verletBones[i]] = attachedXfo;
     // as stretch decreaces, we blend off the simulation so that contracted musceles are tight
-    pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(trCurr, simulationWeights[i] * stretch);
+    pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(trCurr, simulationWeights[i] * (stretch < 1.0 ? stretch : 1.0));
     trPrev[i] = temp;
     
   //  pose[verletBones[i]] = attachedXfo;

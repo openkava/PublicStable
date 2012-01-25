@@ -1103,73 +1103,48 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
+      referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
       name = solver.getName();
     
     var digits = [];
-    var linkLengths = [];
-    var referenceLengths = [];
-    var simulationWeights = [];
-    var springStrengths = [];
-    var dampening = [];
-    var blendWeights = [];
-    var trPrevs = [];
-    
-    var baseAttachmentBones = [];
-    var tipAttachmentBones = [];
-    var baseAttachmentOffsets = [];
-    var tipAttachmentOffsets = [];
-    
+    var digitTipOffsets = [];
     for(j=0; j<options.digits.length; j++){
       var digitParams = options.digits[j];
-      var boneIDs = solver.generateBoneMapping(digitParams, [['bones'], 'baseAttachment', 'tipAttachment']);
+      var boneIDs = solver.generateBoneMapping(digitParams, [['bones']]);
       
-      var baseXfo = referencePose[boneIDs.bones[0]];
-      var baseAttachmentTr = baseXfo.tr.add(baseXfo.ori.getXaxis().multiplyScalar(-digitParams.baseOffset));
-      var baseAttachmentOffset = referencePose[boneIDs.baseAttachment].inverse().transformVector(baseAttachmentTr);
-      
-      var tipXfo = referencePose[boneIDs.bones[boneIDs.bones.length-1]];
-      var tipAttachmentTr = tipXfo.tr.add(tipXfo.ori.getXaxis().multiplyScalar(digitParams.tipOffset));
-      var tipAttachmentOffset = referencePose[boneIDs.tipAttachment].inverse().transformVector(tipAttachmentTr);
-      
-      var chainReferenceLength = baseAttachmentTr.distanceTo(tipAttachmentTr);
-      var chainLinkLengths = [digitParams.baseOffset];
-      var trPrev = [];
+      var defaultValues = [];
       for(var i=0; i<boneIDs.bones.length; i++){
-        if(i>0){
-          chainLinkLengths.push(referencePose[boneIDs.bones[i]].tr.distanceTo(referencePose[boneIDs.bones[i-1]].tr));
-        }
-        trPrev.push(referencePose[boneIDs.bones[i]].tr);
+        defaultValues.push(referenceLocalPose[boneIDs.bones[i]]);
       }
+      var xfoIds = rigNode.addVariable('Xfo[]', defaultValues);
       
-      digits.push(boneIDs.bones);
-      referenceLengths.push(chainReferenceLength);
-      simulationWeights.push(digitParams.simulationWeight);
-      springStrengths.push(digitParams.springStrength);
-      dampening.push(digitParams.dampening);
+      digits.push(new FABRIC.RT.FKHierarchy(boneIDs.bones, xfoIds));
       
-      baseAttachmentBones.push(boneIDs.baseAttachment);
-      tipAttachmentBones.push(boneIDs.tipAttachment);
-      baseAttachmentOffsets.push(baseAttachmentOffset);
-      tipAttachmentOffsets.push(tipAttachmentOffset);
-      
-      chainLinkLengths.push(digitParams.tipOffset);
-      linkLengths.push(chainLinkLengths);
-      trPrevs.push(trPrev);
+      if(digitParams.projectToGround == true){
+        var lastDigitId = boneIDs.bones[boneIDs.bones.length-1];
+        var digitTipXfo = referencePose[lastDigitId].clone();
+        digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(bones[lastDigitId].length));
+        digitTipXfo.tr.y = 0.0;
+        digitTipOffsets.push((referencePose[lastDigitId].inverse().multiply(digitTipXfo)).tr);
+      }else{
+        digitTipOffsets.push(new FABRIC.RT.Vec3());
+      }
     }
-    skeletonNode.addMember(name + 'digits', 'Integer[][]', digits);
+    skeletonNode.addMember(name + 'digits', 'FKHierarchy[]', digits);
+    skeletonNode.addMember(name + 'digitTipOffsets', 'Vec3[]', digitTipOffsets);
     
     rigNode.addSolverOperator({
-      operatorName: 'solveDigit',
+      operatorName: 'solveDigits',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveDigit.kl',
-      entryFunctionName: 'solveVerletChain',
+      entryFunctionName: 'solveDigits',
       parameterLayout: [
-        'globals.timestep',
         'self.pose',
-        'self.' + name + 'trPrev',
-        'self.' + name + 'Gravity',
         'skeleton.bones',
-        
         'skeleton.' + name + 'digits',
+        'skeleton.' + name + 'digitTipOffsets',
+        
+        'self.index',
+        'variables.poseVariables<>',
         
         'self.debugGeometry'
       ]
