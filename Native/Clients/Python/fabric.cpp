@@ -12,6 +12,8 @@
 #include <map>
 #include <time.h>
 
+//#define FABRIC_PYTHON_DEBUG
+
 namespace Fabric
 {
   namespace Python
@@ -28,7 +30,10 @@ namespace Fabric
       FABRIC_LOG( "%s", buf );
 
       RC::Handle<Client> client = Client::Create();
+
+#ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "received createClient: %x", client.ptr());
+#endif
 
       client->retain();
       return client.ptr();
@@ -36,10 +41,15 @@ namespace Fabric
     
     extern "C" FABRIC_CLI_EXPORT void jsonExec( void *client_, char const *data, size_t length, const char **result, size_t *rlength )
     {
+#ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "received jsonExec: %x", client_ );
+#endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
-      FABRIC_LOG("GOT: %s", data);
+
+#ifdef FABRIC_PYTHON_DEBUG
+      FABRIC_LOG( "sending to jsonExec: %s", data );
+#endif
 
       Util::SimpleString *jsonEncodedResults = new Util::SimpleString();
       Util::JSONGenerator resultJSON( jsonEncodedResults );
@@ -59,14 +69,16 @@ namespace Fabric
       // FIXME verify doesn't exist already
       g_stringMap[ jsonEncodedResults->c_str() ] = jsonEncodedResults;
 
-      FABRIC_LOG( "result ptr = %x", *result );
-
-      FABRIC_LOG( "OUTPUT: %s", jsonEncodedResults->c_str() );
+#ifdef FABRIC_PYTHON_DEBUG
+      FABRIC_LOG( "received from jsonExec: %s", jsonEncodedResults->c_str() );
+#endif
     }
 
     extern "C" FABRIC_CLI_EXPORT void freeString( void *string )
     {
+#ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "received freeString: %x", string );
+#endif
 
       // FIXME error handling
       Util::SimpleString *sstring = g_stringMap.find( (const char*) string )->second;
@@ -75,7 +87,9 @@ namespace Fabric
 
     extern "C" FABRIC_CLI_EXPORT void close( void *client_ )
     {
+#ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "received close: %x", client_ );
+#endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
       client->release();

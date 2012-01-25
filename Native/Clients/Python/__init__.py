@@ -93,7 +93,6 @@ class CLIENT( object ):
     jsonEncodedResults = self.__jsonExec( jsonEncodedCommands, len( jsonEncodedCommands ) )
 
     # FIXME exception handling
-    print "RESULTS: "+jsonEncodedResults.value
     results = json.loads( jsonEncodedResults.value )
 
     for i in range(len(results)):
@@ -264,7 +263,7 @@ class RT( object ):
       arg[ 'klBindings' ] = desc[ 'klBindings' ]
 
     def __queueCommandUnwind():
-      print 'unwind'
+      pass
       # FIXME unwind
       #del RT.prototypes[ name ]
 
