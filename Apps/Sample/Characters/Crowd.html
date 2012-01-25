@@ -80,6 +80,10 @@ s.parentNode.insertBefore(ga, s);
 
 FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
 
+
+FABRIC.SceneGraph.defineEffectFromFile('PhongTexturedSkinnedInstancesMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongTexturedSkinnedInstancesShader.xml');
+
+
 $(document).ready(function() {
 
 
@@ -321,9 +325,10 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     
     for(var i in characterInstances){
       characterInstances[i].removeMaterialNode(0);
-      characterInstances[i].addMaterialNode(scene.constructNode('PhongSkinnedInstancesMaterial', {
+      characterInstances[i].addMaterialNode(scene.constructNode('PhongTexturedSkinnedInstancesMaterial', {
         lightNode: light,
-        diffuseColor: FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_desert_D.png' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_S.png' }),
         numBonesPerInstance: characterInstances[i].getGeometryNode().getNumBones(),
         instanceCount: agentCount
       }));
