@@ -608,7 +608,11 @@ namespace Fabric
             std::string memberName = defaultValueKeyString.stringToStdString();
             std::map< std::string, size_t >::const_iterator it = memberNameToIndexMap.find( memberName );
             if ( it == memberNameToIndexMap.end() )
-              throw Exception( "no such member" );
+            {
+              // [pzion 20120124] for historical reasons we silent drop unknown members...
+              //throw Exception( "no such member" );
+              continue;
+            }
             RT::StructMemberInfo &memberInfo = memberInfos[it->second];
               
             memberInfo.defaultData.resize( memberInfo.desc->getAllocSize() );
