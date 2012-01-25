@@ -1,0 +1,18 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use Quat, Xfo;
+use Bone;
+
+operator solveDigits(
+  io Xfo pose[],
+  io Bone bones[],
+  io Integer digitBones[][]
+) {
+  for (var Integer i = 0; i < digitBones.size(); i++) {
+    for (var Integer j = 0; j < digitBones[i].size(); j++) {
+
+    }
+  }
+}
