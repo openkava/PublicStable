@@ -162,7 +162,6 @@ $(document).ready(function() {
   
   bodyMaterial = scene.constructNode('MonsterMaterial', {
     wireColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
-    wireOpacity: 1.0,
     lightNode: light,
     displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
     diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
@@ -177,7 +176,7 @@ $(document).ready(function() {
   });
     
   var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
-  
+  var skeletonGeometryNode;
   scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
     
     rigNode = assetNodes.BodyCharacterRig;
@@ -195,7 +194,7 @@ $(document).ready(function() {
       }
     }
     
-    var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
+    skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
       characterRigNode:rigNode,
       boneradius: 0.2
     });
@@ -311,10 +310,10 @@ $(document).ready(function() {
     
     rigNode.addSolver('FatJiggle', 'VerletBoneSolver', {
       verletBones: [
-	{ bone:'_LFat1', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_LFat2', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_RFat1', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_RFat2', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 }
+	{ bone:'_LFat1', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_LFat2', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_RFat1', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_RFat2', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 }
       ]
     });
     
@@ -360,18 +359,18 @@ $(document).ready(function() {
         { bones:['_RNeckChain1', '_RNeckChain2', '_RNeckChain3'], baseAttachment: '_Skull', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 },
         { bones:['_LNeckChain1', '_LNeckChain2', '_LNeckChain3'], baseAttachment: '_Skull', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 },
         
-        { bones:['_StomachChain1', '_StomachChain2', '_StomachChain3'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 },
-        { bones:['_LStomachChain11','_LStomachChain12','_LStomachChain13'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 },
-        { bones:['_LStomachChain21','_LStomachChain22','_LStomachChain23'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 },
-        { bones:['_RStomachChain11','_RStomachChain12','_RStomachChain13'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 },
-        { bones:['_RStomachChain21','_RStomachChain22','_RStomachChain23'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.9, springStrength:10.0, dampening: 0.02 }
+        { bones:['_StomachChain1', '_StomachChain2', '_StomachChain3'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.75, springStrength:10.0, dampening: 0.02 },
+        { bones:['_LStomachChain11','_LStomachChain12','_LStomachChain13'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.75, springStrength:10.0, dampening: 0.02 },
+        { bones:['_LStomachChain21','_LStomachChain22','_LStomachChain23'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.75, springStrength:10.0, dampening: 0.02 },
+        { bones:['_RStomachChain11','_RStomachChain12','_RStomachChain13'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.75, springStrength:10.0, dampening: 0.02 },
+        { bones:['_RStomachChain21','_RStomachChain22','_RStomachChain23'], baseAttachment: '_Pelvis', tipAttachment: '_Ribcage', baseOffset:1, tipOffset:1, simulationWeight:0.75, springStrength:10.0, dampening: 0.02 }
       ]
     });
     
     rigNode.addSolver('moobs', 'VerletBoneSolver', {
       verletBones: [
-	{ bone:'_LMoob', simulationWeight:0.85, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_RMoob', simulationWeight:0.85, springStrength:20.0, dampening: 0.05 }
+	{ bone:'_LMoob', simulationWeight:0.7, springStrength:30.0, dampening: 0.05 },
+	{ bone:'_RMoob', simulationWeight:0.7, springStrength:30.0, dampening: 0.05 }
       ]
     });
     
@@ -522,6 +521,11 @@ $(document).ready(function() {
       fileWriter.log();
     });
   
+  
+  $("#displaySkeleton").attr('checked', true).change(function() {
+    skeletonGeometryNode.getInstanceNode().setDrawToggle($("#displaySkeleton").is(":checked"));
+    viewport.redraw();
+  });
   $("#displayRig").attr('checked', true).change(function(event, ui) {
     var checked = $('#displayRig').attr('checked') === 'checked';
     layerManager.setRig(checked);
@@ -533,7 +537,7 @@ $(document).ready(function() {
     layerManager.setGeometries(checked);
     viewport.redraw();
   });
-  $("#displayWireframe").attr('checked', true).change(function(event, ui) {
+  $("#displayWireframe").attr('checked', false).change(function(event, ui) {
     var checked = $('#displayWireframe').attr('checked') === 'checked';
     bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
     viewport.redraw();
@@ -713,6 +717,7 @@ $(document).ready(function() {
            <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
             -->
 	      <label for="displayGeometry">Display Geometry</label><input type="checkbox" id="displayGeometry" style="margin-top:10px;" /><br>
+              <label for="displaySkeleton">Display Skeleton:</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/>
 	      <label for="displayWireframe">Display Wireframe</label><input type="checkbox" id="displayWireframe" style="margin-top:10px;" /><br>
             
               <label for="ikblendLArm">Tesselation Level</label><div id='tesslation'></div><br>
