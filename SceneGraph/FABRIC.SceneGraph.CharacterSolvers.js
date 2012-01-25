@@ -494,13 +494,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
     for(j=0; j<options.verletBones.length; j++){
       var verletBoneParams = options.verletBones[j];
       var boneIDs = solver.generateBoneMapping(verletBoneParams, ['bone']);
-      
-      if (!verletBoneParams.springStrength) {
-        throw ('Error in BlendBoneSolver: springStrength not specified ');
-      }
-      if (!verletBoneParams.dampening) {
-        throw ('Error in BlendBoneSolver: dampening not specified ');
-      }
       var boneXfo = referencePose[boneIDs.bone];
       
       verletBones.push(boneIDs.bone);

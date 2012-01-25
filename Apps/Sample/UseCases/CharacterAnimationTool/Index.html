@@ -176,7 +176,7 @@ $(document).ready(function() {
     diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
   });
     
-  var rigNode, rigInstances = {};
+  var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
   
   scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
     
@@ -188,11 +188,11 @@ $(document).ready(function() {
     rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
     
     for(var i in rigInstances){
-		 if(i=='body'){
-      rigInstances[i].addMaterialNode(bodyMaterial);
-		 }else{
-      rigInstances[i].addMaterialNode(materialNode);
-		 }
+      if(i=='body'){
+	rigInstances[i].addMaterialNode(bodyMaterial);
+      }else{
+	rigInstances[i].addMaterialNode(materialNode);
+      }
     }
     
     var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
@@ -300,10 +300,10 @@ $(document).ready(function() {
     
     rigNode.addSolver('FatJiggle', 'VerletBoneSolver', {
       verletBones: [
-	{ bone:'_LFat1', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
-	{ bone:'_LFat2', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
-	{ bone:'_RFat1', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
-	{ bone:'_RFat2', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 }
+	{ bone:'_LFat1', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_LFat2', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_RFat1', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_RFat2', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 }
       ]
     });
     
@@ -405,8 +405,8 @@ $(document).ready(function() {
     
     rigNode.addSolver('moobs', 'VerletBoneSolver', {
       verletBones: [
-	{ bone:'_LMoob', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 },
-	{ bone:'_RMoob', simulationWeight:0.3, springStrength:40.0, dampening: 0.1 }
+	{ bone:'_LMoob', simulationWeight:0.85, springStrength:20.0, dampening: 0.05 },
+	{ bone:'_RMoob', simulationWeight:0.85, springStrength:20.0, dampening: 0.05 }
       ]
     });
     
@@ -430,49 +430,43 @@ $(document).ready(function() {
 	armsSolver.setIKBlend1(ui.value);
 	viewport.redraw();
       });
-  });
-  /*
+    
+    bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+    controllerNode = scene.constructNode('AnimationController');
+    rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
+    
+    
+    var animationLibraryLoader = scene.constructManager('SceneDeserializer');
+    animationLibraryLoader.setPreLoadedNode(bezierKeyAnimationLibrary);
+    localStorage = new FABRIC.SceneGraph.LocalStorage('TestAnimation');
+    
+    animationLibraryLoader.load(localStorage, function(nodeMap){
+      rebuildAnimationLibraryList();
+      viewport.redraw();
+    });
   
-  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
-  var controllerNode = scene.constructNode('AnimationController');
-  ikrigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
+    presetSaver = scene.constructManager('SceneSerializer');
+    presetSaver.addNode(bezierKeyAnimationLibrary);
   
-  var curveEditorWindow;
-  var trackFilters;
-  scene.addEventListener('beginmanipulation', function(evt){
-    if(evt.manipulatorNode.getTargetName){
-      trackFilters = [evt.manipulatorNode.getTargetName()];
-      if(curveEditorWindow){
-        curveEditorWindow.setCurveFilters(trackFilters);
-      }
-    }
-  });
-      
-  */
-  
-  /*
-  var animationLibraryLoader = scene.constructManager('SceneDeserializer');
-  animationLibraryLoader.setPreLoadedNode(bezierKeyAnimationLibrary);
-  var localStorage = new FABRIC.SceneGraph.LocalStorage('TestAnimation');
-  
-  animationLibraryLoader.load(localStorage, function(nodeMap){
     rebuildAnimationLibraryList();
-    viewport.redraw();
+    
+    var curveEditorWindow;
+    var trackFilters;
+    scene.addEventListener('beginmanipulation', function(evt){
+      if(evt.manipulatorNode.getTargetName){
+	trackFilters = [evt.manipulatorNode.getTargetName()];
+	if(curveEditorWindow){
+	  curveEditorWindow.setCurveFilters(trackFilters);
+	}
+      }
+    });
   });
-  */
-  
-  /*
-  var presetSaver = scene.constructManager('SceneSerializer');
-  presetSaver.addNode(bezierKeyAnimationLibrary);
-  var fileWriter = new FABRIC.SceneGraph.FileWriter(scene, 'Animation', 'Test');
-  
 
   var selectedAnimation = 0;
   var setSelectedAnimation = function(val){
     selectedAnimation = val;
-    ikrigNode.setBoundTrackSet(selectedAnimation);
+    rigNode.setBoundTrackSet(selectedAnimation);
   }
-  */
   $( "#animationLibraryList" ).selectable({
     selected: function(event, ui) {
       setSelectedAnimation($(ui.selected).val());
@@ -491,7 +485,6 @@ $(document).ready(function() {
       
     }
   }
-//  rebuildAnimationLibraryList();
   
   $('#newAnimation').button({
       text: true,
@@ -502,7 +495,7 @@ $(document).ready(function() {
     .click(function() {
       var closeDialogAndNewAnimation = function(){
         var newTrackSetName = $("#presetName").val();
-        ikrigNode.generateAnimationTracks(bezierKeyAnimationLibrary, newTrackSetName, true, controllerNode);
+        rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, newTrackSetName, true, controllerNode);
         rebuildAnimationLibraryList();
         $("#presetNameDialog").dialog( "close" );
       }
@@ -558,6 +551,7 @@ $(document).ready(function() {
       }
     })
     .click(function() {
+      var fileWriter = new FABRIC.SceneGraph.FileWriter(scene, 'Animation', 'Test');
       fileWriter.querySavePath();
       presetSaver.save(fileWriter);
       fileWriter.log();
@@ -601,7 +595,7 @@ $(document).ready(function() {
   }
   var timeSlider = $('#timeSlider').slider({
       min: 0,
-      max: 10,
+      max: 4,
       step: 0.01
   }).bind('slide',
       function(event, ui) {
