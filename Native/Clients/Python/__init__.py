@@ -72,7 +72,7 @@ class CLIENT( object ):
 
   def queueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     command = { 'dst': dst, 'cmd': cmd }
-    if ( arg != None ):
+    if ( arg is not None ):
       command[ 'arg' ] = arg
 
     self.__queuedCommands.append( command )
@@ -100,7 +100,7 @@ class CLIENT( object ):
       callback = callbacks[i]
       #if ( 'exception' in result ):
         # FIXME do unwinds
-      if ( callback != None ):
+      if ( callback is not None ):
         callback( result[ 'result' ] )
 
     fabric.freeString( jsonEncodedResults )
@@ -161,7 +161,7 @@ class MR( object ):
       'countID': count.getID(),
       'operatorID': operator.getID()
     }
-    if ( shared ):
+    if ( shared is not None ):
       arg[ 'sharedID' ] = shared.getID()
 
     self.__client.queueCommand( ['MR'], 'createArrayGenerator', arg, obj.unwind )
@@ -180,7 +180,7 @@ class MR( object ):
       'inputArrayProducerID': inputArrayProducer.getID(),
       'reduceOperatorID': reduceOperator.getID()
     }
-    if ( sharedValueProducer ):
+    if ( sharedValueProducer is not None ):
       arg[ 'sharedValueProducerID' ] = sharedValueProducer.getID()
 
     self.__client.queueCommand( ['MR'], 'createReduce', arg, reduce.unwind )
@@ -190,11 +190,11 @@ class MR( object ):
     arg = {
       'id': obj.getID()
     }
-    if ( input ):
+    if ( input is not None ):
       arg[ 'inputID' ] = input.getID()
-    if ( operator ):
+    if ( operator is not None ):
       arg[ 'operatorID' ] = operator.getID()
-    if ( shared ):
+    if ( shared is not None ):
       arg[ 'sharedID' ] = shared.getID()
 
     self.__client.queueCommand( ['MR'], cmd, arg, obj.unwind )
@@ -287,7 +287,7 @@ class GCOBJECT( object ):
     self.__id = None
  
   def _queueCommand( self, cmd, arg = None, unwind = None, callback = None ):
-    if self.__id == None:
+    if self.__id is None:
       raise Exception( "GC object has already been disposed" )
     self._client.queueCommand( [self.__namespace, self.__id], cmd, arg, unwind, callback )
 
@@ -339,10 +339,10 @@ class ARRAYPRODUCER( PRODUCER ):
     self._queueCommand( 'getCount', None, None, __getCount )
     return count[ '_' ]
 
-  def produce( self, index, count ):
+  def produce( self, index = None, count = None ):
     arg = { }
-    if ( index ):
-      if ( count ):
+    if ( index is not None ):
+      if ( count is not None ):
         arg[ 'count' ] = count
       arg[ 'index' ] = index
 

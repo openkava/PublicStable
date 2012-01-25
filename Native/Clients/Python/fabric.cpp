@@ -32,7 +32,7 @@ namespace Fabric
       RC::Handle<Client> client = Client::Create();
 
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "received createClient: %x", client.ptr());
+      FABRIC_LOG( "calling createClient: %x", client.ptr());
 #endif
 
       client->retain();
@@ -42,7 +42,7 @@ namespace Fabric
     extern "C" FABRIC_CLI_EXPORT void jsonExec( void *client_, char const *data, size_t length, const char **result, size_t *rlength )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "received jsonExec: %x", client_ );
+      FABRIC_LOG( "calling jsonExec: %x", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
@@ -77,7 +77,7 @@ namespace Fabric
     extern "C" FABRIC_CLI_EXPORT void freeString( void *string )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "received freeString: %x", string );
+      FABRIC_LOG( "calling freeString: %x", string );
 #endif
 
       // FIXME error handling
@@ -88,7 +88,7 @@ namespace Fabric
     extern "C" FABRIC_CLI_EXPORT void close( void *client_ )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "received close: %x", client_ );
+      FABRIC_LOG( "calling close: %x", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
