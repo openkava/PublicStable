@@ -57,11 +57,11 @@ for f in "$@"; do
     | $OUTPUT_FILTER >$TMPFILE
 
   if [ "$REPLACE" -eq 1 ]; then
-    mv $TMPFILE ${f%.js}.out
+    mv $TMPFILE ${f%.py}.out
     echo "REPL $(basename $f)"
   else
-    EXPFILE=${f%.js}.$BUILD_OS.$BUILD_ARCH.out
-    [ -f "$EXPFILE" ] || EXPFILE=${f%.js}.out
+    EXPFILE=${f%.py}.$BUILD_OS.$BUILD_ARCH.out
+    [ -f "$EXPFILE" ] || EXPFILE=${f%.py}.out
     if ! cmp $TMPFILE $EXPFILE; then
       echo "FAIL $(basename $f)"
       echo "Expected output:"
