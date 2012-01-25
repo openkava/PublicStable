@@ -108,7 +108,11 @@ namespace Fabric
         {
           NameToIndexMap::const_iterator it = m_nameToIndexMap.find( name );
           if ( it == m_nameToIndexMap.end() )
-            throw Exception("member not found");
+          {
+            // [pzion 20120124] For historical reasons we silently drop unknown members...
+            //throw Exception("member not found");
+            continue;
+          }
           size_t memberIndex = it->second;
           void *memberData = static_cast<uint8_t *>(data) + m_memberOffsets[memberIndex];
           m_memberInfos[memberIndex].desc->decodeJSON( valueEntity, memberData );
