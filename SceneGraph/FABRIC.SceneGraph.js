@@ -1003,20 +1003,22 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       },
       readData: function(sceneDeserializer, nodeData) {
         for(var referenceName in nodeReferences){
-          if(nodeData[referenceName].constructor.name == 'Array'){
-            for(var i=0; i<nodeReferences[referenceName].length; i++){
-              var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+          if(nodeData[referenceName]){
+            if(nodeData[referenceName].constructor.name == 'Array'){
+              for(var i=0; i<nodeReferences[referenceName].length; i++){
+                var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+                if(dgnode){
+                  nodeReferenceInterfaces[referenceName].adderFn(dgnode);
+                }
+              }
+            }
+            else if(typeof nodeData[referenceName] == 'string'){
+              var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
               if(dgnode){
-                nodeReferenceInterfaces[referenceName].adderFn(dgnode);
+                nodeReferenceInterfaces[referenceName].setterFn(dgnode);
               }
             }
           }
-          else if(typeof nodeData[referenceName] == 'string'){
-            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
-            if(dgnode){
-              nodeReferenceInterfaces[referenceName].setterFn(dgnode);
-            }
-          } 
         }
         for(var memberName in memberInterfaces){
           if(nodeData[memberName]){
