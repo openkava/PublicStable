@@ -426,19 +426,9 @@ class VALUEPRODUCER( PRODUCER ):
   def flush( self ):
     self._queueCommand( 'flush' )
 
-class OPERATOR( GCOBJECT ):
+class OPERATOR( PRODUCER ):
   def __init__( self, client ):
     super( OPERATOR, self ).__init__( client )
-
-  # FIXME this is identical to producer's toJSON method
-  def toJSON( self ):
-    # dictionary hack to simulate Python 3.x nonlocal
-    json = { '_': None }
-    def __toJSON( result ):
-      json[ '_' ] = result
-
-    self._queueCommand( 'toJSON', None, None, __toJSON )
-    return json[ '_' ]
 
   def getDiagnostics( self ):
     # dictionary hack to simulate Python 3.x nonlocal
