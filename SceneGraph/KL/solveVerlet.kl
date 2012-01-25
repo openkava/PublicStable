@@ -67,11 +67,11 @@ operator solveVerletMuscleBone(
     attachedXfo.tr = baseAttachment.linearInterpolate(tipAttachment, referenceBias[i]);
   
     Scalar stretch = baseAttachment.distanceTo(tipAttachment) / referenceLength[i];
-    Scalat contraction = (1.0/stretch) * 1.4;
+    Scalar contraction = (1.0/stretch) * 1.4;
     Vec3 scl;
     scl.x = stretch;
     scl.y = scl.z = contraction;
-  
+    
     Scalar mass = 1.0;
     Vec3 force = gravity;
     Vec3 trCurr = pose[verletBones[i]].tr;
@@ -85,6 +85,7 @@ operator solveVerletMuscleBone(
     pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(trCurr, simulationWeights[i] * stretch);
     trPrev[i] = temp;
     
+  //  pose[verletBones[i]] = attachedXfo;
     pose[verletBones[i]].sc = scl;
     
     //////////////////////////////////////////////
