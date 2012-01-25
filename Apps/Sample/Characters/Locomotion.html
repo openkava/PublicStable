@@ -345,6 +345,24 @@ $(document).ready(function() {
     animationLibraryFile = 'Assets/CMan0005Animation.json';
     minFrequency = 0.75;
     break;
+  case 'USWolf':
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: 8,
+        maxLinearAcceleration: 16,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -40,
+        comHeight: 2.0,
+        circleSize: 0.6
+      });
+    rigFile = 'Assets/USWolf.json';
+    animationLibraryFile = 'Assets/USWolfAnimation.json';
+    minFrequency = 0.75;
+    break;
+  /*
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -360,6 +378,7 @@ $(document).ready(function() {
       });
     diffuseColor = FABRIC.RT.rgba(0.6, 0.0, 0.3, 1.0);
     break;
+  */
   case 'centipede':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -375,6 +394,7 @@ $(document).ready(function() {
     minFrequency = 0.0;
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
+  /*
   case 'marama':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -393,7 +413,9 @@ $(document).ready(function() {
     minFrequency = 0.5;
     diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
+  */
   }
+  var locomotionVariables;
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
   rigLoader.load(storage, function(nodeMap){
@@ -407,7 +429,7 @@ $(document).ready(function() {
       
       ikrig.setControllerNode(locomotionControllerNode);
       
-      var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+      locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
         characterRigNode: ikrig,
         bulletWorldNode: bulletWorldNode,
         minFrequency: minFrequency
@@ -617,6 +639,8 @@ $(document).ready(function() {
                 <option value="centipede">Centipede
             -->
                 <option value="CMan0005">Human
+                <option value="USWolf">SpaceMan
+                
               </select>
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
