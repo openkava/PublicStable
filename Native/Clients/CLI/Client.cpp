@@ -50,33 +50,35 @@ namespace Fabric
 
         if( getAsFile )
         {
-          IO::ResourceManager::onFileAsynchThreadCall( fileWithPath.c_str(), userData );
-          IO::ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
+          IO::ResourceManager::onFileAsyncThreadCall( fileWithPath.c_str(), userData );
+          IO::ResourceManager::onProgressAsyncThreadCall( extension.c_str(), fileSize, fileSize, userData );
         }
         else
         {
-          FILE *fp = fopen( fileWithPath.c_str(), "rb" );
-          if ( fp == NULL )
-            IO::ResourceManager::onFailureAsynchThreadCall( "Unable to open file", userData );
+          std::ifstream file( fileWithPath.c_str(), std::ios::in | std::ios::binary );
+          if( !file.is_open() )
+            IO::ResourceManager::onFailureAsyncThreadCall( "Unable to open file", userData );
 
-          static const size_t maxReadSize = 1<<16;//64K buffers
-          uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
-          size_t offset = 0;
-          for (;;)
+          file.exceptions( ifstream::badbit );
+          try
           {
-            size_t readSize = fread( &data[0], 1, maxReadSize, fp );
-            if ( ferror( fp ) )
-              IO::ResourceManager::onFailureAsynchThreadCall( "Error while reading file", userData );
-
-            IO::ResourceManager::onDataAsynchThreadCall( offset, readSize, data, userData );
-            IO::ResourceManager::onProgressAsynchThreadCall( "text/plain", offset+readSize, fileSize, userData );
-
-            offset += readSize;
-            if ( offset == fileSize )
-              break;
+            size_t fileSize = GetFileSize( fileWithPath.c_str() );
+            static const size_t maxReadSize = 1<<16;//64K buffers
+            uint8_t data[maxReadSize];
+            size_t offset = 0;
+            while( offset != fileSize )
+            {
+              size_t nbRead = std::min( maxReadSize, fileSize-offset );
+              file.read( data, nbRead );
+              IO::ResourceManager::onDataAsyncThreadCall( offset, readSize, data, userData );
+              offset += nbRead;
+              IO::ResourceManager::onProgressAsyncThreadCall( "text/plain", offset, fileSize, userData );
+            }
           }
-          free( data );
-          fclose( fp );
+          catch(...)
+          {
+            IO::ResourceManager::onFailureAsyncThreadCall( "Error while reading file", userData );
+          }
         }
       }
 
@@ -84,9 +86,9 @@ namespace Fabric
       TestSynchronousFileResourceProvider(){}
     };
 
-    void ScheduleAsynchCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
+    void ScheduleAsyncCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
     {
-      //In fact it's not asynch for our unit test purpose...
+      //In fact it's not async for our unit test purpose...
       (*callbackFunc)( callbackFuncUserData );
     }
 
@@ -117,7 +119,7 @@ namespace Fabric
   
     protected:
     
-      IOManager() : IO::Manager( ScheduleAsynchCallback, NULL )
+      IOManager() : IO::Manager( ScheduleAsyncCallback, NULL )
       {
         getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( TestSynchronousFileResourceProvider::Create() ), true );
       }

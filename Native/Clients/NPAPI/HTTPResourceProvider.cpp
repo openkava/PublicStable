@@ -44,7 +44,7 @@ namespace Fabric
 
       NPError npError = NPN_GetURLNotify( m_npp, url, 0, requestStruct );
       if ( npError != NPERR_NO_ERROR )
-        throw Exception( "Error calling NPN_GetURLNotify()" );
+        throw Exception( "Unable to complete URL request (NPN_GetURLNotify failed)" );
     }
 
     NPError HTTPResourceProvider::nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype )

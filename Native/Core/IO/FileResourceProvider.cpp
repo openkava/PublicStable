@@ -46,7 +46,7 @@ namespace Fabric
       {
         std::ifstream file( fileStream->m_fullPath.c_str(), std::ios::in | std::ios::binary );
         if( !file.is_open() )
-          ResourceManager::onFailureAsynchThreadCall( "Unable to open file", fileStream->m_userData );//Don't put filename as it might be private
+          ResourceManager::onFailureAsyncThreadCall( "Unable to open file", fileStream->m_userData );//Don't put filename as it might be private
         else
         {
           std::vector<char> readBuffer;
@@ -58,19 +58,19 @@ namespace Fabric
             file.read( (char*)(&readBuffer.front()), nbToRead );
             if( file.bad() )
             {
-              ResourceManager::onFailureAsynchThreadCall( "Error while reading file", fileStream->m_userData );//Don't put filename as it might be private
+              ResourceManager::onFailureAsyncThreadCall( "Error while reading file", fileStream->m_userData );//Don't put filename as it might be private
               break;
             }
 
-            ResourceManager::onDataAsynchThreadCall( nbRead, nbToRead, &readBuffer.front(), fileStream->m_userData );
+            ResourceManager::onDataAsyncThreadCall( nbRead, nbToRead, &readBuffer.front(), fileStream->m_userData );
             nbRead += nbToRead;
-            ResourceManager::onProgressAsynchThreadCall( fileStream->m_mimeType.c_str(), nbRead, fileStream->m_totalSize, fileStream->m_userData );
+            ResourceManager::onProgressAsyncThreadCall( fileStream->m_mimeType.c_str(), nbRead, fileStream->m_totalSize, fileStream->m_userData );
           }
         }
       }
       catch(...)
       {
-        ResourceManager::onFailureAsynchThreadCall( "Unexpected error while reading file", fileStream->m_userData );//Don't put filename as it might be private
+        ResourceManager::onFailureAsyncThreadCall( "Unexpected error while reading file", fileStream->m_userData );//Don't put filename as it might be private
       }
     }
 
@@ -88,12 +88,12 @@ namespace Fabric
 
       if( getAsFile )
       {
-        //To avoid client reentrancy problems, schedule a asynch callbacks
-        ResourceManager::onFileAsynchThreadCall( fileWithPath.c_str(), userData );
-        ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
+        //To avoid client reentrancy problems, schedule a async callbacks
+        ResourceManager::onFileAsyncThreadCall( fileWithPath.c_str(), userData );
+        ResourceManager::onProgressAsyncThreadCall( extension.c_str(), fileSize, fileSize, userData );
       }
       else if( fileSize == 0 )
-        ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
+        ResourceManager::onProgressAsyncThreadCall( extension.c_str(), fileSize, fileSize, userData );
       else
       {
         FileStream *fileStream = new FileStream();

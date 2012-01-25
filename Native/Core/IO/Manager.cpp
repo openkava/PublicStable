@@ -21,7 +21,7 @@ namespace Fabric
 {
   namespace IO
   {
-    Manager::Manager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData )
+    Manager::Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
       : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
       , m_fileHandleManager( FileHandleManager::Create() )
     {
