@@ -3,6 +3,7 @@
  */
 
 #include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
@@ -25,7 +26,7 @@ namespace Fabric
          || data[0] == '\f' )
         )
       {
-        ++data; --length;
+        ++data, --length;
       }
     }
 
@@ -239,22 +240,16 @@ namespace Fabric
         case '8':
         case '9':
         {
-          bool mantissaNeg = false;
           if ( length > 0 && data[0] == '-' )
-          {
-            mantissaNeg = true;
-            ++data; --length;
-          }
+            ++data, --length;
 
           if ( length == 0 )
             throw malformedJSONException;
             
-          size_t mantissaInt = 0;
           switch ( data[0] )
           {
             case '0':
-              mantissaInt = 0;
-              ++data; --length;
+              ++data, --length;
               break;
             case '1':
             case '2':
@@ -265,13 +260,9 @@ namespace Fabric
             case '7':
             case '8':
             case '9':
-              mantissaInt = data[0] - '0';
-              ++data; --length;
+              ++data, --length;
               while ( length > 0 && data[0] >= '0' && data[0] <= '9' )
-              {
-                mantissaInt = 10 * mantissaInt + data[0] - '0';
-                ++data; --length;
-              };
+                ++data, --length;
               break;
             default:
               throw malformedJSONException;
@@ -280,68 +271,52 @@ namespace Fabric
           if ( length == 0 || (data[0] != '.' && data[0] != 'e' && data[0] != 'E') )
           {
             entity.type = Entity::ET_INTEGER;
-            if ( mantissaNeg )
-              entity.value.integer = -int32_t(mantissaInt);
-            else entity.value.integer = int32_t(mantissaInt);
+            
+            static const size_t maxIntegerLength = 15;
+            size_t length = data - entity.data;
+            if ( length > maxIntegerLength )
+              throw malformedJSONException;
+            char buf[maxIntegerLength+1];
+            memcpy( buf, entity.data, length );
+            buf[length] = '\0';
+            entity.value.integer = atoi( buf );
           }
           else
           {
             entity.type = Entity::ET_SCALAR;
             
-            double mantissa;
             if ( data[0] == '.' )
             {
-              ++data; --length;
+              ++data, --length;
               
               if ( length == 0 || data[0] < '0' || data[0] > '9' )
                 throw malformedJSONException;
-              size_t fractionNumInt = 0;
-              size_t fractionDenInt = 1;
               while ( length > 0 && data[0] >= '0' && data[0] <= '9' )
-              {
-                fractionNumInt = 10 * fractionNumInt + data[0] - '0';
-                fractionDenInt = 10 * fractionDenInt;
-                ++data; --length;
-              }
-              mantissa = double(mantissaInt) + double(fractionNumInt) / double(fractionDenInt);
+                ++data, --length;
             }
-            else mantissa = double(mantissaInt);
-            
-            if ( mantissaNeg )
-              mantissa = -mantissa;
               
-            if ( length == 0 || (data[0] != 'e' && data[0] != 'E') )
-              entity.value.scalar = mantissa;
-            else
+            if ( length > 0 && (data[0] == 'e' || data[0] == 'E') )
             {
-              ++data; --length;
+              ++data, --length;
 
-              bool exponentNeg = false;
-              if ( length > 0 && data[0] == '-' )
-              {
-                exponentNeg = true;
-                ++data; --length;
-              }
-              else if ( length > 0 && data[0] == '+' )
-              {
-                ++data; --length;
-              }
+              if ( length > 0 && (data[0] == '-' || data[0] == '+') )
+                ++data, --length;
               
               if ( length == 0 || data[0] < '0' || data[0] > '9' )
                 throw malformedJSONException;
-              int exponent = data[0] - '0';
-              ++data; --length;
+              ++data, --length;
               while ( length > 0 && data[0] >= '0' && data[9] <= '9' )
-              {
-                exponent = 10 * exponent + data[0] - '0';
-                ++data; --length;
-              }
-              
-              if ( exponentNeg )
-                exponent = -exponent;
-              
-              entity.value.scalar = mantissa * pow( 10.0, exponent );
+                ++data, --length;
             }
+            
+            static const size_t maxScalarLength = 31;
+            size_t length = data - entity.data;
+            if ( length > maxScalarLength )
+              throw malformedJSONException;
+            char buf[maxScalarLength+1];
+            memcpy( buf, entity.data, length );
+            buf[length] = '\0';
+            entity.value.scalar = atof( buf );
           }
         }
         break;
@@ -350,7 +325,7 @@ namespace Fabric
         {
           entity.type = Entity::ET_STRING;
           entity.value.string.length = 0;
-          ++data; --length;
+          ++data, --length;
           
           bool done = false;
           while ( !done )
@@ -360,13 +335,13 @@ namespace Fabric
             switch ( data[0] )
             {
               case '"':
-                ++data; --length;
+                ++data, --length;
                 done = true;
                 break;
                 
               case '\\':
               {
-                ++data; --length;
+                ++data, --length;
                 if ( length == 0 )
                   throw malformedJSONException;
                 switch ( data[0] )
@@ -375,32 +350,32 @@ namespace Fabric
                   case '/':
                   case '\\':
                     jsonStringAppendASCII( data[0], entity );
-                    ++data; --length;
+                    ++data, --length;
                     break;
                   
                   case 'b':
                     jsonStringAppendASCII( '\b', entity );
-                    ++data; --length;
+                    ++data, --length;
                     break;
                   case 'f':
                     jsonStringAppendASCII( '\f', entity );
-                    ++data; --length;
+                    ++data, --length;
                     break;
                   case 'n':
                     jsonStringAppendASCII( '\n', entity );
-                    ++data; --length;
+                    ++data, --length;
                     break;
                   case 'r':
                     jsonStringAppendASCII( '\r', entity );
-                    ++data; --length;
+                    ++data, --length;
                     break;
                   case 't':
                     jsonStringAppendASCII( '\t', entity );
-                    ++data; --length;
+                    ++data, --length;
                     break;
                   
                   case 'u':
-                    ++data; --length;
+                    ++data, --length;
                     jsonStringAppendUCS2( jsonConsumeUCS2( data, length ), entity );
                     break;
                   
@@ -412,7 +387,7 @@ namespace Fabric
               
               default:
                 jsonStringAppendASCII( data[0], entity );
-                ++data; --length;
+                ++data, --length;
                 break;
             }
           }
