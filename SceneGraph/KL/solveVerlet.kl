@@ -59,32 +59,33 @@ operator solveVerletMuscleBone(
 ) {
   for (Integer i = 0; i < verletBones.size; i++) {
   
-    Xfo boneXfo = pose[bones[verletBones[i]].parent] * bones[verletBones[i]].referenceLocalPose;
+    Xfo attachedXfo = pose[bones[verletBones[i]].parent] * bones[verletBones[i]].referenceLocalPose;
   
     Vec3 baseAttachment = pose[baseAttachBones[i]].transformVector(baseAttachOffset[i]);
     Vec3 tipAttachment = pose[tipAttachBones[i]].transformVector(tipAttachOffset[i]);
     
-    Vec3 attachedTr = baseAttachment.linearInterpolate(tipAttachment, referenceBias[i]);
+    attachedXfo.tr = baseAttachment.linearInterpolate(tipAttachment, referenceBias[i]);
   
     Scalar stretch = baseAttachment.distanceTo(tipAttachment) / referenceLength[i];
+    Scalat contraction = (1.0/stretch) * 1.4;
     Vec3 scl;
     scl.x = stretch;
-    scl.y = scl.z = (1.0/stretch) * 1.4;
-    
-  //  Scalar mass = 1.0;
-  //  Vec3 force = gravity;
-  //  Vec3 trCurr = pose[verletBones[i]].tr;
-  //  Vec3 temp = trCurr;
-  //  trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
-  //  force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
-  //  trCurr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
-  //  pose[verletBones[i]].tr = trCurr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
-  //  trPrev[i] = temp;
+    scl.y = scl.z = contraction;
   
-    boneXfo.tr = attachedTr;
-    boneXfo.sc = scl;
+    Scalar mass = 1.0;
+    Vec3 force = gravity;
+    Vec3 trCurr = pose[verletBones[i]].tr;
+    Vec3 temp = trCurr;
+    trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
+    // under contraction the spring strength is increaced so that we get higher frequency motion
+    force += ((attachedXfo.tr - trCurr) * (springStrengths[i] * contraction));
+    trCurr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
+    pose[verletBones[i]] = attachedXfo;
+    // as stretch decreaces, we blend off the simulation so that contracted musceles are tight
+    pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(trCurr, simulationWeights[i] * stretch);
+    trPrev[i] = temp;
     
-    pose[verletBones[i]] = boneXfo;
+    pose[verletBones[i]].sc = scl;
     
     //////////////////////////////////////////////
     // Debugging
