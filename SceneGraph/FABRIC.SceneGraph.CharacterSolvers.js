@@ -1171,39 +1171,58 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
     var twistBones = [];
     var baseBones = [];
     var targetBones = [];
-    var blendWeights = [];
-    var blendBoneOffsets = [];
-    for(j=0; j<options.twistBones.length; j++){
-      var twistBoneParams = options.twistBones[j];
+    var twistWeights = [];
+    var oriOffsets = [];
+    for(i=0; i<options.twistBones.length; i++){
+      var twistBoneParams = options.twistBones[i];
       var boneIDs = solver.generateBoneMapping(twistBoneParams, ['start', 'end', ['twistBones']]);
 
       // first, we will compute the local transform of the end inside the start's space
       var startXfo = referencePose[boneIDs.start];
       var endXfo = referencePose[boneIDs.end];
       
-      var weights = twistBoneParams.blendWeights;
+      var weights = twistBoneParams.twistWeights;
       if (!weights) {
         weights = [];
         var boneLength = startXfo.inverse().multiply(endXfo).tr.length();
-        for (var i = 0; i < boneIDs.twistBones.length; i++) {
-          var local = startXfo.inverse().multiply(referencePose[boneIDs.twistBones[i]]);
+        for (var j = 0; j < boneIDs.twistBones.length; j++) {
+          var local = startXfo.inverse().multiply(referencePose[boneIDs.twistBones[j]]);
           var u = local.tr.length() / boneLength;
           if (u > 1.0) {
-            throw ("Unexpected U value, twistBone '" + bones[boneIDs.twistBones[i]].name + "' outside of bone.");
+            throw ("Unexpected U value, twistBone '" + bones[boneIDs.twistBones[j]].name + "' outside of bone.");
           }
           weights.push(u);
         }
       }
+      
       baseBones.push(boneIDs.start);
       targetBones.push(boneIDs.end);
       twistBones.push(boneIDs.twistBones);
-      blendWeights.push(weights);
+      twistWeights.push(weights);
+      
+      var baseXfo = referencePose[boneIDs.start];
+      var endXfo = referencePose[boneIDs.end];
+    
+      var baseVec = (endXfo.tr.subtract(baseXfo.tr)).unit();
+      var endVec = endXfo.ori.getXaxis();
+      var boneOffsetRotation = new FABRIC.RT.Quat();
+      boneOffsetRotation.setFrom2Vectors(endVec, baseVec);
+      endXfo.ori = boneOffsetRotation.multiply(endXfo.ori);
+      endXfo.ori.alignWith(endXfo.ori);
+      var offsets = [];
+      for (var j = 0; j < boneIDs.twistBones.length; j++) {
+        boneXfo = referencePose[boneIDs.twistBones[j]];
+        var twistOri = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, weights[j]);
+        offsets.push(twistOri.inverse().multiply(boneXfo.ori));
+      }
+      oriOffsets.push(offsets);
     }
     
     skeletonNode.addMember(name + 'start', 'Integer[]', baseBones);
     skeletonNode.addMember(name + 'end', 'Integer[]', targetBones);
     skeletonNode.addMember(name + 'twistBones', 'Integer[][]', twistBones);
-    skeletonNode.addMember(name + 'blendWeights', 'Scalar[][]', blendWeights);
+    skeletonNode.addMember(name + 'twistWeights', 'Scalar[][]', twistWeights);
+    skeletonNode.addMember(name + 'oriOffsets', 'Quat[][]', oriOffsets);
 
     rigNode.addSolverOperator({
         operatorName: 'solveTwistBones',
@@ -1215,7 +1234,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
           'skeleton.' + name + 'start',
           'skeleton.' + name + 'end',
           'skeleton.' + name + 'twistBones',
-          'skeleton.' + name + 'blendWeights'
+          'skeleton.' + name + 'twistWeights',
+          'skeleton.' + name + 'oriOffsets'
         ]
       });
 
