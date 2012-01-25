@@ -41,11 +41,12 @@ class INTERFACE( object ):
 
 class CLIENT( object ):
   def __init__( self, fabric ):
-    self.__fabric_client = fabric.createClient()
+    self.__fabricClient = fabric.createClient()
     self.__queuedCommands = [];
     self.__queuedUnwinds = [];
     self.__queuedCallbacks = [];
     self.GC = GC( self )
+    self.__registerNotifyCallback()
 
   def __del__( self ):
     self.close()
@@ -55,7 +56,7 @@ class CLIENT( object ):
     rlength = ctypes.c_size_t()
 
     fabric.jsonExec(
-      self.__fabric_client,
+      self.__fabricClient,
       data,
       length,
       ctypes.pointer( result ),
@@ -66,9 +67,9 @@ class CLIENT( object ):
     return result
 
   def close( self ):
-    if self.__fabric_client != None:
-      fabric.close( self.__fabric_client )
-      self.__fabric_client = None
+    if self.__fabricClient != None:
+      fabric.close( self.__fabricClient )
+      self.__fabricClient = None
 
   def queueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     command = { 'dst': dst, 'cmd': cmd }
@@ -104,6 +105,49 @@ class CLIENT( object ):
         callback( result[ 'result' ] )
 
     fabric.freeString( jsonEncodedResults )
+
+  def __route( self, src, cmd, arg ):
+    if len(src) == 0:
+      self.__handle( cmd, arg )
+    else:
+      src = collections.deque( src )
+      firstSrc = src.popleft()
+
+      if firstSrc == 'RT':
+        pass
+      elif firstSrc == 'DG':
+        pass
+      elif firstSrc == 'EX':
+        pass
+      elif firstSrc == 'IO':
+        pass
+      elif firstSrc == 'VP':
+        pass
+      elif firstSrc == 'GC':
+        pass
+      else:
+        raise Exception( 'unroutable src: ' + firstSrc )
+        
+  def __notifyCallback( self, jsonEncodedNotifications ):
+    try:
+      notifications = json.loads( jsonEncodedNotifications )
+    except Exception:
+      raise Exception( 'unable to parse JSON notifications' )
+
+    for i in range( 0, len( notifications ) ):
+      n = notifications[ i ]
+      self.__route( n[ 'src' ], n[ 'cmd' ], n[ 'arg' ] )
+
+  def __getNotifyCallback( self ):
+    # use a closure here so that 'self' is maintained without us
+    # explicitly passing it
+    NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
+    def notifyCallback( jsonEncodedNotifications ):
+      self.__notifyCallback( jsonEncodedNotifications )
+    return NOTIFYCALLBACK( notifyCallback )
+
+  def __registerNotifyCallback( self ):
+    fabric.setJSONNotifyCallback( self.__fabricClient, self.__getNotifyCallback() )
 
 class MR( object ):
   def __init__( self, client ):
@@ -382,10 +426,19 @@ class VALUEPRODUCER( PRODUCER ):
   def flush( self ):
     self._queueCommand( 'flush' )
 
-# FIXME doesn't really derive from PRODUCER but shared an identical toJSON method
-class OPERATOR( PRODUCER ):
+class OPERATOR( GCOBJECT ):
   def __init__( self, client ):
     super( OPERATOR, self ).__init__( client )
+
+  # FIXME this is identical to producer's toJSON method
+  def toJSON( self ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    json = { '_': None }
+    def __toJSON( result ):
+      json[ '_' ] = result
+
+    self._queueCommand( 'toJSON', None, None, __toJSON )
+    return json[ '_' ]
 
   def getDiagnostics( self ):
     # dictionary hack to simulate Python 3.x nonlocal

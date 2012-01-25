@@ -85,6 +85,19 @@ namespace Fabric
       delete sstring;
     }
 
+    extern "C" FABRIC_CLI_EXPORT void setJSONNotifyCallback(
+        void *client_,
+        void (*callback)(const char *)
+        )
+    {
+#ifdef FABRIC_PYTHON_DEBUG
+      FABRIC_LOG( "calling setJSONNotifyCallback: %x", client_ );
+#endif
+
+      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
+      client->setJSONNotifyCallback( callback );
+    }
+
     extern "C" FABRIC_CLI_EXPORT void close( void *client_ )
     {
 #ifdef FABRIC_PYTHON_DEBUG

@@ -73,5 +73,14 @@ namespace Fabric
       : DG::Client( context )
     {
     }
+
+    void Client::setJSONNotifyCallback( void (*callback)(const char *) )
+    {
+      m_notifyCallback = callback;
+    }
+
+    void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
+    {
+    }
   }
 };
