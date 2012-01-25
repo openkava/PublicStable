@@ -26,7 +26,7 @@ operator solveVerletBone(
     trPrev[i] = trPrev[i].linearInterpolate(trCurr, dampening[i]);
     force += ((attachedXfo.tr - trCurr) * springStrengths[i]);
     pose[verletBones[i]].tr += (trCurr - trPrev[i]) + ((force / mass) * (deltaT * deltaT));
-    pose[verletBones[i]].tr = pose[verletBones[i]].tr.linearInterpolate(attachedXfo.tr, simulationWeights[i]);
+    pose[verletBones[i]].tr = attachedXfo.tr.linearInterpolate(pose[verletBones[i]].tr, simulationWeights[i]);
     trPrev[i] = temp;
   }
 }
