@@ -116,7 +116,7 @@ $(document).ready(function() {
   $("#displayDebugging").attr('checked', crowdParams.displayDebugging);
   
 
-  var rigName = 'Spiedel';
+  var rigName = 'USWolf';
   /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
@@ -132,23 +132,23 @@ $(document).ready(function() {
   
   switch(crowdParams.sceneSize){
     case 'small':
-      agentCount = 10;
+      agentCount = 100;
       gridSize = 80;
       cameraDist = 10;
       break;
     case 'medium':
       agentCount = 600;
-      gridSize = 400;
+      gridSize = 200;
       cameraDist = 15;
       break;
     case 'huge':
       agentCount = 1500;
-      gridSize = 150;
+      gridSize = 300;
       cameraDist = 20;
       break;
     case 'massive':
       agentCount = 3000;
-      gridSize = 300;
+      gridSize = 500;
       cameraDist = 30;
       break;
   }
@@ -224,8 +224,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     minFrequency = 0.75;
     break;
   case 'CMan0005':
-  var agentRadius = 0.9;
-  var cellSize = 8.0;
+    var agentRadius = 0.9;
+    var cellSize = 8.0;
     var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 3.5,
         maxLinearAcceleration: 6,
@@ -249,6 +249,34 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       });
     rigFile = 'Assets/CMan0005.json';
     animationLibraryFile = 'Assets/CMan0005Animation.json';
+    minFrequency = 0.75;
+    break;
+  case 'USWolf':
+    var agentRadius = 0.9;
+    var cellSize = 8.0;
+    var crowdNode = scene.constructNode('Crowd', {
+        maxLinearVelocity: 3.5,
+        maxLinearAcceleration: 6,
+        maxAngularVelocity:  5,
+        maxAngularAcceleration: 5,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -98,
+        comHeight: 1.8,
+        circleSize: 0.6,
+        
+        cellsize: cellSize,
+        agentRadius: agentRadius,
+        x_count: Math.ceil(gridSize/cellSize)+2,
+        y_count: 1,
+        z_count: Math.ceil(gridSize/cellSize)+2,
+        displayGrid: true,
+        agentCount: agentCount,
+        displayDebugging: crowdParams.displayDebugging,
+        enableDebugging: false
+      });
+    rigFile = 'Assets/USWolf.json';
+    animationLibraryFile = 'Assets/USWolfAnimation.json';
     minFrequency = 0.75;
     break;
   }
