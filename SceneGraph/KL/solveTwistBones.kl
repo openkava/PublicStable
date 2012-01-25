@@ -34,7 +34,8 @@ operator solveTwistBones(
   io Integer baseBones[],
   io Integer endBones[],
   io Integer twistBones[][],
-  io Scalar twistWeights[][]
+  io Scalar twistWeights[][],
+  io Quat oriOffsets[][]
 ) {
   for (var Integer i = 0; i < twistBones.size(); i++) {
     if (twistBones.size() != twistWeights.size()) {
@@ -53,7 +54,7 @@ operator solveTwistBones(
     endXfo.ori.alignWith(endXfo.ori);
     for (var Integer j = 0; j < twistBones[i].size(); j++) {
       pose[twistBones[i][j]] = pose[bones[twistBones[i][j]].parent] * bones[twistBones[i][j]].referenceLocalPose;
-      pose[twistBones[i][j]].ori = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, twistWeights[i][j]);
+      pose[twistBones[i][j]].ori = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, twistWeights[i][j]) * oriOffsets[i][j];
     }
   }
 }

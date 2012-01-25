@@ -268,7 +268,6 @@ $(document).ready(function() {
       ]
     });
     
-    
     var armsSolver = rigNode.addSolver('Arms', 'ArmSolver', {
       limbs: [
 	{ bones:['_LArmCollarbone', '_LArm1', '_LArm21'], wrist:'_LArmPalm' },
@@ -286,6 +285,7 @@ $(document).ready(function() {
         ]
       }
     });
+    
     rigNode.addSolver('fingers', 'DigitSolver', {
       digits:[
 	{ bones:['_LArmDigit11', '_LArmDigit12', '_LArmDigit13'] },
@@ -301,13 +301,13 @@ $(document).ready(function() {
 	{ bones:['_RArmDigit51', '_RArmDigit52', '_RArmDigit53'] }
       ]
     });
+    
     rigNode.addSolver('twistBones', 'TwistBoneSolver', {
       twistBones:[
 	{ start:'_LArm21', end:'_LArmPalm', twistBones:['_LArm22', '_LArm23'] },
 	{ start:'_RArm21', end:'_RArmPalm', twistBones:['_RArm22', '_RArm23'] }
       ]
     });
-    
     
     rigNode.addSolver('FatJiggle', 'VerletBoneSolver', {
       verletBones: [
@@ -317,7 +317,6 @@ $(document).ready(function() {
 	{ bone:'_RFat2', simulationWeight:0.8, springStrength:20.0, dampening: 0.05 }
       ]
     });
-    
     
     rigNode.addSolver('verletMuscles', 'VerletMuscleBoneSolver', {
         muscles:[
