@@ -539,7 +539,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       bones = skeletonNode.pub.getBones(),
-      referencePose = skeletonNode.pub.getReferencePose();
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
     
     var verletBones = [];
     var simulationWeights = [];
@@ -564,20 +565,20 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
       dampening.push(muscleParams.dampening);
       trPrev.push(boneXfo.tr);
       
-      var baseAttachmentTr = boneXfo.tr.add(boneXfo.ori.getXaxis().multiplyScalar(-muscleParams.muscleBaseLength));
+      var baseAttachmentTr = boneXfo.tr.add(boneXfo.ori.getXaxis().multiplyScalar(-muscleParams.baseOffset));
       var baseAttachmentOffset = referencePose[boneIDs.baseAttachment].inverse().transformVector(baseAttachmentTr);
       
-      var tipAttachmentTr = boneXfo.tr.add(boneXfo.ori.getXaxis().multiplyScalar(muscleParams.muscleTipLength));
+      var tipAttachmentTr = boneXfo.tr.add(boneXfo.ori.getXaxis().multiplyScalar(muscleParams.tipOffset));
       var tipAttachmentOffset = referencePose[boneIDs.tipAttachment].inverse().transformVector(tipAttachmentTr);
       
-      var muscleReferenceLength = muscleParams.muscleBaseLength + muscleParams.muscleTipLength;
+      var muscleReferenceLength = muscleParams.baseOffset + muscleParams.tipOffset;
       
       baseAttachmentBones.push(boneIDs.baseAttachment);
       tipAttachmentBones.push(boneIDs.tipAttachment);
       baseAttachmentOffsets.push(baseAttachmentOffset);
       tipAttachmentOffsets.push(tipAttachmentOffset);
       muscleReferenceLengths.push(muscleReferenceLength);
-      muscleReferenceBiases.push(muscleParams.muscleBaseLength / muscleReferenceLength)
+      muscleReferenceBiases.push(muscleParams.baseOffset / muscleReferenceLength)
     }
     
     skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
@@ -635,54 +636,101 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletChainSolver', {
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       bones = skeletonNode.pub.getBones(),
-      referencePose = skeletonNode.pub.getReferencePose();
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
     
-    var verletBones = [];
+    var verletChains = [];
+    var linkLengths = [];
+    var referenceLengths = [];
     var simulationWeights = [];
     var springStrengths = [];
     var dampening = [];
     var blendWeights = [];
-    var trPrev = [];
-    for(j=0; j<options.verletBones.length; j++){
-      var verletBoneParams = options.verletBones[j];
-      var boneIDs = solver.generateBoneMapping(verletBoneParams, [['bones']]);
+    var trPrevs = [];
+    
+    var baseAttachmentBones = [];
+    var tipAttachmentBones = [];
+    var baseAttachmentOffsets = [];
+    var tipAttachmentOffsets = [];
+    
+    for(j=0; j<options.verletChains.length; j++){
+      var verletChainParams = options.verletChains[j];
+      var boneIDs = solver.generateBoneMapping(verletChainParams, [['bones'], 'baseAttachment', 'tipAttachment']);
       
-      if (!verletBoneParams.springStrength) {
-        throw ('Error in BlendBoneSolver: springStrength not specified ');
-      }
-      if (!verletBoneParams.dampening) {
-        throw ('Error in BlendBoneSolver: dampening not specified ');
-      }
-      var boneXfo = referencePose[boneIDs.bone];
+      var baseXfo = referencePose[boneIDs.bones[0]];
+      var baseAttachmentTr = baseXfo.tr.add(baseXfo.ori.getXaxis().multiplyScalar(-verletChainParams.baseOffset));
+      var baseAttachmentOffset = referencePose[boneIDs.baseAttachment].inverse().transformVector(baseAttachmentTr);
       
-      verletBones.push(boneIDs.bone);
-      simulationWeights.push(verletBoneParams.simulationWeight);
-      springStrengths.push(verletBoneParams.springStrength);
-      dampening.push(verletBoneParams.dampening);
-      trPrev.push(boneXfo.tr);
+      var tipXfo = referencePose[boneIDs.bones[boneIDs.bones.length-1]];
+      var tipAttachmentTr = tipXfo.tr.add(tipXfo.ori.getXaxis().multiplyScalar(verletChainParams.tipOffset));
+      var tipAttachmentOffset = referencePose[boneIDs.tipAttachment].inverse().transformVector(tipAttachmentTr);
+      
+      var chainReferenceLength = baseAttachmentTr.distanceTo(tipAttachmentTr);
+      var chainLinkLengths = [verletChainParams.baseOffset];
+      var trPrev = [];
+      for(var i=0; i<boneIDs.bones.length; i++){
+        if(i>0){
+          chainLinkLengths.push(referencePose[boneIDs.bones[i]].tr.distanceTo(referencePose[boneIDs.bones[i-1]].tr));
+        }
+        trPrev.push(referencePose[boneIDs.bones[i]].tr);
+      }
+      
+      verletChains.push(boneIDs.bones);
+      referenceLengths.push(chainReferenceLength);
+      simulationWeights.push(verletChainParams.simulationWeight);
+      springStrengths.push(verletChainParams.springStrength);
+      dampening.push(verletChainParams.dampening);
+      
+      baseAttachmentBones.push(boneIDs.baseAttachment);
+      tipAttachmentBones.push(boneIDs.tipAttachment);
+      baseAttachmentOffsets.push(baseAttachmentOffset);
+      tipAttachmentOffsets.push(tipAttachmentOffset);
+      
+      chainLinkLengths.push(verletChainParams.tipOffset);
+      linkLengths.push(chainLinkLengths);
+      trPrevs.push(trPrev);
     }
-    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'verletChains', 'Integer[][]', verletChains);
     skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
     skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
     skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
-    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    skeletonNode.addMember(name + 'referenceLengths', 'Scalar[]', referenceLengths);
+    skeletonNode.addMember(name + 'linkLengths', 'Scalar[][]', linkLengths);
+    
+    rigNode.addMember(name + 'trPrev', 'Vec3[][]', trPrevs);
     rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
     rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
     
+    skeletonNode.addMember(name + 'baseAttachmentBones', 'Integer[]', baseAttachmentBones);
+    skeletonNode.addMember(name + 'baseAttachmentOffsets', 'Vec3[]', baseAttachmentOffsets);
+    skeletonNode.addMember(name + 'tipAttachmentBones', 'Integer[]', tipAttachmentBones);
+    skeletonNode.addMember(name + 'tipAttachmentOffsets', 'Vec3[]', tipAttachmentOffsets);
+    
     rigNode.addSolverOperator({
-      operatorName: 'solveVerletBone',
+      operatorName: 'solveVerletChain',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
-      entryFunctionName: 'solveVerletBone',
+      entryFunctionName: 'solveVerletChain',
       parameterLayout: [
         'globals.timestep',
         'self.pose',
         'self.' + name + 'trPrev',
         'self.' + name + 'Gravity',
         'skeleton.bones',
-        'skeleton.' + name + 'verletBones',
+        
+        'skeleton.' + name + 'verletChains',
         'skeleton.' + name + 'simulationWeights',
         'skeleton.' + name + 'springStrengths',
-        'skeleton.' + name + 'dampening'
+        'skeleton.' + name + 'dampening',
+        
+        'skeleton.' + name + 'referenceLengths',
+        'skeleton.' + name + 'linkLengths',
+        
+        'skeleton.' + name + 'baseAttachmentBones',
+        'skeleton.' + name + 'baseAttachmentOffsets',
+        'skeleton.' + name + 'tipAttachmentBones',
+        'skeleton.' + name + 'tipAttachmentOffsets',
+        
+        'self.debugGeometry'
       ]
     });
       
