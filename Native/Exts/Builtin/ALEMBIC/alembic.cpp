@@ -147,7 +147,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICOpen(
 }
 
 
-FABRIC_EXT_EXPORT void FabricALEMBICDecode(
+FABRIC_EXT_EXPORT void FabricALEMBICOpenFileHandle(
   const KL::String& fileHandle,
   AlembicHandle &handle
   )
