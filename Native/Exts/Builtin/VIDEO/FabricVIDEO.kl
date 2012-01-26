@@ -18,7 +18,7 @@ function FabricVIDEOOpenResource(
 );
 
 function FabricVIDEOOpenFileHandle(
-  String file,
+  String fileHandle,
   io VideoHandle handle
 );
 
