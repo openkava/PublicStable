@@ -501,64 +501,6 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       
       rigNode = scene.getPrivateInterface(rigNode);
-      /*
-      var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var trackSet = new FABRIC.RT.KeyframeTrackSet(trackSetName);
-      var variables = rigNode.getVariables();
-      
-      // generate the bindings.
-      // TODO: look up the solver that uses a particular binding,
-      // and generate a trackName for the track.
-      var i, binding;
-      for (i = 0; i < variables.scalarValues.length; i++) {
-        /*
-        binding = [];
-        trackSet.addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,1,0), binding);
-        trackBindings.addScalarBinding(i, binding[0]);
-        * /
-        trackSet.addScalarTrack("ScalarTrack"+i, undefined, trackBindings, i);
-      }
-      for (i = 0; i < variables.vec3Values.length; i++) {
-        /*
-        binding = [];
-        trackSet.addTrack("Vec3Track"+i, FABRIC.RT.rgb(1,0,0), binding);
-        trackSet.addTrack("Vec3Track"+i+".x", FABRIC.RT.rgb(1, 0, 0), binding);
-        trackSet.addTrack("Vec3Track"+i+".y", FABRIC.RT.rgb(0, 1, 0), binding);
-        trackSet.addTrack("Vec3Track"+i+".z", FABRIC.RT.rgb(0, 0, 1), binding);
-        trackBindings.addVec3Binding(i, binding);
-        * /
-        trackSet.addVec3Track("Vec3Track"+i, undefined, trackBindings, i);
-      }
-      for (i = 0; i < variables.quatValues.length; i++) {
-        /*
-        binding = [];
-        trackSet.addTrack("QuatTrack"+i+".v.x", FABRIC.RT.rgb(1, 0, 0), binding);
-        trackSet.addTrack("QuatTrack"+i+".v.y", FABRIC.RT.rgb(0, 1, 0), binding);
-        trackSet.addTrack("QuatTrack"+i+".v.z", FABRIC.RT.rgb(0, 0, 1), binding);
-        trackSet.addTrack("QuatTrack"+i+".w", FABRIC.RT.rgb(1, 1, 0), binding);
-        trackBindings.addQuatBinding(i, binding);
-        * /
-        trackSet.addQuatTrack("QuatTrack"+i, undefined, trackBindings, i);
-      }
-      
-      for (i = 0; i < variables.xfoValues.length; i++) {
-        /*
-        binding = [];
-        trackSet.addTrack("XfoTrack"+i+".tr.x", FABRIC.RT.rgb(1, 0, 0), binding);
-        trackSet.addTrack("XfoTrack"+i+".tr.y", FABRIC.RT.rgb(0, 1, 0), binding);
-        trackSet.addTrack("XfoTrack"+i+".tr.z", FABRIC.RT.rgb(0, 0, 1), binding);
-        
-        trackSet.addTrack("XfoTrack"+i+".ori.v.x", FABRIC.RT.rgb(1, 0, 0), binding);
-        trackSet.addTrack("XfoTrack"+i+".ori.v.y", FABRIC.RT.rgb(0, 1, 0), binding);
-        trackSet.addTrack("XfoTrack"+i+".ori.v.z", FABRIC.RT.rgb(0, 0, 1), binding); 
-        trackSet.addTrack("XfoTrack"+i+".ori.w", FABRIC.RT.rgb(1, 1, 0), binding);
-        trackBindings.addXfoBinding(i, binding);
-        * /
-      //  trackBindings.addXfoBinding(i, trackSet.addXfoTrack("XfoTrack"+i));
-        trackSet.addQuatTrack("XfoTrack"+i, undefined, trackBindings, i);
-      }
-      var trackSetId = animationLibraryNode.pub.addTrackSet(trackSet);
-        */
         
       if(!paramsdgnode){
         paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');

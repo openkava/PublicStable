@@ -647,7 +647,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               }
             });
           }
-            
+          
+          if(i>0){
           if(i<2 || i==xfoIds.length-1){
             solver.constructManipulator(name+j+'BoneOri'+i, '3AxisRotationManipulator', {
               baseManipulatorType: 'CharacterManipulator',
@@ -708,7 +709,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               }
             });
           }
-        
+          }
         }
       }
     }
@@ -1066,6 +1067,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
       name = solver.getName();
     
     var digits = [];
+    var digitsxfoIds = [];
     var digitTipOffsets = [];
     for(j=0; j<options.digits.length; j++){
       var digitParams = options.digits[j];
@@ -1077,21 +1079,61 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
       }
       var xfoIds = rigNode.addVariable('Xfo[]', defaultValues);
       
+      digitsxfoIds.push(xfoIds);
       digits.push(new FABRIC.RT.FKHierarchy(boneIDs.bones, xfoIds));
       
+      var lastDigitId = boneIDs.bones[boneIDs.bones.length-1];
       if(digitParams.projectToGround == true){
-        var lastDigitId = boneIDs.bones[boneIDs.bones.length-1];
         var digitTipXfo = referencePose[lastDigitId].clone();
         digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(digitParams.tipBoneLength));
         digitTipXfo.tr.y = 0.0;
         digitTipOffsets.push((referencePose[lastDigitId].inverse().multiply(digitTipXfo)).tr);
       }else{
-        digitTipOffsets.push(new FABRIC.RT.Vec3());
+        digitTipOffsets.push(new FABRIC.RT.Vec3(digitParams.tipBoneLength ? digitParams.tipBoneLength : bones[lastDigitId].length, 0,0));
+      }
+      
+      
+      if (options.createManipulators) {
+        var xfoIndexArray = [];
+        for (i = 0; i < boneIDs.bones.length; i++) {
+          xfoIndexArray.push(xfoIds[i]);
+          
+          solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
+            baseManipulatorType: 'CharacterManipulator',
+            rigNode: rigNode.pub,
+            xfoIndex: xfoIds[i],
+            boneIndex: boneIDs.bones[0],
+            extraIndexArray: xfoIndexArray,
+            targetName: solver.getName()+j+'Bone'+i,
+            length: bones[boneIDs.bones[i]].length,
+            boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+            color: FABRIC.RT.rgb(0, 0, 1),
+            attachmentOperator:{
+              operatorName: 'calcManipulatorChainAttachmentXfo',
+              srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+              parameterLayout: [
+                'skeleton.bones',
+                'variables.poseVariables',
+                'rig.pose',
+                'self.boneIndex',
+                'self.extraIndexArray',
+                
+                'self.localXfo',
+                'self.parentXfo',
+                'self.targetXfo',
+                'self.globalXfo'
+              ],
+              entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+            }
+          });
+        }
       }
     }
     skeletonNode.addMember(name + 'digits', 'FKHierarchy[]', digits);
     skeletonNode.addMember(name + 'digitTipOffsets', 'Vec3[]', digitTipOffsets);
     
+    
+ 
     rigNode.addSolverOperator({
       operatorName: 'solveDigits',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveDigit.kl',
@@ -1109,6 +1151,17 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
       ]
     });
       
+    solver.generateTracks = function(trackSet, trackBindings){
+      var color = FABRIC.RT.rgb(1, 0, 0);
+      var storeEulerAngles = false;
+      
+      for (var i = 0; i < digits.length; i++) {
+        for (var j = 0; j < digits[i].boneIds.length; j++) {
+          trackSet.addXfoTrack(solver.getName()+i+''+j, color, storeEulerAngles, trackBindings, digitsxfoIds[i][j]);
+        }
+      }
+    }
+    
     return solver;
   }
 });

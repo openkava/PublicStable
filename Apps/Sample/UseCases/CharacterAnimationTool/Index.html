@@ -212,7 +212,7 @@ $(document).ready(function() {
             '_Spine4',
             '_Spine5'
           ],
-	  neutralXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(6,0,0) })
+	  neutralXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(8,0,0) })
         },
         { bone: '_Skull',
           spineBones:[
@@ -300,7 +300,8 @@ $(document).ready(function() {
 	{ bones:['_RArmDigit31', '_RArmDigit32', '_RArmDigit33'] },
 	{ bones:['_RArmDigit41', '_RArmDigit42', '_RArmDigit43'] },
 	{ bones:['_RArmDigit51', '_RArmDigit52', '_RArmDigit53'] }
-      ]
+      ],
+      createManipulators: true
     });
     
     rigNode.addSolver('twistBones', 'TwistBoneSolver', {
@@ -534,9 +535,9 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
-  $("#displayGeometry").attr('checked', true).change(function(event, ui) {
-    var checked = $('#displayGeometry').attr('checked') === 'checked';
-    layerManager.setGeometries(checked);
+  $("#displayRigging").attr('checked', true).change(function(event, ui) {
+    var checked = $('#displayRigging').attr('checked') === 'checked';
+    rigNode.setDebuggingEnabled(checked);
     viewport.redraw();
   });
   $("#displayWireframe").attr('checked', false).change(function(event, ui) {
@@ -718,8 +719,8 @@ $(document).ready(function() {
               <button id="curveEditor" style="margin-top:10px;">Open Curve Editor</button><br>
            <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
             -->
-	      <label for="displayGeometry">Display Geometry</label><input type="checkbox" id="displayGeometry" style="margin-top:10px;" /><br>
-              <label for="displaySkeleton">Display Skeleton:</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/><br>
+              <label for="displaySkeleton">Display Skeleton</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/><br>
+	      <label for="displayRigging">Display Rigging</label><input type="checkbox" id="displayRigging" style="margin-top:10px;" /><br>
 	      <label for="displayWireframe">Display Wireframe</label><input type="checkbox" id="displayWireframe" style="margin-top:10px;" /><br>
             
               <label for="ikblendLArm">Tesselation Level</label><div id='tesslation'></div><br>

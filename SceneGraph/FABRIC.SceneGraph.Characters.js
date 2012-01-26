@@ -688,12 +688,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     // Debug Geometries
     // Debugging enables solvers to draw lines on screen to illustrate behavior.
     dgnode.addMember('debugGeometry', 'DebugGeometry', new FABRIC.RT.DebugGeometry(options.debug) );
-    if(options.debug){
-      var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-        dgnode: dgnode,
-        debugGemetryMemberName: 'debugGeometry'
-      });
-    }
+    
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+      dgnode: dgnode,
+      debugGemetryMemberName: 'debugGeometry'
+    });
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'resetDebugDrawing',
       srcCode: 'use DebugGeometry; operator resetDebugDrawing(io DebugGeometry debugGeometry) { debugGeometry.reset(); }',
@@ -703,6 +702,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       ],
       async: false
     }));
+    characterRigNode.pub.getDebuggingEnabled = function(tf){
+      return debugGeometryDraw.pub.getDrawToggle();
+    }
+    characterRigNode.pub.setDebuggingEnabled = function(tf){
+      debugGeometryDraw.pub.setDrawToggle(tf);
+    }
     
     //////////////////////////////////////////
     
