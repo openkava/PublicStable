@@ -13,22 +13,16 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
-    class JSONArrayGenerator;
+    class ArrayEncoder;
+    class CommandChannel;
+    class Encoder;
   };
   
   namespace MT
   {
     class LogCollector;
-  };
-  
-  namespace JSON
-  {
-    class CommandChannel;
-    class Value;
-    class Object;
   };
   
   namespace RT
@@ -97,11 +91,17 @@ namespace Fabric
       RC::ConstHandle<ValueProducerDesc> getValueProducerOf( RC::ConstHandle<Desc> const &valueDesc ) const;
       RC::ConstHandle<ArrayProducerDesc> getArrayProducerOf( RC::ConstHandle<Desc> const &elementDesc ) const;
       
-      void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      void jsonDescRegisteredTypes( Util::JSONGenerator &resultJG ) const;
+      void jsonRoute(
+        std::vector<JSON::Entity> const &dst,
+        size_t dstOffset,
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
+        );
+      void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecRegisterType( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      void jsonDescRegisteredTypes( JSON::Encoder &resultEncoder ) const;
       
       RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
       

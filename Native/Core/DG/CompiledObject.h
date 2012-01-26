@@ -14,10 +14,10 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
-    class JSONArrayGenerator;
+    class Encoder;
+    class ArrayEncoder;
   };
   
   namespace MT
@@ -52,7 +52,7 @@ namespace Fabric
       static void PrepareForExecution();
       
       virtual void jsonNotifyErrorDelta() const;
-      void jsonDescErrors( Util::JSONGenerator &resultJG ) const;
+      void jsonDescErrors( JSON::Encoder &resultEncoder ) const;
 
     protected:
     

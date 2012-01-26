@@ -38,7 +38,7 @@ namespace Fabric
         RC::ConstHandle<Expr> const &shared
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
     private:
     

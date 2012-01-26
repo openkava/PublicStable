@@ -46,12 +46,12 @@ namespace Fabric
     {
     }
     
-    void CreateArrayGenerator::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void CreateArrayGenerator::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_count->appendJSON( jsonObjectGenerator.makeMember( "count" ), includeLocation );
-      jsonObjectGenerator.makeMember( "operatorName" ).makeString( m_operatorName );
-      m_shared->appendJSON( jsonObjectGenerator.makeMember( "shared" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_count->appendJSON( jsonObjectEncoder.makeMember( "count" ), includeLocation );
+      jsonObjectEncoder.makeMember( "operatorName" ).makeString( m_operatorName );
+      m_shared->appendJSON( jsonObjectEncoder.makeMember( "shared" ), includeLocation );
     }
     
     void CreateArrayGenerator::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
