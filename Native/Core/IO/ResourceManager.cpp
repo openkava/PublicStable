@@ -131,10 +131,11 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       if( done < total)
       {
         int deltaMS = (int)(requestInfo->m_lastProgressTimer.getElapsedMS(false));
-        if( deltaMS < requestInfo->m_manager.makeStrong()->m_progressMaxFrequencyMS )
+        if( deltaMS < (int)requestInfo->m_manager.makeStrong()->m_progressMaxFrequencyMS )
           return;
       }
       requestInfo->m_lastProgressTimer.reset();
@@ -162,6 +163,7 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       try
       {
         requestInfo->m_client->onData( offset, size, data, requestInfo->m_clientUserData );
@@ -182,6 +184,7 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       try
       {
         requestInfo->m_client->onFile( fileName, requestInfo->m_clientUserData );
@@ -202,6 +205,7 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       try
       {
         requestInfo->m_client->onFailure( ( "Error while processing request for URL \"" + requestInfo->m_url + "\": " + errorDesc).c_str(), requestInfo->m_clientUserData );

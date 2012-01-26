@@ -238,17 +238,17 @@ namespace Fabric
             getContext()->getLogCollector()->add( ( "ResourceLoadNode " + getName() + ": error loading " + url + ": " + std::string( errorDesc ) ).c_str() );
           }
         }
-        if( notify )
-        {
-          std::vector<std::string> src;
-          src.push_back( "DG" );
-          src.push_back( getName() );
+      }
+      if( notify )
+      {
+        std::vector<std::string> src;
+        src.push_back( "DG" );
+        src.push_back( getName() );
 
-          if( errorDesc )
-            getContext()->jsonNotify( src, "resourceLoadFailure", 19 );
-          else
-            getContext()->jsonNotify( src, "resourceLoadSuccess", 19 );
-        }
+        if( errorDesc )
+          getContext()->jsonNotify( src, "resourceLoadFailure", 19 );
+        else
+          getContext()->jsonNotify( src, "resourceLoadSuccess", 19 );
       }
     }
   };
