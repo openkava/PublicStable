@@ -25,12 +25,12 @@ namespace Fabric
       std::list< void* >::iterator m_pendingRequestsListIter;
     };
 
-    RC::Handle<ResourceManager> ResourceManager::Create( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds )
+    RC::Handle<ResourceManager> ResourceManager::Create( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds )
     {
       return new ResourceManager( scheduleFunc, scheduleFuncUserData, progressMaxFrequencySeconds );
     }
 
-    ResourceManager::ResourceManager( ScheduleAsynchCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds )
+    ResourceManager::ResourceManager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds )
       : m_scheduleFunc(scheduleFunc)
       , m_scheduleFuncUserData(scheduleFuncUserData)
       , m_progressMaxFrequencyMS( size_t( progressMaxFrequencySeconds*1000 ) )
@@ -42,7 +42,7 @@ namespace Fabric
       while( !m_pendingRequests.empty() )
       {
         PendingRequestInfo* requestInfo = (PendingRequestInfo*)m_pendingRequests.front();
-        //Note: we don't delete the PendingRequestInfo* structs as there might be some pending asynch calls; leak instead of crash in this exceptional race condition.
+        //Note: we don't delete the PendingRequestInfo* structs as there might be some pending async calls; leak instead of crash in this exceptional race condition.
         requestInfo->m_client->onFailure( ("Resource request for \"" + requestInfo->m_url + "\" failed because of termination").c_str(), requestInfo->m_clientUserData );
         requestInfo->m_client->release();
         m_pendingRequests.pop_front();
@@ -106,14 +106,14 @@ namespace Fabric
         else
           provider->get( url, getAsFile, requestInfo );
       }
-      //Simplify error handling on client side: turn synch errors into asynch failure callbacks
+      //Simplify error handling on client side: turn sync errors into async failure callbacks
       catch ( Exception e )
       {
-        onFailureAsynchThreadCall( "Error: " + e, requestInfo );
+        onFailureAsyncThreadCall( "Error: " + e, requestInfo );
       }
       catch ( ... )
       {
-        onFailureAsynchThreadCall( "Unknown error", requestInfo );
+        onFailureAsyncThreadCall( "Unknown error", requestInfo );
       }
     }
 
@@ -131,10 +131,11 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       if( done < total)
       {
         int deltaMS = (int)(requestInfo->m_lastProgressTimer.getElapsedMS(false));
-        if( deltaMS < requestInfo->m_manager.makeStrong()->m_progressMaxFrequencyMS )
+        if( deltaMS < (int)requestInfo->m_manager.makeStrong()->m_progressMaxFrequencyMS )
           return;
       }
       requestInfo->m_lastProgressTimer.reset();
@@ -162,6 +163,7 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       try
       {
         requestInfo->m_client->onData( offset, size, data, requestInfo->m_clientUserData );
@@ -182,6 +184,7 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       try
       {
         requestInfo->m_client->onFile( fileName, requestInfo->m_clientUserData );
@@ -202,6 +205,7 @@ namespace Fabric
       if( !requestInfo->m_manager )
         return;//Manager might have been destroyed, in which case we should ignore this call
 
+      RC::Handle<ResourceManager> keepAlive( requestInfo->m_manager.makeStrong() );
       try
       {
         requestInfo->m_client->onFailure( ( "Error while processing request for URL \"" + requestInfo->m_url + "\": " + errorDesc).c_str(), requestInfo->m_clientUserData );
@@ -226,14 +230,14 @@ namespace Fabric
       void *m_userData;
     };
 
-    void OnProgressSynchCallback( void *userData )
+    void OnProgressSyncCallback( void *userData )
     {
       OnProgressCallbackStruct* callStruct = (OnProgressCallbackStruct*)userData;
       ResourceManager::onProgress( callStruct->m_mimeType.c_str(), callStruct->m_done, callStruct->m_total, callStruct->m_userData );
       delete callStruct;
     }
 
-    void ResourceManager::onProgressAsynchThreadCall( char const *mimeType, size_t done, size_t total, void *userData )
+    void ResourceManager::onProgressAsyncThreadCall( char const *mimeType, size_t done, size_t total, void *userData )
     {
       OnProgressCallbackStruct* callStruct = new OnProgressCallbackStruct();
       callStruct->m_mimeType = mimeType;
@@ -241,7 +245,7 @@ namespace Fabric
       callStruct->m_total = total;
       callStruct->m_userData = userData;
       RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
-      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnProgressSynchCallback, callStruct);
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnProgressSyncCallback, callStruct);
     }
 
     struct OnDataCallbackStruct
@@ -251,14 +255,14 @@ namespace Fabric
       void *m_userData;
     };
 
-    void OnDataSynchCallback( void *userData )
+    void OnDataSyncCallback( void *userData )
     {
       OnDataCallbackStruct* callStruct = (OnDataCallbackStruct*)userData;
       ResourceManager::onData( callStruct->m_offset, callStruct->m_data.size(), callStruct->m_data.empty() ? NULL : &callStruct->m_data.front(), callStruct->m_userData );
       delete callStruct;
     }
 
-    void ResourceManager::onDataAsynchThreadCall( size_t offset, size_t size, void const *data, void *userData )
+    void ResourceManager::onDataAsyncThreadCall( size_t offset, size_t size, void const *data, void *userData )
     {
       OnDataCallbackStruct* callStruct = new OnDataCallbackStruct();
       callStruct->m_offset = offset;
@@ -269,7 +273,7 @@ namespace Fabric
       }
       callStruct->m_userData = userData;
       RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
-      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnDataSynchCallback, callStruct);
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnDataSyncCallback, callStruct);
     }
 
     struct OnStringCallbackStruct
@@ -278,36 +282,36 @@ namespace Fabric
       void *m_userData;
     };
 
-    void OnFileSynchCallback( void *userData )
+    void OnFileSyncCallback( void *userData )
     {
       OnStringCallbackStruct* callStruct = (OnStringCallbackStruct*)userData;
       ResourceManager::onFile( callStruct->m_string.c_str(), callStruct->m_userData );
       delete callStruct;
     }
 
-    void ResourceManager::onFileAsynchThreadCall( char const *fileName, void *userData )
+    void ResourceManager::onFileAsyncThreadCall( char const *fileName, void *userData )
     {
       OnStringCallbackStruct* callStruct = new OnStringCallbackStruct();
       callStruct->m_string = fileName;
       callStruct->m_userData = userData;
       RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
-      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnFileSynchCallback, callStruct);
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnFileSyncCallback, callStruct);
     }
 
-    void OnFailureSynchCallback( void *userData )
+    void OnFailureSyncCallback( void *userData )
     {
       OnStringCallbackStruct* callStruct = (OnStringCallbackStruct*)userData;
       ResourceManager::onFailure( callStruct->m_string.c_str(), callStruct->m_userData );
       delete callStruct;
     }
 
-    void ResourceManager::onFailureAsynchThreadCall( char const *errorDesc, void *userData )
+    void ResourceManager::onFailureAsyncThreadCall( char const *errorDesc, void *userData )
     {
       OnStringCallbackStruct* callStruct = new OnStringCallbackStruct();
       callStruct->m_string = errorDesc;
       callStruct->m_userData = userData;
       RC::Handle<ResourceManager> manager = ((PendingRequestInfo*)userData)->m_manager.makeStrong();
-      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnFailureSynchCallback, callStruct);
+      (*( manager->m_scheduleFunc ) )( manager->m_scheduleFuncUserData, OnFailureSyncCallback, callStruct);
     }
 
   };
