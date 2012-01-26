@@ -627,6 +627,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               targetName: solver.getName()+j+'Bone'+i,
               length: bones[boneIDs.bones[i]].length,
               boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+              axisConstraint: ((i==2) ? new FABRIC.RT.Vec3(0, 0, 1) : undefined),
               color: FABRIC.RT.rgb(0, 0, 1),
               attachmentOperator:{
                 operatorName: 'calcManipulatorChainAttachmentXfo',
@@ -1083,13 +1084,14 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
       digits.push(new FABRIC.RT.FKHierarchy(boneIDs.bones, xfoIds));
       
       var lastDigitId = boneIDs.bones[boneIDs.bones.length-1];
+      var tipBoneLength = digitParams.tipBoneLength ? digitParams.tipBoneLength : bones[lastDigitId].length;
       if(digitParams.projectToGround == true){
         var digitTipXfo = referencePose[lastDigitId].clone();
-        digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(digitParams.tipBoneLength));
+        digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(tipBoneLength));
         digitTipXfo.tr.y = 0.0;
         digitTipOffsets.push((referencePose[lastDigitId].inverse().multiply(digitTipXfo)).tr);
       }else{
-        digitTipOffsets.push(new FABRIC.RT.Vec3(digitParams.tipBoneLength ? digitParams.tipBoneLength : bones[lastDigitId].length, 0,0));
+        digitTipOffsets.push(new FABRIC.RT.Vec3(tipBoneLength, 0,0));
       }
       
       
@@ -1107,6 +1109,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
             targetName: solver.getName()+j+'Bone'+i,
             length: bones[boneIDs.bones[i]].length,
             boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+            axisConstraint: ((i==0) ? undefined : new FABRIC.RT.Vec3(0, 0, 1)),
             color: FABRIC.RT.rgb(0, 0, 1),
             attachmentOperator:{
               operatorName: 'calcManipulatorChainAttachmentXfo',
