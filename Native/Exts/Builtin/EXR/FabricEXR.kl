@@ -10,5 +10,5 @@ function FabricEXROpenFileHandle(
   String handle,
   io Size imageWidth,
   io Size imageHeight,
-  io RGBA imagePixels[]
+  io Color imagePixels[]
   );
