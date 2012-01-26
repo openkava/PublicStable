@@ -239,7 +239,7 @@ FABRIC_EXT_EXPORT void FabricHDROpenFileHandle(
   FILE * fp= fopen(wrapper.getPath().data(),"rb");
   if(!fp)
   {
-    Fabric::EDK::throwException("PNG Extension: File does not exist!");
+    Fabric::EDK::throwException("HDR Extension: File does not exist!");
     return;
   }
   
@@ -251,7 +251,7 @@ FABRIC_EXT_EXPORT void FabricHDROpenFileHandle(
   if(fread(data,1,size,fp) != size)
   {
     fclose(fp);
-    Fabric::EDK::throwException("PNG Extension: Could not read file contents!");
+    Fabric::EDK::throwException("HDR Extension: Could not read file contents!");
     return;
   }
   fclose(fp);
