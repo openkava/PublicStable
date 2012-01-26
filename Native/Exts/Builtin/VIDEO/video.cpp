@@ -541,6 +541,16 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenFileHandle(
   if(handle.pointer == NULL)
   {
     KL::FileHandleWrapper wrapper(file);
+    if( !wrapper.isValid() )
+    {
+      throwException( "FileHandle '%s' is not a valid fileHandle.", file.data() );
+      return;
+    }
+    if( wrapper.isFolder() )
+    {
+      throwException( "FileHandle '%s' is a folder, invalid for reading a file.", wrapper.getPath().data() );
+      return;
+    }
     return FabricVIDEOOpenFileName(wrapper.getPath(),handle);
   }
 }
@@ -565,6 +575,16 @@ FABRIC_EXT_EXPORT void FabricVIDEOCreateFromFileHandle(
   if(handle.pointer == NULL)
   {
     KL::FileHandleWrapper wrapper(file);
+    if( !wrapper.isValid() )
+    {
+      throwException( "FileHandle '%s' is not a valid fileHandle.", file.data() );
+      return;
+    }
+    if( wrapper.isFolder() )
+    {
+      throwException( "FileHandle '%s' is a folder, invalid for writing a file.", wrapper.getPath().data() );
+      return;
+    }
 
     // init the stream
     handle.pointer = new videoStream(&handle);
