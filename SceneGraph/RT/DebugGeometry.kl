@@ -62,6 +62,49 @@ function DebugGeometry.drawCircle(Xfo xfo, Scalar radius, Color color) {
     }
   }
   this.linesIndices.push(id0);
+}
+
+function DebugGeometry.drawSphere(Xfo xfo, Scalar radius, Color color) {
+  Integer numSegments = 12;
+  Vec3 p;
+  var Integer id0 = Integer(this.positions.size());
+  for (var Integer i = 0; i < numSegments; i++) {
+    var Scalar angle = (Scalar(i) / Scalar(numSegments)) * TWO_PI;
+    p = xfo.tr + xfo.ori.rotateVector(Vec3(0.0, sin(angle) * radius, cos(angle) * radius));
+    this.linesIndices.push(Integer(this.positions.size()));
+    this.positions.push(p);
+    this.vertexColors.push(color);
+    if(i < (numSegments-1)){
+      this.linesIndices.push(Integer(this.positions.size()));
+    }
+  }
+  this.linesIndices.push(id0);
+  
+  id0 = Integer(this.positions.size());
+  for (var Integer i = 0; i < numSegments; i++) {
+    var Scalar angle = (Scalar(i) / Scalar(numSegments)) * TWO_PI;
+    p = xfo.tr + xfo.ori.rotateVector(Vec3(sin(angle) * radius, 0.0, cos(angle) * radius));
+    this.linesIndices.push(Integer(this.positions.size()));
+    this.positions.push(p);
+    this.vertexColors.push(color);
+    if(i < (numSegments-1)){
+      this.linesIndices.push(Integer(this.positions.size()));
+    }
+  }
+  this.linesIndices.push(id0);
+  
+  id0 = Integer(this.positions.size());
+  for (var Integer i = 0; i < numSegments; i++) {
+    var Scalar angle = (Scalar(i) / Scalar(numSegments)) * TWO_PI;
+    p = xfo.tr + xfo.ori.rotateVector(Vec3(sin(angle) * radius, cos(angle) * radius, 0.0));
+    this.linesIndices.push(Integer(this.positions.size()));
+    this.positions.push(p);
+    this.vertexColors.push(color);
+    if(i < (numSegments-1)){
+      this.linesIndices.push(Integer(this.positions.size()));
+    }
+  }
+  this.linesIndices.push(id0);
   
 }
 

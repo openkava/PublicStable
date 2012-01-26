@@ -310,31 +310,31 @@ $(document).ready(function() {
     
     rigNode.addSolver('FatJiggle', 'VerletBoneSolver', {
       verletBones: [
-	{ bone:'_LFat1', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_LFat2', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_RFat1', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 },
-	{ bone:'_RFat2', simulationWeight:0.7, springStrength:20.0, dampening: 0.05 }
+	{ bone:'_LFat1', simulationWeight:0.7, springStrength:20.0, dampening: 0.05, softLimitBounds: 1.3 },
+	{ bone:'_LFat2', simulationWeight:0.7, springStrength:20.0, dampening: 0.05, softLimitBounds: 1.3 },
+	{ bone:'_RFat1', simulationWeight:0.7, springStrength:20.0, dampening: 0.05, softLimitBounds: 1.3 },
+	{ bone:'_RFat2', simulationWeight:0.7, springStrength:20.0, dampening: 0.05, softLimitBounds: 1.3 }
       ]
     });
     
     rigNode.addSolver('verletMuscles', 'VerletMuscleBoneSolver', {
         muscles:[
-          { bone:'_LLat', baseAttachment:'_LArm1', tipAttachment:'_Neck2', baseOffset:1, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2 },
-          { bone:'_LBicep', baseAttachment:'_LArm1', tipAttachment:'_LArm21', baseOffset:2, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2 },
-          { bone:'_LTricep', baseAttachment:'_LArmCollarbone', tipAttachment:'_LArm21', baseOffset:1, tipOffset:5, simulationWeight:0.7, springStrength:40, dampening:0.2 },
+          { bone:'_LLat', baseAttachment:'_LArm1', tipAttachment:'_Neck2', baseOffset:1, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2, softLimitBounds: 1.3 },
+          { bone:'_LBicep', baseAttachment:'_LArm1', tipAttachment:'_LArm21', baseOffset:2, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2, softLimitBounds: 1.3 },
+          { bone:'_LTricep', baseAttachment:'_LArmCollarbone', tipAttachment:'_LArm21', baseOffset:1, tipOffset:5, simulationWeight:0.7, springStrength:40, dampening:0.2, softLimitBounds: 1.3 },
 	  
-          { bone:'_RLat', baseAttachment:'_RArm1', tipAttachment:'_Neck2', baseOffset:1, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2 },
-          { bone:'_RBicep', baseAttachment:'_RArm1', tipAttachment:'_RArm21', baseOffset:2, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2 },
-          { bone:'_RTricep', baseAttachment:'_RArmCollarbone', tipAttachment:'_RArm21', baseOffset:1, tipOffset:5, simulationWeight:0.7, springStrength:40, dampening:0.2 },
+          { bone:'_RLat', baseAttachment:'_RArm1', tipAttachment:'_Neck2', baseOffset:1, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2, softLimitBounds: 1.3 },
+          { bone:'_RBicep', baseAttachment:'_RArm1', tipAttachment:'_RArm21', baseOffset:2, tipOffset:3, simulationWeight:0.7, springStrength:40, dampening:0.2, softLimitBounds: 1.3 },
+          { bone:'_RTricep', baseAttachment:'_RArmCollarbone', tipAttachment:'_RArm21', baseOffset:1, tipOffset:5, simulationWeight:0.7, springStrength:40, dampening:0.2, softLimitBounds: 1.3 },
 	  
 	  
-          { bone:'_LThighAnterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1 },
-          { bone:'_LThighPosterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1 },
-          { bone:'_LCalf', baseAttachment:'_LLeg2', tipAttachment:'_LLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1 },
+          { bone:'_LThighAnterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
+          { bone:'_LThighPosterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
+          { bone:'_LCalf', baseAttachment:'_LLeg2', tipAttachment:'_LLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	  
-          { bone:'_RThighAnterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1 },
-          { bone:'_RThighPosterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1 },
-          { bone:'_RCalf', baseAttachment:'_RLeg2', tipAttachment:'_RLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1 }
+          { bone:'_RThighAnterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
+          { bone:'_RThighPosterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
+          { bone:'_RCalf', baseAttachment:'_RLeg2', tipAttachment:'_RLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 }
         ]
     });
     
@@ -369,8 +369,8 @@ $(document).ready(function() {
     
     rigNode.addSolver('moobs', 'VerletBoneSolver', {
       verletBones: [
-	{ bone:'_LMoob', simulationWeight:0.7, springStrength:30.0, dampening: 0.05 },
-	{ bone:'_RMoob', simulationWeight:0.7, springStrength:30.0, dampening: 0.05 }
+	{ bone:'_LMoob', simulationWeight:0.7, springStrength:30.0, dampening: 0.05, softLimitBounds: 1.3 },
+	{ bone:'_RMoob', simulationWeight:0.7, springStrength:30.0, dampening: 0.05, softLimitBounds: 1.3 }
       ]
     });
     

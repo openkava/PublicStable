@@ -1332,6 +1332,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
     var simulationWeights = [];
     var springStrengths = [];
     var dampening = [];
+    var softLimitBounds = [];
     var blendWeights = [];
     var trPrev = [];
     for(j=0; j<options.verletBones.length; j++){
@@ -1343,12 +1344,14 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
       simulationWeights.push(verletBoneParams.simulationWeight);
       springStrengths.push(verletBoneParams.springStrength);
       dampening.push(verletBoneParams.dampening);
+      softLimitBounds.push(verletBoneParams.softLimitBounds);
       trPrev.push(boneXfo.tr);
     }
     skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
     skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
     skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
     skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    skeletonNode.addMember(name + 'softLimitBounds', 'Scalar[]', softLimitBounds);
     rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
     rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
     rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
@@ -1366,7 +1369,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
         'skeleton.' + name + 'verletBones',
         'skeleton.' + name + 'simulationWeights',
         'skeleton.' + name + 'springStrengths',
-        'skeleton.' + name + 'dampening'
+        'skeleton.' + name + 'dampening',
+        'skeleton.' + name + 'softLimitBounds',
+        
+        'self.debugGeometry'
       ]
     });
       
@@ -1389,6 +1395,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
     var simulationWeights = [];
     var springStrengths = [];
     var dampening = [];
+    var softLimitBounds = [];
     var blendWeights = [];
     var trPrev = [];
     var baseAttachmentBones = [];
@@ -1421,13 +1428,15 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
       baseAttachmentOffsets.push(baseAttachmentOffset);
       tipAttachmentOffsets.push(tipAttachmentOffset);
       muscleReferenceLengths.push(muscleReferenceLength);
-      muscleReferenceBiases.push(muscleParams.baseOffset / muscleReferenceLength)
+      muscleReferenceBiases.push(muscleParams.baseOffset / muscleReferenceLength);
+      softLimitBounds.push(muscleParams.softLimitBounds);
     }
     
     skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
     skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
     skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
     skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    skeletonNode.addMember(name + 'softLimitBounds', 'Scalar[]', softLimitBounds);
     rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
     rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
     rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
@@ -1454,6 +1463,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
         'skeleton.' + name + 'simulationWeights',
         'skeleton.' + name + 'springStrengths',
         'skeleton.' + name + 'dampening',
+        'skeleton.' + name + 'softLimitBounds',
         
         'skeleton.' + name + 'baseAttachmentBones',
         'skeleton.' + name + 'baseAttachmentOffsets',
