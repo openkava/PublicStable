@@ -1,0 +1,14 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fileSystemFlags', 'ExtSLName' )
+
+fileStreamPluginEnv = extsEnv.Clone()
+fileStreamPluginEnv.MergeFlags( fileSystemFlags )
+fileStreamPlugin = fileStreamPluginEnv.SharedLibrary( ExtSLName('FabricFILESTREAM'), Glob('*.cpp') ),
+fileStreamManifest = fileStreamPluginEnv.File('FabricFILESTREAM.fpm.json'),
+fileStreamKL = fileStreamPluginEnv.File('FabricFILESTREAM.kl'),
+fileStreamFiles = [fileStreamManifest, fileStreamPlugin, fileStreamKL]
+
+Return( 'fileStreamFiles' )

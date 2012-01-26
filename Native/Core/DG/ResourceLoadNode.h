@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/DG/Node.h>
 #include <Fabric/Core/DG/FabricResource.h>
+#include <Fabric/Core/IO/ResourceManager.h>
 
 namespace Fabric
 {
@@ -22,14 +23,16 @@ namespace Fabric
 
   namespace DG
   {
-    class ResourceLoadNode : public Node
+    class ResourceLoadNode : public Node, public IO::ResourceClient
     {
 
     public:
     
       static RC::Handle<ResourceLoadNode> Create( std::string const &name, RC::Handle<Context> const &context );
-      
       static void jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder );
+
+      virtual void retain() const;
+      virtual void release() const;
 
     protected:
     
@@ -37,25 +40,7 @@ namespace Fabric
 
       virtual void evaluateLocal( void *userdata );
 
-      void streamData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, void *userData );
-      static void StreamData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData )
-      {
-        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamData( url, mimeType, totalsize, offset, size, data, userData );
-      }
-
-      void streamEnd( std::string const &url, std::string const &mimeType, void *userData );
-      static void StreamEnd( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target, void *userData )
-      {
-        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamEnd( url, mimeType, userData );
-      }
-      
-      void streamFailure( std::string const &url, std::string const &errorDesc, void *userData );
-      static void StreamFailure( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target, void *userData )
-      {
-        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamFailure( url, errorDesc, userData );
-      }
-
-      void setResourceData( std::string const *errorDesc, bool notify );
+      void setResourceData( char const *errorDesc, bool notify );
 
       void evaluateResource();
       static void EvaluateResource( void *userData, size_t index )
@@ -63,17 +48,19 @@ namespace Fabric
         RC::Handle<ResourceLoadNode>::StaticCast(userData)->evaluateResource();
       }
 
+      virtual void onProgress( char const *mimeType, size_t done, size_t total, void *userData );
+      virtual void onData( size_t offset, size_t size, void const *data, void *userData );
+      virtual void onFile( char const *fileName, void *userData );
+      virtual void onFailure( char const *errorDesc, void *userData );
+
     private:
 
-      Context *m_context;
-      RC::Handle<IO::Stream> m_stream;
       FabricResourceWrapper m_fabricResourceStreamData;
       bool m_firstEvalAfterLoad;
       bool m_keepMemoryCache;
+      bool m_asFile;
+      bool m_inProgress;
       size_t m_streamGeneration;
-
-      size_t m_nbStreamed;
-      Util::Timer m_progressNotifTimer;
     };
   };
 };

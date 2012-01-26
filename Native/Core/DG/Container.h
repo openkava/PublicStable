@@ -106,8 +106,7 @@ namespace Fabric
       void jsonExecGetSlicesBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
       void jsonExecSetSlicesBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
       void jsonExecGetMembersBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
-      void jsonExecPutResourceToFile( JSON::Entity const &arg, bool userFile, JSON::ArrayEncoder &resultArrayEncoder );
-      void jsonExecGetResourceFromFile( JSON::Entity const &arg, bool userFile, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecPutResourceToFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
       void jsonDesc( JSON::Encoder &resultEncoder ) const;
       virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       void jsonDescMembers( JSON::Encoder &resultEncoder ) const;
@@ -136,7 +135,6 @@ namespace Fabric
       RC::ConstHandle<Member> getMember( std::string const &name ) const;
       RC::Handle<Member> getMember( std::string const &name );
 
-      void* jsonGetResourceMember( JSON::Entity const &arg, std::string& memberName );
       void jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder );
 
     private:

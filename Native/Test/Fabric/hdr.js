@@ -33,7 +33,7 @@ binding.setParameterLayout([
 ]);
 
 rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
-rlnode.setData("url", 0, "file:sample.hdr");
+rlnode.setData("url", 0, "testfile://sample.hdr");
 
 node = FABRIC.DependencyGraph.createNode("node");
 node.setDependency(rlnode, "loadnode");

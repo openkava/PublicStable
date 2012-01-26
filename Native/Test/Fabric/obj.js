@@ -8,7 +8,7 @@ use FabricOBJ;\n\
 operator load(\n\
   io String url,\n\
   io FabricResource resource,\n\
-  io Data objParseHandle\n\
+  io OBJDataHandle objParseHandle\n\
   )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
@@ -29,16 +29,16 @@ loadOpBinding.setParameterLayout([
 ]);
 
 rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
-rlnode.addMember("objParseHandle", "Data");
+rlnode.addMember("objParseHandle", "OBJDataHandle");
 rlnode.bindings.append(loadOpBinding);
-rlnode.setData("url", 0, "file:test.obj");
+rlnode.setData("url", 0, "testfile://test.obj");
 
 resizeOp = FABRIC.DependencyGraph.createOperator("resize");
 resizeOp.setEntryFunctionName("resize");
 resizeOp.setSourceCode('\
 use FabricOBJ;\n\
 operator resize(\n\
-  io Data objParseHandle,\n\
+  io OBJDataHandle objParseHandle,\n\
   io Size newSize\n\
   )\n\
 {\n\
@@ -62,7 +62,7 @@ setDataOp.setEntryFunctionName("setData");
 setDataOp.setSourceCode('\
 use FabricOBJ;\n\
 operator setData(\n\
-  io Data objParseHandle,\n\
+  io OBJDataHandle objParseHandle,\n\
   io Vec3 positions<>\n\
   )\n\
 {\n\
