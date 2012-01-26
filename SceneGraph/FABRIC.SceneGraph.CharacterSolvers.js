@@ -371,11 +371,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
-      name = options.name;
+      name = solver.getName();
     
     var hubs = [];
+    var offsetXfos = [];
     for(i=0; i<options.hubs.length; i++){
-      var boneIDs = solver.generateBoneMapping(options.hubs[i], ['bone', 'parentSpaceBone', ['spineBones']]);
+      var hubParams = options.hubs[i];
+      var boneIDs = solver.generateBoneMapping(hubParams, ['bone', 'parentSpaceBone', ['spineBones']]);
       var hubXfo = referencePose[boneIDs.bone];
       var spineBoneXfos = [];
       var spineBoneXfoIds;
@@ -386,11 +388,19 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         spineBoneXfoIds = rigNode.addVariable('Xfo[]', spineBoneXfos);
         hubXfo = referencePose[bones[boneIDs.spineBones[0]].parent].inverse().multiply(hubXfo);
       }
+      var offsetXfo;
+      if(hubParams.neutralXfo){
+        offsetXfo = hubParams.neutralXfo.inverse().multiply(hubXfo);
+      
+        hubXfo = hubXfo.multiply(offsetXfo.inverse());
+      }else{
+        offsetXfo = new FABRIC.RT.Xfo();  
+      }
+      offsetXfos.push(offsetXfo);
       
       var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
       var hub = new FABRIC.RT.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.spineBones, spineBoneXfoIds);
       hubs.push(hub);
-      
       if (options.createManipulators) {
         
         solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
@@ -409,6 +419,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
             parameterLayout: [
               'skeleton.bones',
               'skeleton.hubs',
+              'skeleton.hubsoffsetXfos',
               'rig.pose',
               'charactercontroller.xfo',
               'variables.poseVariables',
@@ -423,65 +434,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
           screenTranslationManipulators: true,
           drawOverlaid: true
         });
-        
-        /*
-        solver.constructManipulator(name+'HubTr'+i, 'ScreenTranslationManipulator', {
-          baseManipulatorType: 'CharacterManipulator',
-          rigNode: rigNode.pub,
-          xfoIndex: hubXfoId,
-          structIndex: i,
-          geometryNode: scene.pub.constructNode('Sphere', { radius: 0.3*(1.0/(i+1)) }),
-          color: FABRIC.RT.rgb(1, 0, 0),
-          targetName: solver.getName()+i+'Xfo',
-          attachmentOperator:{
-            operatorName: 'calcHubManipulatorAttachmentXfo',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
-            parameterLayout: [
-              'skeleton.bones',
-              'skeleton.hubs',
-              'rig.pose',
-              'charactercontroller.xfo',
-              'variables.poseVariables',
-              'self.structIndex',
-              'self.localXfo',
-              'self.parentXfo',
-              'self.targetXfo',
-              'self.globalXfo'
-            ]
-          }
-        });
-        
-        solver.constructManipulator(name+'HubOri'+i, '3AxisRotationManipulator', {
-          baseManipulatorType: 'CharacterManipulator',
-          rigNode: rigNode.pub,
-          xfoIndex: hubXfoId,
-          structIndex: i,
-          color: FABRIC.RT.rgb(0, 1, 0),
-          targetName: solver.getName()+i+'Xfo',
-          radius: 0.6,
-          attachmentOperator:{
-            operatorName: 'calcHubManipulatorAttachmentXfo',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
-            parameterLayout: [
-              'skeleton.bones',
-              'skeleton.hubs',
-              'rig.pose',
-              'charactercontroller.xfo',
-              'variables.poseVariables',
-              'self.structIndex',
-              'self.localXfo',
-              'self.parentXfo',
-              'self.targetXfo',
-              'self.globalXfo'
-            ]
-          }
-        });
-        */
       }
     }
     skeletonNode.addMember('hubs', 'Hub[]', hubs);
+    skeletonNode.addMember('hubsoffsetXfos', 'Xfo[]', offsetXfos);
     rigNode.addSolverOperator({
       operatorName: 'solveHubRigs',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
@@ -491,6 +447,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         'self.pose',
         'skeleton.bones',
         'skeleton.hubs',
+        'skeleton.hubsoffsetXfos',
         'variables.poseVariables<>',
         'self.index',
         'self.debugGeometry'
@@ -547,6 +504,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
           'sourcerig.pose',
           'skeleton.bones',
           'skeleton.hubs',
+          'skeleton.hubsoffsetXfos',
           'self.poseVariables',
           'sourcerig.debugGeometry'
         ]
