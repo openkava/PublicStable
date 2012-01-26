@@ -33,7 +33,8 @@ namespace Fabric
       RC::ConstHandle<RT::StructDesc> getDesc() const;
     
       const void* get() const { return m_resource; }
-      bool isEqualTo( const void *other ) const;
+      bool isDataEqualTo( const void *other ) const;
+      bool isDataExternalLocationEqualTo( const void *other ) const;
 
       std::string getExtension() const;
       void setExtension( std::string const &value );
@@ -45,6 +46,10 @@ namespace Fabric
 
       std::string getMIMEType() const;
       void setMIMEType( std::string const &value );
+
+      //DataExternalLocation: contains either "" if stored in .data member or "fabricio://..." if stored in a file
+      std::string getDataExternalLocation() const;
+      void setDataExternalLocation( std::string const &value );
 
       void resizeData( size_t size );
       void setData( size_t offset, size_t size, const void* data );

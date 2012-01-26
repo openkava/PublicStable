@@ -488,7 +488,26 @@ namespace Fabric
       }
       return result;
     }
-    
+
+    void NPP_StreamAsFile( NPP npp, NPStream *stream, const char* fname )
+    {
+      if( !npp )
+        return;
+      Interface *interface = static_cast<Interface *>( npp->pdata );
+      try
+      {
+        interface->nppStreamAsFile( npp, stream, fname );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught unknown exception" );
+      }
+    }
+
     void NPP_URLNotify(NPP npp, const char* url, NPReason reason, void* notifyData)
     {
       // It's just here for Safari.
@@ -511,6 +530,7 @@ extern "C" NPError InitializePluginFunctions( NPPluginFuncs *npPluginFuncs )
   npPluginFuncs->writeready = &Fabric::NPAPI::NPP_WriteReady;
   npPluginFuncs->write = &Fabric::NPAPI::NPP_Write;
   npPluginFuncs->destroystream = &Fabric::NPAPI::NPP_DestroyStream;
+  npPluginFuncs->asfile = &Fabric::NPAPI::NPP_StreamAsFile;
   npPluginFuncs->urlnotify = &Fabric::NPAPI::NPP_URLNotify;
   
   return NPERR_NO_ERROR;

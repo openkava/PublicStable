@@ -182,8 +182,8 @@ namespace Fabric
               newBits->refCount.setValue( 1 );
               newBits->allocSize = newAllocSize;
               if ( m_bits )
-                memcpy( newBits->cStr, m_bits->cStr, newBits->length = m_bits->length );
-              else newBits->length = 0;
+                memcpy( newBits->cStr, m_bits->cStr, m_bits->length );
+              newBits->length = capacity;
             }
             else newBits = 0;
           
@@ -205,7 +205,6 @@ namespace Fabric
           reserve( length );
           if ( m_bits )
           {
-            m_bits->length = length;
             memcpy( m_bits->cStr, data, length );
             m_bits->cStr[length] = '\0';
           }
@@ -219,7 +218,6 @@ namespace Fabric
           reserve( newLength );
           if ( m_bits )
           {
-            m_bits->length = newLength;
             m_bits->cStr[newLength] = '\0';
             return &m_bits->cStr[oldLength];
           }
@@ -260,54 +258,76 @@ namespace Fabric
         typedef StringBase const &IN;
         typedef StringBase &IO;
       });
-    
-      FABRIC_EXT_KL_CLASS( FabricFileHandle, {
+
+      FABRIC_EXT_KL_CLASS( FileHandleWrapper, {
 
       public:
-        FabricFileHandle() : m_data(NULL) {}
-
-        ~FabricFileHandle()
+        FileHandleWrapper(){}
+        FileHandleWrapper( String const &handleString )
         {
-          ( *s_callbacks.m_fabricFileHandleDelete)( &m_data );
+          wrap( handleString );
         }
 
-        typedef FabricFileHandle const &IN;
-        typedef FabricFileHandle &IO;
-
-        FabricFileHandle(const FabricFileHandle& other) : m_data(NULL)
+        void wrap( String const &handleString )
         {
-          *this = other;
+          m_handle = handleString;
         }
 
-        FabricFileHandle& operator=(const FabricFileHandle& other)
+        void createFromFile( char const *filePathCString, bool readOnly )
         {
-          ( *s_callbacks.m_fabricFileHandleCopy)( &m_data, other.m_data );
-          return *this;
+          ( *s_callbacks.m_fileHandleCreateFromPath)( &m_handle, filePathCString, false, readOnly );
         }
 
-        bool setFromPath( char const *pathData, size_t pathLength, bool readWriteAccess )
+        void createFromFolder( char const *folderCString, bool readOnly )
         {
-          return ( *s_callbacks.m_fabricFileHandleSetFromPath )( &m_data, pathData, pathLength, readWriteAccess );
+          ( *s_callbacks.m_fileHandleCreateFromPath)( &m_handle, folderCString, true, readOnly );
         }
 
-        bool setFromPath( char const *cString, bool readWriteAccess )
+        String get() const
         {
-          return setFromPath( cString, strlen(cString), readWriteAccess );
+          return m_handle;
         }
 
-        char const *getFullPath() const
+        operator String() const
         {
-          return ( *s_callbacks.m_fabricFileHandleGetFullPath )( m_data );
+          return m_handle;
         }
 
-        bool hasReadWriteAccess() const
+        String getPath() const
         {
-          return ( *s_callbacks.m_fabricFileHandleHasReadWriteAccess )( m_data );
+          String path;
+          ( *s_callbacks.m_fileGetPath )( &m_handle, &path );
+          return path;
+        }
+
+        bool isValid() const
+        {
+          return ( *s_callbacks.m_fileHandleIsValid )( &m_handle );
+        }
+
+        bool isReadOnly() const
+        {
+          return ( *s_callbacks.m_fileHandleIsReadOnly )( &m_handle );
+        }
+
+        bool isFolder() const //else: file
+        {
+          return ( *s_callbacks.m_fileHandleIsFolder )( &m_handle );
+        }
+
+        bool targetExists() const
+        {
+          return ( *s_callbacks.m_fileHandleTargetExists )( &m_handle );
+        }
+
+        void ensureTargetExists() const
+        {
+          ( *s_callbacks.m_fileHandleEnsureTargetExists )( &m_handle );
         }
 
       private:
 
-        void *m_data;
+        String m_handle;
       } );
 
       FABRIC_EXT_KL_STRUCT( RGBA, {

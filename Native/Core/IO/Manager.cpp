@@ -3,12 +3,12 @@
  */
 
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/IO/Manager.h>
-#include <Fabric/Core/IO/Helpers.h>
-#include <Fabric/Core/Util/Base64.h>
-#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/JSON/Encoder.h>
-#include <Fabric/Core/Util/Random.h>
+#include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/IO/FileHandleResourceProvider.h>
+#include <Fabric/Core/IO/ResourceManager.h>
+#include <Fabric/Core/IO/Helpers.h>
 
 #include <fstream>
 
@@ -16,6 +16,24 @@ namespace Fabric
 {
   namespace IO
   {
+    Manager::Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
+      : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
+      , m_fileHandleManager( FileHandleManager::Create() )
+    {
+      m_fileHandleResourceProvider = FileHandleResourceProvider::Create( m_fileHandleManager );
+      m_resourceManager->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_fileHandleResourceProvider ) );
+    }
+
+    RC::Handle<ResourceManager> Manager::getResourceManager() const
+    {
+      return m_resourceManager;
+    }
+
+    RC::Handle<FileHandleManager> Manager::getFileHandleManager() const
+    {
+      return m_fileHandleManager;
+    }
+
     void Manager::jsonRoute(
       std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
@@ -35,39 +53,43 @@ namespace Fabric
       JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd.stringIs( "getUserTextFile", 15 ) )
-        jsonExecGetUserTextFile( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "putUserTextFile", 15 ) )
-        jsonExecPutUserTextFile( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "getTextFile", 11 ) )
-        jsonExecGetTextFile( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "putTextFile", 11 ) )
-        jsonExecPutTextFile( arg, resultArrayEncoder );
+      if ( cmd.stringIs( "getFileInfo", 11 ) )
+        jsonExecGetFileInfo( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "queryUserFileAndFolder", 22 ) )
         jsonExecQueryUserFileAndFolder( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "queryUserFile", 13 ) )
+        jsonExecQueryUserFile( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createFileHandleFromRelativePath", 32 ) )
+        jsonExecCreateFileHandleFromRelativePath( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createFolderHandleFromRelativePath", 34 ) )
+        jsonExecCreateFolderHandleFromRelativePath( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getTextFileContent", 18 ) )
+        jsonExecGetTextFileContent( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "putTextFileContent", 18 ) )
+        jsonExecPutTextFileContent( arg, resultArrayEncoder );
       else
         throw Exception( "unknown command" );
     }
 
-    void Manager::jsonQueryUserFileAndDir(
+    void Manager::jsonQueryUserFile(
       JSON::Entity const &arg,
       bool *existingFile,
       const char *defaultExtension,
-      RC::ConstHandle<Dir>& dir,
-      std::string& filename,
+      std::string& fullPath,
       bool& writeAccess
       ) const
     {
       std::string defaultFilename;
       std::string extension;
       std::string title;
-      bool existing = false;
+      bool existing = false, foundExisting = false;
       writeAccess = false;
 
       if ( existingFile )
       {
         existing = *existingFile;
         writeAccess = !existing;
+        foundExisting = true;
       }
 
       arg.requireObject();
@@ -81,6 +103,7 @@ namespace Fabric
           {
             valueEntity.requireBoolean();
             existing = valueEntity.booleanValue();//mandatory in this case
+            foundExisting = true;
           }
           else if ( !existingFile && keyString.stringIs( "writeAccess", 11 ) )
           {
@@ -124,6 +147,8 @@ namespace Fabric
           argObjectDecoder.rethrow( e );
         }
       }
+      if ( !foundExisting )
+        throw Exception( "missing 'existingFile'" );
 
       if ( !existing && !writeAccess )
         throw Exception("Error: trying to save a file with writeAccess == false");
@@ -166,316 +191,190 @@ namespace Fabric
         if( !(extPos == defaultFilename.size() - extension.size() && extPos > 0 && defaultFilename[ extPos-1 ] == L'.') )
           defaultFilename += '.' + extension;
       }
-      std::string fullPath = queryUserFilePath( existing, title, defaultFilename, extension );
-
-      std::string dirString;
-      IO::SplitPath( fullPath, dirString, filename );
-
-      if( !DirExists( dirString ) )
-        throw Exception("Error: user selected directory not found");//Important: don't display the directory as it is private information
-
-      dir = IO::Dir::Create( dirString, false );
+      fullPath = queryUserFilePath( existing, title, defaultFilename, extension );
     }
 
-    std::string GetSafeDisplayPath( RC::ConstHandle<Dir>& dir, std::string const &filename )
+    void Manager::jsonExecGetFileInfo( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      //The root parent directory corresponds to the handle; we don't want to show this as it is private information
-      std::string encodedPath = filename;
-      while( dir->getParentDir() )
-        encodedPath = JoinPath( dir->getEntry(), encodedPath );
-      return JoinPath( "[directoryHandle]", encodedPath );
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
+
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+
+      bool isFile = false;
+      bool exists = m_fileHandleManager->targetExists( handle );
+
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "type", 4 );
+        if( m_fileHandleManager->hasRelativePath( handle ) && !exists )
+          memberEncoder.makeString( "unknown", 7 );
+        else if( m_fileHandleManager->isFolder( handle ) )
+          memberEncoder.makeString( "folder", 6 );
+        else
+        {
+          memberEncoder.makeString( "file", 4 );
+          isFile = true;
+        }
+      }
+
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "writeAccess", 11 );
+        memberEncoder.makeBoolean( !m_fileHandleManager->isReadOnly( handle ) );
+      }
+
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "exists", 6 );
+        memberEncoder.makeBoolean( exists );
+      }
+
+      if( isFile )
+      {
+        std::string fullPath = m_fileHandleManager->getPath( handle );
+
+        std::string dir, filename;
+        IO::SplitPath( fullPath, dir, filename );
+
+        {
+          JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "fileName", 8 );
+          memberEncoder.makeString( filename );
+        }
+
+        if( exists )
+        {
+          JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "fileSize", 8 );
+          memberEncoder.makeInteger( (int32_t)GetFileSize( fullPath ) );
+        }
+      }
     }
 
-    void Manager::putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const
+    void Manager::jsonExecQueryUserFileAndFolder( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
       std::string fullPath;
-      if( dir )
-        fullPath = JoinPath( dir->getFullPath(), filename );
-      else
-        fullPath = filename;
+      bool writeAccess;
+      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess );
 
-      std::ofstream file( fullPath.c_str(), std::ios::out | std::ios::trunc | std::ios::binary );
-      if( !file.is_open() )
-        throw Exception( "Unable to create file " + GetSafeDisplayPath(dir, filename) );
+      std::string dir, filename;
+      IO::SplitPath( fullPath, dir, filename );
 
-      file.write( (const char*)data, size );
-      if( file.bad() )
-        throw Exception( "Error while writing to file " + GetSafeDisplayPath(dir, filename) );
+      std::string dirHandle = m_fileHandleManager->createHandle( dir, true, !writeAccess );
+      std::string fileHandle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
+
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "file", 4 );
+        memberEncoder.makeString( fileHandle );
+      }
+        
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "folder", 6 );
+        memberEncoder.makeString( dirHandle );
+      }
     }
 
-    void Manager::getFile( RC::ConstHandle<Dir>& dir, std::string const &filename, bool binary, ByteContainer& bytes ) const
+    void Manager::jsonExecQueryUserFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
       std::string fullPath;
-      if( dir )
-        fullPath = JoinPath( dir->getFullPath(), filename );
-      else
-        fullPath = filename;
+      bool writeAccess;
 
-      std::ios_base::openmode mode = std::ios::in | std::ios::ate;
-      if ( binary )
-        mode |= std::ios::binary;
-      std::ifstream file( fullPath.c_str(), mode );
+      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess );
+
+      std::string handle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
+
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( handle );
+    }
+
+    void Manager::jsonExecCreateFileHandleFromRelativePath( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
+    {
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
+      std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, false );
+
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( newHandle );
+    }
+
+    void Manager::jsonExecCreateFolderHandleFromRelativePath( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
+    {
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
+      std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, true );
+
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( newHandle );
+    }
+
+    void Manager::jsonExecPutTextFileContent( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
+    {
+      std::string content, handle;
+      bool append = false;
+      bool foundContent = false;
+
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity argKeyString, argValueEntity;
+      while ( argObjectDecoder.getNext( argKeyString, argValueEntity ) )
+      {
+        try
+        {
+          if ( argKeyString.stringIs( "content", 7 ) )
+          {
+            argValueEntity.requireString();
+            content = argValueEntity.stringToStdString();
+            foundContent = true;
+          }
+          else if ( argKeyString.stringIs( "file", 4 ) )
+          {
+            argValueEntity.requireString();
+            handle = argValueEntity.stringToStdString();
+          }
+          else if ( argKeyString.stringIs( "append", 6 ) )
+          {
+            argValueEntity.requireBoolean();
+            append = argValueEntity.booleanValue();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
+
+      if ( !foundContent )
+        throw Exception( "missing 'content'" );
+      if ( handle.empty() )
+        throw Exception( "missing 'file'" );
+
+      m_fileHandleManager->putFile( handle, content.length(), content.data(), append );
+    }
+
+    void Manager::jsonExecGetTextFileContent( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
+    {
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
+
+      std::string fullPath = m_fileHandleManager->getPath( handle );
+
+      if( !FileExists( fullPath ) )
+        throw Exception( "Error: file not found" );
+
+      //Note: we don't request file data from ResourceManager beause we need a synchronous response
+      size_t fileSize = GetFileSize( fullPath );
+      std::string content;
+      content.resize( fileSize );
+
+      std::ifstream file( fullPath.c_str(), std::ios::in );
       if( !file.is_open() )
-        throw Exception( "Unable to open file " + GetSafeDisplayPath(dir, filename) );
+        throw Exception( "Unable to open file" );
 
-      size_t size = file.tellg();
-      file.seekg (0, std::ios::beg);
-
-      void* data = bytes.Allocate( size );
-      if( !data && size )
-        throw Exception( "Out of memory while reading file " + GetSafeDisplayPath(dir, filename) );
-
-      file.read( (char*)data, size );
+      file.read( (char*)content.data(), fileSize );
       if( file.bad() )
-        throw Exception( "Error while reading file " + GetSafeDisplayPath(dir, filename) );
-    }
-
-    void Manager::jsonExecPutUserFile(
-      JSON::Entity const &arg,
-      size_t size, const void* data,
-      const char* defaultExtension,
-      JSON::ArrayEncoder &resultArrayEncoder
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-
-      bool existingFile = false;
-      bool writeAccess;
-      jsonQueryUserFileAndDir( arg, &existingFile, defaultExtension, dir, filename, writeAccess );
-      putFile( dir, filename, size, data );
-    }
-
-    void Manager::jsonExecGetUserFile(
-      JSON::Entity const &arg,
-      ByteContainer& bytes, bool binary,
-      std::string& filename,
-      std::string& extension,
-      JSON::ArrayEncoder &resultArrayEncoder
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      bool existingFile = true;
-      bool writeAccess;
-      jsonQueryUserFileAndDir( arg, &existingFile, NULL, dir, filename, writeAccess );
-
-      getFile( dir, filename, binary, bytes );
-      extension = GetExtension( filename );
-    }
-
-    struct StringByteContainerAdapter : public IO::Manager::ByteContainer
-    {
-      virtual void* Allocate( size_t size )
-      {
-        m_string.resize( size, 0 );
-        return (void*)m_string.data();
-      }
-
-      std::string m_string;
-    };
-
-    void Manager::jsonExecGetUserTextFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
-    {
-      std::string filename, extension;
-      StringByteContainerAdapter stringData;
-      jsonExecGetUserFile( arg, stringData, false, filename, extension, resultArrayEncoder );
-      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
-      resultEncoder.makeString( stringData.m_string );
-    }
-
-    void Manager::jsonExecPutUserTextFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
-    {
-      arg.requireObject();
-      JSON::ObjectDecoder argObjectDecoder( arg );
-      JSON::Entity keyString, valueEntity;
-      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
-      {
-        try
-        {
-          if ( keyString.stringIs( "content", 7 ) )
-          {
-            valueEntity.requireString();
-            std::string content = valueEntity.stringToStdString();
-            jsonExecPutUserFile( arg, content.length(), content.data(), "txt", resultArrayEncoder );//"txt": overriden by arg's extension if provided
-          }
-        }
-        catch ( Exception e )
-        {
-          argObjectDecoder.rethrow( e );
-        }
-      }
-    }
-
-    void Manager::jsonExecQueryUserFileAndFolder( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      bool writeAccess;
-
-      jsonQueryUserFileAndDir( arg, NULL, NULL, dir, filename, writeAccess );
-
-      static const size_t folderIDByteCount = 96;
-      uint8_t folderIDBytes[folderIDByteCount];
-      Util::generateSecureRandomBytes( folderIDByteCount, folderIDBytes );
-      std::string pathHandle = Util::encodeBase64( folderIDBytes, folderIDByteCount );
-
-      DirInfo dirInfo;
-      dirInfo.m_dir = dir;
-      dirInfo.m_writeAccess = writeAccess;
-
-      if( m_handleToDirMap.insert( std::make_pair( pathHandle, dirInfo ) ).second == false )
-        throw Exception( "Unexpected failure" );
+        throw Exception( "Error while reading text file" );
 
       JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
-      JSON::ArrayEncoder pathHandleAndFilenameArrayEncoder = resultEncoder.makeArray();
-      {
-        JSON::Encoder pathHandleEncoder = pathHandleAndFilenameArrayEncoder.makeElement();
-        pathHandleEncoder.makeString( pathHandle );
-      }
-      {
-        JSON::Encoder filenameEncoder = pathHandleAndFilenameArrayEncoder.makeElement();
-        filenameEncoder.makeString( filename );
-      }
+      resultEncoder.makeString( content );
     }
-
-    void Manager::jsonGetFileAndDirFromHandlePath(
-      JSON::Entity const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file
-      ) const
-    {
-      std::vector<std::string> path;
-            
-      arg.requireObject();
-      JSON::ObjectDecoder argObjectDecoder( arg );
-      JSON::Entity keyString, valueEntity;
-      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
-      {
-        try
-        {
-          if ( keyString.stringIs( "path", 4 ) )
-          {
-            valueEntity.requireArray();
-            JSON::ArrayDecoder pathArrayDecoder( valueEntity );
-            JSON::Entity elementEntity;
-            while ( pathArrayDecoder.getNext( elementEntity ) )
-            {
-              try
-              {
-                elementEntity.requireString();
-                path.push_back( elementEntity.stringToStdString() );
-              }
-              catch ( Exception e )
-              {
-                pathArrayDecoder.rethrow( e );
-              }
-            }
-          }
-        }
-        catch ( Exception e )
-        {
-          argObjectDecoder.rethrow( e );
-        }
-      }
-      
-      if ( path.size() < 2 )
-        throw Exception( "path must containt at least a directoryHandle and a filename (size >= 2)" );
-
-      const std::string& dirHandle = path[0];
-      HandleToDirMap::const_iterator handleIt = m_handleToDirMap.find( dirHandle );
-
-      if( handleIt == m_handleToDirMap.end() )
-        throw Exception( "Unknown directory handle: '" + dirHandle + "'. Valid directory handles can only be obtained through 'IO.queryUserFileAndFolder'." );
-
-      if(!existingFile && !handleIt->second.m_writeAccess)
-        throw Exception( "Directory handle '" + dirHandle + "' was not created with write permission." );
-
-      dir = handleIt->second.m_dir;
-      
-      size_t i;
-      for( i = 1; i < path.size()-1; ++i )
-      {
-        const std::string& pathElement = path[i];
-        try
-        {
-          dir = Dir::Create( dir, pathElement, !existingFile );//Note: this calls validateEntry(pathElement)
-          std::string fullPath = dir->getFullPath();
-          if( IsLink( fullPath ) )
-            throw Exception("File access through path containing symbolic links is prohibed");
-          if( existingFile && !DirExists( fullPath ) )
-            throw Exception("Directory not found");
-        }
-        catch ( Exception e )
-        {
-          throw Exception("Error accessing path element " + pathElement + ": " + e );
-        }
-      }
-      file = path[path.size()-1];
-    }
-
-    void Manager::jsonExecPutFile(
-      JSON::Entity const &arg,
-      size_t size,
-      const void* data,
-      JSON::ArrayEncoder &resultArrayEncoder
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      jsonGetFileAndDirFromHandlePath( arg, false, dir, filename );
-      putFile( dir, filename, size, data );
-    }
-
-    void Manager::jsonExecGetFile(
-      JSON::Entity const &arg,
-      ByteContainer& bytes, bool binary,
-      std::string& filename,
-      std::string& extension,
-      JSON::ArrayEncoder &resultArrayEncoder
-      ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      jsonGetFileAndDirFromHandlePath( arg, true, dir, filename );
-
-      getFile( dir, filename, binary, bytes );
-      extension = GetExtension( filename );
-    }
-
-    void Manager::jsonExecGetTextFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      jsonGetFileAndDirFromHandlePath( arg, true, dir, filename );
-
-      StringByteContainerAdapter stringData;
-      getFile( dir, filename, false, stringData );
-      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
-      resultEncoder.makeString( stringData.m_string );
-    }
-
-    void Manager::jsonExecPutTextFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
-    {
-      RC::ConstHandle<Dir> dir;
-      std::string filename;
-      jsonGetFileAndDirFromHandlePath( arg, false, dir, filename );
-
-      arg.requireObject();
-      JSON::ObjectDecoder argObjectDecoder( arg );
-      JSON::Entity keyString, valueEntity;
-      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
-      {
-        try
-        {
-          if ( keyString.stringIs( "content", 7 ) )
-          {
-            valueEntity.requireString();
-            std::string content = valueEntity.stringToStdString();
-            putFile( dir, filename, content.length(), content.data() );
-          }
-        }
-        catch ( Exception e )
-        {
-          argObjectDecoder.rethrow( e );
-        }
-      }
-    }
-  }
-}
+  };
+};

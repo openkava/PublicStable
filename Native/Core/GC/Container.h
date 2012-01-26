@@ -18,7 +18,7 @@ namespace Fabric
   {
     class ArrayEncoder;
     class CommandChannel;
-    class Entity;
+    struct Entity;
   }
   
   namespace GC

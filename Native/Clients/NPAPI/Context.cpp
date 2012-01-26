@@ -76,6 +76,7 @@ namespace Fabric
       JSON::ArrayEncoder &resultArrayEncoder
       )
     {
+      ActiveContextBracket activeContextBracket( this );
       if ( dst.size() - dstOffset >= 1 && dst[dstOffset].stringIs( "VP", 2 ) )
       {
         try

@@ -8,7 +8,7 @@
 #include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/JSON/Encoder.h>
 
-#if !defined(FABRIC_WIN32)
+#if !defined(FABRIC_OS_WINDOWS)
 # include <alloca.h>
 #endif
 
