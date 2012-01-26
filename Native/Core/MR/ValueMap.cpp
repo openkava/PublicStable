@@ -5,7 +5,7 @@
 #include <Fabric/Core/MR/ValueMap.h>
 #include <Fabric/Core/MR/ValueMapOperator.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric

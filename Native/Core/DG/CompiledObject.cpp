@@ -3,10 +3,8 @@
  */
 
 #include <Fabric/Core/DG/CompiledObject.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Core/Util/Timer.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 #include <map>
 
@@ -134,15 +132,15 @@ namespace Fabric
     
     unsigned CompiledObject::s_collectTasksGlobalGeneration = 0;
       
-    void CompiledObject::jsonDescErrors( Util::JSONGenerator &resultJG ) const
+    void CompiledObject::jsonDescErrors( JSON::Encoder &resultEncoder ) const
     {
       Errors const &errors = getErrors();
 
-      Util::JSONArrayGenerator errorsJAG = resultJG.makeArray();
+      JSON::ArrayEncoder resultArrayEncoder = resultEncoder.makeArray();
       for ( size_t i=0; i<errors.size(); ++i )
       {
-        Util::JSONGenerator errorJG = errorsJAG.makeElement();
-        errorJG.makeString( errors[i] );
+        JSON::Encoder errorEncoder = resultArrayEncoder.makeElement();
+        errorEncoder.makeString( errors[i] );
       }
     }
     

@@ -41,7 +41,7 @@ namespace Fabric
     
       Var( CG::Location const &location, std::string const &name );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
       RC::ConstHandle<CG::ValueSymbol> getValueSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       

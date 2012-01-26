@@ -3,11 +3,10 @@
  */
  
 #include <Fabric/Core/RT/ConstStringImpl.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -43,25 +42,14 @@ namespace Fabric
       else
         return memcmp( lhsBits->data, rhsBits->data, lhsBits->length ) == 0;
     }
-
-    RC::Handle<JSON::Value> ConstStringImpl::getJSONValue( void const *data ) const
+    
+    void ConstStringImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       bits_t const *bits = static_cast<bits_t const *>( data );
-      return JSON::String::Create( bits->data, bits->length );
+      encoder.makeString( bits->data, bits->length );
     }
     
-    void ConstStringImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      bits_t const *bits = static_cast<bits_t const *>( data );
-      jsonGenerator.makeString( bits->data, bits->length );
-    }
-    
-    void ConstStringImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
-    {
-      throw Exception( "cannot set constant string from a JSON value" );
-    }
-    
-    void ConstStringImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+    void ConstStringImpl::decodeJSON( JSON::Entity const &entity, void *dst ) const
     {
       throw Exception( "cannot set constant string from a JSON value" );
     }
@@ -99,5 +87,10 @@ namespace Fabric
       bits_t const *bits = static_cast<bits_t const *>( data );
       return std::string( bits->data, bits->length );
     }
-  };
-};
+
+    bool ConstStringImpl::isExportable() const
+    {
+      return false;
+    }
+  }
+}

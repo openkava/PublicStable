@@ -9,6 +9,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -37,16 +38,16 @@ namespace Fabric
     {
     }
     
-    void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void Alias::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Global::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      Global::appendJSONMembers( jsonObjectEncoder, includeLocation );
       {
-        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( "newTypeName" );
-        memberJG.makeString( m_name );
+        JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "newTypeName" );
+        memberEncoder.makeString( m_name );
       }
       {
-        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( "oldTypeName" );
-        memberJG.makeString( m_adapterName );
+        JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "oldTypeName" );
+        memberEncoder.makeString( m_adapterName );
       }
     }
     

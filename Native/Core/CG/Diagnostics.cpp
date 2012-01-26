@@ -21,35 +21,20 @@ namespace Fabric
         m_impl.push_back( *it );
     }
     
-    void Diagnostics::generateJSON( Util::JSONGenerator &jg ) const
+    void Diagnostics::encodeJSON( JSON::Encoder &jg ) const
     {
-      Util::JSONArrayGenerator resultJAG = jg.makeArray();
+      JSON::ArrayEncoder resultArrayEncoder = jg.makeArray();
       for ( CG::Diagnostics::const_iterator it=begin(); it!=end(); ++it )
       {
         CG::Location const &location = it->first;
         CG::Diagnostic const &diagnostic = it->second;
         
-        Util::JSONObjectGenerator resultJOG = resultJAG.makeElement().makeObject();
-        {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "filename", 8 );
-          memberJG.makeString( location.getFilename() );
-        }
-        {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "line", 4 );
-          memberJG.makeInteger( location.getLine() );
-        }
-        {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "column", 6 );
-          memberJG.makeInteger( location.getColumn() );
-        }
-        {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "level", 5 );
-          memberJG.makeString( diagnostic.getLevelDesc() );
-        }
-        {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "desc", 4 );
-          memberJG.makeString( diagnostic.getDesc().getData(), diagnostic.getDesc().getLength() );
-        }
+        JSON::ObjectEncoder resultObjectEncoder = resultArrayEncoder.makeElement().makeObject();
+        resultObjectEncoder.makeMember( "filename", 8 ).makeString( location.getFilename() );
+        resultObjectEncoder.makeMember( "line", 4 ).makeInteger( location.getLine() );
+        resultObjectEncoder.makeMember( "column", 6 ).makeInteger( location.getColumn() );
+        resultObjectEncoder.makeMember( "level", 5 ).makeString( diagnostic.getLevelDesc() );
+        resultObjectEncoder.makeMember( "desc", 4 ).makeString( diagnostic.getDesc().getData(), diagnostic.getDesc().getLength() );
       }
     }
   }

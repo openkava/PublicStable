@@ -16,15 +16,9 @@ namespace llvm
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONGenerator;
-  };
-  
   namespace JSON
   {
-    class Value;
-    class Array;
+    class Encoder;
   };
   
   namespace CG
@@ -48,7 +42,7 @@ namespace Fabric
       static RC::ConstHandle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam = 0, RC::ConstHandle<ParamVector> const &remainingParams = 0 );
       static RC::ConstHandle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
+      void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
     
       std::vector<CG::FunctionParam> getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<std::string> getTypes() const;
@@ -61,10 +55,6 @@ namespace Fabric
     protected:
     
       ParamVector();
-      
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

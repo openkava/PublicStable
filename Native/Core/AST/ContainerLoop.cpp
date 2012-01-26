@@ -54,14 +54,14 @@ namespace Fabric
     {
     }
     
-    void ContainerLoop::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void ContainerLoop::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_dictExpr->appendJSON( jsonObjectGenerator.makeMember( "dictExpr" ), includeLocation );
-      jsonObjectGenerator.makeMember( "keyName" ).makeString( m_keyName );
+      Statement::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_dictExpr->appendJSON( jsonObjectEncoder.makeMember( "dictExpr" ), includeLocation );
+      jsonObjectEncoder.makeMember( "keyName" ).makeString( m_keyName );
       if ( m_valueName.length() > 0 )
-        jsonObjectGenerator.makeMember( "valueName" ).makeString( m_valueName );
-      m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ), includeLocation );
+        jsonObjectEncoder.makeMember( "valueName" ).makeString( m_valueName );
+      m_body->appendJSON( jsonObjectEncoder.makeMember( "body" ), includeLocation );
     }
     
     void ContainerLoop::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

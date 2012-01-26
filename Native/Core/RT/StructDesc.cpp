@@ -4,10 +4,7 @@
  
 #include "StructDesc.h"
 #include "StructImpl.h"
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -59,26 +56,20 @@ namespace Fabric
       m_prototype = prototype;
     }
     
-    void StructDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void StructDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "struct" );
-      Util::JSONGenerator membersJG = resultJOG.makeMember( "members" );
-      Util::JSONArrayGenerator membersJAG = membersJG.makeArray();
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "struct" );
+      JSON::Encoder membersEncoder = resultObjectEncoder.makeMember( "members" );
+      JSON::ArrayEncoder membersArrayEncoder = membersEncoder.makeArray();
       size_t numMembers = getNumMembers();
       for ( size_t i=0; i<numMembers; ++i )
       {
         RT::StructMemberInfo const &memberInfo = getMemberInfo( i );
-        Util::JSONGenerator memberJG = membersJAG.makeElement();
-        Util::JSONObjectGenerator memberJOG = memberJG.makeObject();
-        {
-          Util::JSONGenerator nameJG = memberJOG.makeMember( "name" );
-          nameJG.makeString( memberInfo.name );
-        }
-        {
-          Util::JSONGenerator typeJG = memberJOG.makeMember( "type" );
-          typeJG.makeString( memberInfo.desc->getUserName() );
-        }
+        JSON::Encoder memberEncoder = membersArrayEncoder.makeElement();
+        JSON::ObjectEncoder memberObjectEncoder = memberEncoder.makeObject();
+        memberObjectEncoder.makeMember( "name" ).makeString( memberInfo.name );
+        memberObjectEncoder.makeMember( "type" ).makeString( memberInfo.desc->getUserName() );
       }
     }
   };

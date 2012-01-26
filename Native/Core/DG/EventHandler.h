@@ -79,21 +79,21 @@ namespace Fabric
       
       void setSelector( std::string const &targetScopeName, RC::Handle<Binding> const &selector );
       
-      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAppendChildEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecRemoveChildEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAddScope( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecRemoveScope( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetSelector( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetBindingName( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
-      void jsonDescChildEventHandlers( Util::JSONGenerator &resultJG ) const;
-      void jsonDescScopes( Util::JSONGenerator &resultJG ) const;
-      void jsonDescBindingName( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonRoute( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      static void jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecAppendChildEventHandler( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecRemoveChildEventHandler( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecAddScope( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecRemoveScope( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetSelector( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetBindingName( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      virtual void jsonDescType( JSON::Encoder &resultEncoder ) const;
+      void jsonDescChildEventHandlers( JSON::Encoder &resultEncoder ) const;
+      void jsonDescScopes( JSON::Encoder &resultEncoder ) const;
+      void jsonDescBindingName( JSON::Encoder &resultEncoder ) const;
       
     protected:
     
