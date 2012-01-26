@@ -47,6 +47,7 @@ namespace Fabric
     
     inline void throwException( size_t length, char const *data )
     {
+      printf("Fabric::EDK::Exception: %s\n",data);
       s_callbacks.m_throwException( length, data );
     }
     
