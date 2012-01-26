@@ -8,6 +8,8 @@
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/Util/Log.h>
 
+#include <map>
+
 namespace Fabric
 {
   namespace Python
@@ -20,19 +22,23 @@ namespace Fabric
       static RC::Handle<Client> Create();
       
       virtual void notify( Util::SimpleString const &jsonEncodedNotifications ) const;
-      void notifyInitialState() const
-      {
-        DG::Client::notifyInitialState();
-      }
-
       void setJSONNotifyCallback( void (*callback)(const char *) );
+
+      void jsonExecAndAllocCStr( char const *data, const size_t length, const char **str );
+      void freeJsonCStr( const char *str );
 
     protected:
    
       Client( RC::Handle<DG::Context> const &context );
-      //~Client();
+      virtual ~Client();
 
       void (*m_notifyCallback)(const char *);
+
+      // map of const char * pointers that we have passed to Python
+      // and their associated SimpleString, we can't delete these
+      // until Python says it's finished with them
+      typedef std::map<const char *, Util::SimpleString *> PassedStringMap;
+      PassedStringMap m_passedStrings;
     };
   };
 };
