@@ -106,6 +106,16 @@ FABRIC_EXT_EXPORT void FabricCIMGOpenFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(fileHandle);
+  if( !wrapper.isValid() )
+  {
+    throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
+    return;
+  }
+  if( wrapper.isFolder() )
+  {
+    throwException( "FileHandle '%s' is a folder, invalid for reading a file.", wrapper.getPath().data() );
+    return;
+  }
   return readImageFromFile(wrapper.getPath(),imageWidth,imageHeight,imagePixels);
 }
 
@@ -147,9 +157,19 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(fileHandle);
+  if( !wrapper.isValid() )
+  {
+    throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
+    return;
+  }
   if(wrapper.isReadOnly())
   {
     Fabric::EDK::throwException("CIMG extension: Cannot write to a readOnly FileHandle.");
+    return;
+  }
+  if( wrapper.isFolder() )
+  {
+    throwException( "FileHandle '%s' is a folder, invalid for writing a file.", wrapper.getPath().data() );
     return;
   }
   
