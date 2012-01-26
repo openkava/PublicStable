@@ -977,7 +977,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
           color: FABRIC.RT.rgb(1, 0, 0),
           targetName: solver.getName()+j+'IKGoal',
           size: 1.0,
-          radius: 0.8,
+          radius: options.manipulatorSizes ? options.manipulatorSizes[options.manipulatorSizes.length-1] : 0.9,
           screenTranslationManipulators: true
         });
         
@@ -1124,7 +1124,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
       if(digitParams.projectToGround == true){
         var lastDigitId = boneIDs.bones[boneIDs.bones.length-1];
         var digitTipXfo = referencePose[lastDigitId].clone();
-        digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(bones[lastDigitId].length));
+        digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(digitParams.tipBoneLength));
         digitTipXfo.tr.y = 0.0;
         digitTipOffsets.push((referencePose[lastDigitId].inverse().multiply(digitTipXfo)).tr);
       }else{
