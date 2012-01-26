@@ -78,6 +78,7 @@ class CLIENT( object ):
     self.__queuedUnwinds.append( unwind )    
     self.__queuedCallbacks.append( callback )    
 
+    # FIXME leaving this in for debug only
     self.executeQueuedCommands()
 
   def executeQueuedCommands( self ):
@@ -337,7 +338,7 @@ class GCOBJECT( object ):
       raise Exception( "GC object has already been disposed" )
     self._client.queueCommand( [self.__namespace, self.__id], cmd, arg, unwind, callback )
 
-  def __registerCallback( self, callback ):
+  def _registerCallback( self, callback ):
     self.__nextCallbackID = self.__nextCallbackID + 1
     callbackID = self.__nextCallbackID
     self.__callbacks[ callbackID ] = callback
@@ -404,8 +405,22 @@ class ARRAYPRODUCER( PRODUCER ):
   def flush( self ):
     self._queueCommand( 'flush' )
 
-  # FIXME implement produceAsync
-  #def produceAsync( self, b0
+  def produceAsync( self, arg1, arg2 = None, arg3 = None ):
+    arg = { }
+    callback = None
+    if arg3 is None and arg2 is None:
+      callback = arg1
+    elif arg3 is None:
+      arg[ 'index' ] = arg1
+      callback = arg2
+    else:
+      arg[ 'index' ] = arg1
+      arg[ 'count' ] = arg2
+      callback = arg3
+
+    arg[ 'serial' ] = self._registerCallback( callback )
+    self._queueCommand( 'produceAsync', arg )
+    self._client.executeQueuedCommands()
 
 class VALUEPRODUCER( PRODUCER ):
   def __init__( self, client ):
@@ -422,7 +437,7 @@ class VALUEPRODUCER( PRODUCER ):
     return result[ '_' ]
 
   def produceAsync( self, callback ):
-    self._queueCommand( 'produceAsync', self.__registerCallback( callback ) )
+    self._queueCommand( 'produceAsync', self._registerCallback( callback ) )
     self._client.executeQueuedCommands()
 
   def flush( self ):

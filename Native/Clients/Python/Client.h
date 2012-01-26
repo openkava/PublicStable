@@ -7,6 +7,8 @@
 
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/Mutex.h>
+#include <Fabric/Core/Util/TLS.h>
 
 #include <map>
 
@@ -39,6 +41,10 @@ namespace Fabric
       // until Python says it's finished with them
       typedef std::map<const char *, Util::SimpleString *> PassedStringMap;
       PassedStringMap m_passedStrings;
+
+      Util::TLSVar<bool> m_mainThreadTLS;
+      mutable Util::Mutex m_mutex;
+      mutable std::vector<std::string> m_bufferedNotifications;
     };
   };
 };
