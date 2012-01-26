@@ -18,9 +18,6 @@ namespace Fabric
 {
   namespace Python
   {
-    // FIXME this shouldn't be global
-    std::map<const char*, Util::SimpleString*> g_stringMap;
-
     extern "C" FABRIC_CLI_EXPORT void* createClient()
     {
       FABRIC_LOG( "%s version %s", Fabric::buildName, Fabric::buildFullVersion );
@@ -39,7 +36,7 @@ namespace Fabric
       return client.ptr();
     }
     
-    extern "C" FABRIC_CLI_EXPORT void jsonExec( void *client_, char const *data, size_t length, const char **result, size_t *rlength )
+    extern "C" FABRIC_CLI_EXPORT void jsonExec( void *client_, char const *data, size_t length, const char **result )
     {
 #ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "calling jsonExec: %x", client_ );
@@ -51,38 +48,21 @@ namespace Fabric
       FABRIC_LOG( "sending to jsonExec: %s", data );
 #endif
 
-      Util::SimpleString *jsonEncodedResults = new Util::SimpleString();
-      Util::JSONGenerator resultJSON( jsonEncodedResults );
-      
-      try
-      {
-        client->jsonExec( data, length, resultJSON );
-      }
-      catch ( Exception e )
-      {
-        FABRIC_LOG( "exception: " + e.getDesc() );
-      }
-
-      *rlength = jsonEncodedResults->length();
-      *result = jsonEncodedResults->c_str();
-
-      // FIXME verify doesn't exist already
-      g_stringMap[ jsonEncodedResults->c_str() ] = jsonEncodedResults;
+      client->jsonExecAndAllocCStr( data, length, result );
 
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "received from jsonExec: %s", jsonEncodedResults->c_str() );
+      FABRIC_LOG( "received from jsonExec: %s", *result );
 #endif
     }
 
-    extern "C" FABRIC_CLI_EXPORT void freeString( void *string )
+    extern "C" FABRIC_CLI_EXPORT void freeString( void *client_, void *string )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling freeString: %x", string );
+      FABRIC_LOG( "calling freeString: %x (%x)", client_, string );
 #endif
 
-      // FIXME error handling
-      Util::SimpleString *sstring = g_stringMap.find( (const char*) string )->second;
-      delete sstring;
+      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
+      client->freeJsonCStr( (const char *)string );
     }
 
     extern "C" FABRIC_CLI_EXPORT void setJSONNotifyCallback(

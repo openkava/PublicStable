@@ -74,6 +74,18 @@ namespace Fabric
     {
     }
 
+    Client::~Client()
+    {
+      PassedStringMap::iterator it = m_passedStrings.begin();
+      while ( it != m_passedStrings.end() )
+      {
+        m_passedStrings.erase( it );
+        delete it->second;
+        it++;
+      }
+      FABRIC_ASSERT( m_passedStrings.empty() );
+    }
+
     void Client::setJSONNotifyCallback( void (*callback)(const char *) )
     {
       m_notifyCallback = callback;
@@ -81,6 +93,30 @@ namespace Fabric
 
     void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
+      // m_notifyCallback( jsonEncodedNotifications.c_str() );
+    }
+
+    void Client::jsonExecAndAllocCStr( char const *data, size_t length, const char **str )
+    {
+      Util::SimpleString *jsonEncodedResults = new Util::SimpleString();
+      Util::JSONGenerator resultJSON( jsonEncodedResults );
+
+      jsonExec( data, length, resultJSON );
+
+      *str = jsonEncodedResults->c_str();
+
+      // keep a handle to the SimpleString for later deletion
+      PassedStringMap::iterator i = m_passedStrings.find( *str );
+      FABRIC_ASSERT( i == m_passedStrings.end() );
+      m_passedStrings[ *str ] = jsonEncodedResults;
+    }
+
+    void Client::freeJsonCStr( char const *str )
+    {
+      PassedStringMap::iterator i = m_passedStrings.find( str );
+      FABRIC_ASSERT( i != m_passedStrings.end() );
+      m_passedStrings.erase( i );
+      delete i->second;
     }
   }
 };
