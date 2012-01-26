@@ -5,7 +5,7 @@
 #include "Random.h"
 #include "Debug.h"
 
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #if defined(FABRIC_POSIX)
 # include <sys/stat.h>
@@ -23,7 +23,7 @@ namespace Fabric
 #if defined(FABRIC_POSIX)
       int fd = open( "/dev/urandom", O_RDONLY );
       FABRIC_ASSERT( fd != -1 );
-      FABRIC_CONFIRM( read( fd, bytes, count ) == int(count) );
+      FABRIC_VERIFY( read( fd, bytes, count ) == int(count) );
       close( fd );
 #elif defined(FABRIC_WIN32)
       HCRYPTPROV  hCryptProvider = NULL;

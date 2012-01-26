@@ -25,11 +25,11 @@ namespace Fabric
     {
     }
     
-    void UniOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void UniOp::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "op" ).makeString( uniOpUserName( m_uniOpType ) );
-      m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "op" ).makeString( uniOpUserName( m_uniOpType ) );
+      m_child->appendJSON( jsonObjectEncoder.makeMember( "child" ), includeLocation );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const

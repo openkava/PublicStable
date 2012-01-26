@@ -57,7 +57,7 @@ namespace Fabric
       ~Interface();
           
       void jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength,
-        Util::JSONGenerator &resultJG
+        JSON::Encoder &resultEncoder
         );
       void setJSONNotifyCallback( NPObject *npObject );
       

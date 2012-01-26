@@ -18,15 +18,12 @@ namespace Fabric
   namespace Util
   {
     class SimpleString;
-    class Encoder;
-    class Decoder;
   };
   
   namespace JSON
   {
-    class Value;
-    class Integer;
-    class Object;
+    class Encoder;
+    class Decoder;
   };
   
   namespace MT
@@ -83,38 +80,38 @@ namespace Fabric
       void const *getConstData( std::string const &name, size_t index ) const;
       void *getMutableData( std::string const &name, size_t index );
       void getData( std::string const &name, size_t index, void *dstData ) const;
-      void getDataJSON( std::string const &name, size_t index, Util::JSONGenerator &resultJG ) const;
+      void getDataJSON( std::string const &name, size_t index, JSON::Encoder &resultEncoder ) const;
       void setData( std::string const &name, size_t index, void const *data );
 
-      void generateJSON( Util::JSONGenerator &jsonGenerator ) const;
-      void generateSliceJSON( size_t index, Util::JSONGenerator &jsonGenerator ) const;
-      void generateMemberJSON( std::string const &member, Util::JSONGenerator &jsonGenerator ) const;
+      void encodeJSON( JSON::Encoder &encoder ) const;
+      void generateSliceJSON( size_t index, JSON::Encoder &encoder ) const;
+      void generateMemberJSON( std::string const &member, JSON::Encoder &encoder ) const;
 
-      void setJSON( RC::ConstHandle<JSON::Value> const &value );
-      void setSliceJSON( size_t index, RC::ConstHandle<JSON::Value> const &value );
+      void setJSON( JSON::Entity const &entity );
+      void setSliceJSON( size_t index, JSON::Entity const &entity );
 
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonSetCount( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetBulkData( Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetBulkDataJSON( Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecSetBulkDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecAddMember( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecRemoveMember( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonSetCount( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetDataJSON( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetDataSize( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetDataElement( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetBulkData( JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecSetBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetBulkDataJSON( JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecSetBulkDataJSON( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetSlicesBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecSetSlicesBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecGetMembersBulkData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
       void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      void jsonDescMembers( Util::JSONGenerator &resultJG ) const;
-      void jsonDescCount( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonGetMemoryUsage( Util::JSONGenerator &jg ) const;
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      void jsonDescMembers( JSON::Encoder &resultEncoder ) const;
+      void jsonDescCount( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonGetMemoryUsage( JSON::Encoder &jg ) const;
       
     protected:
     
@@ -138,7 +135,7 @@ namespace Fabric
       RC::ConstHandle<Member> getMember( std::string const &name ) const;
       RC::Handle<Member> getMember( std::string const &name );
 
-      void jsonGenerateMemberSliceJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONGenerator &resultJG );
+      void jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder );
 
     private:
     

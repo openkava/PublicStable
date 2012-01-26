@@ -14,7 +14,7 @@ namespace Fabric
 {
   namespace JSON
   {
-    class Value;
+    class Entity;
   }
   
   namespace RT
@@ -31,7 +31,7 @@ namespace Fabric
       static RC::Handle<ConstValue> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &valueDesc,
-        RC::ConstHandle<JSON::Value> const &jsonValue
+        JSON::Entity const &entity
         );
       static RC::Handle<ConstValue> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
@@ -58,7 +58,7 @@ namespace Fabric
         static RC::Handle<ComputeState> Create( RC::ConstHandle<ConstValue> const &valueMap );
      
         virtual void produce( void *data ) const;
-        virtual void produceJSON( Util::JSONGenerator &jg ) const;
+        virtual void produceJSON( JSON::Encoder &jg ) const;
       
       protected:
       
@@ -73,7 +73,7 @@ namespace Fabric
       ConstValue(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &valueDesc,
-        RC::ConstHandle<JSON::Value> const &jsonValue
+        JSON::Entity const &entity
         );
       ConstValue(
         RC::ConstHandle<RT::Manager> const &rtManager,

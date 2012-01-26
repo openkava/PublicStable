@@ -3,7 +3,8 @@
  */
  
 #include <Fabric/Core/MR/ProducerWrapper.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -16,35 +17,35 @@ namespace Fabric
     {
     }
 
-    void ProducerWrapper::toJSON( Util::JSONGenerator &jg ) const
+    void ProducerWrapper::toJSON( JSON::Encoder &jsonEncoder ) const
     {
-      Util::JSONObjectGenerator jog = jg.makeObject();
+      JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
       
       {
-        Util::JSONGenerator typeNameJG = jog.makeMember( "kind" );
-        typeNameJG.makeString( getKind() );
+        JSON::Encoder typeNameEncoder = jsonObjectEncoder.makeMember( "kind" );
+        typeNameEncoder.makeString( getKind() );
       }
      
-      toJSONImpl( jog );
+      toJSONImpl( jsonObjectEncoder );
     }
       
     void ProducerWrapper::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "toJSON" )
-        jsonExecGetJSONDesc( arg, resultJAG );
-      else GC::Object::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "toJSON", 6 ) )
+        jsonExecGetJSONDesc( arg, resultArrayEncoder );
+      else GC::Object::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
     void ProducerWrapper::jsonExecGetJSONDesc(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
       toJSON( jg );
     }
   }

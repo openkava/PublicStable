@@ -28,7 +28,7 @@ namespace Fabric
       void pop( void *dst, void *result ) const;
       void append( void *dst, void const *src ) const;
       
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       
     protected:
     

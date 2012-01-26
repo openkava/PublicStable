@@ -3,7 +3,7 @@
  */
 
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Util/AutoPtr.h>
 
 #if defined( FABRIC_OS_WINDOWS )

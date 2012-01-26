@@ -37,12 +37,12 @@ namespace Fabric
     {
     }
     
-    void Case::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void Case::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Node::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      Node::appendJSONMembers( jsonObjectEncoder, includeLocation );
       if ( m_expr )
-        m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ), includeLocation );
-      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ), includeLocation );
+        m_expr->appendJSON( jsonObjectEncoder.makeMember( "expr" ), includeLocation );
+      m_statements->appendJSON( jsonObjectEncoder.makeMember( "statements" ), includeLocation );
     }
     
     void Case::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

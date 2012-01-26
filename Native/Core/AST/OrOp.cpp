@@ -28,11 +28,11 @@ namespace Fabric
     {
     }
     
-    void OrOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void OrOp::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ), includeLocation );
-      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_left->appendJSON( jsonObjectEncoder.makeMember( "lhs" ), includeLocation );
+      m_right->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
     void OrOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

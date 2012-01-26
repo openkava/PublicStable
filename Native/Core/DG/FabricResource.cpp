@@ -9,7 +9,7 @@
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
