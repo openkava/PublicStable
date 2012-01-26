@@ -6,6 +6,7 @@
 #include "objparser.h"
 
 #include <streambuf>
+#include <fstream>
 
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
@@ -51,6 +52,21 @@ FABRIC_EXT_EXPORT void FabricOBJDecode(
 
   FabricOBJFreeParsedData(handle);
   handle.m_parseData = new ObjParser(memstream, splitByObjects, splitByGroups, splitByMaterials, EDKExceptionThrow);
+}
+
+FABRIC_EXT_EXPORT void FabricOBJOpenFileHandle(
+  KL::String fileHandle,
+  KL::Boolean splitByObjects,
+  KL::Boolean splitByGroups,
+  KL::Boolean splitByMaterials,
+  OBJDataHandle &handle
+  )
+{
+  KL::FileHandleWrapper wrapper(fileHandle);
+  std::ifstream filestream(wrapper.getPath().data());
+  
+  FabricOBJFreeParsedData(handle);
+  handle.m_parseData = new ObjParser(filestream, splitByObjects, splitByGroups, splitByMaterials, EDKExceptionThrow);
 }
 
 FABRIC_EXT_EXPORT void FabricOBJIsHandleValid(
