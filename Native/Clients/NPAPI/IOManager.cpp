@@ -7,7 +7,7 @@
 #include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <npapi/npapi.h>
 #include "HTTPResourceProvider.h"
 

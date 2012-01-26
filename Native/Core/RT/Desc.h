@@ -15,17 +15,14 @@ namespace Fabric
   namespace Util
   {
     class SimpleString;
-    class Encoder;
-    class Decoder;
-    class JSONGenerator;
-    class JSONObjectGenerator;
-    struct JSONEntityInfo;
   };
   
   namespace JSON
   {
-    class Value;
-    class Object;
+    class Decoder;
+    class Encoder;
+    struct Entity;
+    class ObjectEncoder;
   };
   
   namespace RT
@@ -64,19 +61,18 @@ namespace Fabric
       bool equalsData( void const *lhs, void const *rhs ) const;
       size_t getIndirectMemoryUsage( void const *data ) const;
       
-      RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
-      void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
-      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
-      void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
+      void encodeJSON( void const *data, JSON::Encoder &encoder ) const;
+      void decodeJSON( JSON::Entity const &entity, void *data ) const;
 
       void setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const;
       RC::ConstHandle<RC::Object> getKLBindingsAST() const;
       
       bool isEquivalentTo( RC::ConstHandle< RT::Desc > const &desc ) const;
       bool isShallow() const;
+      bool isExportable() const;
       
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       
     protected:
     

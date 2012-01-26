@@ -7,12 +7,9 @@
 
 #include <Fabric/Core/RT/NumericImpl.h>
 #include <Fabric/Core/Util/Math.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
-#include <Fabric/Base/JSON/Null.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/Scalar.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/Config.h>
 
@@ -55,66 +52,34 @@ namespace Fabric
         setValue( getValue( src ), dst );
       }
         
-      RC::Handle<JSON::Value> getJSONValue( void const *src ) const
-      {
-        T value = getValue( src );
-        double doubleValue = double(value);
-        if ( Util::isnan( doubleValue ) || Util::isinf( doubleValue ) )
-          return JSON::Null::Create();
-        else return JSON::Scalar::Create( doubleValue );
-      }
-      
-      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+      void encodeJSON( void const *data, JSON::Encoder &encoder ) const
       {
         T value = getValue( data );
         double doubleValue = double(value);
         if ( Util::isnan( doubleValue ) || Util::isinf( doubleValue ) )
-          jsonGenerator.makeNull();
-        else jsonGenerator.makeScalar( doubleValue );
+          encoder.makeNull();
+        else encoder.makeScalar( doubleValue );
       }
       
-      void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *dst ) const
+      void decodeJSON( JSON::Entity const &entity, void *dst ) const
       {
-        if ( entityInfo.type == Util::ET_INTEGER )
+        if ( entity.isInteger() )
         {
-          int32_t int32Value = entityInfo.value.integer;
+          int32_t int32Value = entity.integerValue();
           T tValue = T( int32Value );
           setValue( tValue, dst );
         }
-        else if ( entityInfo.type == Util::ET_SCALAR )
+        else if ( entity.isScalar() )
         {
-          double doubleValue = entityInfo.value.scalar;
+          double doubleValue = entity.scalarValue();
           T tValue = T( doubleValue );
           setValue( tValue, dst );
         }
-        else if ( entityInfo.type == Util::ET_NULL )
+        else if ( entity.isNull() )
         {
           setValue( Util::nanValue<T>(), dst );
         }
-        else throw Exception( "value is not scalar, integer or null" );
-      }
-      
-      void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
-      {
-        if ( jsonValue->isInteger() )
-        {
-          RC::ConstHandle<JSON::Integer> jsonInteger = RC::ConstHandle<JSON::Integer>::StaticCast( jsonValue );
-          int32_t int32Value = jsonInteger->value();
-          T tValue = T( int32Value );
-          setValue( tValue, dst );
-        }
-        else if ( jsonValue->isScalar() )
-        {
-          RC::ConstHandle<JSON::Scalar> jsonScalar = RC::ConstHandle<JSON::Scalar>::StaticCast( jsonValue );
-          double doubleValue = jsonScalar->value();
-          T tValue = T( doubleValue );
-          setValue( tValue, dst );
-        }
-        else if ( jsonValue->isNull() )
-        {
-          setValue( Util::nanValue<T>(), dst );
-        }
-        else throw Exception( "value is not scalar, integer or null" );
+        else throw Exception( "JSON entity must be scalar, integer or null" );
       }
       
       std::string descData( void const *data ) const

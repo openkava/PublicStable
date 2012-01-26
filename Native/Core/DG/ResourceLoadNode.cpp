@@ -13,11 +13,7 @@
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/Value.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
@@ -29,7 +25,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         resourceLoadNode->jsonDesc( jg );
       }
       resourceLoadNode->jsonNotifyDelta( json );
@@ -56,12 +52,13 @@ namespace Fabric
     }
 
     void ResourceLoadNode::jsonExecCreate(
-      RC::ConstHandle<JSON::Value> const &arg,
+      JSON::Entity const &arg,
       RC::Handle<Context> const &context,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Create( arg->toString()->value(), context );
+      arg.requireString();
+      Create( arg.stringToStdString(), context );
     }
 
     void ResourceLoadNode::evaluateLocal( void *userdata )
@@ -171,15 +168,15 @@ namespace Fabric
 
         Util::SimpleString json;
         {
-          Util::JSONGenerator jg( &json );
-          Util::JSONObjectGenerator jog = jg.makeObject();
+            JSON::Encoder jsonEncoder( &json );
+            JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
           {
-            Util::JSONGenerator memberJG = jog.makeMember( "received", 8 );
-            memberJG.makeInteger( done );
+              JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "received", 8 );
+              memberEncoder.makeInteger( done );
           }
           {
-            Util::JSONGenerator memberJG = jog.makeMember( "total", 5 );
-            memberJG.makeInteger( total );
+              JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "total", 5 );
+              memberEncoder.makeInteger( total );
           }
         }
         getContext()->jsonNotify( src, "resourceLoadProgress", 20, &json );

@@ -11,8 +11,8 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Operator.h>
-#include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/Util/TLS.h>
+#include <Fabric/Base/JSON/Decoder.h>
 
 #include <llvm/ADT/OwningPtr.h>
 #include <llvm/Function.h>
@@ -100,9 +100,9 @@ namespace Fabric
       }
         
       virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
 
     protected:
@@ -139,40 +139,38 @@ namespace Fabric
     private:
     
       void jsonExecGetAST(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     
       void jsonExecGetDiagnostics(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     
       template<class T> void jsonExecResolveOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         )
       {
-        RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-        
         std::string id_;
-        try
-        {
-          id_ = argObject->get("id")->toString()->value();
-        }
-        catch ( Exception e )
-        {
-          throw "id: " + e;
-        }
-        
         std::string operatorName;
-        try
+
+        arg.requireObject();
+        JSON::ObjectDecoder objectDecoder( arg );
+        JSON::Entity keyString, valueEntity;
+        while ( objectDecoder.getNext( keyString, valueEntity ) )
         {
-          operatorName = argObject->get("operatorName")->toString()->value();
-        }
-        catch ( Exception e )
-        {
-          throw "operatorName: " + e;
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "operatorName", 12 ) )
+          {
+            valueEntity.requireString();
+            operatorName = valueEntity.stringToStdString();
+          }
         }
         
         resolveOperator<T>( operatorName )->reg( m_gcContainer, id_ );

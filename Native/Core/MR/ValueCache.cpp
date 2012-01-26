@@ -48,6 +48,8 @@ namespace Fabric
 
     void ValueCache::flush()
     {
+      (const_cast<ValueProducer *>(m_input.ptr()))->flush();
+
       if ( m_cacheData.size() > 0 )
       {
         Util::Mutex::Lock mutexLock( m_mutex );
@@ -64,8 +66,8 @@ namespace Fabric
     ValueCache::ComputeState::ComputeState( RC::ConstHandle<ValueCache> const &valueCache )
       : ValueProducer::ComputeState( valueCache )
       , m_valueCache( valueCache )
-      , m_mutex( valueCache->m_mutex )
       , m_inputValueProducerComputeState( valueCache->m_input->createComputeState() )
+      , m_mutex( valueCache->m_mutex )
     {
     }
     

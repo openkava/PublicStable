@@ -3,17 +3,17 @@
  */
  
 #include <Fabric/Core/RT/Impl.h>
-#include <Fabric/Core/RT/FixedArrayImpl.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
-#include <Fabric/Core/RT/SlicedArrayImpl.h>
+
+#include <Fabric/Core/RT/ArrayProducerImpl.h>
 #include <Fabric/Core/RT/ComparableImpl.h>
 #include <Fabric/Core/RT/DictImpl.h>
+#include <Fabric/Core/RT/FixedArrayImpl.h>
+#include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/ValueProducerImpl.h>
-#include <Fabric/Core/RT/ArrayProducerImpl.h>
-#include <Fabric/Core/Util/Encoder.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Util/Bits.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {

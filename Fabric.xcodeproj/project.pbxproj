@@ -1170,6 +1170,8 @@
 		DBE4D7F213E9FB2E004A50E5 /* Tools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Tools; sourceTree = "<group>"; };
 		DBE6FF24142A336A00DC4A01 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		DBE6FF25142A340200DC4A01 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		DBFA620F14CC7E3A00552C82 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		DBFA621014CC7F1900552C82 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1250,6 +1252,7 @@
 		DB39A76513425AEB007026BA = {
 			isa = PBXGroup;
 			children = (
+				DBFA620F14CC7E3A00552C82 /* Makefile */,
 				DBE6FF25142A340200DC4A01 /* index.html */,
 				DB966DC413A5422000616143 /* Native */,
 				DB96842E13A5445200616143 /* Web */,
@@ -1434,6 +1437,7 @@
 		DB967F6013A5440A00616143 /* ThirdParty */ = {
 			isa = PBXGroup;
 			children = (
+				DBFA621014CC7F1900552C82 /* SConscript */,
 				DB9BFC6A140EC6FA00711AEE /* Private */,
 				DB9683A113A5444900616143 /* Public */,
 			);
@@ -3214,7 +3218,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# shell script goes here\nPATH=/opt/local/bin:$PATH make 2>&1 | sed -l s,build/Darwin/universal/Debug/Fabric/,$(pwd)/Native/,g\n";
+			shellScript = "# shell script goes here\nPATH=/opt/local/bin:$PATH make xcode 2>&1 | sed -l s,build/Darwin/universal/Debug/Fabric/,$(pwd)/Native/,g\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

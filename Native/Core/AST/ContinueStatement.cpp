@@ -22,9 +22,9 @@ namespace Fabric
     {
     }
     
-    void ContinueStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void ContinueStatement::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      Statement::appendJSONMembers( jsonObjectEncoder, includeLocation );
     }
     
     void ContinueStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
