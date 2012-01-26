@@ -5,10 +5,8 @@
 #include "SlicedArrayDesc.h"
 #include "SlicedArrayImpl.h"
 
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -25,11 +23,11 @@ namespace Fabric
       return RC::ConstHandle<RT::SlicedArrayImpl>::StaticCast( Desc::getImpl() );
     }
     
-    void SlicedArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void SlicedArrayDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      ArrayDesc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "slicedArray" );
-      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
+      ArrayDesc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "slicedArray" );
+      resultObjectEncoder.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
 
     void SlicedArrayDesc::setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const

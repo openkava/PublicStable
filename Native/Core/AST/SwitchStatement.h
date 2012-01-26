@@ -49,7 +49,7 @@ namespace Fabric
         RC::ConstHandle<CaseVector> const &cases
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
     
     private:
     

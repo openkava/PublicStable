@@ -58,16 +58,16 @@ namespace Fabric
       void setSelectType( RC::ConstHandle<RT::Desc> const &selectorType );
       void select( SelectedNodeList &selectedNodes ) const;
       
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecFire( Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetSelectType( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecSelect( Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
-      void jsonDescEventHandlers( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      static void jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecAppendEventHandler( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecFire( JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetSelectType( JSON::Entity const &arg );
+      void jsonExecSelect( JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      virtual void jsonDescType( JSON::Encoder &resultEncoder ) const;
+      void jsonDescEventHandlers( JSON::Encoder &resultEncoder ) const;
       
     protected:
     

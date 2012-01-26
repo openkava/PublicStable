@@ -22,9 +22,7 @@ e = FABRIC.DependencyGraph.createEvent("event");
 e.appendEventHandler( eh1 );
 e.appendEventHandler( eh2 );
 
-console.log( "Errors on eh1:" );
-console.log( eh1.getErrors() );
-console.log( "Errors on eh2:" );
-console.log( eh2.getErrors() );
+console.log( "Errors on e:" );
+console.log( e.getErrors() );
 
 FABRIC.close();

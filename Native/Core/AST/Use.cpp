@@ -29,10 +29,10 @@ namespace Fabric
     {
     }
     
-    void Use::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void Use::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Node::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      Node::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "name" ).makeString( m_name );
     }
     
     void Use::collectUses( UseNameToLocationMap &uses ) const

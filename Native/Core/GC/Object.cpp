@@ -4,7 +4,8 @@
  
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/GC/Container.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
@@ -34,25 +35,25 @@ namespace Fabric
     }
 
     void Object::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( dst.size() - dstOffset == 0 )
-        jsonExec( cmd, arg, resultJAG );
+        jsonExec( cmd, arg, resultArrayEncoder );
       else throw Exception( "unroutable" );
     }
       
     void Object::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "dispose" )
+      if ( cmd.stringIs( "dispose", 7 ) )
         dispose();
       else throw Exception( _(cmd) + ": unknown command" );
     }

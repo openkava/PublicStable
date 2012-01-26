@@ -12,16 +12,9 @@
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONGenerator;
-  };
-  
   namespace JSON
   {
-    class Value;
-    class Object;
-    class Array;
+    class Encoder;
   };
   
   namespace DG
@@ -37,18 +30,18 @@ namespace Fabric
       virtual bool isOperator() const { return false; }
             
       virtual void jsonRoute(
-        std::vector<std::string> const &dst,
+        std::vector<JSON::Entity> const &dst,
         size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const = 0;
-      virtual void jsonGetMemoryUsage( Util::JSONGenerator &jg ) const;
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      virtual void jsonDescType( JSON::Encoder &resultEncoder ) const = 0;
+      virtual void jsonGetMemoryUsage( JSON::Encoder &jg ) const;
       
     protected:
     

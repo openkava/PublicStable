@@ -5,7 +5,7 @@
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/Util/Assert.h>
 
 #include <errno.h>
@@ -37,7 +37,7 @@ namespace Fabric
 
     void validateEntry( std::string const &entry )
     {
-      if ( entry.length() == 0 )
+      if ( entry.empty() )
         throw Exception("driectory entries cannot be empty");
       if ( entry == "." || entry == ".." )
         throw Exception("directory entries cannot be '.' or '..'");
@@ -90,7 +90,7 @@ namespace Fabric
     std::string const &getRootPath()
     {
       static std::string s_rootPath;
-      if ( s_rootPath.length() == 0 )
+      if ( s_rootPath.empty() )
       {
         char const *homeDir = 0;
 #if defined(FABRIC_POSIX)
@@ -119,9 +119,9 @@ namespace Fabric
     
     std::string JoinPath( std::string const &lhs, std::string const &rhs )
     {
-      if ( lhs.length() == 0 )
+      if ( lhs.empty() )
         return rhs;
-      else if ( rhs.length() == 0 )
+      else if ( rhs.empty() )
         return lhs;
       else
         return lhs + s_pathSeparator + rhs;

@@ -4,7 +4,7 @@
  
 #include "ArrayProducerDesc.h"
 #include "ArrayProducerImpl.h"
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -21,10 +21,10 @@ namespace Fabric
     {
     }
     
-    void ArrayProducerDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void ArrayProducerDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "arrayProducer" );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "arrayProducer" );
     }
     
     RC::ConstHandle<Desc> ArrayProducerDesc::getElementDesc() const
