@@ -516,6 +516,8 @@ namespace Fabric
     {
       if ( cmd.stringIs( "getData", 7 ) )
         jsonExecGetData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "setData", 7 ) )
+        jsonExecSetData( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getDataJSON", 11 ) )
         jsonExecGetDataJSON( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getDataSize", 11 ) )
