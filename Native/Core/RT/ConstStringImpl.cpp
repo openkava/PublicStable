@@ -87,5 +87,10 @@ namespace Fabric
       bits_t const *bits = static_cast<bits_t const *>( data );
       return std::string( bits->data, bits->length );
     }
-  };
-};
+
+    bool ConstStringImpl::isExportable() const
+    {
+      return false;
+    }
+  }
+}

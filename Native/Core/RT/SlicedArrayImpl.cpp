@@ -195,5 +195,10 @@ namespace Fabric
         return sizeof( *bits->rcva ) + m_variableArrayImpl->getIndirectMemoryUsage( &bits->rcva->varArray );
       else return 0;
     }
-  };
-};
+    
+    bool SlicedArrayImpl::isExportable() const
+    {
+      return m_variableArrayImpl->isExportable();
+    }
+  }
+}

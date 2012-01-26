@@ -13,7 +13,7 @@ namespace Fabric
   namespace RT
   {
     ValueProducerImpl::ValueProducerImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &valueImpl )
-      : Impl( codeName, DT_VALUE_PRODUCER )
+      : ProducerImpl( codeName, DT_VALUE_PRODUCER )
       , m_valueImpl( valueImpl )
     {
       setSize( sizeof(MR::ValueProducer const *) );

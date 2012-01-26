@@ -135,5 +135,10 @@ namespace Fabric
         total += sizeof( *bits ) + bits->allocSize;
       return total;
     }
-  };
-};
+    
+    bool StringImpl::isExportable() const
+    {
+      return true;
+    }
+  }
+}
