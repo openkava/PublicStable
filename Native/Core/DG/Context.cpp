@@ -550,7 +550,7 @@ namespace Fabric
       }
       {
         Util::JSONGenerator memberJG = resultJGObject.makeMember( "teem", 4 );
-        jsonDescLicenses_liblas( memberJG );
+        jsonDescLicenses_teem( memberJG );
       }
     }
 
