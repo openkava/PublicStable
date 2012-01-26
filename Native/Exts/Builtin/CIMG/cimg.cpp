@@ -22,7 +22,13 @@ void readImageFromFile(
   KL::VariableArray<KL::RGBA> &imagePixels
   )
 {
-  CImg<unsigned char> img(fileName.data());
+  CImg<unsigned char> img;
+  try{
+    img.load(fileName.data());
+  }catch(CImgIOException e) {
+    throwException("CIMG Exception: %s",e.what());
+    return;
+  }
   unsigned char * imgData = img.data();
   imageWidth = img.width();
   imageHeight = img.height();
@@ -108,7 +114,7 @@ FABRIC_EXT_EXPORT void FabricCIMGOpenFileHandle(
   KL::FileHandleWrapper wrapper(fileHandle);
   if( !wrapper.isValid() )
   {
-    throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
+    Fabric::EDK::throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
     return;
   }
   if( wrapper.isFolder() )
@@ -159,7 +165,7 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
   KL::FileHandleWrapper wrapper(fileHandle);
   if( !wrapper.isValid() )
   {
-    throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
+    Fabric::EDK::throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
     return;
   }
   if(wrapper.isReadOnly())
@@ -169,7 +175,7 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
   }
   if( wrapper.isFolder() )
   {
-    throwException( "FileHandle '%s' is a folder, invalid for writing a file.", wrapper.getPath().data() );
+    Fabric::EDK::throwException( "FileHandle '%s' is a folder, invalid for writing a file.", wrapper.getPath().data() );
     return;
   }
   
@@ -187,5 +193,10 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
     image.data()[offsetA++] = imagePixels[i].a;
   }
   
-  image.save(wrapper.getPath().data());
+  try{
+    image.save(wrapper.getPath().data());
+  }catch(CImgIOException e) {
+    throwException("CIMG Exception: %s",e.what());
+    return;
+  }
 }
