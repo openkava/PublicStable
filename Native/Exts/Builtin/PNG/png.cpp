@@ -186,3 +186,35 @@ FABRIC_EXT_EXPORT void FabricPNGEncode(
     readImageHeight,
     readImagePixels);
 }
+
+FABRIC_EXT_EXPORT void FabricPNGOpenFileHandle(
+  KL::String handle,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  KL::FileHandleWrapper wrapper(handle);
+  FILE * fp= fopen(wrapper.getPath().data(),"rb");
+  if(!fp)
+  {
+    Fabric::EDK::throwException("PNG Extension: File does not exist!");
+    return;
+  }
+  
+  fseek(fp, 0L, SEEK_END);
+  KL::Size size = ftell(fp);
+  fseek(fp, 0L, SEEK_SET);
+
+  KL::Data data = malloc(size);
+  if(fread(data,1,size,fp) != size)
+  {
+    fclose(fp);
+    Fabric::EDK::throwException("PNG Extension: Could not read file contents!");
+    return;
+  }
+  fclose(fp);
+  
+  FabricPNGDecode(data,size,imageWidth,imageHeight,imagePixels);
+  free(data);
+}
