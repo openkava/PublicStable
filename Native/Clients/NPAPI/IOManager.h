@@ -11,14 +11,10 @@
 
 namespace Fabric
 {
-  namespace MT
-  {
-    class LogCollector;
-  };
-  
   namespace NPAPI
   {
     class Context;
+    class HTTPResourceProvider;
 
     class IOManager : public IO::Manager
     {
@@ -26,20 +22,6 @@ namespace Fabric
     
       static RC::Handle<IOManager> Create( NPP npp );
     
-      virtual RC::Handle<IO::Stream> createStream(
-        std::string const &url,
-        IO::Stream::DataCallback dataCallback,
-        IO::Stream::EndCallback endCallback,
-        IO::Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        ) const;
-    
-      NPError nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype );
-      int32_t nppWriteReady( NPP npp, NPStream* stream );
-      int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
-      NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
-
       virtual std::string queryUserFilePath(
         bool existingFile,
         std::string const &title,
@@ -49,10 +31,13 @@ namespace Fabric
 
       IOManager( NPP npp );
       void setContext( RC::Handle<Context> const &context );
+
+      RC::Handle< HTTPResourceProvider > getHTTPResourceProvider() const;
       
     private:
     
       NPP m_npp;
+      RC::Handle< HTTPResourceProvider > m_httpResourceProvider;
       Context* m_context;
     };
   };

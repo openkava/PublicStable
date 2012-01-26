@@ -9,6 +9,7 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Clients/NPAPI/IOManager.h>
+#include <Fabric/Clients/NPAPI/HTTPResourceProvider.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Util/Assert.h>
 
@@ -344,27 +345,33 @@ namespace Fabric
     NPError Interface::nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype )
     {
       FABRIC_ASSERT( npp == m_npp );
-      return m_context->getIOManager()->nppNewStream( npp, type, stream, seekable, stype );
+      return m_context->getIOManager()->getHTTPResourceProvider()->nppNewStream( npp, type, stream, seekable, stype );
     }
 
     int32_t Interface::nppWriteReady( NPP npp, NPStream* stream )
     {
       FABRIC_ASSERT( npp == m_npp );
-      return m_context->getIOManager()->nppWriteReady( npp, stream );
+      return m_context->getIOManager()->getHTTPResourceProvider()->nppWriteReady( npp, stream );
     }
 
     int32_t Interface::nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer )
     {
       FABRIC_ASSERT( npp == m_npp );
-      return m_context->getIOManager()->nppWrite( npp, stream, offset, len, buffer );
+      return m_context->getIOManager()->getHTTPResourceProvider()->nppWrite( npp, stream, offset, len, buffer );
     }
 
     NPError Interface::nppDestroyStream( NPP npp, NPStream *stream, NPReason reason )
     {
       FABRIC_ASSERT( npp == m_npp );
-      return m_context->getIOManager()->nppDestroyStream( npp, stream, reason );
+      return m_context->getIOManager()->getHTTPResourceProvider()->nppDestroyStream( npp, stream, reason );
     }
-      
+
+    NPError Interface::nppStreamAsFile( NPP npp, NPStream *stream, const char* fname )
+    {
+      FABRIC_ASSERT( npp == m_npp );
+      return m_context->getIOManager()->getHTTPResourceProvider()->nppStreamAsFile( npp, stream, fname );
+    }
+
     void Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength, JSON::Encoder &resultEncoder )
     {
       if ( m_viewPort )

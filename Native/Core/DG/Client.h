@@ -21,7 +21,7 @@ namespace Fabric
   {
     class ArrayEncoder;
     class Encoder;
-    class Entity;
+    struct Entity;
   };
   
   namespace DG

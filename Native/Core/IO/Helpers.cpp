@@ -6,6 +6,7 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -15,6 +16,9 @@
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <sys/types.h>
+# if defined(FABRIC_OS_MACOSX)
+#  include <copyfile.h>
+# endif
 #elif defined(FABRIC_WIN32)
 # include <windows.h>
 #endif 
@@ -52,7 +56,37 @@ namespace Fabric
 #endif
       }
     }
-    
+
+    void validateAbsolutePath( std::string const &entry )
+    {
+      // [JeromeCG 2012012] For now we mostly want to avoid having ".." in the path. However it should be made more robust to really ensure it is an absolute path.
+      if ( entry.length() == 0 )
+        throw Exception("paths cannot be empty");
+
+      bool hasDots = false;
+      bool hasOthers = false;
+      size_t length = entry.length();
+
+      size_t i = 0;
+      while( true )
+      {
+        if( i == length || entry[i] == s_pathSeparator[i] )
+        {
+          if( hasDots && !hasOthers )
+            throw Exception("paths cannot contain '.' or '..'");
+          if( i == length )
+            break;
+          hasDots = false;
+          hasOthers = false;
+        }
+        char ch = entry[i++];
+        if( ch == '.' )
+          hasDots = true;
+        else if( ch != ' ' )
+          hasOthers = true;
+      }
+    }
+
     std::string const &getRootPath()
     {
       static std::string s_rootPath;
@@ -130,6 +164,36 @@ namespace Fabric
       return GetExtension( filename, "/" );
     }
     
+    std::string ChangeSeparatorsURLToFile( std::string const &url )
+    {
+      if( s_pathSeparator[0] != '/' )
+      {
+        std::string result( url );
+        for( size_t i = 0; i < result.size(); ++i )
+        {
+          if( result[i] == '/' )
+            result[i] = s_pathSeparator[0];
+        }
+        return result;
+      }
+      return url;
+    }
+
+    std::string ChangeSeparatorsFileToURL( std::string const &filePath )
+    {
+      if( s_pathSeparator[0] != '/' )
+      {
+        std::string result( filePath );
+        for( size_t i = 0; i < result.size(); ++i )
+        {
+          if( result[i] == s_pathSeparator[0] )
+            result[i] = '/';
+        }
+        return result;
+      }
+      return filePath;
+    }
+
     /*
     void safeCall( int fd, void (*callback)( int fd ) )
     {
@@ -185,6 +249,27 @@ namespace Fabric
       DWORD dwAttrib = ::GetFileAttributesA( fullPath.c_str() );
       result = (dwAttrib != INVALID_FILE_ATTRIBUTES)
       	&& !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+#endif 
+      return result;
+    }
+
+    size_t GetFileSize( std::string const &fullPath )
+    {
+      size_t result;
+#if defined(FABRIC_POSIX)
+      struct stat st;
+      if( stat( fullPath.c_str(), &st ) != 0 || S_ISDIR(st.st_mode) )
+        throw Exception("File doesn't exist");
+      result = st.st_size;
+#elif defined(FABRIC_WIN32)
+      WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+      if( !GetFileAttributesEx(fullPath.c_str(), GetFileExInfoStandard, (void*)&fileInfo)
+            || fileInfo.dwFileAttributes == INVALID_FILE_ATTRIBUTES
+            || (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
+        throw Exception("Error retrieving file info");
+
+      FABRIC_ASSERT(0 == fileInfo.nFileSizeHigh);//Won't fit in a size_t anyway (for 32 bits OS)
+      result = fileInfo.nFileSizeLow;
 #endif 
       return result;
     }
@@ -265,6 +350,47 @@ namespace Fabric
       ::FindClose( hDir );
 #endif
       return result;
+    }
+
+    void CopyFile_( std::string const &sourceFullPath, std::string const &targetFullPath )
+    {
+#if defined(FABRIC_OS_MACOSX)
+      if( copyfile( sourceFullPath.c_str(), targetFullPath.c_str(), NULL, COPYFILE_ALL ) < 0 )
+        throw Exception("file copy failed");
+#elif defined(FABRIC_OS_LINUX)
+      int file1, file2;
+      
+      if(!(file1 = open(sourceFullPath.c_str(), O_RDONLY)))
+      {
+        throw Exception("file copy failed");
+        return;
+      }
+      if(!(file2 = open(targetFullPath.c_str(), O_WRONLY | O_CREAT, 0600)))
+      {
+        throw Exception("file copy failed");
+        return;
+      }
+      
+      char buf[1024];
+      memset(buf, 0, 1024);
+
+      size_t size = read(file1, buf, 1024);
+      while(size != 0)
+      {
+        if(write(file2, buf, size) != size)
+        {
+          throw Exception("file copy failed");
+          break;
+        }
+        size = read(file1, buf, 1024);
+      }
+      
+      close(file1);
+      close(file2);
+#elif defined(FABRIC_WIN32)
+      if( ::CopyFile( sourceFullPath.c_str(), targetFullPath.c_str(), FALSE ) == FALSE )
+        throw Exception("file copy failed");
+#endif
     }
     
     static inline bool EqInsensitive( std::string const &lhs, std::string const &rhs )

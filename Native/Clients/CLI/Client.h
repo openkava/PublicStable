@@ -67,6 +67,9 @@ namespace Fabric
       // libuv callbacks
       static void AsyncCallback( uv_async_t *async, int status );
     
+      // user callbacks
+      static void ScheduleAsyncUserCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
+            
     private:
     
       RC::Handle<Client> m_client;
@@ -74,6 +77,12 @@ namespace Fabric
       Util::TLSVar<bool> m_mainThreadTLS;
       uv_async_t m_uvAsync;
       std::vector<std::string> m_bufferedNotifications;
+      struct AsyncCallbackData
+      {
+        void (*m_callbackFunc)(void *);
+        void *m_callbackFuncUserData;
+      };
+      std::vector<AsyncCallbackData> m_bufferedAsyncUserCallbacks;
       v8::Persistent<v8::Function> m_notifyCallback;
     };
   };

@@ -92,6 +92,19 @@ namespace Fabric
       
         RC::Handle<Context> m_context;
       };
+
+      class ActiveContextBracket
+      {
+      public:
+
+        ActiveContextBracket( Context* currContext );
+        ~ActiveContextBracket();
+
+      private:
+      
+        Context* m_prevContext;
+        Context* m_currContext;
+      };
     
       typedef Util::UnorderedMap< std::string, RC::Handle<NamedObject> > NamedObjectMap;
     
@@ -169,7 +182,7 @@ namespace Fabric
       void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       void jsonExecGetMemoryUsage( JSON::ArrayEncoder &resultArrayEncoder ) const;
       void jsonDGGetMemoryUsage( JSON::Encoder &jg ) const;
-      
+
     private:
     
       static Util::Mutex s_contextMapMutex;

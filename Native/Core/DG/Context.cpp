@@ -8,22 +8,20 @@
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Node.h>
 #include <Fabric/Core/DG/ResourceLoadNode.h>
-#include <Fabric/Core/DG/FabricFileHandle.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
 #include <Fabric/Core/CG/CompileOptions.h>
-#include <Fabric/Core/RT/OpaqueDesc.h>
-#include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
-#include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Compiler.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/JSON/Decoder.h>
@@ -48,7 +46,21 @@ namespace Fabric
     Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
     static bool s_checkExpiry = true;
+    Context *s_activeContext = NULL;
     
+    Context::ActiveContextBracket::ActiveContextBracket( Context* currContext )
+      : m_prevContext( s_activeContext )
+      , m_currContext( currContext )
+    {
+      s_activeContext = m_currContext;
+    }
+
+    Context::ActiveContextBracket::~ActiveContextBracket()
+    {
+      FABRIC_ASSERT( s_activeContext == m_currContext );
+      s_activeContext = m_prevContext;
+    }
+
     RC::Handle<Context> Context::Create(
       RC::Handle<IO::Manager> const &ioManager,
       std::vector<std::string> const &pluginDirs,
@@ -111,6 +123,7 @@ namespace Fabric
       FABRIC_ASSERT( !m_pendingNotificationsJSON );
       
       FABRIC_ASSERT( m_clients.empty() );
+      FABRIC_ASSERT( s_activeContext != this );//Should always use ActiveContextBracket
 
       {
         Util::Mutex::Lock contextMapLock( s_contextMapMutex );
@@ -135,7 +148,6 @@ namespace Fabric
     void Context::registerCoreTypes()
     {
       RegisterFabricResourceType( m_rtManager );
-      RegisterFabricFileHandleType( m_rtManager );
     }
     
     void Context::jsonNotify(
@@ -199,6 +211,8 @@ namespace Fabric
     
     void Context::closeNotificationBracket()
     {
+      ActiveContextBracket activeContextBracket( this );
+
       if ( m_notificationBracketCount.decrementAndGetValue() == 0
         && m_pendingNotificationsJSON )
       {
@@ -380,6 +394,7 @@ namespace Fabric
       }
       
       Util::Mutex::Lock mutexLock( m_mutex );
+      ActiveContextBracket activeContextBracket( this );
 
       if ( dst.size() - dstOffset == 0 )
       {
@@ -690,6 +705,65 @@ namespace Fabric
       throw Exception( length, data );
     }
 
+    Context* GetActiveContext()
+    {
+      FABRIC_ASSERT( s_activeContext != NULL );
+      if( s_activeContext == NULL )
+        throw Exception( "Unexpected error: no active Fabric context" );
+
+      return s_activeContext;
+    }
+
+    void FileHandleCreateFromPath( void *stringData, char const *filePathCString, bool folder, bool readOnly )
+    {
+      std::string handle = GetActiveContext()->getIOManager()->getFileHandleManager()->createHandle( filePathCString, folder, readOnly );
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      stringDesc->setValue( handle.data(), handle.length(), stringData );
+    }
+
+    void FileGetPath( void const *stringData, void *pathStringData )
+    {
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      std::string path = GetActiveContext()->getIOManager()->getFileHandleManager()->getPath( handle );
+      stringDesc->setValue( path.data(), path.length(), pathStringData );
+    }
+
+    bool FileHandleIsValid( void const *stringData )
+    {
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return GetActiveContext()->getIOManager()->getFileHandleManager()->isValid( handle );
+    }
+
+    bool FileHandleIsReadOnly( void const *stringData )
+    {
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return GetActiveContext()->getIOManager()->getFileHandleManager()->isReadOnly( handle );
+    }
+
+    bool FileHandleIsFolder( void const *stringData )
+    {
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return GetActiveContext()->getIOManager()->getFileHandleManager()->isFolder( handle );
+    }
+
+    bool FileHandleTargetExists( void const *stringData )
+    {
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return GetActiveContext()->getIOManager()->getFileHandleManager()->targetExists( handle );
+    }
+
+    void FileHandleEnsureTargetExists( void const *stringData )
+    {
+      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      GetActiveContext()->getIOManager()->getFileHandleManager()->ensureTargetExists( handle );
+    }
+
     EDK::Callbacks Context::GetCallbackStruct()
     {
       Fabric::EDK::Callbacks callbacks;
@@ -697,11 +771,14 @@ namespace Fabric
       callbacks.m_realloc = realloc;
       callbacks.m_free = free;
       callbacks.m_throwException = throwException;
-      callbacks.m_fabricFileHandleCopy = FabricFileHandleCopy;
-      callbacks.m_fabricFileHandleDelete = FabricFileHandleDelete;
-      callbacks.m_fabricFileHandleSetFromPath = FabricFileHandleSetFromPath;
-      callbacks.m_fabricFileHandleGetFullPath = FabricFileHandleGetFullPath;
-      callbacks.m_fabricFileHandleHasReadWriteAccess = FabricFileHandleHasReadWriteAccess;
+      callbacks.m_fileHandleCreateFromPath = FileHandleCreateFromPath;
+      callbacks.m_fileGetPath = FileGetPath;
+      callbacks.m_fileHandleIsValid = FileHandleIsValid;
+      callbacks.m_fileHandleIsReadOnly = FileHandleIsReadOnly;
+      callbacks.m_fileHandleIsFolder = FileHandleIsFolder;
+      callbacks.m_fileHandleTargetExists = FileHandleTargetExists;
+      callbacks.m_fileHandleEnsureTargetExists = FileHandleEnsureTargetExists;
+
       return callbacks;
     }
   };

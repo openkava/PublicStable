@@ -10,6 +10,7 @@
 #include <Fabric/Core/DG/FabricResource.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
@@ -515,22 +516,16 @@ namespace Fabric
     {
       if ( cmd.stringIs( "getData", 7 ) )
         jsonExecGetData( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "setData", 7 ) )
+        jsonExecSetData( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getDataJSON", 11 ) )
         jsonExecGetDataJSON( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getDataSize", 11 ) )
         jsonExecGetDataSize( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getDataElement", 14 ) )
         jsonExecGetDataElement( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "putResourceToUserFile", 21 ) )
-        jsonExecPutResourceToFile( arg, true, resultArrayEncoder );
-      else if ( cmd.stringIs( "getResourceFromUserFile", 23 ) )
-        jsonExecGetResourceFromFile( arg, true, resultArrayEncoder );
       else if ( cmd.stringIs( "putResourceToFile", 17 ) )
-        jsonExecPutResourceToFile( arg, false, resultArrayEncoder );
-      else if ( cmd.stringIs( "getResourceFromFile", 19 ) )
-        jsonExecGetResourceFromFile( arg, false, resultArrayEncoder );
-      else if ( cmd.stringIs( "setData", 7 ) )
-        jsonExecSetData( arg, resultArrayEncoder );
+        jsonExecPutResourceToFile( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getBulkData", 11 ) )
         jsonExecGetBulkData( resultArrayEncoder );
       else if ( cmd.stringIs( "setBulkData", 11 ) )
@@ -974,10 +969,9 @@ namespace Fabric
       }
     }
 
-    void *Container::jsonGetResourceMember( JSON::Entity const &arg, std::string &memberName )
+    void Container::jsonExecPutResourceToFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      bool haveMemberName = false;
-      
+      std::string memberName, handle;
       arg.requireObject();
       JSON::ObjectDecoder argObjectDecoder( arg );
       JSON::Entity keyString, valueEntity;
@@ -989,7 +983,11 @@ namespace Fabric
           {
             valueEntity.requireString();
             memberName = valueEntity.stringToStdString();
-            haveMemberName = true;
+          }
+          else if ( keyString.stringIs( "file", 4 ) )
+          {
+            valueEntity.requireString();
+            handle = valueEntity.stringToStdString();
           }
         }
         catch ( Exception e )
@@ -998,61 +996,23 @@ namespace Fabric
         }
       }
       
-      if ( !haveMemberName )
+      if ( handle.empty() )
         throw Exception( "missing 'memberName'" );
+      if ( handle.empty() )
+        throw Exception( "missing 'file'" );
 
-      RC::Handle<Container::Member> member = getMember( memberName );
+      RC::ConstHandle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if ( desc->getUserName() != "FabricResource" )
-      {
         throw Exception( "member " + _(memberName) + " is not of type FabricResource" );
-      }
-      return member->getMutableElementData( 0 );
-    }
 
-    struct FabricResourceByteContainerAdapter : public IO::Manager::ByteContainer
-    {
-      FabricResourceByteContainerAdapter( FabricResourceWrapper& resource )
-        : m_resource(resource)
-      {}
+      FabricResourceWrapper resource( m_context->getRTManager(), (void*)member->getImmutableElementData( 0 ) );
 
-      virtual void* Allocate( size_t size )
-      {
-        m_resource.resizeData( size );
-        return (void*)m_resource.getDataPtr();
-      }
-
-      FabricResourceWrapper& m_resource;
-    };
-
-    void Container::jsonExecGetResourceFromFile( JSON::Entity const &arg, bool userFile, JSON::ArrayEncoder &resultArrayEncoder )
-    {
-      std::string memberName;
-      FabricResourceWrapper resourceMember( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
-
-      //Load to a temporary resource then swap to preserve existing resource in case an exception is thrown
-      FabricResourceWrapper tempResource( m_context->getRTManager() );
-      FabricResourceByteContainerAdapter tempResourceAdapter(tempResource);
-
-      std::string filename, extension;
-      if( userFile )
-        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension, resultArrayEncoder );
+      std::string dataExternalLocation = resource.getDataExternalLocation();
+      if( dataExternalLocation.empty() )
+        m_context->getIOManager()->getFileHandleManager()->putFile( handle, resource.getDataSize(), resource.getDataPtr(), false );
       else
-        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension, resultArrayEncoder );
-
-      tempResource.setExtension( extension );
-      tempResource.setURL( filename );
-      setData( memberName, 0, tempResource.get() );
-    }
-
-    void Container::jsonExecPutResourceToFile( JSON::Entity const &arg, bool userFile, JSON::ArrayEncoder &resultArrayEncoder )
-    {
-      std::string memberName;
-      FabricResourceWrapper resource( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
-      if( userFile )
-        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str(), resultArrayEncoder );
-      else
-        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resultArrayEncoder );
+        m_context->getIOManager()->getFileHandleManager()->copyFile( dataExternalLocation, handle );
     }
 
     void Container::jsonGetMemoryUsage( JSON::Encoder &encoder ) const
