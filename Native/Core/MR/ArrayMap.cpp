@@ -7,8 +7,8 @@
 #include <Fabric/Core/MR/ValueProducer.h>
 #include <Fabric/Core/MR/ArrayIOOperator.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/Log.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Log.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric

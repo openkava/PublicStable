@@ -22,10 +22,6 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/OCL/Debug.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Encode.h>
 
 #include <memory>
 
@@ -149,10 +145,8 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
     for (;;)
     {
       KL::Token token = scanner->nextToken();
-      RC::Handle<JSON::Object> jsonObject = JSON::Object::Create();
-      jsonObject->set( "token", JSON::Integer::Create( token.getType() ) );
-      jsonObject->set( "value", JSON::String::Create( token.getSourceRange().toString() ) );
-      printf( "%s\n", JSON::encode( jsonObject ).c_str() );
+      std::string escValue = _(token.getSourceRange().toString());
+      printf( "%u: %s\n", unsigned(token.getType()), escValue.c_str() );
       if ( token.getType() == TOKEN_END )
         break;
     }

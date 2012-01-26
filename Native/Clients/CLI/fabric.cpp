@@ -3,7 +3,7 @@
  */
 
 #include <Fabric/Clients/CLI/ClientFactory.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Build.h>
 
 #include <time.h>

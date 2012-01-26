@@ -9,9 +9,9 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONObjectGenerator;
+    class ObjectEncoder;
   };
   
   namespace RT
@@ -56,7 +56,7 @@ namespace Fabric
         );
       
       void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
     
     private:
     

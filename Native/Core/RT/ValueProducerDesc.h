@@ -19,7 +19,7 @@ namespace Fabric
       
     public:
     
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       
       RC::ConstHandle<Desc> getValueDesc() const;
       

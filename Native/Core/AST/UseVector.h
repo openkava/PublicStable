@@ -14,9 +14,9 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
+    class Encoder;
   };
   
   namespace AST
@@ -30,7 +30,7 @@ namespace Fabric
       
       static RC::ConstHandle<UseVector> Create( RC::ConstHandle<Use> const &first = 0, RC::ConstHandle<UseVector> const &remaining = 0 );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
+      void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
       void collectUses( UseNameToLocationMap &uses ) const;
 
     protected:

@@ -44,7 +44,7 @@ namespace Fabric
     
       MemberDecl( CG::Location const &location, std::string const &name, std::string const &typeName );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
     private:
     

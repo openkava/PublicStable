@@ -38,11 +38,11 @@ namespace Fabric
     {
     }
     
-    void StructDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void StructDecl::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Global::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
-      m_members->appendJSON( jsonObjectGenerator.makeMember( "members" ), includeLocation );
+      Global::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "name" ).makeString( m_name );
+      m_members->appendJSON( jsonObjectEncoder.makeMember( "members" ), includeLocation );
     }
     
     void StructDecl::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const

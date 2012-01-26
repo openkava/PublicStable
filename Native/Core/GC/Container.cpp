@@ -4,7 +4,8 @@
  
 #include <Fabric/Core/GC/Container.h>
 #include <Fabric/Core/JSON/CommandChannel.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
@@ -67,16 +68,16 @@ namespace Fabric
     }
 
     void Container::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       FABRIC_ASSERT( dst.size() - dstOffset > 0 );
-      std::string const &id_ = dst[dstOffset];
-      getObject( id_ )->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+      std::string const &id_ = dst[dstOffset].stringToStdString();
+      getObject( id_ )->jsonRoute( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
     }
         
     void Container::jsonNotify(

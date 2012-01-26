@@ -18,7 +18,7 @@
 
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/IntegerImpl.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 
 namespace Fabric
 {

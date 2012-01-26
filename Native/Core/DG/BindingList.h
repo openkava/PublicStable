@@ -12,16 +12,12 @@
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONGenerator;
-    class JSONArrayGenerator;
-  };
-  
   namespace JSON
   {
-    class Value;
-    class Array;
+    class ArrayDecoder;
+    class ArrayEncoder;
+    class Encoder;
+    struct Entity;
   };
   
   namespace DG
@@ -49,12 +45,22 @@ namespace Fabric
       void clear();
       size_t size() const;
       
-      void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      void jsonRoute(
+        std::vector<JSON::Entity> const &dst,
+        size_t dstOffset,
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
+        );
+      void jsonExec(
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
+        );
+      void jsonExecAppend( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecInsert( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecRemove( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
       
     protected:
     
