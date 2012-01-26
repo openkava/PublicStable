@@ -5,7 +5,7 @@
 #include "HTTPResourceProvider.h"
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/RC/WeakHandle.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
