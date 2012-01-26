@@ -9,6 +9,7 @@ operator solveHubRigs(
   io Xfo pose[],
   io Bone bones[],
   io Hub hubs[],
+  io Xfo hubsoffsetXfos[],
   io PoseVariables poseVariableSlices<>,
   Size index,
   io DebugGeometry debugGeometry
@@ -17,22 +18,23 @@ operator solveHubRigs(
   PoseVariables poseVariables = poseVariableSlices[index];
   for(Integer i=0; i < hubs.size; i++){
     Hub hub = hubs[i];
-    
+    Xfo parentXfo;
     if(hub.spineBoneIds.size > 0){
       if(hub.hubParentSpaceId == -1){
-        Xfo parentXfo = pose[bones[hub.spineBoneIds[0]].parent];
-        pose[hub.boneId] = parentXfo * poseVariables.xfoValues[hub.xfoId];
+        parentXfo = pose[bones[hub.spineBoneIds[0]].parent];
       }
       else{
-        pose[hub.boneId] = pose[hub.hubParentSpaceId] * poseVariables.xfoValues[hub.xfoId];
+        parentXfo = pose[hub.hubParentSpaceId];
       }
     }
     else{
     //  if (bones[hub.boneId].parent == -1) 
-        pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
+        parentXfo = controllerXfo;
     //  else 
+    //    parentXfo = pose[hub.hubParentSpaceId];
     //    pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
     }
+    pose[hub.boneId] = parentXfo * poseVariables.xfoValues[hub.xfoId] * hubsoffsetXfos[i];
     
     if(hub.spineBoneIds.size > 0){
       // Solve the spine in FK
@@ -85,6 +87,7 @@ operator invertHubRigs(
   io Xfo pose[],
   io Bone bones[],
   io Hub hubs[],
+  io Xfo hubsoffsetXfos[],
   io PoseVariables poseVariables,
   io DebugGeometry debugGeometry
 ) {
@@ -116,6 +119,7 @@ operator invertHubRigs(
 operator calcHubManipulatorAttachmentXfo(
   io Bone bones[],
   io Hub hubs[],
+  io Xfo hubsoffsetXfos[],
   io Xfo pose[],
   io Xfo controllerXfo,
   io PoseVariables poseVariables,

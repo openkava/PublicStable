@@ -34,7 +34,7 @@ operator solveVerletBone(
     // Apply a soft limit to the distance the verlet bone and move from the attach point.
     Vec3 vecToAttachXfo = trCurr - attachedXfo.tr;
     Scalar distToAttachXfo = vecToAttachXfo.length();
-    if(distToAttachXfo > 0.0){
+    if(distToAttachXfo > softLimitBounds[i]*0.5){
       trCurr = attachedXfo.tr + (vecToAttachXfo * (applySoftLimitBezierCurve(
         distToAttachXfo,
         softLimitBounds[i],
@@ -49,7 +49,7 @@ operator solveVerletBone(
     //////////////////////////////////////////////
     // Debugging
     if(debugGeometry.enabled){
-      debugGeometry.drawSphere(attachedXfo, softLimitBounds[i], Color(1.0, 0.0, 0.0, 0.3));
+      debugGeometry.drawSphere(attachedXfo, softLimitBounds[i], Color(1.0, 0.0, 0.0, 0.1));
     }
   }
 }
@@ -107,7 +107,7 @@ operator solveVerletMuscleBone(
     // Apply a soft limit to the distance the verlet bone and move from the attach point.
     Vec3 vecToAttachXfo = trCurr - attachedXfo.tr;
     Scalar distToAttachXfo = vecToAttachXfo.length();
-    if(distToAttachXfo > 0.0){
+    if(distToAttachXfo > softLimitBounds[i]*0.5){
       trCurr = attachedXfo.tr + (vecToAttachXfo * (applySoftLimitBezierCurve(
         distToAttachXfo,
         softLimitBounds[i],
