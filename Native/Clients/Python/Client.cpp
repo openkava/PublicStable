@@ -71,7 +71,9 @@ namespace Fabric
     
     Client::Client( RC::Handle<DG::Context> const &context )
       : DG::Client( context )
+      , m_mutex( "Python Client" )
     {
+      m_mainThreadTLS = true;
     }
 
     Client::~Client()
@@ -93,7 +95,20 @@ namespace Fabric
 
     void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
-      // m_notifyCallback( jsonEncodedNotifications.c_str() );
+      if ( m_mainThreadTLS )
+      {
+        m_notifyCallback( jsonEncodedNotifications.c_str() );
+      }
+      else
+      {
+        Util::Mutex::Lock lock( m_mutex );
+        m_bufferedNotifications.push_back(
+          std::string(
+            jsonEncodedNotifications.data(),
+            jsonEncodedNotifications.length()
+          )
+        );
+      }
     }
 
     void Client::jsonExecAndAllocCStr( char const *data, size_t length, const char **str )
