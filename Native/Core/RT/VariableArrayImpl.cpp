@@ -295,5 +295,10 @@ namespace Fabric
         total += m_memberImpl->getIndirectMemoryUsage( getImmutableMemberData_NoCheck( data, i ) );
       return total;
     }
-  };
-};
+    
+    bool VariableArrayImpl::isExportable() const
+    {
+      return m_memberImpl->isExportable();
+    }
+  }
+}

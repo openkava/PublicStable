@@ -5,7 +5,7 @@
 #ifndef _FABRIC_RT_VALUE_PRODUCER_IMPL_H
 #define _FABRIC_RT_VALUE_PRODUCER_IMPL_H
 
-#include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Core/RT/ProducerImpl.h>
 
 namespace Fabric
 {
@@ -16,7 +16,7 @@ namespace Fabric
   
   namespace RT
   {
-    class ValueProducerImpl : public Impl
+    class ValueProducerImpl : public ProducerImpl
     {
       friend class Impl;
       friend class Manager;

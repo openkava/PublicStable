@@ -30,6 +30,7 @@ namespace Fabric
       
       virtual bool isShallow() const;
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const;
+      virtual bool isExportable() const;
     
     protected:
 

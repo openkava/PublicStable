@@ -192,18 +192,21 @@ namespace Fabric
         throw Exception( "type '" + name + "' already registered with a different definition" );
       }
       
-      if ( m_jsonCommandChannel )
+      if ( desc->isExportable() )
       {
-        std::vector<std::string> dst;
-        dst.push_back( "RT" );
-        dst.push_back( desc->getUserName() );
-        
-        Util::SimpleString json;
+        if ( m_jsonCommandChannel )
         {
-          JSON::Encoder jg( &json );
-          desc->jsonDesc( jg );
+          std::vector<std::string> dst;
+          dst.push_back( "RT" );
+          dst.push_back( desc->getUserName() );
+          
+          Util::SimpleString json;
+          {
+            JSON::Encoder jg( &json );
+            desc->jsonDesc( jg );
+          }
+          m_jsonCommandChannel->jsonNotify( dst, "delta", 5, &json );
         }
-        m_jsonCommandChannel->jsonNotify( dst, "delta", 5, &json );
       }
       
       return desc;
@@ -459,8 +462,11 @@ namespace Fabric
       JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
       {
-        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( it->first );
-        it->second->jsonDesc( memberEncoder );
+        if ( it->second->isExportable() )
+        {
+          JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( it->first );
+          it->second->jsonDesc( memberEncoder );
+        }
       }
     }
 
