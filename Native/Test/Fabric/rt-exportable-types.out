@@ -1,1 +1,1 @@
-node.addMember: Fabric core exception: DG.foo.addMember('{"name":"bar","type":"Data"}'): Data: type cannot be used as a member
+node.getData('bar'): Fabric core exception: DG.foo.getData('{"memberName":"bar","sliceIndex"...'): unable to convert ValueProducer to JSON
