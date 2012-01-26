@@ -21,7 +21,7 @@ namespace Fabric
   {
     class Decoder;
     class Encoder;
-    class Entity;
+    struct Entity;
     class ObjectEncoder;
   };
   
