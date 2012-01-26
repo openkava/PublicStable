@@ -172,7 +172,7 @@ $(document).ready(function() {
   
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
-    diffuseColor: FABRIC.RT.rgba(0.8, 0.3, 0.3, 1.0)
+    diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
   });
     
   var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
@@ -247,7 +247,7 @@ $(document).ready(function() {
          { bones:['_RLeg1', '_RLeg2'], ankle:'_RLegAnkle' }
       ],
       createManipulators: true,
-      manipulatorSizes: [ 1.8, 2.0, 1.9 ],
+      manipulatorSizes: [ 1.8, 2.0, 1.9, 2.0 ],
       ikGoalManipulatorSizes: [ new FABRIC.RT.Vec2(6.0, 3.0), new FABRIC.RT.Vec2(6.0, 3.0) ]
     });
     
@@ -717,7 +717,7 @@ $(document).ready(function() {
            <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
             -->
 	      <label for="displayGeometry">Display Geometry</label><input type="checkbox" id="displayGeometry" style="margin-top:10px;" /><br>
-              <label for="displaySkeleton">Display Skeleton:</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/>
+              <label for="displaySkeleton">Display Skeleton:</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/><br>
 	      <label for="displayWireframe">Display Wireframe</label><input type="checkbox" id="displayWireframe" style="margin-top:10px;" /><br>
             
               <label for="ikblendLArm">Tesselation Level</label><div id='tesslation'></div><br>

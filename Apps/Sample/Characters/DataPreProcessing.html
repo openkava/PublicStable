@@ -575,10 +575,11 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
                { bones:['USWolfRThigh', 'USWolfRCalf'], ankle:'USWolfRAnkle' }]
     });
     
-    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
-      bones: {
-        bones:['USWolfLToe', 'USWolfRToe' ]
-      }
+    ikrigNode.addSolver('toes', 'DigitSolver', {
+      digits:[
+	{ bones:['USWolfLToe'], projectToGround:true, tipBoneLength: 0.3 },
+	{ bones:['USWolfRToe'], projectToGround:true, tipBoneLength: 0.3 }
+      ]
     });
     
     ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
@@ -590,6 +591,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
                'USWolfRPalm', 'USWolfRThumb1', 'USWolfRThumb2' , 'USWolfRIndex1', 'USWolfRIndex2', 'USWolfRFingers1' , 'USWolfRFingers2' ]
       }
     });
+    
     ikrigNode.addSolver('COM', 'COMSolver', {
       bone: 'USWolfPelvisBone001'
     });

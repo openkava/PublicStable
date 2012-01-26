@@ -379,11 +379,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var m_animationControllerNode;
     var m_trackSetId;
     var m_keyframeTrackBindings;
+    var interactiveManipulation = false;
     
     scene.pub.addEventListener('beginmanipulation', function(evt){
       if(m_animationLibraryNode){
         characterVariablesNode.pub.setEnableTrackEvaluation(false);
         m_animationLibraryNode.beginManipulation(m_trackSetId);
+        interactiveManipulation = true;
       }
       
     });
@@ -391,6 +393,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       if(m_animationLibraryNode){
         m_animationLibraryNode.endManipulation();
         characterVariablesNode.pub.setEnableTrackEvaluation(true);
+        interactiveManipulation = false;
       }
     });
     
@@ -559,7 +562,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         default:
           throw 'Unhandled type:' + val;
         }
+        if(!interactiveManipulation){
+          m_animationLibraryNode.beginManipulation(m_trackSetId);
+        }
         m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
+        if(!interactiveManipulation){
+          m_animationLibraryNode.endManipulation();
+        }
+        
       }
     }
     characterVariablesNode.setValues = function(values, indices) {
