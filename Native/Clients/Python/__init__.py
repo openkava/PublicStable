@@ -46,6 +46,7 @@ class CLIENT( object ):
     self.__queuedUnwinds = [];
     self.__queuedCallbacks = [];
     self.GC = GC( self )
+    self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
 
   def __del__( self ):
@@ -53,17 +54,14 @@ class CLIENT( object ):
 
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
-    rlength = ctypes.c_size_t()
 
     fabric.jsonExec(
       self.__fabricClient,
       data,
       length,
-      ctypes.pointer( result ),
-      ctypes.pointer( rlength )
+      ctypes.pointer( result )
     )
 
-    # FIXME we're ignoring rlength for now
     return result
 
   def close( self ):
@@ -104,7 +102,7 @@ class CLIENT( object ):
       if ( callback is not None ):
         callback( result[ 'result' ] )
 
-    fabric.freeString( jsonEncodedResults )
+    fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
   def __route( self, src, cmd, arg ):
     if len(src) == 0:
@@ -141,10 +139,9 @@ class CLIENT( object ):
   def __getNotifyCallback( self ):
     # use a closure here so that 'self' is maintained without us
     # explicitly passing it
-    NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     def notifyCallback( jsonEncodedNotifications ):
       self.__notifyCallback( jsonEncodedNotifications )
-    return NOTIFYCALLBACK( notifyCallback )
+    return self.__NOTIFYCALLBACK( notifyCallback )
 
   def __registerNotifyCallback( self ):
     fabric.setJSONNotifyCallback( self.__fabricClient, self.__getNotifyCallback() )
