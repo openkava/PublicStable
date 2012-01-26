@@ -141,7 +141,12 @@ class CLIENT( object ):
     # explicitly passing it
     def notifyCallback( jsonEncodedNotifications ):
       self.__notifyCallback( jsonEncodedNotifications )
-    return self.__NOTIFYCALLBACK( notifyCallback )
+
+    # this is important, we have to maintain a reference to the CFUNCTYPE
+    # ptr and not just return it, otherwise it will be garbage collected
+    # and callbacks will fail
+    self.__CFUNCTYPE_notifyCallback = self.__NOTIFYCALLBACK ( notifyCallback )
+    return self.__CFUNCTYPE_notifyCallback
 
   def __registerNotifyCallback( self ):
     fabric.setJSONNotifyCallback( self.__fabricClient, self.__getNotifyCallback() )
