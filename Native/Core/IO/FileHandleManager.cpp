@@ -4,7 +4,7 @@
 
 #include "FileHandleManager.h"
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Util/Base64.h>

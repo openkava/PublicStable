@@ -4,7 +4,7 @@
 
 #include "FileResourceProvider.h"
 #include "Helpers.h"
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Base/Exception.h>
 #include <string.h>
 #include <Fabric/Core/MT/Impl.h>

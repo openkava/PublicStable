@@ -21,7 +21,7 @@ namespace Fabric
   namespace JSON
   {
     class ArrayEncoder;
-    class Entity;
+    struct Entity;
   };
   
   namespace GC
