@@ -20,13 +20,13 @@ namespace Fabric
       return new IOManager( npp );
     }
 
-    void ScheduleAsynchCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
+    void ScheduleAsyncCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
     {
       NPN_PluginThreadAsyncCall( (NPP)scheduleUserData, callbackFunc, callbackFuncUserData );
     }
   
     IOManager::IOManager( NPP npp )
-      : IO::Manager( ScheduleAsynchCallback, npp )
+      : IO::Manager( ScheduleAsyncCallback, npp )
       , m_npp( npp )
       , m_httpResourceProvider( HTTPResourceProvider::Create( npp ) )
       , m_context( NULL )

@@ -14,6 +14,7 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
+#include <fstream>
 
 #include <node.h>
 #include <string>
@@ -50,33 +51,35 @@ namespace Fabric
 
         if( getAsFile )
         {
-          IO::ResourceManager::onFileAsynchThreadCall( fileWithPath.c_str(), userData );
-          IO::ResourceManager::onProgressAsynchThreadCall( extension.c_str(), fileSize, fileSize, userData );
+          IO::ResourceManager::onFileAsyncThreadCall( fileWithPath.c_str(), userData );
+          IO::ResourceManager::onProgressAsyncThreadCall( extension.c_str(), fileSize, fileSize, userData );
         }
         else
         {
-          FILE *fp = fopen( fileWithPath.c_str(), "rb" );
-          if ( fp == NULL )
-            IO::ResourceManager::onFailureAsynchThreadCall( "Unable to open file", userData );
+          std::ifstream file( fileWithPath.c_str(), std::ios::in | std::ios::binary );
+          if( !file.is_open() )
+            IO::ResourceManager::onFailureAsyncThreadCall( "Unable to open file", userData );
 
-          static const size_t maxReadSize = 1<<16;//64K buffers
-          uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
-          size_t offset = 0;
-          for (;;)
+          file.exceptions( std::ifstream::badbit );
+          try
           {
-            size_t readSize = fread( &data[0], 1, maxReadSize, fp );
-            if ( ferror( fp ) )
-              IO::ResourceManager::onFailureAsynchThreadCall( "Error while reading file", userData );
-
-            IO::ResourceManager::onDataAsynchThreadCall( offset, readSize, data, userData );
-            IO::ResourceManager::onProgressAsynchThreadCall( "text/plain", offset+readSize, fileSize, userData );
-
-            offset += readSize;
-            if ( offset == fileSize )
-              break;
+            size_t fileSize = IO::GetFileSize( fileWithPath.c_str() );
+            static const size_t maxReadSize = 1<<16;//64K buffers
+            char data[maxReadSize];
+            size_t offset = 0;
+            while( offset != fileSize )
+            {
+              size_t nbRead = std::min( maxReadSize, fileSize-offset );
+              file.read( data, nbRead );
+              IO::ResourceManager::onDataAsyncThreadCall( offset, nbRead, data, userData );
+              offset += nbRead;
+              IO::ResourceManager::onProgressAsyncThreadCall( "text/plain", offset, fileSize, userData );
+            }
           }
-          free( data );
-          fclose( fp );
+          catch(...)
+          {
+            IO::ResourceManager::onFailureAsyncThreadCall( "Error while reading file", userData );
+          }
         }
       }
 
@@ -84,19 +87,13 @@ namespace Fabric
       TestSynchronousFileResourceProvider(){}
     };
 
-    void ScheduleAsynchCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
-    {
-      //In fact it's not asynch for our unit test purpose...
-      (*callbackFunc)( callbackFuncUserData );
-    }
-
     class IOManager : public IO::Manager
     {
     public:
     
-      static RC::Handle<IOManager> Create()
+      static RC::Handle<IOManager> Create( IO::ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
       {
-        return new IOManager;
+        return new IOManager( scheduleFunc, scheduleFuncUserData );
       }
 
       virtual std::string queryUserFilePath(
@@ -117,7 +114,7 @@ namespace Fabric
   
     protected:
     
-      IOManager() : IO::Manager( ScheduleAsynchCallback, NULL )
+      IOManager( IO::ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData ) : IO::Manager( scheduleFunc, scheduleFuncUserData )
       {
         getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( TestSynchronousFileResourceProvider::Create() ), true );
       }
@@ -214,7 +211,7 @@ namespace Fabric
       CG::CompileOptions compileOptions;
       compileOptions.setGuarded( false );
 
-      RC::Handle<IO::Manager> ioManager = IOManager::Create();
+      RC::Handle<IO::Manager> ioManager = IOManager::Create( &ClientWrap::ScheduleAsyncUserCallback, this );
       RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true, true );
 #if defined(FABRIC_MODULE_OPENCL)
       OCL::registerTypes( dgContext->getRTManager() );
@@ -249,6 +246,9 @@ namespace Fabric
       for ( std::vector<std::string>::const_iterator it=clientWrap->m_bufferedNotifications.begin(); it!=clientWrap->m_bufferedNotifications.end(); ++it )
         clientWrap->notify( it->data(), it->length() );
       clientWrap->m_bufferedNotifications.clear();
+      for ( std::vector<AsyncCallbackData>::const_iterator it2=clientWrap->m_bufferedAsyncUserCallbacks.begin(); it2!=clientWrap->m_bufferedAsyncUserCallbacks.end(); ++it2 )
+        (*(it2->m_callbackFunc))( it2->m_callbackFuncUserData );
+      clientWrap->m_bufferedAsyncUserCallbacks.clear();
     }
     
 #define UNWRAP \
@@ -323,5 +323,20 @@ namespace Fabric
         uv_async_send( &m_uvAsync );
       }
     }
+    
+    void ClientWrap::ScheduleAsyncUserCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
+    {
+      ClientWrap *clientWrap = static_cast<ClientWrap *>( scheduleUserData );
+      if ( clientWrap->m_mainThreadTLS )//[JeromeCG 20111221] I didn't want to call synchronously even if in main thread, however calling uv_async_send seems to cause a crash??
+        (*callbackFunc)(callbackFuncUserData);
+      else {
+        Util::Mutex::Lock lock( clientWrap->m_mutex );
+        AsyncCallbackData cbData;
+        cbData.m_callbackFunc = callbackFunc;
+        cbData.m_callbackFuncUserData = callbackFuncUserData;
+        clientWrap->m_bufferedAsyncUserCallbacks.push_back( cbData );//Note: even if m_mainThreadTLS
+        uv_async_send( &clientWrap->m_uvAsync );
+      }
+    }    
   };
 };
