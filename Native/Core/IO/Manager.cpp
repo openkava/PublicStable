@@ -3,17 +3,12 @@
  */
 
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Boolean.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/IO/ResourceManager.h>
 #include <Fabric/Core/IO/Helpers.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <fstream>
 
@@ -40,53 +35,44 @@ namespace Fabric
     }
 
     void Manager::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( dst.size() - dstOffset == 0 )
-      {
-        try
-        {
-          jsonExec( cmd, arg, resultJAG );
-        }
-        catch ( Exception e )
-        {
-          throw Exception( "command " + _(cmd) + ": " + e );
-        }
-      }
+        jsonExec( cmd, arg, resultArrayEncoder );
       else throw Exception( "unroutable" );
     }
 
     void Manager::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "getFileInfo" )
-        jsonExecGetFileInfo( arg, resultJAG );
-      else if ( cmd == "queryUserFileAndFolder" )
-        jsonExecQueryUserFileAndFolder( arg, resultJAG );
-      else if ( cmd == "queryUserFile" )
-        jsonExecQueryUserFile( arg, resultJAG );
-      else if ( cmd == "createFileHandleFromRelativePath" )
-        jsonExecCreateFileHandleFromRelativePath( arg, resultJAG );
-      else if ( cmd == "createFolderHandleFromRelativePath" )
-        jsonExecCreateFolderHandleFromRelativePath( arg, resultJAG );
-      else if ( cmd == "getTextFileContent" )
-        jsonExecGetTextFileContent( arg, resultJAG );
-      else if ( cmd == "putTextFileContent" )
-        jsonExecPutTextFileContent( arg, resultJAG );
+      if ( cmd.stringIs( "getFileInfo", 11 ) )
+        jsonExecGetFileInfo( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "queryUserFileAndFolder", 22 ) )
+        jsonExecQueryUserFileAndFolder( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "queryUserFile", 13 ) )
+        jsonExecQueryUserFile( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createFileHandleFromRelativePath", 32 ) )
+        jsonExecCreateFileHandleFromRelativePath( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createFolderHandleFromRelativePath", 34 ) )
+        jsonExecCreateFolderHandleFromRelativePath( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getTextFileContent", 18 ) )
+        jsonExecGetTextFileContent( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "putTextFileContent", 18 ) )
+        jsonExecPutTextFileContent( arg, resultArrayEncoder );
       else
         throw Exception( "unknown command" );
     }
 
     void Manager::jsonQueryUserFile(
-      RC::ConstHandle<JSON::Value> const &arg,
+      JSON::Entity const &arg,
       bool *existingFile,
       const char *defaultExtension,
       std::string& fullPath,
@@ -96,50 +82,79 @@ namespace Fabric
       std::string defaultFilename;
       std::string extension;
       std::string title;
-      bool existing = false;
+      bool existing = false, foundExisting = false;
       writeAccess = false;
 
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      RC::ConstHandle<JSON::Value> val;
-
-      if( existingFile )
+      if ( existingFile )
       {
         existing = *existingFile;
         writeAccess = !existing;
+        foundExisting = true;
       }
-      else
-      {
-        existing = argJSONObject->get( "existingFile" )->toBoolean( "existingFile must be a Boolean" )->value();//mandatory in this case
 
-        val = argJSONObject->get( "writeAccess" );
-        if( val )
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
+      {
+        try
         {
-          writeAccess = val->toBoolean( "writeAccess must be a Boolean" )->value();
-          if( !existing && !writeAccess )
-            throw Exception("Error: trying to save a file with writeAccess == false");
+          if ( !existingFile && keyString.stringIs( "existingFile", 12 ) )
+          {
+            valueEntity.requireBoolean();
+            existing = valueEntity.booleanValue();//mandatory in this case
+            foundExisting = true;
+          }
+          else if ( !existingFile && keyString.stringIs( "writeAccess", 11 ) )
+          {
+            valueEntity.requireBoolean();
+            writeAccess = valueEntity.booleanValue();
+          }
+          else if ( keyString.stringIs( "uiOptions", 9 ) )
+          {
+            valueEntity.requireObject();
+            JSON::ObjectDecoder uiOptionsObjectDecoder( valueEntity );
+            JSON::Entity uiOptionKeyString, uiOptionValueEntity;
+            while ( uiOptionsObjectDecoder.getNext( uiOptionKeyString, uiOptionValueEntity ) )
+            {
+              try
+              {
+                if ( uiOptionKeyString.stringIs( "defaultFileName", 15 ) )
+                {
+                  uiOptionValueEntity.requireString();
+                  defaultFilename = uiOptionValueEntity.stringToStdString();
+                }
+                else if ( uiOptionKeyString.stringIs( "extension", 9 ) )
+                {
+                  uiOptionValueEntity.requireString();
+                  extension = uiOptionValueEntity.stringToStdString();
+                }
+                else if ( uiOptionKeyString.stringIs( "title", 5 ) )
+                {
+                  uiOptionValueEntity.requireString();
+                  title = uiOptionValueEntity.stringToStdString();
+                }
+              }
+              catch ( Exception e )
+              {
+                uiOptionsObjectDecoder.rethrow( e );
+              }
+            }
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
         }
       }
+      if ( !foundExisting )
+        throw Exception( "missing 'existingFile'" );
 
-      if(existing && defaultExtension == NULL)
+      if ( !existing && !writeAccess )
+        throw Exception("Error: trying to save a file with writeAccess == false");
+
+      if ( existing && defaultExtension == NULL )
         defaultExtension = "*";
-
-      val = argJSONObject->maybeGet( "uiOptions" );
-      if( val )
-      {
-        RC::ConstHandle<JSON::Object> uiOptionsJSONObject = val->toObject( "uiOptions must be an Object" );
-
-        val = uiOptionsJSONObject->maybeGet( "defaultFileName" );
-        if( val )
-          defaultFilename = val->toString( "defaultFileName must be a String" )->value();
-
-        val = uiOptionsJSONObject->maybeGet( "extension" );
-        if( val )
-          extension = val->toString( "extension must be a String" )->value();
-
-        val = uiOptionsJSONObject->maybeGet( "title" );
-        if( val )
-          title = val->toString( "title must be a String" )->value();
-      }
 
       if( extension.empty() && defaultExtension )
         extension = defaultExtension;
@@ -179,37 +194,38 @@ namespace Fabric
       fullPath = queryUserFilePath( existing, title, defaultFilename, extension );
     }
 
-    void Manager::jsonExecGetFileInfo( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecGetFileInfo( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      std::string handle = arg->toString("File or folder handle must be a String")->value();
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
 
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
 
       bool isFile = false;
       bool exists = m_fileHandleManager->targetExists( handle );
 
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "type", 4 );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "type", 4 );
         if( m_fileHandleManager->hasRelativePath( handle ) && !exists )
-          memberJG.makeString( "unknown", 7 );
+          memberEncoder.makeString( "unknown", 7 );
         else if( m_fileHandleManager->isFolder( handle ) )
-          memberJG.makeString( "folder", 6 );
+          memberEncoder.makeString( "folder", 6 );
         else
         {
-          memberJG.makeString( "file", 4 );
+          memberEncoder.makeString( "file", 4 );
           isFile = true;
         }
       }
 
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "writeAccess", 11 );
-        memberJG.makeBoolean( !m_fileHandleManager->isReadOnly( handle ) );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "writeAccess", 11 );
+        memberEncoder.makeBoolean( !m_fileHandleManager->isReadOnly( handle ) );
       }
 
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "exists", 6 );
-        memberJG.makeBoolean( exists );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "exists", 6 );
+        memberEncoder.makeBoolean( exists );
       }
 
       if( isFile )
@@ -220,19 +236,19 @@ namespace Fabric
         IO::SplitPath( fullPath, dir, filename );
 
         {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "fileName", 8 );
-          memberJG.makeString( filename );
+          JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "fileName", 8 );
+          memberEncoder.makeString( filename );
         }
 
         if( exists )
         {
-          Util::JSONGenerator memberJG = resultJOG.makeMember( "fileSize", 8 );
-          memberJG.makeInteger( (int32_t)GetFileSize( fullPath ) );
+          JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "fileSize", 8 );
+          memberEncoder.makeInteger( (int32_t)GetFileSize( fullPath ) );
         }
       }
     }
 
-    void Manager::jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecQueryUserFileAndFolder( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
       std::string fullPath;
       bool writeAccess;
@@ -244,21 +260,21 @@ namespace Fabric
       std::string dirHandle = m_fileHandleManager->createHandle( dir, true, !writeAccess );
       std::string fileHandle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
 
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
 
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "file", 4 );
-        memberJG.makeString( fileHandle );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "file", 4 );
+        memberEncoder.makeString( fileHandle );
       }
         
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "folder", 6 );
-        memberJG.makeString( dirHandle );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "folder", 6 );
+        memberEncoder.makeString( dirHandle );
       }
     }
 
-    void Manager::jsonExecQueryUserFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecQueryUserFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
       std::string fullPath;
       bool writeAccess;
@@ -267,46 +283,78 @@ namespace Fabric
 
       std::string handle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
 
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( handle );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( handle );
     }
 
-    void Manager::jsonExecCreateFileHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecCreateFileHandleFromRelativePath( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      std::string handle = arg->toString( "Handle must be a String" )->value();
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
       std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, false );
 
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( newHandle );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( newHandle );
     }
 
-    void Manager::jsonExecCreateFolderHandleFromRelativePath( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecCreateFolderHandleFromRelativePath( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      std::string handle = arg->toString( "Handle must be a String" )->value();
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
       std::string newHandle = m_fileHandleManager->createRelativeHandle( handle, true );
 
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( newHandle );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( newHandle );
     }
 
-    void Manager::jsonExecPutTextFileContent( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecPutTextFileContent( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      RC::ConstHandle<JSON::String> content = argJSONObject->get( "content" )->toString( "content must be a String" );
-      std::string handle = argJSONObject->get( "file" )->toString( "file handle must be a String" )->value();
-
+      std::string content, handle;
       bool append = false;
-      RC::ConstHandle<JSON::Value> val = argJSONObject->maybeGet( "append" );
-      if( val )
+      bool foundContent = false;
+
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity argKeyString, argValueEntity;
+      while ( argObjectDecoder.getNext( argKeyString, argValueEntity ) )
       {
-        append = val->toBoolean( "'append' must be a Boolean" )->value();
+        try
+        {
+          if ( argKeyString.stringIs( "content", 7 ) )
+          {
+            argValueEntity.requireString();
+            content = argValueEntity.stringToStdString();
+            foundContent = true;
+          }
+          else if ( argKeyString.stringIs( "file", 4 ) )
+          {
+            argValueEntity.requireString();
+            handle = argValueEntity.stringToStdString();
+          }
+          else if ( argKeyString.stringIs( "append", 6 ) )
+          {
+            argValueEntity.requireBoolean();
+            append = argValueEntity.booleanValue();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
-      m_fileHandleManager->putFile( handle, content->length(), content->data(), append );
+
+      if ( !foundContent )
+        throw Exception( "missing 'content'" );
+      if ( handle.empty() )
+        throw Exception( "missing 'file'" );
+
+      m_fileHandleManager->putFile( handle, content.length(), content.data(), append );
     }
 
-    void Manager::jsonExecGetTextFileContent( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
+    void Manager::jsonExecGetTextFileContent( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      std::string handle = arg->toString( "File handle must be a String" )->value();
+      arg.requireString();
+      std::string handle = arg.stringToStdString();
+
       std::string fullPath = m_fileHandleManager->getPath( handle );
 
       if( !FileExists( fullPath ) )
@@ -325,8 +373,8 @@ namespace Fabric
       if( file.bad() )
         throw Exception( "Error while reading text file" );
 
-      Util::JSONGenerator resultJG = resultJAG.makeElement();
-      resultJG.makeString( content );
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      resultEncoder.makeString( content );
     }
   };
 };

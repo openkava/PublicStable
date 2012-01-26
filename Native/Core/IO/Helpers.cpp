@@ -6,7 +6,7 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Format.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #include <errno.h>
 #include <stdlib.h>

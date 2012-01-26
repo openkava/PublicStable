@@ -13,7 +13,7 @@
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
@@ -172,11 +172,11 @@ namespace Fabric
             JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
           {
               JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "received", 8 );
-              memberEncoder.makeInteger( m_nbStreamed );
+              memberEncoder.makeInteger( done );
           }
           {
               JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "total", 5 );
-              memberEncoder.makeInteger( totalsize );
+              memberEncoder.makeInteger( total );
           }
         }
         getContext()->jsonNotify( src, "resourceLoadProgress", 20, &json );

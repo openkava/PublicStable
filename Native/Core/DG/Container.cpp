@@ -522,10 +522,8 @@ namespace Fabric
         jsonExecGetDataSize( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getDataElement", 14 ) )
         jsonExecGetDataElement( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "putResourceToUserFile", 21 ) )
-        jsonExecPutResourceToFile( arg, true, resultArrayEncoder );
-      else if ( cmd.stringIs( "getResourceFromFile", 19 ) )
-        jsonExecPutResourceToFile( arg, resultJAG );
+      else if ( cmd.stringIs( "putResourceToFile", 17 ) )
+        jsonExecPutResourceToFile( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "getBulkData", 11 ) )
         jsonExecGetBulkData( resultArrayEncoder );
       else if ( cmd.stringIs( "setBulkData", 11 ) )
@@ -969,31 +967,44 @@ namespace Fabric
       }
     }
 
-    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Container::jsonExecPutResourceToFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      bool haveMemberName = false;
-      std::string memberName = argJSONObject->get( "memberName" )->toString( "memberName must be a String" )->value();
-      std::string handle = argJSONObject->get( "file" )->toString( "file handle must be a String" )->value();
+      std::string memberName, handle;
+      arg.requireObject();
       JSON::ObjectDecoder argObjectDecoder( arg );
       JSON::Entity keyString, valueEntity;
       while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
+        try
+        {
+          if ( keyString.stringIs( "memberName", 10 ) )
           {
             valueEntity.requireString();
             memberName = valueEntity.stringToStdString();
-            haveMemberName = true;
+          }
+          else if ( keyString.stringIs( "file", 4 ) )
+          {
+            valueEntity.requireString();
+            handle = valueEntity.stringToStdString();
           }
         }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
       
-      if ( !haveMemberName )
+      if ( handle.empty() )
         throw Exception( "missing 'memberName'" );
+      if ( handle.empty() )
+        throw Exception( "missing 'file'" );
 
-      RC::Handle<Container::Member> member = getMember( memberName );
+      RC::ConstHandle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if ( desc->getUserName() != "FabricResource" )
         throw Exception( "member " + _(memberName) + " is not of type FabricResource" );
 
-      FabricResourceWrapper resource( m_context->getRTManager(), member->getMutableElementData( 0 ) );
+      FabricResourceWrapper resource( m_context->getRTManager(), (void*)member->getImmutableElementData( 0 ) );
 
       std::string dataExternalLocation = resource.getDataExternalLocation();
       if( dataExternalLocation.empty() )

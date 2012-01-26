@@ -17,7 +17,7 @@ namespace Fabric
     class ArrayDecoder;
     class ArrayEncoder;
     class Encoder;
-    class Entity;
+    struct Entity;
   };
   
   namespace DG
