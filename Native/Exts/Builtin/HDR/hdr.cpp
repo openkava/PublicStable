@@ -236,6 +236,16 @@ FABRIC_EXT_EXPORT void FabricHDROpenFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(handle);
+  if( !wrapper.isValid() )
+  {
+    throwException( "FileHandle '%s' is not a valid fileHandle.", handle.data() );
+    return;
+  }
+  if( wrapper.isFolder() )
+  {
+    throwException( "FileHandle '%s' is a folder, invalid for reading a file.", wrapper.getPath().data() );
+    return;
+  }
   FILE * fp= fopen(wrapper.getPath().data(),"rb");
   if(!fp)
   {

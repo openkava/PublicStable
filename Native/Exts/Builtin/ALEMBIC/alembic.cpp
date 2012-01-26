@@ -156,8 +156,16 @@ FABRIC_EXT_EXPORT void FabricALEMBICOpenFileHandle(
   if( archive == NULL )
   {
     KL::FileHandleWrapper fileWrapper( fileHandle );
+    if( !fileWrapper.isValid() )
+    {
+      throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
+      return;
+    }
     if( fileWrapper.isFolder() )
-      throwException( "Invalid Fabric file handle" );
+    {
+      throwException( "FileHandle '%s' is a folder, invalid for reading a file.", fileWrapper.getPath().data() );
+      return;
+    }
 
     return FabricALEMBICOpen(fileWrapper.getPath(),handle);
   }
