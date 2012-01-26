@@ -13,7 +13,7 @@ namespace Fabric
   namespace RT
   {
     ArrayProducerImpl::ArrayProducerImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &elementImpl )
-      : Impl( codeName, DT_ARRAY_PRODUCER )
+      : ProducerImpl( codeName, DT_ARRAY_PRODUCER )
       , m_elementImpl( elementImpl )
     {
       setSize( sizeof(MR::ArrayProducer const *) );

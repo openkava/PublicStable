@@ -101,6 +101,11 @@ namespace Fabric
       return m_impl->isShallow();
     }
 
+    bool Desc::isExportable() const
+    {
+      return m_impl->isExportable();
+    }
+    
     void Desc::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
       JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();

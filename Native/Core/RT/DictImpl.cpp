@@ -527,5 +527,10 @@ namespace Fabric
       }
       return total;
     }
-  };
-};
+
+    bool DictImpl::isExportable() const
+    {
+      return m_keyImpl->isExportable() && m_valueImpl->isExportable();
+    }
+  }
+}

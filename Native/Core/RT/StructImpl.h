@@ -36,6 +36,7 @@ namespace Fabric
 
       virtual bool isShallow() const;
       virtual bool isEquivalentTo( RC::ConstHandle< RT::Impl > const &desc ) const;
+      virtual bool isExportable() const;
       
       // StructImpl
           
@@ -104,6 +105,7 @@ namespace Fabric
       NameToIndexMap m_nameToIndexMap;
       void *m_defaultData;
       bool m_isShallow;
+      bool m_isExportable;
     };
   };
 };

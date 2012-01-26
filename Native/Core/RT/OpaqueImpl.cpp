@@ -72,5 +72,10 @@ namespace Fabric
     {
       return memcmp( lhs, rhs, getAllocSize() ) == 0;
     }
-  }; // namespace RT
-}; // namespace FABRIC
+    
+    bool OpaqueImpl::isExportable() const
+    {
+      return false;
+    }
+  }
+}
