@@ -1,0 +1,1 @@
+node.addMember: Fabric core exception: DG.foo.addMember('{"name":"bar","type":"Data"}'): Data: type cannot be used as a member
