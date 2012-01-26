@@ -146,9 +146,6 @@ namespace Fabric
       if ( name.empty() )
         throw Exception( "name must be non-empty" );
       
-      if ( !desc->isExportable() )
-        throw Exception( desc->getUserName() + ": type cannot be used as a member" );
-      
       RC::Handle<Member> member = Member::Create( m_context->getRTManager(), desc, m_count, defaultData );
       bool insertResult = m_members.insert( Members::value_type( name, member ) ).second;
       if ( !insertResult )
