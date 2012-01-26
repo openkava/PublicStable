@@ -11,7 +11,7 @@ namespace Fabric
 {
   namespace JSON
   {
-    class Entity;
+    struct Entity;
   }
   
   namespace MR
