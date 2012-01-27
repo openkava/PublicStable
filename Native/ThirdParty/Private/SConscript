@@ -130,7 +130,8 @@ tiffFlags = {}
 tiffFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'tiff' ), os.path.join( osArchIncludeBaseDir, 'tiff' )]
 if buildOS == 'Windows':
   tiffFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
-  #TO FIX! Add thirdparty lib! tiffFlags['LIBS'] = archLibs( 'tiff', ['tiff','zlib'] )
+  tiffFlags['LIBS'] = archLibs( 'tiff', ['libtiff'] )
+  tiffFlags['LIBS'].append( archLibs( 'zlib', ['zlib'] ) )
 else:  
   tiffFlags['LIBS'] = [archLibs( 'tiff', ['tiff'] ), 'z']
 Export('tiffFlags')

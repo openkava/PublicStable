@@ -15,6 +15,7 @@ set BOOST_NAME=boost_1_47_0
 set HDF5_NAME=hdf5-1.8.7
 set ALEMBIC_NAME=alembic-1.0_2011080800
 set TEEM_NAME=teem-1.10.0
+set TIFF_NAME=tiff-3.9.5
 
 if "%1" NEQ "" goto %1
 
@@ -46,6 +47,8 @@ set BUILD_DIR=%TOP%\Build\%ARCH%
 set CHECKPOINT_DIR=%BUILD_DIR%\cp
 set LIB_ARCH_DEBUG_DIR=%TOP%\Windows\%ARCH%\Debug\lib
 set LIB_ARCH_RELEASE_DIR=%TOP%\Windows\%ARCH%\Release\lib
+set INCLUDE_ARCH_DEBUG_DIR=%TOP%\Windows\%ARCH%\Debug\include
+set INCLUDE_ARCH_RELEASE_DIR=%TOP%\Windows\%ARCH%\Release\include
 
 if NOT EXIST %BUILD_DIR% mkdir %BUILD_DIR%
 if NOT EXIST %CHECKPOINT_DIR% mkdir %CHECKPOINT_DIR%
@@ -448,21 +451,21 @@ touch %CHECKPOINT_DIR%\alembic_install
 :alembic_install_done
 
 rem ============= TEEM ==============
-rem if EXIST %CHECKPOINT_DIR%\teem_unpack goto teem_unpack_done
+if EXIST %CHECKPOINT_DIR%\teem_unpack goto teem_unpack_done
 echo teem - Unpacking
 cd %BUILD_DIR%
 type "%TOP%\SourcePackages\%TEEM_NAME%.tar.bz2" | bzip2 -d -c | tar -x -f- 2> NUL:
 type "%TOP%\Patches\Windows\%TEEM_NAME%-patch.tar.bz2" | bzip2 -d -c | tar -x -f- 2> NUL:
-rem touch %CHECKPOINT_DIR%\teem_unpack
+touch %CHECKPOINT_DIR%\teem_unpack
 :teem_unpack_done
 
-rem if EXIST %CHECKPOINT_DIR%\teem_cmake goto teem_cmake_done
+if EXIST %CHECKPOINT_DIR%\teem_cmake goto teem_cmake_done
 echo teem - CMake - generating projects
 cd %BUILD_DIR%\%TEEM_NAME%
 cmake -G "Visual Studio 10" -DTeem_BZIP2=OFF -DTeem_PTHREAD=OFF -DTeem_PNG=OFF -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
 rem Do it twice; first time it gives errors about no bz or png but we don't care
 rem cmake -G "Visual Studio 10" -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
-rem touch %CHECKPOINT_DIR%\teem_cmake
+touch %CHECKPOINT_DIR%\teem_cmake
 :teem_cmake_done
 
 if EXIST %CHECKPOINT_DIR%\teem_compile_debug goto teem_compile_debug_done
@@ -489,5 +492,49 @@ cd %BUILD_DIR%\%TEEM_NAME%\include\teem
 echo D | xcopy *.h %TOP%\include\teem\teem /Y > NUL:
 touch %CHECKPOINT_DIR%\teem_install
 :teem_install_done
+
+rem ============= TIFF ===============
+if EXIST %CHECKPOINT_DIR%\tiff_unpack goto tiff_unpack_done
+echo TIFF - Unpacking
+cd %BUILD_DIR%
+type "%TOP%\SourcePackages\%TIFF_NAME%.tar.bz2" | bzip2 -d -c | tar -x -f- 2> NUL:
+type "%TOP%\Patches\Windows\%TIFF_NAME%-patch.tar.bz2" | bzip2 -d -c | tar -x -f- 2> NUL:
+touch %CHECKPOINT_DIR%\tiff_unpack
+:tiff_unpack_done
+
+if EXIST %CHECKPOINT_DIR%\tiff_config goto tiff_config_debug_done
+echo TIFF - Configuring. Note: this builds too but we just want to generate config files.
+cd %BUILD_DIR%\%TIFF_NAME%\libtiff
+nmake /f makefile.vc
+cd %BUILD_DIR%\%TIFF_NAME%\port
+nmake /f makefile.vc
+devenv vstudio.sln /build "Debug|%VSARCH%"
+touch %CHECKPOINT_DIR%\tiff_config
+:tiff_config_debug_done
+
+if EXIST %CHECKPOINT_DIR%\tiff_compile_debug goto tiff_compile_debug_done
+echo TIFF - Compiling debug
+cd %BUILD_DIR%\%TIFF_NAME%\vstudio
+devenv vstudio.sln /build "Debug|%VSARCH%"
+touch %CHECKPOINT_DIR%\tiff_compile_debug
+:tiff_compile_debug_done
+
+if EXIST %CHECKPOINT_DIR%\tiff_compile_release goto tiff_compile_release_done
+echo TIFF - Compiling release
+cd %BUILD_DIR%\%TIFF_NAME%\vstudio
+devenv vstudio.sln /build "Release|%VSARCH%"
+touch %CHECKPOINT_DIR%\tiff_compile_release
+:tiff_compile_release_done
+
+if EXIST %CHECKPOINT_DIR%\tiff_install goto tiff_install_done
+echo TIFF - Installing
+cd %BUILD_DIR%\%TIFF_NAME%\vstudio
+echo D | xcopy "Debug\libtiff.lib" %LIB_ARCH_DEBUG_DIR%\tiff\ /Y > NUL:
+echo D | xcopy "Release\libtiff.lib" %LIB_ARCH_RELEASE_DIR%\tiff\ /Y > NUL:
+cd %BUILD_DIR%\%TIFF_NAME%
+robocopy libtiff %INCLUDE_ARCH_DEBUG_DIR%\tiff\libtiff *.h /s > NUL:
+robocopy libtiff %INCLUDE_ARCH_RELEASE_DIR%\tiff\libtiff *.h /s > NUL:
+touch %CHECKPOINT_DIR%\tiff_install
+:tiff_install_done
 
 rem exit
