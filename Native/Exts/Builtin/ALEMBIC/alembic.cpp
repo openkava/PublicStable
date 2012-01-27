@@ -156,8 +156,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICOpenFileHandle(
   if( archive == NULL )
   {
     KL::FileHandleWrapper fileWrapper( fileHandle );
-    if(!fileWrapper.ensureIsValidFile())
-      return;
+    fileWrapper.ensureIsValidFile();
     return FabricALEMBICOpen(fileWrapper.getPath(),handle);
   }
 }

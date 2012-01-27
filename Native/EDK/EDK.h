@@ -326,19 +326,12 @@ namespace Fabric
           ( *s_callbacks.m_fileHandleEnsureTargetExists )( &m_handle );
         }
 
-        bool ensureIsValidFile() const
+        void ensureIsValidFile() const
         {
           if( !isValid() )
-          {
             throwException( "FileHandle '%s' is not a valid fileHandle.", m_handle.data() );
-            return false;
-          }
           if( isFolder() )
-          {
             throwException( "FileHandle '%s' is a folder.", m_handle.data() );
-            return false;
-          }
-          return true;
         }
 
       private:

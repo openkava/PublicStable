@@ -135,8 +135,7 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShortFromFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(handle);
-  if(!wrapper.ensureIsValidFile())
-    return;
+  wrapper.ensureIsValidFile();
   return FabricTeemNRRDLoadUShortFromFile(wrapper.getPath(),imageWidth,imageHeight,imageDepth,imageUShortVoxels,xfoMat);
 }
 
