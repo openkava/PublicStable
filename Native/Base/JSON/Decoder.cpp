@@ -305,7 +305,7 @@ namespace Fabric
               if ( length == 0 || data[0] < '0' || data[0] > '9' )
                 throw malformedJSONException;
               ++data, --length;
-              while ( length > 0 && data[0] >= '0' && data[9] <= '9' )
+              while ( length > 0 && data[0] >= '0' && data[0] <= '9' )
                 ++data, --length;
             }
             
