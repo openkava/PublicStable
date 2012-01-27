@@ -165,8 +165,7 @@ FABRIC_EXT_EXPORT void FabricEXROpenFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(handle);
-  if(!wrapper.ensureIsValidFile())
-    return;
+  wrapper.ensureIsValidFile();
   FileIStream filestream(wrapper.getPath());
   Imf::RgbaInputFile rgbaInputFile( filestream );
   Imath::Box2i dw = rgbaInputFile.dataWindow();
