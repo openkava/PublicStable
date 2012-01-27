@@ -63,16 +63,8 @@ FABRIC_EXT_EXPORT void FabricOBJOpenFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(fileHandle);
-  if( !wrapper.isValid() )
-  {
-    throwException( "FileHandle '%s' is not a valid fileHandle.", fileHandle.data() );
+  if(!wrapper.ensureIsValidFile())
     return;
-  }
-  if( wrapper.isFolder() )
-  {
-    throwException( "FileHandle '%s' is a folder, invalid for reading a file.", wrapper.getPath().data() );
-    return;
-  }
   std::ifstream filestream(wrapper.getPath().data());
   
   FabricOBJFreeParsedData(handle);
