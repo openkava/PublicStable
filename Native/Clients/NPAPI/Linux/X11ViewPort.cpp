@@ -4,8 +4,6 @@
 
 #include <Fabric/Clients/NPAPI/Linux/X11ViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
-#include <Fabric/Base/JSON/Encode.h>
-#include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Core/DG/Event.h>
@@ -132,7 +130,7 @@ namespace Fabric
 
                 ViewPortAndJSONValue *viewPortAndJSONValue = new ViewPortAndJSONValue;
                 viewPortAndJSONValue->viewPort = x11ViewPort;
-                viewPortAndJSONValue->json = JSON::encode( popUpItem.value );
+                viewPortAndJSONValue->json = popUpItem.argJSON;
                 g_signal_connect_swapped( G_OBJECT(menuItem), "activate",
                   G_CALLBACK(&X11ViewPort::MenuItemActivateCallback),
                   viewPortAndJSONValue );
