@@ -47,6 +47,7 @@ namespace Fabric
     
     inline void throwException( size_t length, char const *data )
     {
+      printf("Fabric::EDK::Exception: %s\n",data);
       s_callbacks.m_throwException( length, data );
     }
     
@@ -323,6 +324,14 @@ namespace Fabric
         void ensureTargetExists() const
         {
           ( *s_callbacks.m_fileHandleEnsureTargetExists )( &m_handle );
+        }
+
+        void ensureIsValidFile() const
+        {
+          if( !isValid() )
+            throwException( "FileHandle '%s' is not a valid fileHandle.", m_handle.data() );
+          if( isFolder() )
+            throwException( "FileHandle '%s' is a folder.", m_handle.data() );
         }
 
       private:

@@ -15,36 +15,20 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 
 using namespace cimg_library;
 
-FABRIC_EXT_EXPORT void FabricCIMGDecode(
-  KL::Data data,
-  KL::Size dataSize,
+void readImageFromFile(
+  KL::String fileName,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::VariableArray<KL::RGBA> &imagePixels
   )
 {
-#if defined(FABRIC_OS_WINDOWS)
-  char const *dir = getenv("APPDATA");
-  if(dir == NULL)
-    dir = getenv("TEMP");
-  if(dir == NULL)
-    dir = getenv("TMP");
-  if(dir == NULL)
-    Fabric::EDK::throwException("CIMG extension: environment variable APP_DATA or TMP or TEMP is undefined");
-  KL::String fileName( _tempnam( dir, "tmpfab_" ) );
-#else
-  KL::String fileName(tmpnam(NULL));
-#endif
-
-  // save the file to disk
-  FILE * file = fopen(fileName.data(),"wb");
-  if(!file)
-    Fabric::EDK::throwException("CIMG extension: Cannot write to temporary file.");
-  fwrite(data,dataSize,1,file);
-  fclose(file);
-  file = NULL;
-
-  CImg<unsigned char> img(fileName.data());
+  CImg<unsigned char> img;
+  try{
+    img.load(fileName.data());
+  }catch(CImgIOException e) {
+    throwException("CIMG Exception: %s",e.what());
+    return;
+  }
   unsigned char * imgData = img.data();
   imageWidth = img.width();
   imageHeight = img.height();
@@ -87,3 +71,114 @@ FABRIC_EXT_EXPORT void FabricCIMGDecode(
   }
 }
 
+
+FABRIC_EXT_EXPORT void FabricCIMGDecode(
+  KL::Data data,
+  KL::Size dataSize,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+#if defined(FABRIC_OS_WINDOWS)
+  char const *dir = getenv("APPDATA");
+  if(dir == NULL)
+    dir = getenv("TEMP");
+  if(dir == NULL)
+    dir = getenv("TMP");
+  if(dir == NULL)
+    Fabric::EDK::throwException("CIMG extension: environment variable APP_DATA or TMP or TEMP is undefined");
+  KL::String fileName( _tempnam( dir, "tmpfab_" ) );
+#else
+  KL::String fileName(tmpnam(NULL));
+#endif
+
+  // save the file to disk
+  FILE * file = fopen(fileName.data(),"wb");
+  if(!file)
+    Fabric::EDK::throwException("CIMG extension: Cannot write to temporary file.");
+  fwrite(data,dataSize,1,file);
+  fclose(file);
+  file = NULL;
+  
+  return readImageFromFile(fileName,imageWidth,imageHeight,imagePixels);
+}
+
+FABRIC_EXT_EXPORT void FabricCIMGOpenFileHandle(
+  KL::String fileHandle,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  KL::FileHandleWrapper wrapper(fileHandle);
+  wrapper.ensureIsValidFile();
+  return readImageFromFile(wrapper.getPath(),imageWidth,imageHeight,imagePixels);
+}
+
+FABRIC_EXT_EXPORT void FabricCIMGCreateFromText(
+  KL::String text,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  unsigned char foreground = 255;
+  unsigned char background = 0;
+  CImg<unsigned char> image;
+  image.draw_text(
+    0,
+    0,
+    text.data(),
+    &foreground,
+    &background,
+    1.0f,
+    24
+  );
+ 
+  // resize the image
+  imageWidth = (KL::Size)image.width();
+  imageHeight = (KL::Size)image.height();
+  imagePixels.resize(imageWidth*imageHeight);
+ 
+  // copy the image over
+  for(KL::Size i=0;i<imagePixels.size();i++)
+    imagePixels[i].r = imagePixels[i].g = imagePixels[i].b = imagePixels[i].a = image.data()[i];
+}
+
+FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
+  KL::String fileHandle,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  KL::FileHandleWrapper wrapper(fileHandle);
+  wrapper.ensureIsValidFile();
+  if(wrapper.isReadOnly())
+  {
+    Fabric::EDK::throwException("CIMG extension: Cannot write to a readOnly FileHandle.");
+    return;
+  }
+  
+  CImg<unsigned char> image(imageWidth,imageHeight,1,4);
+  KL::Size offsetR = 0;
+  KL::Size offsetG = offsetR + imagePixels.size();
+  KL::Size offsetB = offsetG + imagePixels.size();
+  KL::Size offsetA = offsetB + imagePixels.size();
+  
+  for(KL::Size i=0;i<imagePixels.size();i++)
+  {
+    image.data()[offsetR++] = imagePixels[i].r;
+    image.data()[offsetG++] = imagePixels[i].g;
+    image.data()[offsetB++] = imagePixels[i].b;
+    image.data()[offsetA++] = imagePixels[i].a;
+  }
+  
+  try{
+    image.save(wrapper.getPath().data());
+  }catch(CImgIOException e) {
+    throwException("CIMG Exception: %s",e.what());
+    return;
+  }
+}
