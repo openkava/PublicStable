@@ -123,7 +123,7 @@ class CLIENT( object ):
       elif firstSrc == 'VP':
         pass
       elif firstSrc == 'GC':
-        pass
+        self.GC.route( src, cmd, arg )
       else:
         raise Exception( 'unroutable src: ' + firstSrc )
         
@@ -345,7 +345,7 @@ class GCOBJECT( object ):
     return callbackID
 
   # FIXME what is the visibility of route?
-  def route( self, cmd, arg ):
+  def route( self, src, cmd, arg ):
     callback = self.__callbacks[ arg[ 'serial' ] ]
     del self.__callbacks[ arg[ 'serial' ] ]
     callback( arg[ 'result' ] )
@@ -473,7 +473,7 @@ class GC( object ):
   def disposeObject( self, obj ):
     del self.__objects[ obj.getID() ]
 
-  def route( src, cmd, arg ):
+  def route( self, src, cmd, arg ):
     src = collections.deque( src )
     id = src.popleft()
     obj = self.__objects[ id ]
