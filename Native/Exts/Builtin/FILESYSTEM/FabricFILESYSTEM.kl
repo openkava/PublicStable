@@ -70,6 +70,10 @@ function String FabricFileHandleWrapper.getHandle() {
   return this.m_handle;
 }
 
+function FabricFileHandleWrapper.setHandle(io String handle) {
+  this.m_handle = handle;
+}
+
 function FabricFileHandleWrapper.setAbsolutePath(io String path) {
   FabricFileHandle_SetAbsolutePath(this,path);
 }
@@ -86,19 +90,15 @@ function FabricFileHandleWrapper.getName(io String name) {
   FabricFileHandle_GetName(this,name);
 }
 
-function FabricFileHandleWrapper.getName(io String baseName) {
+function FabricFileHandleWrapper.getBaseName(io String baseName) {
   FabricFileHandle_GetBaseName(this,baseName);
 }
 
-function FabricFileHandleWrapper.getName(io String extension) {
+function FabricFileHandleWrapper.getExtension(io String extension) {
   FabricFileHandle_GetExtension(this,extension);
 }
 
-function FabricFileHandleWrapper.getName(io String extensionLower) {
-  FabricFileHandle_GetExtensionLower(this,extensionLower);
-}
-
-function FabricFileHandleWrapper.getName(io String extensionLower) {
+function FabricFileHandleWrapper.getExtensionLower(io String extensionLower) {
   FabricFileHandle_GetExtensionLower(this,extensionLower);
 }
 
