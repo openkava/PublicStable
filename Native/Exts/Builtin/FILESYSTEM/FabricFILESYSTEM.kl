@@ -2,7 +2,9 @@ struct FabricFolderHandle {
   Data m_data;
 };
 
-alias String FabricFileHandle;
+struct FabricFileHandleWrapper{
+  String m_handle;
+};
 
 function FabricFolderHandle_Free( io FabricFolderHandle folder);
 function FabricFolderHandle_SetAbsolutePath( io FabricFolderHandle folder, io String path);
@@ -12,19 +14,19 @@ function Boolean FabricFolderHandle_IsValid( in FabricFolderHandle folder);
 function Boolean FabricFolderHandle_Exists( in FabricFolderHandle folder);
 function FabricFolderHandle FabricFolderHandle_GetParentFolder( in FabricFolderHandle folder);
 function FabricFolderHandle_GetSubFolders( io FabricFolderHandle folder, io FabricFolderHandle subfolders[]);
-function FabricFolderHandle_GetFiles( io FabricFolderHandle folder, io FabricFileHandle files[]);
+function FabricFolderHandle_GetFiles( io FabricFolderHandle folder, io FabricFileHandleWrapper handles[]);
 
-function FabricFileHandle_SetAbsolutePath( io FabricFileHandle file, io String path);
-function FabricFileHandle_GetAbsolutePath( in FabricFileHandle file, io String path);
-function FabricFolderHandle FabricFileHandle_GetParentFolder( in FabricFileHandle file);
-function FabricFileHandle_GetName( in FabricFileHandle file, io String name);
-function FabricFileHandle_GetBaseName( in FabricFileHandle file, io String name);
-function FabricFileHandle_GetExtension( in FabricFileHandle file, io String ext);
-function FabricFileHandle_GetExtensionLower( in FabricFileHandle file, io String extLower);
-function Boolean FabricFileHandle_IsValid( in FabricFileHandle file);
-function Boolean FabricFileHandle_Exists( in FabricFileHandle file);
-function Boolean FabricFileHandle_IsReadOnly( in FabricFileHandle file);
-function Size FabricFileHandle_GetSize( in FabricFileHandle file);
+function FabricFileHandle_SetAbsolutePath( io FabricFileHandleWrapper handle, io String path);
+function FabricFileHandle_GetAbsolutePath( io FabricFileHandleWrapper handle, io String path);
+function FabricFolderHandle FabricFileHandle_GetParentFolder( in FabricFileHandleWrapper handle);
+function FabricFileHandle_GetName( io FabricFileHandleWrapper handle, io String name);
+function FabricFileHandle_GetBaseName( io FabricFileHandleWrapper handle, io String name);
+function FabricFileHandle_GetExtension( io FabricFileHandleWrapper handle, io String ext);
+function FabricFileHandle_GetExtensionLower( io FabricFileHandleWrapper handle, io String extLower);
+function Boolean FabricFileHandle_IsValid( in FabricFileHandleWrapper handle);
+function Boolean FabricFileHandle_Exists( in FabricFileHandleWrapper handle);
+function Boolean FabricFileHandle_IsReadOnly( in FabricFileHandleWrapper handle);
+function Size FabricFileHandle_GetSize( in FabricFileHandleWrapper handle);
 
 function ~FabricFolderHandle() = "FabricFolderHandle_Free";
 
@@ -60,6 +62,58 @@ function FabricFolderHandle.getSubFolders(io FabricFolderHandle subfolders[]) {
   FabricFolderHandle_GetSubFolders(this,subfolders);
 }
 
-function FabricFolderHandle.getFiles(io FabricFileHandle files[]) {
+function FabricFolderHandle.getFiles(io FabricFileHandleWrapper files[]) {
   FabricFolderHandle_GetFiles(this,files);
+}
+
+function String FabricFileHandleWrapper.getHandle() {
+  return this.m_handle;
+}
+
+function FabricFileHandleWrapper.setHandle(io String handle) {
+  this.m_handle = handle;
+}
+
+function FabricFileHandleWrapper.setAbsolutePath(io String path) {
+  FabricFileHandle_SetAbsolutePath(this,path);
+}
+
+function FabricFileHandleWrapper.getAbsolutePath(io String path) {
+  FabricFileHandle_GetAbsolutePath(this,path);
+}
+
+function FabricFolderHandle FabricFileHandleWrapper.getParentFolder() {
+  return FabricFileHandle_GetParentFolder(this);
+}
+
+function FabricFileHandleWrapper.getName(io String name) {
+  FabricFileHandle_GetName(this,name);
+}
+
+function FabricFileHandleWrapper.getBaseName(io String baseName) {
+  FabricFileHandle_GetBaseName(this,baseName);
+}
+
+function FabricFileHandleWrapper.getExtension(io String extension) {
+  FabricFileHandle_GetExtension(this,extension);
+}
+
+function FabricFileHandleWrapper.getExtensionLower(io String extensionLower) {
+  FabricFileHandle_GetExtensionLower(this,extensionLower);
+}
+
+function Boolean FabricFileHandleWrapper.isValid() {
+  return FabricFileHandle_IsValid(this);
+}
+
+function Boolean FabricFileHandleWrapper.exists() {
+  return FabricFileHandle_Exists(this);
+}
+
+function Boolean FabricFileHandleWrapper.isReadOnly() {
+  return FabricFileHandle_IsReadOnly(this);
+}
+
+function Boolean FabricFileHandleWrapper.getSize() {
+  return FabricFileHandle_GetSize(this);
 }
