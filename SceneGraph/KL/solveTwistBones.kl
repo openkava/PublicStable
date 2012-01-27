@@ -51,7 +51,7 @@ operator solveTwistBones(
     Quat boneOffsetRotation;
     boneOffsetRotation.setFrom2Vectors(endVec, baseVec);
     endXfo.ori = boneOffsetRotation * endXfo.ori;
-    endXfo.ori.alignWith(endXfo.ori);
+    endXfo.ori.alignWith(baseXfo.ori);
     for (var Integer j = 0; j < twistBones[i].size(); j++) {
       pose[twistBones[i][j]] = pose[bones[twistBones[i][j]].parent] * bones[twistBones[i][j]].referenceLocalPose;
       pose[twistBones[i][j]].ori = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, twistWeights[i][j]) * oriOffsets[i][j];

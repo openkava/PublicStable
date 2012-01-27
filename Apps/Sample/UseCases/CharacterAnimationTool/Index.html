@@ -224,7 +224,7 @@ $(document).ready(function() {
         }
       ],
       createManipulators: true,
-      manipulatorSizes: [ 1.8, 2.0, 1.5 ]
+      manipulatorSizes: [ 2.5, 3.0, 2.0 ]
     } );
     
     rigNode.addSolver('PubicMound', 'FKHierarchySolver', {
@@ -417,18 +417,19 @@ $(document).ready(function() {
   
     rebuildAnimationLibraryList();
     
-    var curveEditorWindow;
-    var trackFilters;
-    scene.addEventListener('beginmanipulation', function(evt){
-      if(evt.manipulatorNode.getTargetName){
-	trackFilters = [evt.manipulatorNode.getTargetName()];
-	if(curveEditorWindow){
-	  curveEditorWindow.setCurveFilters(trackFilters);
-	}
-      }
-    });
   });
 
+  var curveEditorWindow;
+  var trackFilters;
+  scene.addEventListener('beginmanipulation', function(evt){
+    if(evt.manipulatorNode.getTargetName){
+      trackFilters = [evt.manipulatorNode.getTargetName()];
+      if(curveEditorWindow){
+	curveEditorWindow.setCurveFilters(trackFilters);
+      }
+    }
+  });
+  
   var selectedAnimation = 0;
   var setSelectedAnimation = function(val){
     selectedAnimation = val;
