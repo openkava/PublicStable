@@ -245,3 +245,36 @@ FABRIC_EXT_EXPORT void FabricTGADecode(
     break;    
   }
 }
+
+FABRIC_EXT_EXPORT void FabricTGAOpenFileHandle(
+  KL::String handle,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::VariableArray<KL::RGBA> &imagePixels
+  )
+{
+  KL::FileHandleWrapper wrapper(handle);
+  wrapper.ensureIsValidFile();
+  FILE * fp= fopen(wrapper.getPath().data(),"rb");
+  if(!fp)
+  {
+    Fabric::EDK::throwException("TGA Extension: File does not exist!");
+    return;
+  }
+  
+  fseek(fp, 0L, SEEK_END);
+  KL::Size size = ftell(fp);
+  fseek(fp, 0L, SEEK_SET);
+
+  KL::Data data = malloc(size);
+  if(fread(data,1,size,fp) != size)
+  {
+    fclose(fp);
+    Fabric::EDK::throwException("TGA Extension: Could not read file contents!");
+    return;
+  }
+  fclose(fp);
+  
+  FabricTGADecode(data,size,imageWidth,imageHeight,imagePixels);
+  free(data);
+}

@@ -147,7 +147,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICOpen(
 }
 
 
-FABRIC_EXT_EXPORT void FabricALEMBICDecode(
+FABRIC_EXT_EXPORT void FabricALEMBICOpenFileHandle(
   const KL::String& fileHandle,
   AlembicHandle &handle
   )
@@ -156,9 +156,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
   if( archive == NULL )
   {
     KL::FileHandleWrapper fileWrapper( fileHandle );
-    if( fileWrapper.isFolder() )
-      throwException( "Invalid Fabric file handle" );
-
+    fileWrapper.ensureIsValidFile();
     return FabricALEMBICOpen(fileWrapper.getPath(),handle);
   }
 }

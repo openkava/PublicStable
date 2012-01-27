@@ -22,6 +22,30 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
+static AVFrame *alloc_picture(enum PixelFormat pix_fmt, int width, int height)
+{
+  AVFrame *picture;
+  uint8_t *picture_buf;
+  int size;
+  
+  picture = avcodec_alloc_frame();
+  if (!picture)
+  {
+    Fabric::EDK::throwException("Video Extension: Could not allocate frame!");
+    return NULL;
+  }
+  size = avpicture_get_size(pix_fmt, width, height);
+  picture_buf = (uint8_t*)av_malloc(size);
+  if (!picture_buf) {
+    av_free(picture);
+    Fabric::EDK::throwException("Video Extension: Could not allocate frame buffer!");
+    return NULL;
+  }
+  avpicture_fill((AVPicture *)picture, picture_buf,
+  pix_fmt, width, height);
+  return picture;
+}
+
 class videoStream;
 
 const float cFrameSkipTolerance = 0.005f;
@@ -40,13 +64,16 @@ class videoStream
 {
 private:
   static bool sRegistered;
+  bool mReadOnly;
   AVFormatContext * mFormatCtx;
   AVCodecContext * mCodecCtx;
+  AVStream * mVideoStream;
   int mVideoStreamID;
   AVCodec * mCodec;
   AVFrame * mFrameYUV;
   AVFrame * mFrameRGB;
   uint8_t * mBuffer;
+  size_t mBufferSize;
   SwsContext * mConvertCtx;
   videoHandle * mHandle;
 
@@ -60,6 +87,17 @@ public:
     {
       av_register_all();
       sRegistered = true;
+
+      printf("\n-----------------------------\n");
+      printf("FabricVIDEO supported input formats: ");
+      for(AVInputFormat * fmt = first_iformat; fmt != NULL; fmt = fmt->next)
+        printf("%s, ",fmt->name);
+      printf("\n-----------------------------\n");
+      
+      printf("FabricVIDEO supported output formats: ");
+      for(AVOutputFormat * fmt = first_oformat; fmt != NULL; fmt = fmt->next)
+        printf("%s, ",fmt->name);
+      printf("\n-----------------------------\n\n");
     }
     
     mFormatCtx = NULL;
@@ -69,16 +107,45 @@ public:
     mFrameYUV = NULL;
     mFrameRGB = NULL;
     mBuffer = NULL;
+    mBufferSize = 0;
     mConvertCtx = NULL;
   }
   
   ~videoStream()
   {
-    av_free(mBuffer);
-    av_free(mFrameRGB);
-    av_free(mFrameYUV);
-    avcodec_close(mCodecCtx);
-    av_close_input_file(mFormatCtx);
+    if(mReadOnly)
+    {
+      av_free(mBuffer);
+      av_free(mFrameRGB);
+      av_free(mFrameYUV);
+      avcodec_close(mCodecCtx);
+      av_close_input_file(mFormatCtx);
+    }
+    else
+    {
+      av_write_trailer(mFormatCtx);
+
+      avcodec_close(mVideoStream->codec);
+      av_free(mFrameRGB->data[0]);
+      av_free(mFrameRGB);
+      av_free(mFrameYUV->data[0]);
+      av_free(mFrameYUV);
+      av_free(mBuffer);
+
+      /* free the streams */
+      for(size_t i = 0; i < mFormatCtx->nb_streams; i++) {
+        av_freep(&mFormatCtx->streams[i]->codec);
+        av_freep(&mFormatCtx->streams[i]);
+      }
+      
+      if (!(mFormatCtx->oformat->flags & AVFMT_NOFILE)) {
+        /* close the output file */
+        url_fclose(mFormatCtx->pb);
+      }
+      
+      /* free the format ctx */
+      av_free(mFormatCtx);
+    }
   }
   
   KL::Size getWidth()
@@ -93,6 +160,8 @@ public:
   
   KL::Scalar getDuration()
   {
+    if(!mReadOnly)
+      return 0;
     if(!mFormatCtx)
       return 0;
     return KL::Scalar(mFormatCtx->duration) / KL::Scalar(AV_TIME_BASE);
@@ -100,98 +169,201 @@ public:
 
   KL::Scalar getFPS()
   {
+    if(!mReadOnly)
+      return 25;
     return KL::Scalar(mFormatCtx->streams[mVideoStreamID]->r_frame_rate.num) / KL::Scalar(mFormatCtx->streams[mVideoStreamID]->r_frame_rate.den);
   }
   
   KL::Scalar getTime()
   {
+    if(!mReadOnly)
+      return 0;
     return mHandle->time;
   }
   
-  bool init(KL::String & filename)
+  bool init(KL::String & filename, bool in_readOnly, KL::Size width = 0, KL::Size height = 0)
   {
-    if(filename.data()== NULL){
-      printf("=======> VIDEO-ERROR: No filename specified.......\n");
-      return false;
-    }
-    
-    // open video file
-    if(av_open_input_file(&mFormatCtx, filename.data(), NULL, 0, NULL)!=0)
+    mReadOnly = in_readOnly;
+    if(mReadOnly)
     {
-      printf("=======> VIDEO-ERROR: Cannot open video file '%s'.\n",filename.data());
-      return false;
-    }
-
-    // retrieve stream information
-    if(av_find_stream_info(mFormatCtx)<0)
-    {
-      printf("=======> VIDEO-ERROR: Cannot read stream information in '%s'.\n",filename.data());
-      return false;
-    }
-
-    // find the first video stream
-    for(int i=0; i<int(mFormatCtx->nb_streams); i++)
-    {
-      if(mFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+      if(filename.data()== NULL){
+        Fabric::EDK::throwException("Video Extension: no filename specified!");
+        return false;
+      }
+      
+      // open video file
+      if(av_open_input_file(&mFormatCtx, filename.data(), NULL, 0, NULL)!=0)
       {
-        mVideoStreamID=i;
-        break;
+        Fabric::EDK::throwException("Video Extension: Cannot open video file!");
+        return false;
+      }
+  
+      // retrieve stream information
+      if(av_find_stream_info(mFormatCtx)<0)
+      {
+        Fabric::EDK::throwException("Video Extension: Cannot read stream information!");
+        return false;
+      }
+  
+      // find the first video stream
+      for(int i=0; i<int(mFormatCtx->nb_streams); i++)
+      {
+        if(mFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+        {
+          mVideoStreamID=i;
+          break;
+        }
+      }
+      if(mVideoStreamID==-1)
+      {
+        Fabric::EDK::throwException("Video Extension: Didn't find a video stream in video file!");
+        return false;
+      }
+      
+      // get a pointer to the codec context for the video stream
+      mCodecCtx = mFormatCtx->streams[mVideoStreamID]->codec;
+      
+      // find the decoder for the video stream
+      mCodec = avcodec_find_decoder(mCodecCtx->codec_id);
+      if(mCodec==NULL)
+      {
+        Fabric::EDK::throwException("Video Extension: Decoder codec not found!");
+        return false;
+      }
+      
+      // open codec
+      if(avcodec_open(mCodecCtx, mCodec)<0)
+      {
+        Fabric::EDK::throwException("Video Extension: Could not open supported codec!");
+        return false;
+      }
+      
+      // allocate video frame (for YUV and RGB)
+      mFrameYUV = avcodec_alloc_frame();
+      mFrameRGB = avcodec_alloc_frame();
+  
+      // determine required buffer size and allocate buffer
+      //mBufferSize = avpicture_get_size( PIX_FMT_RGB24, getWidth(),getHeight())*sizeof(uint8_t);
+      //mBuffer = (uint8_t *)av_malloc(mBufferSize);
+      int numBytes = avpicture_get_size( PIX_FMT_RGB24, getWidth(),getHeight());
+      mBuffer = (uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
+      
+      // check if we received the memory
+      if(!mFrameRGB || !mFrameYUV || !mBuffer)
+      {
+        Fabric::EDK::throwException("Video Extension: Could not allocate buffer!");
+        return false;
+      }
+  
+      // connect the picture frame with the buffer      
+      avpicture_fill((AVPicture *)mFrameRGB, mBuffer, PIX_FMT_RGB24, getWidth(), getHeight());
+      
+      // init the handle's values
+      mHandle->time = -10000.0;
+      mHandle->width = getWidth();
+      mHandle->height = getHeight();
+      mHandle->duration = getDuration();
+      mHandle->fps = getFPS();
+    }
+    else
+    {
+      AVOutputFormat * fmt = av_guess_format("mpeg2video",NULL,NULL);
+      if(!fmt)
+      {
+        Fabric::EDK::throwException("Video Extension: Format not found!");
+        return false;
+      }
+      
+      mFormatCtx = avformat_alloc_context();
+      mFormatCtx->oformat = fmt;
+      
+      snprintf(mFormatCtx->filename, sizeof(mFormatCtx->filename), "%s", filename.data());
+      
+      mVideoStream = av_new_stream(mFormatCtx, 0);
+      mVideoStreamID = 0;
+
+      mCodecCtx = mVideoStream->codec;
+      mCodecCtx->codec_id = fmt->video_codec;
+      mCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+
+      mCodecCtx->bit_rate = 400000;
+      mCodecCtx->width = width;
+      mCodecCtx->height = height;
+      mCodecCtx->time_base.den = 25;
+      mCodecCtx->time_base.num = 1;
+      mCodecCtx->gop_size = 12; /* emit one intra frame every twelve frames at most */
+      mCodecCtx->pix_fmt = PIX_FMT_YUV420P;
+
+      if (mCodecCtx->codec_id == CODEC_ID_MPEG2VIDEO)
+        mCodecCtx->max_b_frames = 2;
+      if (mCodecCtx->codec_id == CODEC_ID_MPEG1VIDEO)
+        mCodecCtx->mb_decision=2;
+
+      if(mFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
+      mCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+      if (av_set_parameters(mFormatCtx, NULL) < 0) {
+        Fabric::EDK::throwException("Video Extension: Invalid output format parameters!");
+        return false;
+      }
+  
+      AVCodec * codec = avcodec_find_encoder(mCodecCtx->codec_id);
+      if (!codec) {
+        Fabric::EDK::throwException("Video Extension: Encoder codec not found!");
+        return false;
+      }
+
+      if (avcodec_open(mCodecCtx, codec) < 0) {
+        Fabric::EDK::throwException("Video Extension: Could not open codec!");
+        return false;
+      }
+
+      mBufferSize = avpicture_get_size( PIX_FMT_YUV420P, getWidth(),getHeight())*sizeof(uint8_t);
+      mBuffer = (uint8_t *)av_malloc(mBufferSize);
+
+      mFrameRGB = alloc_picture(PIX_FMT_RGB24, getWidth(), getHeight());
+      if (!mFrameRGB) {
+        Fabric::EDK::throwException("Video Extension: Could not allocate RGB picture!");
+        return false;
+      }
+
+      mFrameYUV = alloc_picture(PIX_FMT_YUV420P, getWidth(), getHeight());
+      if (!mFrameYUV) {
+        Fabric::EDK::throwException("Video Extension: Could not allocate YUV picture!");
+        return false;
+      }
+      
+      if(!mConvertCtx)
+      {
+        mConvertCtx = sws_getContext(getWidth(), getHeight(), PIX_FMT_RGB24, getWidth(), getHeight(), PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
+        if(!mConvertCtx)
+        {
+          Fabric::EDK::throwException("Video Extension: Could not create sws_conversion object!");
+          return false;
+        }
+      }
+
+      if (!(fmt->flags & AVFMT_NOFILE)) {
+        if (url_fopen(&mFormatCtx->pb, filename.data(), URL_WRONLY) < 0) {
+          Fabric::EDK::throwException("Video Extension: Could not open output file!");
+          return false;
+        }
+      }
+      
+      if(av_write_header(mFormatCtx) < 0)
+      {
+        Fabric::EDK::throwException("Video Extension: Could not write header!");
+        return false;
       }
     }
-    if(mVideoStreamID==-1)
-    {
-      printf("=======> VIDEO-ERROR: Didn't find a video stream in '%s'.\n",filename.data());
-      return false;
-    }
-    
-    // get a pointer to the codec context for the video stream
-    mCodecCtx = mFormatCtx->streams[mVideoStreamID]->codec;
-    
-    // find the decoder for the video stream
-    mCodec = avcodec_find_decoder(mCodecCtx->codec_id);
-    if(mCodec==NULL)
-    {
-      printf("=======> VIDEO-ERROR: Unsupported codec in '%s'.\n",filename.data());
-      return false;
-    }
-    
-    // open codec
-    if(avcodec_open(mCodecCtx, mCodec)<0)
-    {
-      printf("=======> VIDEO-ERROR: Could not open (supported) codec for '%s'.\n",filename.data());
-      return false;
-    }
-    
-    // allocate video frame (for YUV and RGB)
-    mFrameYUV = avcodec_alloc_frame();
-    mFrameRGB = avcodec_alloc_frame();
-
-    // determine required buffer size and allocate buffer
-    int numBytes = avpicture_get_size( PIX_FMT_RGB24, getWidth(),getHeight());
-    mBuffer = (uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-    
-    // check if we received the memory
-    if(!mFrameRGB || !mFrameYUV || !mBuffer)
-    {
-      printf("=======> VIDEO-ERROR: Couldn't allocate buffer in '%s'.\n",filename.data());
-      return false;
-    }
-
-    // connect the picture frame with the buffer      
-    avpicture_fill((AVPicture *)mFrameRGB, mBuffer, PIX_FMT_RGB24, getWidth(), getHeight());
-    
-    // init the handle's values
-    mHandle->time = -10000.0;
-    mHandle->width = getWidth();
-    mHandle->height = getHeight();
-    mHandle->duration = getDuration();
-    mHandle->fps = getFPS();
 
     return true;
   }
   
   bool readNextFrame(KL::Boolean &loop)
   {
+    if(!mReadOnly)
+      return false;
     AVPacket packet;
     av_init_packet(&packet);
     int frameFinished = 0;
@@ -213,7 +385,7 @@ public:
             mConvertCtx = sws_getContext(getWidth(), getHeight(), mCodecCtx->pix_fmt, getWidth(), getHeight(), PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
             if(!mConvertCtx)
             {
-              printf("=======> VIDEO-ERROR: Could not create sws_conversion object.\n");
+              Fabric::EDK::throwException("Video Extension: Could not create sws_conversion object!");
               return false;
             }
           }
@@ -240,6 +412,8 @@ public:
 
   bool seekTime(KL::Scalar &time)
   {
+    if(!mReadOnly)
+      return false;
     KL::Boolean loop = false;
 
     if(fabs(time - mHandle->time) < cFrameSkipTolerance)
@@ -264,11 +438,43 @@ public:
   
   bool getAllPixels(KL::VariableArray<KL::RGB> &pixels)
   {
+    if(!mReadOnly)
+      return false;
     mHandle->width = getWidth();
     mHandle->height = getHeight();
     pixels.resize(getHeight() * getWidth());
     memcpy(&pixels[0],mFrameRGB->data[0],sizeof(KL::RGB) * getHeight() * getWidth());
     return true;
+  }
+
+  bool writeFrame(KL::VariableArray<KL::RGB> &pixels)
+  {
+    if(mReadOnly)
+      return false;
+    
+    if(pixels.size() != getWidth() * getHeight())
+      return false;
+    
+    memcpy(mFrameRGB->data[0],&pixels[0],sizeof(KL::RGB) * getHeight() * getWidth());
+
+    sws_scale(mConvertCtx, mFrameRGB->data, mFrameRGB->linesize, 0, getHeight(), mFrameYUV->data, mFrameYUV->linesize);
+
+    size_t out_size = avcodec_encode_video(mCodecCtx, mBuffer, mBufferSize, mFrameYUV);
+    if (out_size > 0) {
+      
+      AVPacket pkt;
+      av_init_packet(&pkt);
+      
+      if (mCodecCtx->coded_frame->pts != AV_NOPTS_VALUE)
+        pkt.pts= av_rescale_q(mCodecCtx->coded_frame->pts, mCodecCtx->time_base, mVideoStream->time_base);
+      if(mCodecCtx->coded_frame->key_frame)
+        pkt.flags |= AV_PKT_FLAG_KEY;
+      pkt.stream_index= mVideoStream->index;
+      pkt.data = mBuffer;
+      pkt.size = out_size;
+      
+      av_interleaved_write_frame(mFormatCtx, &pkt);
+    }
   }
   
 };
@@ -284,11 +490,10 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenFileName(
     // init the stream
     handle.pointer = new videoStream(&handle);
     if(!handle.pointer){
-      printf("=======> VIDEO-ERROR: Could not create videoStream object.\n");
-      handle.pointer = NULL;
+      Fabric::EDK::throwException("Video Extension: Could not create videoStream object!");
       return;
     }
-    if(!handle.pointer->init(filename))
+    if(!handle.pointer->init(filename,true))
     {
       delete(handle.pointer);
       handle.pointer = NULL;
@@ -328,6 +533,19 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricVIDEOOpenFileHandle(
+  KL::String file,
+  videoHandle &handle
+)
+{
+  if(handle.pointer == NULL)
+  {
+    KL::FileHandleWrapper wrapper(file);
+    wrapper.ensureIsValidFile();
+    return FabricVIDEOOpenFileName(wrapper.getPath(),handle);
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricVIDEOSeekTime(
   videoHandle & handle,
   KL::Scalar &time
@@ -338,6 +556,44 @@ FABRIC_EXT_EXPORT void FabricVIDEOSeekTime(
   handle.pointer->seekTime(time);
 }
 
+FABRIC_EXT_EXPORT void FabricVIDEOCreateFromFileHandle(
+  KL::String file,
+  KL::Size width,
+  KL::Size height,
+  videoHandle &handle
+)
+{
+  if(handle.pointer == NULL)
+  {
+    KL::FileHandleWrapper wrapper(file);
+    wrapper.ensureIsValidFile();
+    if(wrapper.isReadOnly())
+    {
+      Fabric::EDK::throwException("Video Extension: Provided fileHandle is readOnly, invalid for output video!");
+      return;
+    }
+
+    // init the stream
+    handle.pointer = new videoStream(&handle);
+    if(!handle.pointer){
+      Fabric::EDK::throwException("Video Extension: Could not create videoStream object!");
+      handle.pointer = NULL;
+      return;
+    }
+    KL::String filePath = wrapper.getPath();
+    if(!handle.pointer->init(filePath,false,width,height))
+    {
+      delete(handle.pointer);
+      handle.pointer = NULL;
+      return;
+    }
+    handle.width = handle.pointer->getWidth();
+    handle.height = handle.pointer->getHeight();
+    handle.duration = 0;
+    handle.fps = handle.pointer->getFPS();
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricVIDEOGetAllPixels(
   videoHandle & handle,
   KL::VariableArray<KL::RGB> &pixels
@@ -346,6 +602,17 @@ FABRIC_EXT_EXPORT void FabricVIDEOGetAllPixels(
   if(handle.pointer == NULL)
     return;
   handle.pointer->getAllPixels(pixels);
+}
+
+FABRIC_EXT_EXPORT void FabricVIDEOWriteAllPixels(
+  videoHandle & handle,
+  KL::VariableArray<KL::RGB> &pixels
+)
+{
+  if(handle.pointer == NULL)
+    return;
+  handle.pointer->writeFrame(pixels);
+  handle.duration += 1.0f / float(handle.pointer->getFPS());
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOFreeHandle(

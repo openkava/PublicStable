@@ -91,7 +91,7 @@ FABRIC_EXT_EXPORT KL::Boolean FabricFolderHandle_Exists(
 }
 
 FABRIC_EXT_EXPORT FabricFolderHandle FabricFolderHandle_GetParentFolder(
-  FabricFolderHandle & folder
+  const FabricFolderHandle & folder
 )
 {
   FabricFolderHandle result;
@@ -138,7 +138,7 @@ FABRIC_EXT_EXPORT void FabricFolderHandle_GetSubFolders(
 
 FABRIC_EXT_EXPORT void FabricFolderHandle_GetFiles(
   FabricFolderHandle & folder,
-  KL::VariableArray<KL::String> & result
+  KL::VariableArray<KL::FileHandleWrapper> & result
 )
 {
   if(folder.m_data != NULL)
@@ -154,42 +154,31 @@ FABRIC_EXT_EXPORT void FabricFolderHandle_GetFiles(
     }
     result.resize(paths.size());
     for(size_t i=0;i<paths.size();i++)
-    {
-      KL::FileHandleWrapper handle;
-      handle.createFromFile(paths[i].string().c_str(),true);
-      result[i] = handle;
-    }
+      result[i].createFromFile(paths[i].string().c_str(),false);
   }
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_SetAbsolutePath(
-  KL::String & file,
+  KL::FileHandleWrapper & handle,
   KL::String & path
 )
 {
-  std::string str(path.data());
-  KL::FileHandleWrapper handle;
-  handle.createFromFile(str.c_str(),true);
-  file = handle;
+  handle.createFromFile(path.data(),false);
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_GetAbsolutePath(
-  KL::String & file,
+  KL::FileHandleWrapper & handle,
   KL::String& result
 )
 {
-  result = KL::String();
-  KL::FileHandleWrapper handle( file );
   result = handle.getPath();
 }
 
 FABRIC_EXT_EXPORT FabricFolderHandle FabricFileHandle_GetParentFolder(
-  KL::String & file
+  KL::FileHandleWrapper & handle
 )
 {
   FabricFolderHandle result;
-  result.m_data = NULL;
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
@@ -201,12 +190,11 @@ FABRIC_EXT_EXPORT FabricFolderHandle FabricFileHandle_GetParentFolder(
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_GetName(
-  KL::String & file,
+  KL::FileHandleWrapper & handle,
   KL::String& result
 )
 {
   result = KL::String();
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
@@ -218,12 +206,11 @@ FABRIC_EXT_EXPORT void FabricFileHandle_GetName(
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_GetBaseName(
-  KL::String & file,
+  KL::FileHandleWrapper & handle,
   KL::String& result
 )
 {
   result = KL::String();
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
@@ -235,12 +222,11 @@ FABRIC_EXT_EXPORT void FabricFileHandle_GetBaseName(
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_GetExtension(
-  KL::String & file,
+  KL::FileHandleWrapper & handle,
   KL::String& result
 )
 {
   result = KL::String();
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
@@ -252,12 +238,11 @@ FABRIC_EXT_EXPORT void FabricFileHandle_GetExtension(
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_GetExtensionLower(
-  KL::String & file,
+  KL::FileHandleWrapper & handle,
   KL::String& result
 )
 {
   result = KL::String();
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
@@ -270,10 +255,9 @@ FABRIC_EXT_EXPORT void FabricFileHandle_GetExtensionLower(
 }
 
 FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_IsValid(
-  KL::String & file
+  const KL::FileHandleWrapper & handle
 )
 {
-  KL::FileHandleWrapper handle( file );
   if( !handle.isValid() || handle.isFolder() )
     return false;
   std::string str( handle.getPath().data() );
@@ -281,11 +265,10 @@ FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_IsValid(
 }
 
 FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_Exists(
-  KL::String & file
+  const KL::FileHandleWrapper & handle
 )
 {
   KL::Boolean result = false;
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
@@ -296,19 +279,17 @@ FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_Exists(
 }
 
 FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_IsReadOnly(
-  KL::String & file
+  const KL::FileHandleWrapper & handle
 )
 {
-  KL::FileHandleWrapper handle( file );
   return handle.isReadOnly();
 }
 
 FABRIC_EXT_EXPORT KL::Size FabricFileHandle_GetSize(
-  KL::String & file
+  const KL::FileHandleWrapper & handle
 )
 {
   KL::Size result = 0;
-  KL::FileHandleWrapper handle( file );
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {

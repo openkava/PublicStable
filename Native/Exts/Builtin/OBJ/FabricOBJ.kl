@@ -10,6 +10,7 @@ struct Vec3 {
 };
 
 function FabricOBJDecode( Data objData, Size objDataSize, Boolean splitByObjects, Boolean splitByGroups, Boolean splitByMaterials, io OBJDataHandle handle );
+function FabricOBJOpenFileHandle( String fileHandle, Boolean splitByObjects, Boolean splitByGroups, Boolean splitByMaterials, io OBJDataHandle handle );
 function FabricOBJIsHandleValid( OBJDataHandle handle, io Boolean valid );
 function FabricOBJFreeParsedData( io OBJDataHandle handle );
 function FabricOBJHadErrors( OBJDataHandle handle, io Boolean hadErrors );
