@@ -254,8 +254,7 @@ FABRIC_EXT_EXPORT void FabricTGAOpenFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(handle);
-  if(!wrapper.ensureIsValidFile())
-    return;
+  wrapper.ensureIsValidFile();
   FILE * fp= fopen(wrapper.getPath().data(),"rb");
   if(!fp)
   {

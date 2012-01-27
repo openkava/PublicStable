@@ -140,8 +140,7 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_OpenFileHandle(
 #endif
 
     KL::FileHandleWrapper wrapper(handle);
-    if(!wrapper.ensureIsValidFile())
-      return;
+    wrapper.ensureIsValidFile();
     KL::String fileName = wrapper.getPath();
     FabricLIDAR_Reader_Open(fileName,lidar);
 

@@ -236,8 +236,7 @@ FABRIC_EXT_EXPORT void FabricHDROpenFileHandle(
   )
 {
   KL::FileHandleWrapper wrapper(handle);
-  if(!wrapper.ensureIsValidFile())
-    return;
+  wrapper.ensureIsValidFile();
   FILE * fp= fopen(wrapper.getPath().data(),"rb");
   if(!fp)
   {
