@@ -35,12 +35,22 @@ def CopyToAppdataIfWindowsMethod(nbargs, args):
 extsEnv.AddMethod(CopyToAppdataIfWindowsMethod, "CopyToAppdataIfWindows")
 
 extFiles = []
+installerExtFiles = []
+
 builtinExtFiles = SConscript( dirs=['Builtin'] )
 if builtinExtFiles:
   extFiles.append( builtinExtFiles )
+  installerExtFiles.append( builtinExtFiles )
+
+builtinNoInstallerExtFiles = SConscript( dirs=['BuiltinNoInstaller'] )
+if builtinNoInstallerExtFiles:
+  extFiles.append( builtinNoInstallerExtFiles )
+
 sampleExtFiles = SConscript( dirs=['Sample'] )
 if sampleExtFiles:
   extFiles.append( sampleExtFiles )
-Export( 'extFiles' )
+  installerExtFiles.append( sampleExtFiles )
+
+Export( 'installerExtFiles' )
 Install( fabricExtsDistDir, extFiles )
 Alias( 'exts', extFiles )
