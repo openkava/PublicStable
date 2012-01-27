@@ -12,3 +12,10 @@ function FabricTGADecode(
   io Size imageHeight,
   io RGBA imagePixels[]
   );
+  
+function FabricTGAOpenFileHandle(
+  String handle,
+  io Size imageWidth,
+  io Size imageHeight,
+  io RGBA imagePixels[]
+  );

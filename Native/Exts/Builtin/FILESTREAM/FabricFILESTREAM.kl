@@ -2,10 +2,8 @@ struct FabricFileStream {
   Data m_data;
 };
 
-alias String FabricFileHandle;
-
 function FabricFileStream_Free( io FabricFileStream stream );
-function FabricFileStream_Open( io FabricFileStream stream, in FabricFileHandle file, in String mode );
+function FabricFileStream_Open( io FabricFileStream stream, in String handle, in String mode );
 function FabricFileStream_CloseOnFullyRead( io FabricFileStream stream, in Boolean close );
 function Boolean FabricFileStream_IsValid( in FabricFileStream stream );
 function Boolean FabricFileStream_IsWritable( in FabricFileStream stream );
@@ -24,8 +22,8 @@ function FabricFileStream_ReadSize( io FabricFileStream stream, io Size size );
 
 function ~FabricFileStream() = "FabricFileStream_Free";
 
-function FabricFileStream.open(in FabricFileHandle file, in String mode) {
-  FabricFileStream_Open(this,file,mode);
+function FabricFileStream.open(in String handle, in String mode) {
+  FabricFileStream_Open(this,handle,mode);
 }
 
 function FabricFileStream.close() {
@@ -44,11 +42,11 @@ function Boolean FabricFileStream.isWritable() {
   return FabricFileStream_IsWritable(this);
 }
 
-function Size FabricFileStream.getSize(in FabricFileHandle file) {
+function Size FabricFileStream.getSize() {
   return FabricFileStream_GetSize(this);
 }
 
-function Size FabricFileStream.getSizeRead(in FabricFileHandle file) {
+function Size FabricFileStream.getSizeRead() {
   return FabricFileStream_GetSizeRead(this);
 }
 
@@ -76,11 +74,11 @@ function FabricFileStream.readData(in Data data, in Size size) {
   FabricFileStream_ReadData(this,data,size);
 }
 
-function FabricFileStream.writeString(io Data data, in String string) {
+function FabricFileStream.writeString(in String string) {
   FabricFileStream_WriteString(this,string);
 }
 
-function FabricFileStream.readString(io Data data, io String string) {
+function FabricFileStream.readString(io String string) {
   FabricFileStream_ReadString(this,string);
 }
 
