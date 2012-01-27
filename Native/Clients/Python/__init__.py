@@ -119,7 +119,7 @@ class _CLIENT( object ):
 
     fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
-  def __route( self, src, cmd, arg ):
+  def _route( self, src, cmd, arg ):
     if len(src) == 0:
       self.__handle( cmd, arg )
     else:
@@ -127,9 +127,9 @@ class _CLIENT( object ):
       firstSrc = src.popleft()
 
       if firstSrc == 'RT':
-        self.rt.route( src, cmd, arg )
+        self.rt._route( src, cmd, arg )
       elif firstSrc == 'DG':
-        self.dg.route( src, cmd, arg )
+        self.dg._route( src, cmd, arg )
       elif firstSrc == 'EX':
         pass
       elif firstSrc == 'IO':
@@ -137,7 +137,7 @@ class _CLIENT( object ):
       elif firstSrc == 'VP':
         pass
       elif firstSrc == 'GC':
-        self.rt.route( src, cmd, arg )
+        self.gc._route( src, cmd, arg )
       else:
         raise Exception( 'unroutable src: ' + firstSrc )
         
@@ -149,7 +149,7 @@ class _CLIENT( object ):
 
     for i in range( 0, len( notifications ) ):
       n = notifications[ i ]
-      self.__route( n[ 'src' ], n[ 'cmd' ], n[ 'arg' ] )
+      self._route( n[ 'src' ], n[ 'cmd' ], n[ 'arg' ] )
 
   def __getNotifyCallback( self ):
     # use a closure here so that 'self' is maintained without us
@@ -178,14 +178,14 @@ class _GCOBJECT( object ):
     self.__dispose()
 
   def __dispose( self ):
-    self._objQueueCommand( 'dispose' )
+    self._gcObjQueueCommand( 'dispose' )
     self.__nsobj._getClient().gc.disposeObject( self )
     self.__id = None
  
-  def _objQueueCommand( self, cmd, arg = None, unwind = None, callback = None ):
+  def _gcObjQueueCommand( self, cmd, arg = None, unwind = None, callback = None ):
     if self.__id is None:
       raise Exception( "GC object has already been disposed" )
-    self._nsobj._queueCommandDst( self.__id, cmd, arg, unwind, callback )
+    self._nsobj._objQueueCommand( self.__id, cmd, arg, unwind, callback )
 
   def _registerCallback( self, callback ):
     self.__nextCallbackID = self.__nextCallbackID + 1
@@ -193,8 +193,7 @@ class _GCOBJECT( object ):
     self.__callbacks[ callbackID ] = callback
     return callbackID
 
-  # FIXME what is the visibility of route?
-  def route( self, src, cmd, arg ):
+  def _route( self, src, cmd, arg ):
     callback = self.__callbacks[ arg[ 'serial' ] ]
     del self.__callbacks[ arg[ 'serial' ] ]
     callback( arg[ 'result' ] )
@@ -219,7 +218,7 @@ class _NAMESPACE( object ):
   def _getName( self ):
     return self.__namespace
 
-  def _queueCommandDst( self, dst, cmd, arg = None, unwind = None, callback = None ):
+  def _objQueueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     if dst is not None:
       dst = [ self.__name, dst ]
     else:
@@ -227,7 +226,7 @@ class _NAMESPACE( object ):
     self.__client.queueCommand( dst, cmd, arg, unwind, callback )
 
   def _queueCommand( self, cmd, arg = None, unwind = None, callback = None ):
-    self._queueCommandDst( None, cmd, arg, unwind, callback )
+    self._objQueueCommand( None, cmd, arg, unwind, callback )
 
   def _executeQueuedCommands( self ):
     self.__client.executeQueuedCommands()
@@ -238,47 +237,62 @@ class _DG( _NAMESPACE ):
     self._namedObjects = []
 
   def createBinding( self ):
-    return self.__BINDING()
+    return self._BINDING()
 
   def createBindingList( self, dst ):
-    return self.__BINDINGLIST( self, dst )
+    return self._BINDINGLIST( self, dst )
 
-  def createNamedObject( self, name ):
+  def __createNamedObject( self, name, cmd, objType ):
     if name in self._namedObjects:
       raise Exception( 'a NamedObject named "' + name + '" already exists' )
-    obj = self.__NAMEDOBJECT( self, name )
+    obj = objType( self, name )
     self._namedObjects[ name ] = obj
+    
+    def __unwind():
+      obj._destroy()
+
+    self._queueCommand( cmd, name, __unwind )
+
     return obj
 
-  def route( self, src, cmd, arg ):
+  def createNamedObject( self, name ):
+    return self.__createNamedObject( name, self._NAMEDOBJECT )
+
+  def createOperator( self, name ):
+    return self.__createNamedObject( name, self._OPERATOR )
+   
+  def createNode( self, name ):
+    return self.__createNamedObject( name, self._NODE )
+
+  def _route( self, src, cmd, arg ):
     pass
 
-  class __NAMEDOBJECT( object ):
+  class _NAMEDOBJECT( object ):
     def __init__( self, dg, name ):
       self.__name = name
-      self.__dg = dg
       self.__errors = None
+      self._dg = dg
   
-    def __queueCommand( self, cmd, arg, unwind, callback ):
+    def _nObjQueueCommand( self, cmd, arg, unwind, callback ):
       if self.__name is None:
         raise Exception( 'NamedObject "' + name + '" has been deleted' )
-      self.__dg._queueCommandDst( [ self.__name ], cmd, arg, unwind, callback )
+      self._dg._objQueueCommand( [ self.__name ], cmd, arg, unwind, callback )
   
-    def __patch( self, diff ):
+    def _patch( self, diff ):
       if 'errors' in diff:
         self.__errors = diff[ 'errors' ]
   
-    def destroy( self ):
-      del self.__dg._namedObjects[ name ]
+    def _destroy( self ):
+      del self._dg._namedObjects[ name ]
       self.__name = None
   
-    def __handle( self, cmd, arg ):
+    def _handle( self, cmd, arg ):
       if cmd == 'delta':
-        self.__patch( arg )
+        self._patch( arg )
       else:
         raise Exception( 'command "' + cmd + '" not recognized' )
   
-    def route( self, src, cmd, arg ):
+    def _route( self, src, cmd, arg ):
       if len( src ) == 0:
         self.__handle( cmd, arg )
       else:
@@ -288,28 +302,28 @@ class _DG( _NAMESPACE ):
       return self.__name
   
     def getErrors( self ):
-      self.__dg._executeQueuedCommands()
+      self._dg._executeQueuedCommands()
       return self.__errors
   
-  class __BINDINGLIST( object ):
+  class _BINDINGLIST( object ):
     def __init__( self, dg, dst ):
       self.__bindings = []
-      self.__dg = dg
+      self._dg = dg
       self.__dst = dst
    
     def empty( self ):
       if self.__bindings is None:
-        self.__dg._executeQueuedCommands()
+        self._dg._executeQueuedCommands()
       return len( self.__bindings ) == 0
   
     def getLength( self ):
       if self.__bindings is None:
-        self.__dg._executeQueuedCommands()
+        self._dg._executeQueuedCommands()
       return len( self.__bindings )
   
     def getOperator( self, index ):
       if self.__bindings is None:
-        self.__dg._executeQueuedCommands()
+        self._dg._executeQueuedCommands()
       return self.__bindings[ index ].getOperator()
       
     def append( self, binding ):
@@ -322,13 +336,13 @@ class _DG( _NAMESPACE ):
       oldBindings = self.__bindings
       self.__bindings = None
   
-      def __append():
+      def __unwind():
         self.__bindings = oldBindings
       args = {
         'operatorName': operatorName,
         'parameterLayout': binding.getParameterLayout()
       }
-      self.__dg._queueCommandDst( self.__dst, 'append', args, None, __append )
+      self._dg._objQueueCommand( self.__dst, 'append', args, __unwind )
   
     def insert( self, binding, beforeIndex ):
       operatorName = None
@@ -343,27 +357,27 @@ class _DG( _NAMESPACE ):
       oldBindings = self.__bindings
       self.__bindings = None
       
-      def __insert():
+      def __unwind():
         self.__bindings = oldBindings
       args = {
         'beforeIndex': beforeIndex,
         'operatorName': operatorName,
         'parameterLayout': binding.getParameterLayout()
       }
-      self.__dg._queueCommandDst( self.__dst, 'insert', args, None, __append )
+      self._dg._objQueueCommand( self.__dst, 'insert', args, __unwind )
   
     def remove( self, index ):
       oldBindings = self.__bindings
       self.__bindings = None
       
-      def __remove():
+      def __unwind():
         self.__bindings = oldBindings
       args = {
         'index': index,
       }
-      self.__dg._queueCommandDst( self.__dst, 'remove', args, None, __append )
+      self._dg._objQueueCommand( self.__dst, 'remove', args, __unwind )
   
-  class __BINDING( object ):
+  class _BINDING( object ):
     def __init__( self ):
       self.__operator = None
       self.__parameterLayout = None
@@ -380,10 +394,172 @@ class _DG( _NAMESPACE ):
     def setParameterLayout( self, parameterLayout ):
       self.__parameterLayout = parameterLayout
   
-  class __OPERATOR( __NAMEDOBJECT ):
+  class _OPERATOR( _NAMEDOBJECT ):
     def __init__( self, dg, name ):
-      super( __OPERATOR, self ).__init__( dg, name )
-      self.__name = name
+      super( _DG._OPERATOR, self ).__init__( dg, name )
+      self.__diagnostics = []
+      self.__filename = None
+      self.__sourceCode = None
+      self.__entryFunctionName = None
+      self.__mainThreadOnly = None
+
+    def _patch( self, diff ):
+      super( _OPERATOR, self )._patch( diff )
+
+      if 'filename' in diff:
+        self.__filename = diff.filename
+
+      if 'sourceCode' in diff:
+        self.__sourceCode = diff.sourceCode
+
+      if 'entryFunctionName' in diff:
+        self.__entryFunctionName = diff.entryFunctionName
+
+      if 'diagnostics' in diff:
+        self.__diagnostics = diff.diagnostics
+
+      if 'mainThreadOnly' in diff:
+        self.__mainThreadOnly = diff.mainThreadOnly
+
+    def getMainThreadOnly( self ):
+      if self.__mainThreadOnly is None:
+        self._dg._executeQueuedCommands()
+      return self.__mainThreadOnly
+
+    def setMainThreadOnly( self, mainThreadOnly ):
+      oldMainThreadOnly = self.__mainThreadOnly
+      self.__mainThreadOnly = mainThreadOnly
+
+      def __unwind():
+        self.__mainThreadOnly = oldMainThreadOnly
+
+      self._nObjQueueCommand( 'setMainThreadOnly', mainThreadOnly, __unwind )
+
+    def getFilename( self ):
+      if self.__filename is None:
+        self._dg._executeQueuedCommands()
+      return self.__filename
+
+    def getSourceCode( self ):
+      if self.__sourceCode is None:
+        self._dg._executeQueuedCommands()
+      return self.__sourceCode
+
+    def setSourceCode( self, filename, sourceCode = None ):
+      # this is legacy usage, sourceCode only
+      if sourceCode is None:
+        sourceCode = filename
+        filename = "(unknown)"
+
+      oldFilename = self.__filename
+      self.__filename = filename
+      oldSourceCode = self.__sourceCode
+      self.__sourceCode = sourceCode
+      oldDiagnostics = self.__diagnostics
+      self.__diagnostics = None
+
+      def __unwind():
+        self.__filename = oldFilename
+        self.__sourceCode = oldSourceCode
+        self.__diagnostics = oldDiagnostics
+
+      args = {
+        'filename': filename,
+        'sourceCode': sourceCode
+      }
+      self._nObjQueueCommand( 'setSourceCode', args, __unwind )
+
+    def getEntryFunctionName( self ):
+      if self.__entryFunctionName is None:
+        self._dg._executeQueuedCommands()
+      return self.__entryFunctionName
+
+    def setEntryFunctionName( self, entryFunctionName ):
+      oldEntryFunctionName = self.__entryFunctionName
+      self.__entryFunctionName = entryFunctionName
+
+      def __unwind():
+        self.__entryFunctionName = oldEntryFunctionName
+      self._nObjQueueCommand( 'setEntryFunctionName', entryFunctionName, __unwind )
+      self.__diagnostics = None
+
+    def getDiagnostics( self ):
+      if self.__diagnostics is None:
+        self._dg._executeQueuedCommands()
+      return self.__diagnostics
+
+  class _CONTAINER( _NAMEDOBJECT ):
+    def __init__( self, dg, name ):
+      super( _DG._CONTAINER, self ).__init__( dg, name )
+      self.__members = None
+      self.__count = None
+
+    def _patch( self, diff ):
+      super( _CONTAINER, self )._patch( diff )
+
+      if 'members' in diff:
+        self.__members = diff.members
+
+      if 'count' in diff:
+        self.__count = diff.count
+
+    def _handle( self, cmd, arg ):
+      if cmd == 'dataChange':
+        memberName = arg[ 'memberName' ]
+        sliceIndex = arg[ 'sliceIndex' ]
+        # FIXME invalidate cache here, see pzion comment in node.js
+      else:
+        # FIXME what happens if this calls _patch?
+        super( _CONTAINER, self )._handle( cmd, arg )
+
+    def getCount( self ):
+      if self.__count is None:
+        self._dg._executeQueuedCommands()
+      return self.__count
+
+    def setCount( self, count ):
+      self._nObjQueueCommand( 'setCount', count )
+      self.__count = None
+
+    def getMembers( self ):
+      if self.__members is None:
+        self._dg._executeQueuedCommands()
+      return self.__members
+
+    def addMember( self, memberName, memberType, defaultValue ):
+      if self.__members is None:
+        self.__members = {}
+      if memberName in self.__members:
+        raise Exception( 'there is already a member named "' + memberName + '"' )
+
+      arg = { 'name': memberName, 'type': memberType }
+      if defaultValue is not None:
+        arg[ 'defaultValue' ] = defaultValue
+
+      self.__members[ memberName ] = arg
+
+      def __unwind():
+        del self.__members[ memberName ]
+
+      self._nObjQueueCommand( 'addMember', arg, __unwind )
+
+    def removeMember( self, memberName ):
+      if self.__members is None or memberName not in self.__members:
+        raise Exception( 'there is no member named "' + memberName + '"' )
+
+      oldMember = self.__members[ memberName ]
+      del self.__members[ memberName ]
+
+      def __unwind():
+        self.__members[ memberName ] = oldMember
+
+      self._nObjQueueCommand( 'removeMember', memberName, __unwind )
+
+  class _NODE( _CONTAINER ):
+    def __init__( self, dg, name ):
+      super( _DG._NODE, self ).__init__( dg, name )
+      self.__dependencies = {}
+      self.__bindings = dg.createBindingList( [ name, 'bindings' ] )
   
 class _MR( _NAMESPACE ):
   def __init__( self, client ):
@@ -490,7 +666,7 @@ class _MR( _NAMESPACE ):
       def __toJSON( result ):
         json[ '_' ] = result
   
-      self._objQueueCommand( 'toJSON', None, None, __toJSON )
+      self._gcObjQueueCommand( 'toJSON', None, None, __toJSON )
       return json[ '_' ]
   
   class _ARRAYPRODUCER( _PRODUCER ):
@@ -503,7 +679,7 @@ class _MR( _NAMESPACE ):
       def __getCount( result ):
         count[ '_' ] = result
   
-      self._objQueueCommand( 'getCount', None, None, __getCount )
+      self._gcObjQueueCommand( 'getCount', None, None, __getCount )
       return count[ '_' ]
   
     def produce( self, index = None, count = None ):
@@ -518,12 +694,12 @@ class _MR( _NAMESPACE ):
       def __produce( data ):
         result[ '_' ] = data
   
-      self._objQueueCommand( 'produce', arg, None, __produce )
+      self._gcObjQueueCommand( 'produce', arg, None, __produce )
       self._nsobj._executeQueuedCommands()
       return result[ '_' ]
   
     def flush( self ):
-      self._objQueueCommand( 'flush' )
+      self._gcObjQueueCommand( 'flush' )
   
     def produceAsync( self, arg1, arg2 = None, arg3 = None ):
       arg = { }
@@ -539,7 +715,7 @@ class _MR( _NAMESPACE ):
         callback = arg3
   
       arg[ 'serial' ] = self._registerCallback( callback )
-      self._objQueueCommand( 'produceAsync', arg )
+      self._gcObjQueueCommand( 'produceAsync', arg )
       self._nsobj._executeQueuedCommands()
   
   class _VALUEPRODUCER( _PRODUCER ):
@@ -552,16 +728,16 @@ class _MR( _NAMESPACE ):
       def __produce( data ):
         result[ '_' ] = data
   
-      self._objQueueCommand( 'produce', None, None, __produce )
+      self._gcObjQueueCommand( 'produce', None, None, __produce )
       self._nsobj._executeQueuedCommands()
       return result[ '_' ]
   
     def produceAsync( self, callback ):
-      self._objQueueCommand( 'produceAsync', self._registerCallback( callback ) )
+      self._gcObjQueueCommand( 'produceAsync', self._registerCallback( callback ) )
       self._nsobj._executeQueuedCommands()
   
     def flush( self ):
-      self._objQueueCommand( 'flush' )
+      self._gcObjQueueCommand( 'flush' )
   
 class _KLC( _NAMESPACE ):
   def __init__( self, client ):
@@ -610,7 +786,7 @@ class _KLC( _NAMESPACE ):
       def __toJSON( result ):
         json[ '_' ] = result
   
-      self._objQueueCommand( 'toJSON', None, None, __toJSON )
+      self._gcObjQueueCommand( 'toJSON', None, None, __toJSON )
       return json[ '_' ]
  
     def getDiagnostics( self ):
@@ -619,7 +795,7 @@ class _KLC( _NAMESPACE ):
       def __getDiagnostics( result ):
         diagnostics[ '_' ] = result
   
-      self._objQueueCommand( 'getDiagnostics', None, None, __getDiagnostics )
+      self._gcObjQueueCommand( 'getDiagnostics', None, None, __getDiagnostics )
       return diagnostics[ '_' ]
 
 class _RT( _NAMESPACE ):
@@ -647,14 +823,14 @@ class _RT( _NAMESPACE ):
     if ( 'klBindings' in desc ):
       arg[ 'klBindings' ] = desc[ 'klBindings' ]
 
-    def __queueCommandUnwind():
+    def __unwind():
       pass
       # FIXME unwind
       #del RT.prototypes[ name ]
 
-    self._queueCommand( 'registerType', arg, __queueCommandUnwind )
+    self._queueCommand( 'registerType', arg, __unwind )
 
-  def route( self, src, cmd, arg ):
+  def _route( self, src, cmd, arg ):
     pass
 
 class _GC( _NAMESPACE ):
@@ -674,9 +850,9 @@ class _GC( _NAMESPACE ):
   def disposeObject( self, obj ):
     del self.__objects[ obj.getID() ]
 
-  def route( self, src, cmd, arg ):
+  def _route( self, src, cmd, arg ):
     src = collections.deque( src )
     id = src.popleft()
     obj = self.__objects[ id ]
-    obj.route( src, cmd, arg )
+    obj._route( src, cmd, arg )
 
