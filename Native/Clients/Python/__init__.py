@@ -12,18 +12,20 @@ else:
   raise Exception('not implemented for Windows yet!')
 
 def createClient():
-  return INTERFACE( fabric )
+  return _INTERFACE( fabric )
 
 # this is the interface object that gets returned to the user
-class INTERFACE( object ):
+class _INTERFACE( object ):
   def __init__( self, fabric ):
-    self.__client = CLIENT( fabric )
-    self.KLC = KLC( self.__client )
-    self.MR = MR( self.__client )
-    self.RT = RT( self.__client )
+    self.__client = _CLIENT( fabric )
+    self.KLC = self.__client.klc
+    self.MR = self.__client.mr
+    self.RT = self.__client.rt
+    self.DG = self.__client.dg
+    self.DependencyGraph = self.DG
 
   def flush( self ):
-    self.__client.executeQueuedCommands();
+    self.__client.executeQueuedCommands()
 
   def close( self ):
     self.__client.close()
@@ -39,13 +41,19 @@ class INTERFACE( object ):
 
     return memoryUsage[ '_' ]
 
-class CLIENT( object ):
+class _CLIENT( object ):
   def __init__( self, fabric ):
     self.__fabricClient = fabric.createClient()
-    self.__queuedCommands = [];
-    self.__queuedUnwinds = [];
-    self.__queuedCallbacks = [];
-    self.GC = GC( self )
+    self.__queuedCommands = []
+    self.__queuedUnwinds = []
+    self.__queuedCallbacks = []
+
+    self.gc = _GC( self )
+    self.klc = _KLC( self )
+    self.mr = _MR( self )
+    self.rt = _RT( self )
+    self.dg = _DG( self )
+
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
 
@@ -82,25 +90,31 @@ class CLIENT( object ):
     self.executeQueuedCommands()
 
   def executeQueuedCommands( self ):
-    commands = self.__queuedCommands;
+    commands = self.__queuedCommands
     self.__queuedCommands = []
-    unwinds = self.__queuedUnwinds;
+    unwinds = self.__queuedUnwinds
     self.__queuedUnwinds = []
-    callbacks = self.__queuedCallbacks;
+    callbacks = self.__queuedCallbacks
     self.__queuedCallbacks = []
 
     jsonEncodedCommands = json.dumps( commands )
     jsonEncodedResults = self.__jsonExec( jsonEncodedCommands, len( jsonEncodedCommands ) )
 
-    # FIXME exception handling
-    results = json.loads( jsonEncodedResults.value )
+    try:
+      results = json.loads( jsonEncodedResults.value )
+    except Exception:
+      raise Exception( 'unable to parse JSON results: ' + jsonEncodedResults )
 
     for i in range(len(results)):
       result = results[i]
       callback = callbacks[i]
-      #if ( 'exception' in result ):
-        # FIXME do unwinds
-      if ( callback is not None ):
+
+      if ( 'exception' in result ):
+        for j in reverse( range( i+1, j ) ):
+          unwind = unwinds[ j ]
+          if ( unwind is not None ):
+            unwind()
+      elif ( callback is not None ):
         callback( result[ 'result' ] )
 
     fabric.freeString( self.__fabricClient, jsonEncodedResults )
@@ -113,9 +127,9 @@ class CLIENT( object ):
       firstSrc = src.popleft()
 
       if firstSrc == 'RT':
-        pass
+        self.rt.route( src, cmd, arg )
       elif firstSrc == 'DG':
-        pass
+        self.dg.route( src, cmd, arg )
       elif firstSrc == 'EX':
         pass
       elif firstSrc == 'IO':
@@ -123,7 +137,7 @@ class CLIENT( object ):
       elif firstSrc == 'VP':
         pass
       elif firstSrc == 'GC':
-        self.GC.route( src, cmd, arg )
+        self.rt.route( src, cmd, arg )
       else:
         raise Exception( 'unroutable src: ' + firstSrc )
         
@@ -152,12 +166,231 @@ class CLIENT( object ):
   def __registerNotifyCallback( self ):
     fabric.setJSONNotifyCallback( self.__fabricClient, self.__getNotifyCallback() )
 
-class MR( object ):
-  def __init__( self, client ):
+class _GCOBJECT( object ):
+  def __init__( self, nsobj ):
+    self.__id = "GC_" + str(nsobj._getClient().gc.getNextID())
+    self.__nextCallbackID = 0
+    self.__callbacks = {}
+    self._nsobj = nsobj
+    nsobj._getClient().gc.addObject( self )
+
+  def __del__( self ):
+    self.__dispose()
+
+  def __dispose( self ):
+    self._objQueueCommand( 'dispose' )
+    self.__nsobj._getClient().gc.disposeObject( self )
+    self.__id = None
+ 
+  def _objQueueCommand( self, cmd, arg = None, unwind = None, callback = None ):
+    if self.__id is None:
+      raise Exception( "GC object has already been disposed" )
+    self._nsobj._queueCommandDst( self.__id, cmd, arg, unwind, callback )
+
+  def _registerCallback( self, callback ):
+    self.__nextCallbackID = self.__nextCallbackID + 1
+    callbackID = self.__nextCallbackID
+    self.__callbacks[ callbackID ] = callback
+    return callbackID
+
+  # FIXME what is the visibility of route?
+  def route( self, src, cmd, arg ):
+    callback = self.__callbacks[ arg[ 'serial' ] ]
+    del self.__callbacks[ arg[ 'serial' ] ]
+    callback( arg[ 'result' ] )
+
+  def getID( self ):
+    return self.__id
+
+  def setID( self, id ):
+    self.__id = id
+
+  def unwind( self ):
+    self.setID( None )
+
+class _NAMESPACE( object ):
+  def __init__( self, client, name ):
     self.__client = client
+    self.__name = name
+
+  def _getClient( self ):
+    return self.__client
+
+  def _getName( self ):
+    return self.__namespace
+
+  def _queueCommandDst( self, dst, cmd, arg = None, unwind = None, callback = None ):
+    if dst is not None:
+      dst = [ self.__name, dst ]
+    else:
+      dst = [ self.__name ]
+    self.__client.queueCommand( dst, cmd, arg, unwind, callback )
+
+  def _queueCommand( self, cmd, arg = None, unwind = None, callback = None ):
+    self._queueCommandDst( None, cmd, arg, unwind, callback )
+
+  def _executeQueuedCommands( self ):
+    self.__client.executeQueuedCommands()
+
+class _DG( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _DG, self ).__init__( client, 'DG' )
+    self._namedObjects = []
+
+  def createBinding( self ):
+    return self.__BINDING()
+
+  def createBindingList( self, dst ):
+    return self.__BINDINGLIST( self, dst )
+
+  def createNamedObject( self, name ):
+    if name in self._namedObjects:
+      raise Exception( 'a NamedObject named "' + name + '" already exists' )
+    obj = self.__NAMEDOBJECT( self, name )
+    self._namedObjects[ name ] = obj
+    return obj
+
+  def route( self, src, cmd, arg ):
+    pass
+
+  class __NAMEDOBJECT( object ):
+    def __init__( self, dg, name ):
+      self.__name = name
+      self.__dg = dg
+      self.__errors = None
+  
+    def __queueCommand( self, cmd, arg, unwind, callback ):
+      if self.__name is None:
+        raise Exception( 'NamedObject "' + name + '" has been deleted' )
+      self.__dg._queueCommandDst( [ self.__name ], cmd, arg, unwind, callback )
+  
+    def __patch( self, diff ):
+      if 'errors' in diff:
+        self.__errors = diff[ 'errors' ]
+  
+    def destroy( self ):
+      del self.__dg._namedObjects[ name ]
+      self.__name = None
+  
+    def __handle( self, cmd, arg ):
+      if cmd == 'delta':
+        self.__patch( arg )
+      else:
+        raise Exception( 'command "' + cmd + '" not recognized' )
+  
+    def route( self, src, cmd, arg ):
+      if len( src ) == 0:
+        self.__handle( cmd, arg )
+      else:
+        raise Exception( 'unroutable' )
+  
+    def getName( self ):
+      return self.__name
+  
+    def getErrors( self ):
+      self.__dg._executeQueuedCommands()
+      return self.__errors
+  
+  class __BINDINGLIST( object ):
+    def __init__( self, dg, dst ):
+      self.__bindings = []
+      self.__dg = dg
+      self.__dst = dst
+   
+    def empty( self ):
+      if self.__bindings is None:
+        self.__dg._executeQueuedCommands()
+      return len( self.__bindings ) == 0
+  
+    def getLength( self ):
+      if self.__bindings is None:
+        self.__dg._executeQueuedCommands()
+      return len( self.__bindings )
+  
+    def getOperator( self, index ):
+      if self.__bindings is None:
+        self.__dg._executeQueuedCommands()
+      return self.__bindings[ index ].getOperator()
+      
+    def append( self, binding ):
+      operatorName = None
+      try:
+        operatorName = binding.getOperator().getName()
+      except Exception:
+        raise 'operator: not an operator'
+  
+      oldBindings = self.__bindings
+      self.__bindings = None
+  
+      def __append():
+        self.__bindings = oldBindings
+      args = {
+        'operatorName': operatorName,
+        'parameterLayout': binding.getParameterLayout()
+      }
+      self.__dg._queueCommandDst( self.__dst, 'append', args, None, __append )
+  
+    def insert( self, binding, beforeIndex ):
+      operatorName = None
+      try:
+        operatorName = binding.getOperator().getName()
+      except Exception:
+        raise 'operator: not an operator'
+  
+      if type( beforeIndex ) is not int:
+        raise Exception( 'beforeIndex: must be an integer' )
+  
+      oldBindings = self.__bindings
+      self.__bindings = None
+      
+      def __insert():
+        self.__bindings = oldBindings
+      args = {
+        'beforeIndex': beforeIndex,
+        'operatorName': operatorName,
+        'parameterLayout': binding.getParameterLayout()
+      }
+      self.__dg._queueCommandDst( self.__dst, 'insert', args, None, __append )
+  
+    def remove( self, index ):
+      oldBindings = self.__bindings
+      self.__bindings = None
+      
+      def __remove():
+        self.__bindings = oldBindings
+      args = {
+        'index': index,
+      }
+      self.__dg._queueCommandDst( self.__dst, 'remove', args, None, __append )
+  
+  class __BINDING( object ):
+    def __init__( self ):
+      self.__operator = None
+      self.__parameterLayout = None
+  
+    def getOperator( self ):
+      return self.__operator
+  
+    def setOperator( self, operator ):
+      self.__operator = operator
+  
+    def getParameterLayout( self ):
+      return self.__parameterLayout
+  
+    def setParameterLayout( self, parameterLayout ):
+      self.__parameterLayout = parameterLayout
+  
+  class __OPERATOR( __NAMEDOBJECT ):
+    def __init__( self, dg, name ):
+      super( __OPERATOR, self ).__init__( dg, name )
+      self.__name = name
+  
+class _MR( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _MR, self ).__init__( client, 'MR' )
 
   def createConstArray( self, elementType, data = None ):
-    valueArray = ARRAYPRODUCER( self.__client )
+    valueArray = self._ARRAYPRODUCER( self )
 
     arg = { 'id': valueArray.getID() }
     if type( elementType ) is str:
@@ -173,36 +406,36 @@ class MR( object ):
     else:
       raise Exception( "createConstArray: first argument must be str or dict" )
 
-    self.__client.queueCommand( ['MR'], 'createConstArray', arg, valueArray.unwind )
+    self._queueCommand( 'createConstArray', arg, valueArray.unwind )
     return valueArray
 
   def createConstValue( self, valueType, data ):
-    value = VALUEPRODUCER( self.__client )
+    value = self._VALUEPRODUCER( self )
     arg = {
       'id': value.getID(),
       'valueType': valueType,
       'data': data
     }
-    self.__client.queueCommand( ['MR'], 'createConstValue', arg, value.unwind )
+    self._queueCommand( 'createConstValue', arg, value.unwind )
     return value
 
   def createValueCache( self, input ):
-    return self.__createMRCommand( VALUEPRODUCER( self.__client ), 'createValueCache', input, None, None )
+    return self.__createMRCommand( self._VALUEPRODUCER( self ), 'createValueCache', input, None, None )
 
   def createValueGenerator( self, operator ):
-    return self.__createMRCommand( VALUEPRODUCER( self.__client ), 'createValueGenerator', None, operator, None )
+    return self.__createMRCommand( self._VALUEPRODUCER( self ), 'createValueGenerator', None, operator, None )
 
   def createValueMap( self, input, operator, shared = None ):
-    return self.__createMRCommand( VALUEPRODUCER( self.__client ), 'createValueMap', input, operator, shared )
+    return self.__createMRCommand( self._VALUEPRODUCER( self ), 'createValueMap', input, operator, shared )
 
   def createValueTransform( self, input, operator, shared = None ):
-    return self.__createMRCommand( VALUEPRODUCER( self.__client ), 'createValueTransform', input, operator, shared )
+    return self.__createMRCommand( self._VALUEPRODUCER( self ), 'createValueTransform', input, operator, shared )
 
   def createArrayCache( self, input ):
-    return self.__createMRCommand( ARRAYPRODUCER( self.__client ), 'createArrayCache', input, None, None )
+    return self.__createMRCommand( self._ARRAYPRODUCER( self ), 'createArrayCache', input, None, None )
 
   def createArrayGenerator( self, count, operator, shared = None ):
-    obj = ARRAYPRODUCER( self.__client )
+    obj = self._ARRAYPRODUCER( self )
     arg = {
       'id': obj.getID(),
       'countID': count.getID(),
@@ -211,17 +444,17 @@ class MR( object ):
     if ( shared is not None ):
       arg[ 'sharedID' ] = shared.getID()
 
-    self.__client.queueCommand( ['MR'], 'createArrayGenerator', arg, obj.unwind )
+    self._queueCommand( 'createArrayGenerator', arg, obj.unwind )
     return obj
 
   def createArrayMap( self, input, operator, shared = None ):
-    return self.__createMRCommand( ARRAYPRODUCER( self.__client ), 'createArrayMap', input, operator, shared )
+    return self.__createMRCommand( self._ARRAYPRODUCER( self ), 'createArrayMap', input, operator, shared )
 
   def createArrayTransform( self, input, operator, shared = None ):
-    return self.__createMRCommand( ARRAYPRODUCER( self.__client ), 'createArrayTransform', input, operator, shared )
+    return self.__createMRCommand( self._ARRAYPRODUCER( self ), 'createArrayTransform', input, operator, shared )
 
   def createReduce( self, inputArrayProducer, reduceOperator, sharedValueProducer = None ):
-    reduce = VALUEPRODUCER( self.__client )
+    reduce = self._VALUEPRODUCER( self )
     arg = {
       'id': reduce.getID(),
       'inputArrayProducerID': inputArrayProducer.getID(),
@@ -230,7 +463,7 @@ class MR( object ):
     if ( sharedValueProducer is not None ):
       arg[ 'sharedValueProducerID' ] = sharedValueProducer.getID()
 
-    self.__client.queueCommand( ['MR'], 'createReduce', arg, reduce.unwind )
+    self._queueCommand( 'createReduce', arg, reduce.unwind )
     return reduce
 
   def __createMRCommand( self, obj, cmd, input, operator, shared ):
@@ -244,15 +477,98 @@ class MR( object ):
     if ( shared is not None ):
       arg[ 'sharedID' ] = shared.getID()
 
-    self.__client.queueCommand( ['MR'], cmd, arg, obj.unwind )
+    self._queueCommand( cmd, arg, obj.unwind )
     return obj
 
-class KLC( object ):
+  class _PRODUCER( _GCOBJECT ):
+    def __init__( self, mr ):
+      super( _MR._PRODUCER, self ).__init__( mr )
+  
+    def toJSON( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      json = { '_': None }
+      def __toJSON( result ):
+        json[ '_' ] = result
+  
+      self._objQueueCommand( 'toJSON', None, None, __toJSON )
+      return json[ '_' ]
+  
+  class _ARRAYPRODUCER( _PRODUCER ):
+    def __init__( self, mr ):
+      super( _MR._ARRAYPRODUCER, self ).__init__( mr )
+  
+    def getCount( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      count = { '_': None }
+      def __getCount( result ):
+        count[ '_' ] = result
+  
+      self._objQueueCommand( 'getCount', None, None, __getCount )
+      return count[ '_' ]
+  
+    def produce( self, index = None, count = None ):
+      arg = { }
+      if ( index is not None ):
+        if ( count is not None ):
+          arg[ 'count' ] = count
+        arg[ 'index' ] = index
+  
+      # dictionary hack to simulate Python 3.x nonlocal
+      result = { '_': None }
+      def __produce( data ):
+        result[ '_' ] = data
+  
+      self._objQueueCommand( 'produce', arg, None, __produce )
+      self._nsobj._executeQueuedCommands()
+      return result[ '_' ]
+  
+    def flush( self ):
+      self._objQueueCommand( 'flush' )
+  
+    def produceAsync( self, arg1, arg2 = None, arg3 = None ):
+      arg = { }
+      callback = None
+      if arg3 is None and arg2 is None:
+        callback = arg1
+      elif arg3 is None:
+        arg[ 'index' ] = arg1
+        callback = arg2
+      else:
+        arg[ 'index' ] = arg1
+        arg[ 'count' ] = arg2
+        callback = arg3
+  
+      arg[ 'serial' ] = self._registerCallback( callback )
+      self._objQueueCommand( 'produceAsync', arg )
+      self._nsobj._executeQueuedCommands()
+  
+  class _VALUEPRODUCER( _PRODUCER ):
+    def __init__( self, client ):
+      super( _MR._VALUEPRODUCER, self ).__init__( client )
+  
+    def produce( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      result = { '_': None }
+      def __produce( data ):
+        result[ '_' ] = data
+  
+      self._objQueueCommand( 'produce', None, None, __produce )
+      self._nsobj._executeQueuedCommands()
+      return result[ '_' ]
+  
+    def produceAsync( self, callback ):
+      self._objQueueCommand( 'produceAsync', self._registerCallback( callback ) )
+      self._nsobj._executeQueuedCommands()
+  
+    def flush( self ):
+      self._objQueueCommand( 'flush' )
+  
+class _KLC( _NAMESPACE ):
   def __init__( self, client ):
-    self.__client = client
+    super( _KLC, self ).__init__( client, 'KLC' )
 
   def __createOperator( self, sourceName, sourceCode, operatorName, cmd ):
-    operator = OPERATOR( self.__client )
+    operator = self._OPERATOR( self )
     arg = {
       'id': operator.getID(),
       'sourceName': sourceName,
@@ -260,7 +576,7 @@ class KLC( object ):
       'operatorName': operatorName
     }
 
-    self.__client.queueCommand( ['KLC'], cmd, arg, operator.unwind )
+    self._queueCommand( cmd, arg, operator.unwind )
     return operator
 
   def createReduceOperator( self, sourceName, sourceCode, operatorName ):
@@ -284,9 +600,31 @@ class KLC( object ):
   def createArrayTransformOperator( self, sourceName, sourceCode, operatorName ):
     return self.__createOperator( sourceName, sourceCode, operatorName, 'createArrayTransformOperator' )
 
-class RT( object ):
+  class _OPERATOR( _GCOBJECT ):
+    def __init__( self, klc ):
+      super( _KLC._OPERATOR, self ).__init__( klc )
+
+    def toJSON( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      json = { '_': None }
+      def __toJSON( result ):
+        json[ '_' ] = result
+  
+      self._objQueueCommand( 'toJSON', None, None, __toJSON )
+      return json[ '_' ]
+ 
+    def getDiagnostics( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      diagnostics = { '_': None }
+      def __getDiagnostics( result ):
+        diagnostics[ '_' ] = result
+  
+      self._objQueueCommand( 'getDiagnostics', None, None, __getDiagnostics )
+      return diagnostics[ '_' ]
+
+class _RT( _NAMESPACE ):
   def __init__( self, client ):
-    self.__client = client
+    super( _RT, self ).__init__( client, 'RT' )
 
   #def getRegisteredTypes( self ):
 
@@ -314,153 +652,16 @@ class RT( object ):
       # FIXME unwind
       #del RT.prototypes[ name ]
 
-    self.__client.queueCommand( ['RT'], 'registerType', arg, __queueCommandUnwind )
+    self._queueCommand( 'registerType', arg, __queueCommandUnwind )
 
-class GCOBJECT( object ):
-  def __init__( self, client, namespace ):
-    self.__id = "GC_" + str(client.GC.getNextID())
-    self.__nextCallbackID = 0
-    self.__callbacks = {}
-    self.__namespace = namespace
-    self._client = client
-    client.GC.addObject( self )
-
-  def __del__( self ):
-    self.__dispose()
-
-  def __dispose( self ):
-    self._queueCommand( 'dispose' )
-    self._client.GC.disposeObject( self )
-    self.__id = None
- 
-  def _queueCommand( self, cmd, arg = None, unwind = None, callback = None ):
-    if self.__id is None:
-      raise Exception( "GC object has already been disposed" )
-    self._client.queueCommand( [self.__namespace, self.__id], cmd, arg, unwind, callback )
-
-  def _registerCallback( self, callback ):
-    self.__nextCallbackID = self.__nextCallbackID + 1
-    callbackID = self.__nextCallbackID
-    self.__callbacks[ callbackID ] = callback
-    return callbackID
-
-  # FIXME what is the visibility of route?
   def route( self, src, cmd, arg ):
-    callback = self.__callbacks[ arg[ 'serial' ] ]
-    del self.__callbacks[ arg[ 'serial' ] ]
-    callback( arg[ 'result' ] )
+    pass
 
-  def getID( self ):
-    return self.__id
-
-  def setID( self, id ):
-    self.__id = id
-
-class PRODUCER( GCOBJECT ):
+class _GC( _NAMESPACE ):
   def __init__( self, client ):
-    super( PRODUCER, self ).__init__( client, 'MR' )
-
-  # FIXME this doesn't make sense, should this be disposing?
-  def unwind( self ):
-    self.setID( None )
-
-  def toJSON( self ):
-    # dictionary hack to simulate Python 3.x nonlocal
-    json = { '_': None }
-    def __toJSON( result ):
-      json[ '_' ] = result
-
-    self._queueCommand( 'toJSON', None, None, __toJSON )
-    return json[ '_' ]
-
-class ARRAYPRODUCER( PRODUCER ):
-  def __init__( self, client ):
-    super( ARRAYPRODUCER, self ).__init__( client )
-
-  def getCount( self ):
-    # dictionary hack to simulate Python 3.x nonlocal
-    count = { '_': None }
-    def __getCount( result ):
-      count[ '_' ] = result
-
-    self._queueCommand( 'getCount', None, None, __getCount )
-    return count[ '_' ]
-
-  def produce( self, index = None, count = None ):
-    arg = { }
-    if ( index is not None ):
-      if ( count is not None ):
-        arg[ 'count' ] = count
-      arg[ 'index' ] = index
-
-    # dictionary hack to simulate Python 3.x nonlocal
-    result = { '_': None }
-    def __produce( data ):
-      result[ '_' ] = data
-
-    self._queueCommand( 'produce', arg, None, __produce )
-    self._client.executeQueuedCommands()
-    return result[ '_' ]
-
-  def flush( self ):
-    self._queueCommand( 'flush' )
-
-  def produceAsync( self, arg1, arg2 = None, arg3 = None ):
-    arg = { }
-    callback = None
-    if arg3 is None and arg2 is None:
-      callback = arg1
-    elif arg3 is None:
-      arg[ 'index' ] = arg1
-      callback = arg2
-    else:
-      arg[ 'index' ] = arg1
-      arg[ 'count' ] = arg2
-      callback = arg3
-
-    arg[ 'serial' ] = self._registerCallback( callback )
-    self._queueCommand( 'produceAsync', arg )
-    self._client.executeQueuedCommands()
-
-class VALUEPRODUCER( PRODUCER ):
-  def __init__( self, client ):
-    super( VALUEPRODUCER, self ).__init__( client )
-
-  def produce( self ):
-    # dictionary hack to simulate Python 3.x nonlocal
-    result = { '_': None }
-    def __produce( data ):
-      result[ '_' ] = data
-
-    self._queueCommand( 'produce', None, None, __produce )
-    self._client.executeQueuedCommands()
-    return result[ '_' ]
-
-  def produceAsync( self, callback ):
-    self._queueCommand( 'produceAsync', self._registerCallback( callback ) )
-    self._client.executeQueuedCommands()
-
-  def flush( self ):
-    self._queueCommand( 'flush' )
-
-class OPERATOR( PRODUCER ):
-  def __init__( self, client ):
-    super( OPERATOR, self ).__init__( client )
-
-  def getDiagnostics( self ):
-    # dictionary hack to simulate Python 3.x nonlocal
-    diagnostics = { '_': None }
-    def __getDiagnostics( result ):
-      diagnostics[ '_' ] = result
-
-    self._queueCommand( 'getDiagnostics', None, None, __getDiagnostics )
-    return diagnostics[ '_' ]
-
-class GC( object ):
-  def __init__( self, client ):
+    super( _GC, self ).__init__( client, 'GC' )
     self.__nextID = 0
     self.__objects = {}
-    self.__client = client
 
   def getNextID( self ):
     id = self.__nextID
