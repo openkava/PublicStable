@@ -140,16 +140,8 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_OpenFileHandle(
 #endif
 
     KL::FileHandleWrapper wrapper(handle);
-    if( !wrapper.isValid() )
-    {
-      throwException( "FileHandle '%s' is not a valid fileHandle.", handle.data() );
+    if(!wrapper.ensureIsValidFile())
       return;
-    }
-    if( wrapper.isFolder() )
-    {
-      throwException( "FileHandle '%s' is a folder, invalid for reading a file.", wrapper.getPath().data() );
-      return;
-    }
     KL::String fileName = wrapper.getPath();
     FabricLIDAR_Reader_Open(fileName,lidar);
 
