@@ -74,11 +74,11 @@ function FabricFileStream.readData(in Data data, in Size size) {
   FabricFileStream_ReadData(this,data,size);
 }
 
-function FabricFileStream.writeString(io Data data, in String string) {
+function FabricFileStream.writeString(in String string) {
   FabricFileStream_WriteString(this,string);
 }
 
-function FabricFileStream.readString(io Data data, io String string) {
+function FabricFileStream.readString(io String string) {
   FabricFileStream_ReadString(this,string);
 }
 
