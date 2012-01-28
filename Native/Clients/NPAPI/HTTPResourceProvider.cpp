@@ -27,6 +27,7 @@ namespace Fabric
       bool m_asFile;
       void* m_userData;
       size_t m_nbReceived;
+      bool m_finished;
     };
 
     char const *HTTPResourceProvider::getUrlScheme() const
@@ -41,6 +42,7 @@ namespace Fabric
       requestStruct->m_asFile = getAsFile;
       requestStruct->m_userData = userData;
       requestStruct->m_nbReceived = 0;
+      requestStruct->m_finished = false;
 
       NPError npError = NPN_GetURLNotify( m_npp, url, 0, requestStruct );
       if ( npError != NPERR_NO_ERROR )
@@ -76,7 +78,10 @@ namespace Fabric
 
       //Note: ensure that onProgress(100%) is issued after data is ready; if m_asFile we wait after the onFile call
       if( !streamStruct->m_asFile || streamStruct->m_nbReceived != total )
+      {
         IO::ResourceManager::onProgress( streamStruct->m_mimeType.c_str(), streamStruct->m_nbReceived, total, streamStruct->m_userData );
+        streamStruct->m_finished = streamStruct->m_nbReceived == total;
+      }
 
       return len;
     }
@@ -84,7 +89,6 @@ namespace Fabric
     NPError HTTPResourceProvider::nppDestroyStream( NPP npp, NPStream *stream, NPReason reason )
     {
       FABRIC_ASSERT( npp == m_npp );
-
       HTTPStream *streamStruct = (HTTPStream*)stream->notifyData;
       switch ( reason )
       {
@@ -92,12 +96,15 @@ namespace Fabric
           //onProgress(100%) callback has already been called
           break;
         case NPRES_USER_BREAK:
-          IO::ResourceManager::onFailure( "Cancelled by user", streamStruct->m_userData );
+          if(!streamStruct->m_finished)//might be called after all the data has been received...
+            IO::ResourceManager::onFailure( "Cancelled by user", streamStruct->m_userData );
           break;
         case NPRES_NETWORK_ERR:
-          IO::ResourceManager::onFailure( "Network error", streamStruct->m_userData );
+          if(!streamStruct->m_finished)//might be called after all the data has been received...
+            IO::ResourceManager::onFailure( "Network error", streamStruct->m_userData );
           break;
       }
+      delete streamStruct;
       return NPERR_NO_ERROR;
     }
 
@@ -109,6 +116,7 @@ namespace Fabric
       IO::ResourceManager::onFile( fname, streamStruct->m_userData );
       size_t total = stream->end;
       IO::ResourceManager::onProgress( streamStruct->m_mimeType.c_str(), total, total, streamStruct->m_userData );
+      streamStruct->m_finished = true;
       return NPERR_NO_ERROR;
     }
   };

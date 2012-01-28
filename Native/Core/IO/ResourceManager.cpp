@@ -43,7 +43,8 @@ namespace Fabric
       {
         PendingRequestInfo* requestInfo = (PendingRequestInfo*)m_pendingRequests.front();
         //Note: we don't delete the PendingRequestInfo* structs as there might be some pending async calls; leak instead of crash in this exceptional race condition.
-        requestInfo->m_client->onFailure( ("Resource request for \"" + requestInfo->m_url + "\" failed because of termination").c_str(), requestInfo->m_clientUserData );
+        //[JeromeCG 20111221] Calling onFailure here is unsafe; might try to fire back a notif in the DG context... Commenting out until a good solution...
+        //requestInfo->m_client->onFailure( ("Resource request for \"" + requestInfo->m_url + "\" failed because of termination").c_str(), requestInfo->m_clientUserData );
         requestInfo->m_client->release();
         m_pendingRequests.pop_front();
       }
