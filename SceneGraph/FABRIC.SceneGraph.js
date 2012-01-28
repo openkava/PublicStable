@@ -479,11 +479,19 @@ FABRIC.SceneGraph = {
       var eventListeners = {};
       obj.pub.addEventListener = function(type, fn) {
         if(!fn) throw "Listener Function not provided";
-        if (!eventListeners[type]) {
-          eventListeners[type] = [];
+
+        if(pendingEventRemovals[type]) {
+          pendingEventRemovals[type].push(fn);
         }
-        eventListeners[type].push(fn);
+        else {
+          if (!eventListeners[type]) {
+            eventListeners[type] = [];
+          }
+          eventListeners[type].push(fn);
+        }
       };
+      var pendingEventRemovals = {};//checkRemove: allow removeEventListener() while fireEvent()
+
       obj.pub.removeEventListener = function(type, fn) {
         if(!fn) throw "Listener Function not provided";
         if (eventListeners[type]) {
@@ -492,12 +500,22 @@ FABRIC.SceneGraph = {
             eventListeners[type].splice(id, 1);
           }
         }
+      
       };
       obj.pub.fireEvent = function(type, evt) {
+
+        var pendingEventRemovals = [];
+
         for (i in eventListeners[type]) {
           if (eventListeners[type].hasOwnProperty(i)) {
-            eventListeners[type][i].call(this, evt);
+            var ret = eventListeners[type][i].call(this, evt);
+            if( ret === 'remove' )
+              pendingEventRemovals.push(eventListeners[type][i]);
           }
+        }
+
+        for (i in pendingEventRemovals) {
+          obj.pub.removeEventListener(type,pendingEventRemovals[i]);
         }
       }
       return obj;
@@ -1574,8 +1592,8 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   briefDesc: 'The ResourceLoad node implements the loading of a resource from an URL.',
   detailedDesc: 'Based on is \'url\' member, the ResourceLoad node will asynchronously load the associated ' +
                 'resource to its \'resource\' member. Until the data is loaded, resource.dataSize will be zero. ' +
-                'Once the data is loaded, JS callbacks will be fired; you can register those by calling the ' +
-                '\'addOnLoadSuccessCallback\' and \'addOnLoadFailureCallback\' member function. Unless ' + 
+                'Once the data is loaded, events will be fired; you can register those by calling the ' +
+                '\'addEventListener(\'loadSuccess\', func)\' and \'addEventListener(\'loadFailure\', func)\' member function. Unless ' + 
                 '\'option.redrawOnLoad\' is set to false, the loading will automatically trigger a redraw. ' +
                 'Note that operators can dynamically modify the URL.',
   parentNodeDesc: 'SceneGraphNode',
@@ -1596,21 +1614,16 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       options.name = baseName;
     }
 
-    var onloadSuccessCallbacks = [];
-    var onloadProgressCallbacks = [];
-    var onloadFailureCallbacks = [];
-    var lastLoadCallbackURL = '';
+    var lastLoadEventURL = '';
+    var lastLoadSucceeded = false;
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
+    scene.addEventHandlingFunctions(resourceLoadNode);
+
     var dgnode;
-    if(options.localPath)
-    {
-      dgnode = resourceLoadNode.constructDGNode('DGLoadNode');
-      dgnode.addMember('url','String');
-      dgnode.addMember('resource','FabricResource');
-    }
-    else
-      dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
+    dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
+    if( options.storeDataAsFile === true )
+      dgnode.setData( 'storeDataAsFile', 0, true );
 
     resourceLoadNode.addMemberInterface(dgnode, 'url');
     
@@ -1620,13 +1633,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
     }
     
-    var onLoadCallbackFunction = function(callbacks) {
-      var i;
-      for (i = 0; i < callbacks.length; i++) {
-        callbacks[i](resourceLoadNode.pub);
-      }
-      callbacks.length = 0;
-      
+    var onCommonEndLoad = function() {
       if(incrementLoadProgressBar){
         incrementLoadProgressBar(true, -remainingTaskWeight);
         incrementLoadProgressBar = undefined;
@@ -1637,81 +1644,55 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     }
     
     var onLoadSuccessCallbackFunction = function(node) {
-      lastLoadCallbackURL = resourceLoadNode.pub.getUrl();
-      onLoadCallbackFunction(onloadSuccessCallbacks);
+      lastLoadSucceeded = true;
+      lastLoadEventURL = resourceLoadNode.pub.getUrl();
+      resourceLoadNode.pub.fireEvent('loadSuccess', resourceLoadNode.pub);
+      onCommonEndLoad();
     }
     
     var onLoadProgressCallbackFunction = function(node, progress) {
+      resourceLoadNode.pub.fireEvent('onProgress',{'total':progress.total, 'done':progress.received, 'node':resourceLoadNode.pub});
       prevRemainingTaskWeight = remainingTaskWeight;
       //TaskWeight = 1 + size/100KB
       remainingTaskWeight = 1.0 + (progress.total - progress.received) / 100000;
       if(incrementLoadProgressBar)
         incrementLoadProgressBar(false, remainingTaskWeight-prevRemainingTaskWeight);
-
-      for (var i = 0; i < onloadProgressCallbacks.length; i++) {
-        onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
-      }
     }
     
     var onLoadFailureCallbackFunction = function(node) {
-      onLoadCallbackFunction(onloadFailureCallbacks);
+      lastLoadSucceeded = false;
+      lastLoadEventURL = resourceLoadNode.pub.getUrl();
+      resourceLoadNode.pub.fireEvent('loadFailure', resourceLoadNode.pub);
+      onCommonEndLoad();
     }
 
-    if(!options.localPath) {
-      dgnode.addOnLoadSuccessCallback(onLoadSuccessCallbackFunction);
-      dgnode.addOnLoadProgressCallback(onLoadProgressCallbackFunction);
-      dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
-    }
+    dgnode.addOnLoadSuccessCallback(onLoadSuccessCallbackFunction);
+    dgnode.addOnLoadProgressCallback(onLoadProgressCallbackFunction);
+    dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
 
     resourceLoadNode.pub.isLoaded = function() {
-      return lastLoadCallbackURL !== '' && lastLoadCallbackURL === resourceLoadNode.pub.getUrl();
+      return lastLoadEventURL !== '' && lastLoadEventURL === resourceLoadNode.pub.getUrl();
     }
 
-    resourceLoadNode.pub.addOnLoadProgressCallback = function(callback) {
-      //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
-      //make sure the callback is only fired when the 'next' resource is loaded.
-      if (resourceLoadNode.pub.isLoaded()) {
-        callback.call();
-      } else {
-        onloadProgressCallbacks.push(callback);
+    //This is particular to resourceLoadNode: we want to trigger the load/failure event
+    //when a client registers and the resource has loaded already. This is because sometimes
+    //the load is almost instantaneous and the clients usually don't cover that scenario.
+    var addEventListener = resourceLoadNode.pub.addEventListener;
+    resourceLoadNode.pub.addEventListener = function(type, fn) {
+      if(type === 'loadSuccess' && resourceLoadNode.pub.isLoaded() && lastLoadSucceeded)
+        fn(resourceLoadNode.pub);
+      else if(type === 'loadFailure' && resourceLoadNode.pub.isLoaded() && !lastLoadSucceeded)
+        fn(resourceLoadNode.pub);
+      else {
+        addEventListener(type, fn);
       }
-    };
+    }
 
-    resourceLoadNode.pub.addOnLoadSuccessCallback = function(callback) {
-      //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
-      //make sure the callback is only fired when the 'next' resource is loaded.
-      if (resourceLoadNode.pub.isLoaded()) {
-        callback.call(); //Already loaded. Todo: we don't keep track of success/failure state, which is wrong.
-      } else {
-        onloadSuccessCallbacks.push(callback);
-      }
-    };
-
-    resourceLoadNode.pub.addOnLoadFailureCallback = function(callback) {
-      onloadFailureCallbacks.push(callback);
-    };
-    
     resourceLoadNode.pub.setUrl = function(url, forceLoad) {
-      if(options.localPath) {
-        dgnode.setData('url', 0, url);
-        dgnode.bindings.append(scene.constructOperator({
-          operatorName: 'loadStorageResource',
-          parameterLayout: [
-            'self.resource',
-            'self.url'
-          ],
-          entryFunctionName: 'loadStorageResource',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/localStorage.kl',
-          async: false
-        }));
-        dgnode.evaluate();
-        return;
-      } else {
-        if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-          incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
-        }
-        dgnode.setData('url', 0, url);
+      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
       }
+      dgnode.setData('url', 0, url);
       if(forceLoad!= false){
         dgnode.evaluate();
       }
