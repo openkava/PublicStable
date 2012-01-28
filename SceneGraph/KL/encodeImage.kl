@@ -4,10 +4,10 @@
 
 use FabricPNG;
 
-operator encodeImageLDR(
-  io Size imageWidth,
-  io Size imageHeight,
-  io RGBA imageLDR[],
+function encodeImageLDRInternal(
+  in Size imageWidth,
+  in Size imageHeight,
+  in Data imageLDRData,
   io FabricResource resource
 ) {
   resource.data.resize(0);
@@ -18,11 +18,29 @@ operator encodeImageLDR(
     case'png':
     case'image/png':
       //report("imageWidth: "+imageWidth+", imageHeight: "+imageHeight+", imageLDR.size(): "+imageLDR.dataSize());
-      FabricPNGEncode(imageWidth, imageHeight, imageLDR.data(), resource.data);
+      FabricPNGEncode(imageWidth, imageHeight, imageLDRData, resource.data);
       resource.extension = 'png';
       resource.mimeType = 'image/png';
       break;
     default:
       report "Error, encoding is not supported for image type " + ext;
   }
+}
+
+operator encodeImageLDR(
+  io Size imageWidth,
+  io Size imageHeight,
+  io RGBA imageLDR[],
+  io FabricResource resource
+) {
+  encodeImageLDRInternal(imageWidth, imageHeight, imageLDR.data(), resource);
+}
+
+operator encodeImageLDRSliced(
+  io Size imageWidth,
+  io Size imageHeight,
+  io RGBA imageLDR<>,
+  io FabricResource resource
+) {
+  encodeImageLDRInternal(imageWidth, imageHeight, imageLDR.data(), resource);
 }

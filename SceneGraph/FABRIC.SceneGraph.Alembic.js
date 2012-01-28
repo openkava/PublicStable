@@ -21,6 +21,7 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       removeParsersOnLoad: false,
+      storeDataAsFile: true,
       dependentNode: undefined
     });
 
