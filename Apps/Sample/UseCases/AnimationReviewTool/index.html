@@ -604,7 +604,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     var assets = scene.importAssetFile(url, {
       dependentNode: viewport
     });
-    assets['frog'].addOnLoadSuccessCallback(function(){
+    assets['frog'].addEventListener('loadSuccess', function(){
       // get the first asset name
       var assetName = undefined;
       for(var name in assets) {
