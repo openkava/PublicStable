@@ -1599,14 +1599,12 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
     blockRedrawingTillResourceIsLoaded: 'If set to true redrawing will be blocked until the resource is loaded.',
-    redrawOnLoad: 'If set to true, the viewport will fire a redraw once the resource has been loaded.',
-    storeDataAsFile: 'If set to true, the resource data will be stored as a file, with handle = resource.dataExternalLocation'
+    redrawOnLoad: 'If set to true, the viewport will fire a redraw once the resource has been loaded.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
       redrawOnLoad: true,
-      storeDataAsFile: false,
       url: undefined
     });
     
@@ -1623,12 +1621,14 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     scene.addEventHandlingFunctions(resourceLoadNode);
 
     var dgnode;
-      //TODO: this is probably obselete with the new storeDataAsFile option???
+    if(options.localPath)
     {
-    dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
-    if( options.storeDataAsFile === true )
-      dgnode.setData( 'storeDataAsFile', 0, true );
+      dgnode = resourceLoadNode.constructDGNode('DGLoadNode');
+      dgnode.addMember('url','String');
+      dgnode.addMember('resource','FabricResource');
     }
+    else
+      dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
 
     resourceLoadNode.addMemberInterface(dgnode, 'url');
     
