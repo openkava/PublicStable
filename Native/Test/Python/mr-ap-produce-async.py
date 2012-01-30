@@ -23,5 +23,3 @@ def callback1( result ):
 
 ap.produceAsync( callback1 )
 
-fabricClient.waitForClose()
-

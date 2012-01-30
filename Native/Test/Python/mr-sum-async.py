@@ -22,5 +22,3 @@ def callback( result ):
 
 r.produceAsync( callback )
 
-client.waitForClose()
-
