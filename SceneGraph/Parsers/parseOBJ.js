@@ -83,7 +83,7 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
         async: false
       });
     
-    resourceLoadNode.pub.addEventListener('loadSuccess', function(){
+    resourceLoadNode.pub.addOnLoadSuccessCallback(function(){
       try{
         resourceloaddgnode.evaluate();
       }catch(e){
@@ -102,7 +102,7 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
     resourceLoadNode.decrementRef = function(){
       refCnt--;
       if(refCnt===0){
-        resourceLoadNode.pub.addEventListener('loadSuccess', function(){
+        resourceLoadNode.pub.addOnLoadSuccessCallback(function(){
           resourceLoadNode.disposeData();
         });
       }

@@ -116,7 +116,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     modal: true
   });
   
-  assets[resourceName].addEventListener('loadSuccess', function(){
+  assets[resourceName].addOnLoadSuccessCallback(function(){
       
     // loop over all assets and create an instance
     for(var name in assets[resourceName].getParsedNodes()) {

@@ -67,6 +67,7 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
       async: false
     }));
 
+    // add the main addOnLoadSuccessCallBack
     var parsedNodes = {};
     resourceLoadNode.pub.getParsedNodes = function(){
       return parsedNodes;
@@ -81,7 +82,7 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
       return parsedNodes[parentIdentifier];
     }
     
-    resourceLoadNode.pub.addEventListener('loadSuccess', function(pub) {
+    resourceLoadNode.pub.addOnLoadSuccessCallback(function(pub) {
 
       // define the getIdentifiers call
       resourceLoadNode.pub.getIdentifiers = function() {
@@ -419,7 +420,6 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
 
         animationController.pub.setTimeRange(timeRange);
       }
-      return 'remove';
     });
     
     return resourceLoadNode;
