@@ -106,16 +106,16 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     lightNode: light,
   });
   
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'samplehold_elephant_proxy';;
   var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
     url:'Models/'+resourceName+'.abc',
     dependentNode: viewport
   } );
-  
-  $('#loadingDialog').dialog({
-    modal: true
-  });
   
   alembicLoadNode.addEventListener('loadSuccess', function(){
       
