@@ -416,7 +416,7 @@ namespace Fabric
         
         void init( size_t size )
         {
-          m_allocSize = AllocSizeForSize( size );
+          m_allocSize = size;
           m_size = size;
           m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( m_allocSize * sizeof(Member) ) );
           memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
@@ -438,7 +438,7 @@ namespace Fabric
         {
           if ( m_memberDatas )
             ( *s_callbacks.m_free )( m_memberDatas );
-          m_allocSize = AllocSizeForSize( that.m_size );
+          m_allocSize = that.m_size;
           m_size = that.m_size;
           m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( m_allocSize * sizeof(Member) ) );
           memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
@@ -514,7 +514,7 @@ namespace Fabric
             {
               if ( newSize > oldAllocSize )
               {
-                size_t newAllocSize = AllocSizeForSize( newSize );
+                size_t newAllocSize = ComputeAllocatedSize( oldAllocSize, newSize );
                 size_t size = sizeof(Member) * newAllocSize;
                 if ( oldSize )
                 {
@@ -535,9 +535,28 @@ namespace Fabric
       
       protected:
     
-        static size_t AllocSizeForSize( size_t size )
+        static size_t ComputeAllocatedSize( size_t prevNbAllocated, size_t nbRequested )
         {
-          return std::max( size_t(31), Util::nextPowerOfTwoMinusOne( size ) );
+          if( nbRequested > prevNbAllocated )
+          {
+            size_t inflatedNbAllocated;
+            if( prevNbAllocated < 16 ) 
+              inflatedNbAllocated = (prevNbAllocated>>1) + 1 + prevNbAllocated;
+            else
+              inflatedNbAllocated = (prevNbAllocated>>3) + 4 + prevNbAllocated;
+            return std::max( nbRequested, inflatedNbAllocated );
+          }
+          else if( nbRequested < prevNbAllocated )
+          {
+            if( nbRequested == 0 )
+              return 0;
+            if( prevNbAllocated < 16 )
+              return prevNbAllocated;
+            size_t deflateThreshold = prevNbAllocated - (prevNbAllocated>>2);
+            return nbRequested <= deflateThreshold ? nbRequested : prevNbAllocated;
+          }
+          else
+            return nbRequested;
         }
       
       private:

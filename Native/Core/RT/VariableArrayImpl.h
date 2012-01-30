@@ -66,10 +66,7 @@ namespace Fabric
     
       VariableArrayImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &memberImpl );
       
-      static size_t AllocNumMembersForNumMembers( size_t numMembers )
-      {
-        return std::max( size_t(15), Util::nextPowerOfTwoMinusOne( numMembers ) );
-      }
+      static size_t ComputeAllocatedSize( size_t prevNbAllocated, size_t nbRequested );
             
       void const *getImmutableMemberData_NoCheck( void const *data, size_t index ) const
       { 
