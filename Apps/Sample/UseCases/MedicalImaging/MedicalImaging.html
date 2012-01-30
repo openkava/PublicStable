@@ -497,10 +497,11 @@ $(document).ready(function() {
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: '', glRepeat: false, histogramResolution: 1024 });
 
   var addOnLoadCallback = function (){
-   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function(){
+   opacityTexture.getResourceLoadNode().addEventListener('loadSuccess', function(){
      histogram.setData(opacityTexture.getHistogram(), 0.4);
      viewport.show();
      viewport.redraw();
+     return 'remove';//Avoid stacking up...
   })};
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {

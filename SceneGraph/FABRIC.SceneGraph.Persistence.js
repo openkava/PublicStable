@@ -264,8 +264,9 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
       },
       loadDGNodesData: function(sgnodeName, desc) {
         if(dataObj.metadata.binaryStorage){
-          loadNodeBinaryFileNode.pub.addOnLoadSuccessCallback(function(){
+          loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
             loadNodeBinaryFileNode.pub.loadDGNodes(sgnodeName, desc);
+            return 'remove';//Avoid stacking up...
           });
         }
         else{
@@ -329,8 +330,9 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                 remainingNodes--;
                 if(remainingNodes == 0){
                   if(loadNodeBinaryFileNode){
-                    loadNodeBinaryFileNode.pub.addOnLoadSuccessCallback(function(){
+                    loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
                       loadNodeBinaryFileNode.disposeData();
+                      return 'remove';//Avoid stacking up...
                     });
                   }
                   if(callback)
@@ -514,7 +516,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
     }));
     
     var dataTOC = {};
-    loadBinaryDataNode.pub.addOnLoadSuccessCallback(function(pub) {
+    loadBinaryDataNode.pub.addEventListener('loadSuccess', function(pub) {
       // define the new nodes based on the identifiers in the file
       resourceloaddgnode.evaluate();
       var elements = resourceloaddgnode.getData('elements',0);
@@ -542,6 +544,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
         }
         dataTOC[sgnodeName][dgnodeName][memberName].last = i;
       }
+      return 'remove';//Avoid stacking up...
     });
     
     var loadedNodes = {};
@@ -758,7 +761,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
       }
       
       writeBinaryDataNodeEvent.fire();
-      binarydatadgnode.putResourceToFile(resource, path);
+      binarydatadgnode.putResourceToFile(path,resource);
     }
     
     binarydatadgnode.addMember('container', 'SecureContainer');
