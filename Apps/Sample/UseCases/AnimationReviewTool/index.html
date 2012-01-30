@@ -168,7 +168,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
       paintRadius: 1,
       planeDistance: 10.0,
       encodeEventNode: undefined,
-      resourceFileHandle: undefined
+      path: undefined
     });
 
     // check all of our required nodes
@@ -253,8 +253,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     // create a texture to paint onto
     var textureNode = scene.constructNode('Image2D', {
       createDgNodes: true,
-      createResourceLoadNode: options.resourceFileHandle !== undefined,
-      url: options.resourceFileHandle,
+      createResourceLoadNode: false,
       width: widthPixels,
       height: heightPixels,
       forceRefresh: true
@@ -262,8 +261,25 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     var textureuniformsdgnode = textureNode.getUniformsDGNode();
     var texturepixelsdgnode = textureNode.getPixelsDGNode();
     
-    // check if we need to initialize from a loaded resource
-    if(options.resourceFileHandle) {
+    // now check if we eventually need to load an existing resource
+    if(options.path) {
+      textureuniformsdgnode.addMember('resource','FabricResource');
+      textureuniformsdgnode.getResourceFromFile('resource', options.path);
+      
+      // add a decoder for this image
+      texturepixelsdgnode.bindings.append(scene.constructOperator({
+        operatorName: 'loadImageRGBA',
+        entryFunctionName: 'loadImageRGBA',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
+        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
+        parameterLayout: [
+          'uniforms.resource',
+          'uniforms.width',
+          'uniforms.height',
+          'uniforms.pixels',
+          'self.newCount'
+        ]
+      }));
       texturepixelsdgnode.bindings.append(scene.constructOperator({
         operatorName: 'sliceImageRGBA',
         parameterLayout: [
@@ -474,21 +490,22 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     eventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'encodeImage',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/encodeImage.kl',
-      entryFunctionName: 'encodeImageLDRSliced',
+      entryFunctionName: 'encodeImageLDR',
       parameterLayout: [
             'uniforms.width',
             'uniforms.height',
-            'texture.pixels<>',
+            'texture.pixels',
             'self.resource'
           ]
     }));
     
-    instanceNode.pub.savePNG = function(relativeHandle) {
-      eventHandler.putResourceToFile(relativeHandle,'resource');
+    instanceNode.pub.savePNG = function(path,fileName) {
+      path.fileName = fileName;
+      eventHandler.putResourceToFile('resource',path);
     };
     
-    instanceNode.pub.loadPNG = function(relativeHandle) {
-      resourceFileHandle = relativeHandle;
+    instanceNode.pub.loadPNG = function(path,fileName) {
+      path.fileName = fileName;
     }
 
     return instanceNode;    
@@ -733,7 +750,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         paintColor: brushColor,
         paintRadius: brushRadius,
         encodeEventNode: encodeEvent,
-        resourceFileHandle: options.resourceFileHandle,
+        path: options.path,
         transform: options.transform
       });
       planes[timeKey] = {
@@ -909,15 +926,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         jsonData.currentColor = brushColor;
 
         // get a path handle
-        var handles = scene.IO.queryUserFileAndFolderHandle(scene.IO.forSave, "Animation Review Data", "json", "review");
-        var jsonFileInfo = scene.IO.getFileHandleInfo( handles.file );
-        var basename = jsonFileInfo.fileName;
+        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Animation Review Data", "json", "review");
+        var jsonFileName = path.fileName;
+        var basename = path.fileName.split('.')[0];
         
         // store all planes
         jsonData.planes = {};
         for(var name in planes) {
-          var planeFileHandle = scene.IO.buildFileHandleFromRelativePath(handles.folder+'/'+basename+'.'+name+'.png');
-          planes[name].instance.savePNG(planeFileHandle);
+          planes[name].instance.savePNG(path,basename+'.'+name+'.png');
           jsonData.planes[name] = {};
           jsonData.planes[name].camera = planes[name].camera;
           jsonData.planes[name].filename = basename+'.'+name+'.png';
@@ -927,22 +943,23 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         }
         
         // save the json file
-        scene.IO.putTextFileContent(handles.file, JSON.stringify(jsonData));
+        path.fileName = jsonFileName;
+        scene.IO.putTextFile(JSON.stringify(jsonData), path);
         
       } else {
         
         // get a path handle
-        var handles = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Animation Review Data", "json", "review");
-        var jsonData = JSON.parse(scene.IO.getTextFileContent(handles.file));
+        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Animation Review Data", "json", "review");
+        var jsonData = JSON.parse(scene.IO.getTextFile(path));
         
         // first create all planes
         for(var key in jsonData.planes) {
           switchCamera(jsonData.planes[key].camera);
           scene.animation.setTime(parseFloat(jsonData.planes[key].time));
           resourceLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
-          var planeFileHandle = scene.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
+          path.fileName = jsonData.planes[key].filename;
           $('#planeblend').slider("option", "value", jsonData.planes[key].blend);
-          paintPlane({resourceFileHandle: planeFileHandle, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
+          paintPlane({path: path, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
         }
         
         brushColor = jsonData.currentColor;
