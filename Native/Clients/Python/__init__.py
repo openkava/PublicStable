@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import ctypes
 import collections
@@ -26,6 +27,7 @@ class _INTERFACE( object ):
     self.DependencyGraph = self.DG
     self.VP = self.__client.vp
     self.EX = self.__client.ex
+    self.IO = self.__client.io
 
   def flush( self ):
     self.__client.executeQueuedCommands()
@@ -58,12 +60,25 @@ class _CLIENT( object ):
     self.dg = _DG( self )
     self.vp = _VP( self )
     self.ex = _EX( self )
+    self.io = _IO( self )
 
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
 
+    # catch uncaught exceptions so that we don't wait on threads 
+    self.__uncaughtException = False
+    self.__oldExceptHook = sys.excepthook
+    def __excepthook( type, value, traceback):
+      self.__uncaughtException = True
+      self.__oldExceptHook( type, value, traceback )
+    sys.excepthook = __excepthook
+
     # prevent exit until all our threads complete
     atexit.register( self.__waitForClose )
+
+  def __waitForClose( self ):
+    if not self.__uncaughtException:
+      fabric.waitForClose( self.__fabricClient )
 
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
@@ -79,9 +94,6 @@ class _CLIENT( object ):
 
   def close( self ):
     fabric.close( self.__fabricClient )
-
-  def __waitForClose( self ):
-    fabric.waitForClose( self.__fabricClient )
 
   def queueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     command = { 'dst': dst, 'cmd': cmd }
@@ -162,7 +174,7 @@ class _CLIENT( object ):
       elif firstSrc == 'EX':
         self.ex._route( src, cmd, arg )
       elif firstSrc == 'IO':
-        pass
+        self.io._route( src, cmd, arg )
       elif firstSrc == 'VP':
         self.vp._route( src, cmd, arg )
       elif firstSrc == 'GC':
@@ -1534,6 +1546,16 @@ class _VP( _NAMESPACE ):
 class _EX( _NAMESPACE ):
   def __init__( self, client ):
     super( _EX, self ).__init__( client, 'EX' )
+
+  def _handleStateNotification( self, state ):
+    pass
+
+  def _route( self, src, cmd, arg ):
+    pass
+
+class _IO( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _IO, self ).__init__( client, 'IO' )
 
   def _handleStateNotification( self, state ):
     pass
