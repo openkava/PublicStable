@@ -264,8 +264,61 @@ class _DG( _NAMESPACE ):
   def createNode( self, name ):
     return self.__createNamedObject( name, self._NODE )
 
+  def createResourceLoadNode( self, name ):
+    return self.__createNamedObject( name, self._RESOURCELOADNODE )
+
+  def createEvent( self, name ):
+    return self.__createNamedObject( name, self._EVENT )
+
+  def createEventHandler( self, name ):
+    return self.__createNamedObject( name, self._EVENTHANDLER )
+
+  def getAllNamedObjects( self ):
+    result ={}
+    for namedObjectName in self._namedObjects:
+      result[ namedObjectName ] = self._namedObjects[ namedObjectName ]
+    return result
+
+  def __getOrCreateNamedObject( self, name, type ):
+    if name not in self._namedObjects:
+      if type == 'Operator':
+        self.createOperator( name )
+      elif type == 'Node':
+        self.createNode( name )
+      elif type == 'Event':
+        self.createEvent( name )
+      elif type == 'EventHandler':
+        self.createEventHandler( name )
+      else:
+        raise Exception( 'unhandled type "' + type + '"' )
+    return self._namedObjects[ name ]
+
+  def __handleStateNotification( self, state ):
+    self._namedObjects = {}
+    for namedObjectName in state:
+      namedObjectState = state[ namedObjectName ]
+      self.__getOrCreateNamedObject( namedObjectName, namedObjectState[ 'type' ] )
+    for namedObjectName in state:
+      self._namedObjects[ namedObjectName ]._patch( state[ namedObjectName ] )
+
+  def _handle( self, cmd, arg ):
+    # FIXME no logging callback implemented yet
+    if cmd == 'log':
+      if ( self.__logCallback ):
+        self.__logCallback( arg )
+    else:
+      raise Exception( 'command "' + cmd + '": unrecognized' )
+
   def _route( self, src, cmd, arg ):
-    pass
+    if len( src ) == 0:
+      self._handle( cmd, arg )
+    else:
+      src = collections.deque( src )
+      namedObjectName = src.popleft()
+      namedObjectType = None
+      if type( arg ) is dict and 'type' in arg:
+        namedObjectType = arg[ 'type' ]
+      self.__getOrCreateNamedObject( namedObjectName, namedObjectType )._route( src, cmd, arg )
 
   class _NAMEDOBJECT( object ):
     def __init__( self, dg, name ):
@@ -847,6 +900,231 @@ class _DG( _NAMESPACE ):
       self._nObjQueueCommand( 'evaluateAsync', serial )
       self._dg._executeQueuedCommands()
   
+  class _RESOURCELOADNODE( _NODE ):
+    def __init__( self, dg, name ):
+      super( _DG._RESOURCELOADNODE, self ).__init__( dg, name )
+      self.__onloadSuccessCallbacks = []
+      self.__onloadProgressCallbacks = []
+      self.__onloadFailureCallbacks = []
+
+    def _handle( cmd, arg ):
+      if cmd == 'resourceLoadSuccess':
+        for i in range( 0, len( onloadSuccessCallbacks ) ):
+          onloadSuccessCallbacks[ i ]( self )
+      elif cmd == 'resourceLoadProgress':
+        for i in range( 0, len( onloadProgressCallbacks ) ):
+          onloadProgressCallbacks[ i ]( self, arg )
+      elif cmd == 'resourceLoadFailure':
+        for i in range( 0, len( onloadFailureCallbacks ) ):
+          onloadFailureCallbacks[ i ]( self )
+      else:
+        super( _DG._RESOURCELOADNODE, self )._handle( cmd, arg )
+
+    def addOnLoadSuccessCallback( self, callback ):
+      self.__onloadSuccessCallbacks.append( callback )
+
+    def addOnLoadProgressCallback( self, callback ):
+      self.__onloadProgressCallbacks.append( callback )
+
+    def addOnLoadFailureCallback( self, callback ):
+      self.__onloadFailureCallbacks.append( callback )
+
+  class _EVENT( _CONTAINER ):
+    def __init__( self, dg, name ):
+      super( _DG._EVENT, self ).__init__( dg, name )
+      self.__didFireCallback = None
+      self.__eventHandlers = None
+      self.__typeName = None
+
+    def _patch( self, diff ):
+      super( _DG._EVENT, self )._patch( diff )
+      self.__eventHandlers = None
+
+      if 'eventHandlers' in diff:
+        self.__eventHandlers = []
+        for index in diff[ 'eventHandlers' ]:
+          name = diff[ 'eventHandlers' ][ index ]
+          self.__eventHandlers.append( self._dg._namedObjects[ name ] )
+
+    def _handle( self, cmd, arg ):
+      if cmd == 'didFire':
+        if self.__didFireCallback is not None:
+          self.__didFireCallback( self )
+      else:
+        super( _DG._EVENT, self )._handle( cmd, arg )
+
+    def getType( self ):
+      return 'Event'
+
+    def appendEventHandler( self, eventHandler ):
+      self._nObjQueueCommand( 'appendEventHandler', eventHandler.getName() )
+      self.__eventHandlers = None
+
+    def getEventHandlers( self ):
+      if self.__eventHandlers is None:
+        self._dg._executeQueuedCommands()
+      return self.__eventHandlers
+
+    def fire( self ):
+      self._nObjQueueCommand( 'fire', eventHandler.getName() )
+      self._dg._executeQueuedCommands()
+
+    # FIXME what is this doing, also where are eventHandlers set?
+    def setSelectType( self, tn ):
+      self._nObjQueueCommand( 'setSelectType', tn )
+      self._dg._executeQueuedCommands()
+      self.__typeName = tn
+
+    # FIXME the indexing of namedObjects is almost certainly incorrect
+    def select( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( results ):
+        for i in range( 0, len( results ) ):
+          result = results[ i ]
+          data[ '_' ].append( {
+            'node': self._dg._namedObjects[ result ],
+            'value': self._dg.getClient().rt.assignPrototypes( result.data, self.__typeName )
+          })
+
+      self._nObjQueueCommand( 'select', self.__typeName, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def getDidFireCallback( self ):
+      return self.__didFireCallback
+
+    def setDidFireCallback( self, callback ):
+      self.__didFireCallback = callback
+
+  class _EVENTHANDLER( _CONTAINER ):
+    def __init__( self, dg, name ):
+      super( _DG._EVENTHANDLER, self ).__init__( dg, name )
+      self.__scopes = {}
+      self.__bindingName = None
+      self.__childEventHandlers = None
+      self.preDescendBindings = self._dg.createBindingList( [ name, 'preDescendBindings' ] )
+      self.postDescendBindings = self._dg.createBindingList( [ name, 'postDescendBindings' ] )
+
+    def _patch( self, diff ):
+      super( _DG._EVENTHANDLER, self ).patch( diff )
+      if 'bindingName' in diff:
+        self.__bindingName = diff.bindingName;
+
+      if 'childEventHandlers' in diff:
+        self.__childEventHandlers = []
+        for index in diff[ 'childEventHandlers' ]:
+          name = diff[ 'childEventHandlers' ][ index ]
+          self.__childEventHandlers.append( self._dg._namedObjects[ name ] )
+
+      if 'scopes' in diff:
+        self.__scopes = {}
+        for name in diff[ 'scopes' ]:
+          nodeName = diff.scopes[ name ]
+          self.__scopes[ name ] = self._dg._namedObjects[ nodeName ]
+
+      if 'preDescendBindings' in diff:
+        self.preDescendBindings.patch( diff.preDescendBindings )
+
+      if 'postDescendBindings' in diff:
+        self.postDescendBindings.patch( diff.postDescendBindings )
+
+    def _route( self, src, cmd, arg ):
+      if len( src ) == 1 and src[ 0 ] == 'preDescendBindings':
+        src = collections.deque( src )
+        src.popleft()
+        self.preDescendBindings._route( src, cmd, arg )
+      elif len( src ) == 1 and src[ 0 ] == 'postDescendBindings':
+        src = collections.deque( src )
+        src.popleft()
+        self.postDescendBindings._route( src, cmd, arg )
+      else:
+        super( _DG._EVENTHANDLER )._route( src, cmd, arg )
+    
+    def getType( self ):
+      return 'EventHandler'
+
+    def getScopeName( self ):
+      return self.__bindingName
+
+    def setScopeName( self, bindingName ):
+      oldBindingName = self.__bindingName
+      def __unwind():
+        self.__bindingName = oldBindingName
+      self._nObjQueueCommand( 'setScopeName', bindingName, __unwind )
+
+    def appendChildEventHandler( self, childEventHandler ):
+      oldChildEventHandlers = self.__childEventHandlers
+      def __unwind():
+        self.__childEventHandlers = oldChildEventHandlers
+      self._nObjQueueCommand( 'appendChildEventHandler', childEventHandler.getName(), __unwind )
+
+    def removeChildEventHandler( self, childEventHandler ):
+      oldChildEventHandlers = self.__childEventHandlers
+      def __unwind():
+        self.__childEventHandlers = oldChildEventHandlers
+      self._nObjQueueCommand( 'removeChildEventHandler', childEventHandler.getName(), __unwind )
+
+    def getChildEventHandlers( self ):
+      if self.__childEventHandlers is None:
+        self._dg._executeQueuedCommands()
+      return self.__childEventHandlers
+
+    def __checkScopeName( self, name ):
+      try:
+        if type( name ) != str:
+          raise Exception( 'must be a string' )
+        elif name == '':
+          raise Exception( 'must not be empty' )
+      except Exception as e:
+        raise Exception( 'name: ' + e )
+
+    def setScope( self, name, node ):
+      self.__checkScopeName( name )
+
+      oldNode = None
+      if name in self.__scopes:
+        oldNode = self.__scopes[ name ]
+      self.__scopes[ name ] = node
+
+      def __unwind():
+        if oldNode is not None:
+          self.__scopes[ name ] = oldNode
+        else:
+          del self.__scopes[ name ]
+      args = { 'name': name, 'node': node.getName() }
+      self._nObjQueueCommand( 'setScope', args, __unwind )
+
+    def removeScope( self, name ):
+      self.__checkScopeName( name )
+
+      oldNode = None
+      if name in self.__scopes:
+        oldNode = self.__scopes[ name ]
+        del self.__scopes[ name ]
+    
+      def __unwind():
+        if oldNode is not None:
+          self.__scopes[ name ] = oldNode
+      self._nObjQueueCommand( 'removeScope', name, __unwind )
+
+    def getScopes( self ):
+      return self.__scopes
+
+    def setSelector( self, targetName, binding ):
+      operatorName = None
+      try:
+        operatorName = binding.getOperator().getName()
+      except Exception:
+        raise Exception( 'operator: not an operator' )
+
+      args = {
+        'targetName': targetName,
+        'operator': operatorName,
+        'parameterLayout': binding.getParameterLayout()
+      }
+      self._nObjQueueCommand( 'setSelector', args )
+
 class _MR( _NAMESPACE ):
   def __init__( self, client ):
     super( _MR, self ).__init__( client, 'MR' )
