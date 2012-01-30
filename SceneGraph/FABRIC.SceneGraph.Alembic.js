@@ -2,14 +2,16 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
-FABRIC.SceneGraph.registerParser('abc', function(scene, assetUrl, options) {
+FABRIC.SceneGraph.registerParser('abc', function(scene, assetUrl, options, callback) {
   
   var results = {};
   var assetName = assetUrl.split('/').pop().split('.')[0];
   
   options.url = assetUrl;
-  results[options.baseName] = scene.constructNode('AlembicLoadNode', options);
-  return results;
+  var resourceLoadNode = scene.constructNode('AlembicLoadNode', options);
+  resourceLoadNode.addEventListener('loadSuccess', function(){
+    callback(resourceLoadNode.getParsedNodes());
+  });
 });
 
 FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
