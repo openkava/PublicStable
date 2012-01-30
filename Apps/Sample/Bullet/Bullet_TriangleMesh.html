@@ -157,7 +157,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   }
 
   var sandAlembicNode = scene.importAssetFile('../BasicDemos/Models/sand.abc').sand;
-  sandAlembicNode.addOnLoadSuccessCallback(function(){
+  sandAlembicNode.addEventListener('loadSuccess', function(){
       
     // loop over all assets and create an instance
     var gridTriangles = sandAlembicNode.getParsedNodes()['/gridXfo/grid'];
