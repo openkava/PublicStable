@@ -138,10 +138,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   viewport.setCameraNode(camera);
 
-  var resourceLoadNode = scene.importAssetFile('Models/cow.obj');
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    var objectName = evt.objectNames[0];
-    var triangles = evt.loadedGeometries[objectName];
+  scene.importAssetFile('Models/cow.obj', {}, function(assetNodes){
+    var triangles = assetNodes.cow;
      
     var twistedMesh = scene.constructNode('TwistedMesh', {
       baseGeometryNode: triangles
@@ -164,7 +162,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       viewport.redraw();
       return true;
     });
-  
    });
 
 
