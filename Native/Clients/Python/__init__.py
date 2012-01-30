@@ -2,6 +2,7 @@ import os
 import json
 import ctypes
 import collections
+import atexit
 
 # FIXME fix object hierarchy, static variables, visibility
 
@@ -30,9 +31,6 @@ class _INTERFACE( object ):
   def close( self ):
     self.__client.close()
 
-  def waitForClose( self ):
-    self.__client.waitForClose()
-
   def getMemoryUsage( self ):
     # dictionary hack to simulate Python 3.x nonlocal
     memoryUsage = { '_': None }
@@ -60,6 +58,9 @@ class _CLIENT( object ):
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
 
+    # prevent exit until all our threads complete
+    atexit.register( self.__waitForClose )
+
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
 
@@ -75,7 +76,7 @@ class _CLIENT( object ):
   def close( self ):
     fabric.close( self.__fabricClient )
 
-  def waitForClose( self ):
+  def __waitForClose( self ):
     fabric.waitForClose( self.__fabricClient )
 
   def queueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
