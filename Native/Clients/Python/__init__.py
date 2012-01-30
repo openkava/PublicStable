@@ -30,6 +30,9 @@ class _INTERFACE( object ):
   def close( self ):
     self.__client.close()
 
+  def waitForClose( self ):
+    self.__client.waitForClose()
+
   def getMemoryUsage( self ):
     # dictionary hack to simulate Python 3.x nonlocal
     memoryUsage = { '_': None }
@@ -57,9 +60,6 @@ class _CLIENT( object ):
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
 
-  def __del__( self ):
-    self.close()
-
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
 
@@ -73,9 +73,10 @@ class _CLIENT( object ):
     return result
 
   def close( self ):
-    if self.__fabricClient != None:
-      fabric.close( self.__fabricClient )
-      self.__fabricClient = None
+    fabric.close( self.__fabricClient )
+
+  def waitForClose( self ):
+    fabric.waitForClose( self.__fabricClient )
 
   def queueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     command = { 'dst': dst, 'cmd': cmd }
@@ -110,10 +111,11 @@ class _CLIENT( object ):
       callback = callbacks[i]
 
       if ( 'exception' in result ):
-        for j in reverse( range( i+1, j ) ):
+        for j in range( len( unwinds ) - 1, i, -1 ):
           unwind = unwinds[ j ]
           if ( unwind is not None ):
             unwind()
+        raise Exception( 'Fabric core exception: ' + result[ 'exception' ] )
       elif ( callback is not None ):
         callback( result[ 'result' ] )
 
@@ -239,7 +241,7 @@ class _DG( _NAMESPACE ):
   def createBinding( self ):
     return self._BINDING()
 
-  def createBindingList( self, dst ):
+  def _createBindingList( self, dst ):
     return self._BINDINGLIST( self, dst )
 
   def __createNamedObject( self, name, cmd, objType ):
@@ -255,23 +257,20 @@ class _DG( _NAMESPACE ):
 
     return obj
 
-  def createNamedObject( self, name ):
-    return self.__createNamedObject( name, self._NAMEDOBJECT )
-
   def createOperator( self, name ):
-    return self.__createNamedObject( name, self._OPERATOR )
+    return self.__createNamedObject( name, 'createOperator', self._OPERATOR )
    
   def createNode( self, name ):
-    return self.__createNamedObject( name, self._NODE )
+    return self.__createNamedObject( name, 'createNode', self._NODE )
 
   def createResourceLoadNode( self, name ):
-    return self.__createNamedObject( name, self._RESOURCELOADNODE )
+    return self.__createNamedObject( name, 'createResourceLoadNode', self._RESOURCELOADNODE )
 
   def createEvent( self, name ):
-    return self.__createNamedObject( name, self._EVENT )
+    return self.__createNamedObject( name, 'createEvent', self._EVENT )
 
   def createEventHandler( self, name ):
-    return self.__createNamedObject( name, self._EVENTHANDLER )
+    return self.__createNamedObject( name, 'createEventHandler', self._EVENTHANDLER )
 
   def getAllNamedObjects( self ):
     result ={}
@@ -808,7 +807,7 @@ class _DG( _NAMESPACE ):
       self.__dependencies = {}
       self.__evaluateAsyncFinishedSerial = 0
       self.__evaluateAsyncFinishedCallbacks = {}
-      self.bindings = self._dg.createBindingList( [ name, 'bindings' ] )
+      self.bindings = self._dg._createBindingList( [ name, 'bindings' ] )
 
     def _patch( self, diff ):
       super( _DG._NODE, self )._patch( diff )
@@ -1003,8 +1002,8 @@ class _DG( _NAMESPACE ):
       self.__scopes = {}
       self.__bindingName = None
       self.__childEventHandlers = None
-      self.preDescendBindings = self._dg.createBindingList( [ name, 'preDescendBindings' ] )
-      self.postDescendBindings = self._dg.createBindingList( [ name, 'postDescendBindings' ] )
+      self.preDescendBindings = self._dg._createBindingList( [ name, 'preDescendBindings' ] )
+      self.postDescendBindings = self._dg._createBindingList( [ name, 'postDescendBindings' ] )
 
     def _patch( self, diff ):
       super( _DG._EVENTHANDLER, self ).patch( diff )
