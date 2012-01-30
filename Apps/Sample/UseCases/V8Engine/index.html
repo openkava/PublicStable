@@ -247,7 +247,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   /////////////////////////////////////////////////
   var loadObjFile = function(file, callback) {
     var fileName = file.split('/').pop().split('.')[0];
-    var resourceLoadNode = scene.importAssetFile(file, {}, function(assetNodes){
+    scene.importAssetFile(file, {}, function(assetNodes){
       trianglesNode = assetNodes[fileName];
       callback(trianglesNode);
     });
