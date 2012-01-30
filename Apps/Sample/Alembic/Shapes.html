@@ -196,7 +196,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     dependentNode: viewport
   });
 
-  assets[resourceName].addEventListener('loadSuccess', function(){
+  assets[resourceName].addOnLoadSuccessCallback(function(){
       
       var shaderColor = {
         '/headXfo/head': FABRIC.RT.rgb(1.0, 0.6, 0.0, 1),

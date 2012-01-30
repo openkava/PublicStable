@@ -147,7 +147,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     //  url = 'http://localhost/~helge/Fabric/Apps/Sample/Lidar/wwview.org/'+resourceName+'.las';
 
     var assets = scene.importAssetFile(url, {blockRedrawingTillResourceIsLoaded: false});
-    assets[resourceName].addEventListener('loadSuccess', function(){
+    assets[resourceName].addOnLoadSuccessCallback(function(){
       
       var colors = [];
       colors.push(new FABRIC.RT.rgb(0.0,0.0,0.0,1.0));

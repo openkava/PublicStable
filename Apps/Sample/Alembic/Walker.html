@@ -165,7 +165,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     dependentNode: viewport
   });
 
-  assets[resourceName].addEventListener('loadSuccess', function(){
+  assets[resourceName].addOnLoadSuccessCallback(function(){
     // init the camera's html      
     var cameraListHtml = "<option value='userCamera'>Free Camera</option>";
       

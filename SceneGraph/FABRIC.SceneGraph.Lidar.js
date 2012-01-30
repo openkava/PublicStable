@@ -59,7 +59,7 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
       async: false
     }));
     
-    resourceLoadNode.pub.addEventListener('loadSuccess', function(pub) {
+    resourceLoadNode.pub.addOnLoadSuccessCallback(function(pub) {
 
       // create the points node
       var pointsNode = scene.constructNode('Points');
@@ -89,7 +89,8 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLidar.kl',
         async: false
       }));
-
+  
+      // add the main addOnLoadSuccessCallBack
       var parsedNodes = {points: pointsNode.pub};
       resourceLoadNode.pub.getParsedNodes = function(){
         return parsedNodes;

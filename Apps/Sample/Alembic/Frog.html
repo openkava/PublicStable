@@ -114,7 +114,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     dependentNode: viewport
   });
 
-  assets['frog'].addEventListener('loadSuccess', function(){
+  assets['frog'].addOnLoadSuccessCallback(function(){
     // create the camera
     var nodes = assets.frog.getParsedNodes();
     viewport.setCameraNode(assets.frog.getParsedNodes()['/CameraXfo/Camera']);
