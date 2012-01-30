@@ -491,6 +491,7 @@ class _DG( _NAMESPACE ):
   class _CONTAINER( _NAMEDOBJECT ):
     def __init__( self, dg, name ):
       super( _DG._CONTAINER, self ).__init__( dg, name )
+      self.__rt = dg._getClient().rt
       self.__members = None
       self.__count = None
 
@@ -555,11 +556,296 @@ class _DG( _NAMESPACE ):
 
       self._nObjQueueCommand( 'removeMember', memberName, __unwind )
 
+    def getData( self, memberName, sliceIndex = None ):
+      if sliceIndex is None:
+        sliceIndex = 0
+
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        data[ '_' ] = result
+
+      args = { 'memberName': memberName, 'sliceIndex': sliceIndex }
+      self._nObjQueueCommand( 'getData', args, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def getDataJSON( self, memberName, sliceIndex = None ):
+      if sliceIndex is None:
+        sliceIndex = 0
+
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        data[ '_' ] = result
+
+      args = { 'memberName': memberName, 'sliceIndex': sliceIndex }
+      self._nObjQueueCommand( 'getDataJSON', args, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def getDataSize( self, memberName, sliceIndex ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        data[ '_' ] = result
+
+      args = { 'memberName': memberName, 'sliceIndex': sliceIndex }
+      self._nObjQueueCommand( 'getDataSize', args, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+      
+    def getDataElement( self, memberName, sliceIndex, elementIndex ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        data[ '_' ] = self.__rt.assignPrototypes(
+          result,
+          self.__members[ memberName ][ 'type' ]
+        )
+
+      args = {
+        'memberName': memberName,
+        'sliceIndex': sliceIndex,
+        'elementIndex': elementIndex
+      }
+      self._nObjQueueCommand( 'getDataElement', args, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def setData( self, memberName, sliceIndex, data ):
+      if data is None:
+        data = sliceIndex
+        sliceIndex = 0
+
+      args = {
+        'memberName': memberName,
+        'sliceIndex': sliceIndex,
+        'data': data
+      }
+      self._nObjQueueCommand( 'setData', args )
+
+    def getBulkData( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        for memberName in result:
+          member = result[ memberName ]
+          for i in range( 0, len( member ) ):
+            self.__rt.assignPrototypes(
+              member[ i ],
+              self.__members[ memberName ][ 'type' ]
+            )
+        data[ '_' ] = result
+
+      self._nObjQueueCommand( 'getDataElement', None, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def setBulkData( self, data ):
+      self._nObjQueueCommand( 'setBulkData', data )
+
+    def getSliceBulkData( self, index ):
+      if type( index ) is not int:
+        raise Exception( 'index: must be an integer' )
+      return self.getSlicesBulkData( [ index ] )[ 0 ]
+
+    def getSlicesBulkData( self, indices ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        for i in range( 0, len( result ) ):
+          for memberName in result[ i ]:
+            self.__rt.assignPrototypes(
+              data[ i ][ memberName ],
+              self.__members[ memberName ][ 'type' ]
+            )
+        data[ '_' ] = result
+
+      self._nObjQueueCommand( 'getSlicesBulkData', indices, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def getMemberBulkData( self, member ):
+      if type( member ) is not str:
+        raise Exception( 'member: must be a string' )
+      return self.getMembersBulkData( [ member ] )[ member ];
+     
+    def getMembersBulkData( self, members ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        for member in result:
+          memberData = data[ member ];
+          for i in range( 0, len( memberData ) ):
+            self.__rt.assignPrototypes(
+              memberData[ i ],
+              self.__members[ member ][ 'type' ]
+            )
+        data[ '_' ] = result
+
+      self._nObjQueueCommand( 'getMembersBulkData', members, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def setSlicesBulkData( self, data ):
+      self._nObjQueueCommand( 'setSlicesBulkData', data )
+
+    def setSliceBulkData( self, sliceIndex, data ):
+      args = { 'sliceIndex': sliceIndex, 'data': data }
+      self._nObjQueueCommand( 'setSlicesBulkData', args )
+
+    def getBulkDataJSON( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        data[ '_' ] = result
+
+      self._nObjQueueCommand( 'getBulkDataJSON', None, None, __callback )
+      self._dg._executeQueuedCommands()
+      return data[ '_' ]
+
+    def setBulkDataJSON( self, data ):
+      self._nObjQueueCommand( 'setBulkDataJSON', data )
+     
+    def putResourceToUserFile( self, memberName, uTitle, extension, defaultFileName ):
+      args = {
+        'memberName': memberName,
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension,
+          'defaultFileName': defaultFileName
+        }
+      }
+      self._nObjQueueCommand( 'putResourceToUserFile', args )
+      self._dg._executeQueuedCommands()
+
+    def getResourceFromUserFile( self, memberName, uTitle, extension ):
+      args = {
+        'memberName': memberName,
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension
+        }
+      }
+      self._nObjQueueCommand( 'getResourceFromUserFile', args )
+      self._dg._executeQueuedCommands()
+
+    def getResourceFromFile( self, memberName, handleBasedPath ):
+      args = {
+        'memberName': memberName,
+        # FIXME this doesn't exist
+        'path': handleBasedPathToArray( handleBasedPath )
+      }
+      self._nObjQueueCommand( 'getResourceFromFile', args )
+      self._dg._executeQueuedCommands()
+
+    def putResourceToFile( self, memberName, handleBasedPath ):
+      args = {
+        'memberName': memberName,
+        # FIXME this doesn't exist
+        'path': handleBasedPathToArray( handleBasedPath )
+      }
+      self._nObjQueueCommand( 'putResourceToFile', args )
+      self._dg._executeQueuedCommands()
+      
   class _NODE( _CONTAINER ):
     def __init__( self, dg, name ):
       super( _DG._NODE, self ).__init__( dg, name )
       self.__dependencies = {}
-      self.__bindings = dg.createBindingList( [ name, 'bindings' ] )
+      self.__evaluateAsyncFinishedSerial = 0
+      self.__evaluateAsyncFinishedCallbacks = {}
+      self.bindings = self._dg.createBindingList( [ name, 'bindings' ] )
+
+    def _patch( self, diff ):
+      super( _DG._NODE, self )._patch( diff )
+
+      if 'dependencies' in diff:
+        self.__dependencies = {}
+        for dependencyName in diff.dependencies:
+          dependencyNodeName = diff.dependencies[ dependencyName ]
+          self.__dependencies[ dependencyName ] = self._dg._namedObjects[ dependencyNodeName ]
+
+      if 'bindings' in diff:
+        self.bindings.patch( diff.bindings )
+
+    def _route( self, src, cmd, arg ):
+      if len( src ) == 1 and src[ 0 ] == 'bindings':
+        src = collections.deque( src )
+        src.popleft()
+        self.bindings._route( src, cmd, arg )
+      elif cmd == 'evaluateAsyncFinished':
+        callback = self.__evaluateAsyncFinishedCallbacks[ arg ]
+        del self.__evaluateAsyncFinishedCallbacks[ arg ]
+        callback()
+      else:
+        super( _DG._ODE, self )._route( src, cmd, arg )
+        
+    def getType( self ):
+      return 'Node'
+
+    def __checkDependencyName( self, dependencyName ):
+      try:
+        if type( dependencyName ) != str:
+          raise Exception( 'must be a string' )
+        elif dependencyName == '':
+          raise Exception( 'must not be empty' )
+        elif dependencyName == 'self':
+          raise Exception( 'must not be "self"' )
+      except Exception as e:
+        raise Exception( 'dependencyName: ' + e )
+
+    def setDependency( self, dependencyNode, dependencyName ):
+      self.__checkDependencyName( dependencyName )
+
+      oldDependency = None
+      if dependencyName in self.__dependencies:
+        oldDependency = self.__dependencies[ dependencyName ]
+      self.__dependencies[ dependencyName ] = dependencyNode
+      
+      args = { 'name': dependencyName, 'node': dependencyNode.getName() }
+      def __unwind():
+        if ( oldDependency is not None ):
+          self.__dependencies[ dependencyName ] = oldDependency
+        else:
+          del self.__dependencies[ dependencyName ]
+          
+      self._nObjQueueCommand( 'setDependency', args, __unwind )
+
+    def getDependencies( self ):
+      return self.__dependencies
+
+    def getDependency( self, name ):
+      if name not in self.__dependencies:
+        raise Exception( 'no dependency named "' + name + '"' )
+      return self.__dependencies[ name ]
+
+    def removeDependency( self, dependencyName ):
+      self.__checkDependencyName( dependencyName )
+
+      oldDependency = None
+      if dependencyName in self.__dependencies:
+        oldDependency = self.__dependencies[ dependencyName ]
+      self.__dependencies[ dependencyName ] = dependencyNode
+      
+      def __unwind():
+        if ( oldDependency is not None ):
+          self.__dependencies[ dependencyName ] = oldDependency
+        else:
+          del self.__dependencies[ dependencyName ]
+          
+      self._nObjQueueCommand( 'removeDependency', dependencyName, __unwind )
+
+    def evaluate( self ):
+      self._nObjQueueCommand( 'evaluate' )
+      self._dg._executeQueuedCommands()
+      
+    def evaluateAsync( self, callback ):
+      serial = self.__evaluateAsyncFinishedSerial
+      self.__evaluateAsyncFinishedSerial = self.__evaluateAsyncFinishedSerial + 1
+      self.__evaluateAsyncFinishedCallbacks[ serial ] = callback
+      self._nObjQueueCommand( 'evaluateAsync', serial )
+      self._dg._executeQueuedCommands()
   
 class _MR( _NAMESPACE ):
   def __init__( self, client ):
