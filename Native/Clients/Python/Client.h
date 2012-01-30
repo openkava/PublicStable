@@ -8,6 +8,7 @@
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/Util/Log.h>
 #include <Fabric/Core/Util/Mutex.h>
+#include <Fabric/Core/Util/Cond.h>
 #include <Fabric/Core/Util/TLS.h>
 
 #include <map>
@@ -28,6 +29,8 @@ namespace Fabric
 
       void jsonExecAndAllocCStr( char const *data, const size_t length, const char **str );
       void freeJsonCStr( const char *str );
+      void close();
+      void waitForClose();
 
     protected:
    
@@ -42,9 +45,9 @@ namespace Fabric
       typedef std::map<const char *, Util::SimpleString *> PassedStringMap;
       PassedStringMap m_passedStrings;
 
-      Util::TLSVar<bool> m_mainThreadTLS;
-      mutable Util::Mutex m_mutex;
-      mutable std::vector<std::string> m_bufferedNotifications;
+      Util::Mutex m_closeMutex;
+      Util::Cond m_closeCond;
+      bool m_closed;
     };
   };
 };
