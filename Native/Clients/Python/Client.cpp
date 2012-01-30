@@ -71,9 +71,9 @@ namespace Fabric
     
     Client::Client( RC::Handle<DG::Context> const &context )
       : DG::Client( context )
-      , m_mutex( "Python Client" )
+      , m_closeMutex( "Python Client" )
+      , m_closed( false )
     {
-      m_mainThreadTLS = true;
     }
 
     Client::~Client()
@@ -95,20 +95,7 @@ namespace Fabric
 
     void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
-      if ( m_mainThreadTLS )
-      {
-        m_notifyCallback( jsonEncodedNotifications.c_str() );
-      }
-      else
-      {
-        Util::Mutex::Lock lock( m_mutex );
-        m_bufferedNotifications.push_back(
-          std::string(
-            jsonEncodedNotifications.data(),
-            jsonEncodedNotifications.length()
-          )
-        );
-      }
+      m_notifyCallback( jsonEncodedNotifications.c_str() );
     }
 
     void Client::jsonExecAndAllocCStr( char const *data, size_t length, const char **str )
@@ -132,6 +119,22 @@ namespace Fabric
       FABRIC_ASSERT( i != m_passedStrings.end() );
       m_passedStrings.erase( i );
       delete i->second;
+    }
+
+    void Client::close()
+    {
+      m_closeMutex.acquire();
+      m_closed = true;
+      m_closeCond.broadcast();
+      m_closeMutex.release();
+    }
+
+    void Client::waitForClose()
+    {
+      m_closeMutex.acquire();
+      if ( !m_closed )
+        m_closeCond.wait( m_closeMutex );
+      m_closeMutex.release();
     }
   }
 };
