@@ -32,6 +32,58 @@ namespace Fabric
       return &defaultData;
     }
 
+    size_t VariableArrayImpl::ComputeAllocatedSize( size_t prevNbAllocated, size_t nbRequested )
+    {
+      //[JeromeCG 20120130] Explanations
+      //The main goals are both to avoid re-allocating repeatedly and memory waste.
+      //Here are a few heuristics I try to take into account while trying to find the default formula. For some of these
+      //I only partially succeed, because I still try to avoid too much complexity.
+      //
+      //  1- On the first resize, just allocate exactly what was asked. Often arrays are only allocated once. For KL, I'd extend that for the case
+      //    where we go from 1 to many elements, since by default an initial slice count of 1.
+      //  2- When an entire array is copied to another one, just allocate the actual size of the source (not its 'reserved' size).
+      //  3- When growing an array, allocate exponentially to avoid scalability problems, but don't over-allocate too much (maybe in the 10% to 25% range)
+      //  4- When shrinking an array, deallocate exponentially to avoid keeping to much unrequired memory
+      //  5- Free the memory when resizing back to 0
+      //  6- The smaller the array, the bigger the proportion of each over-allocated items
+      //  7- Small arrays are frequent, including those which are resized dynamically (push / pop)
+      //  8- Waste while shrinking is less critical than waste when growing, since memory peak has already been reached. However we still need to care about
+      //  it since it can accumulate
+      //
+      //  Note: for 4) and 5), there are scenarios where it can be better to never shrink memory usage, particularly when an array is reused in a loop.
+      //  However, I don't think that many programmers are careful enough to scope arrays outside of loops just in order to avoid reallocations. To support
+      //  these scenarios we would need a 'hint' or a method in which the user can tell to not release memory...
+      //
+      //  Note2: there's no easy answer for both 6) and 7). With very small arrays, we can't at the same time avoid over-allocated items AND frequent reallocs...
+      //  so we need to do a compromise between both.
+      if( nbRequested > prevNbAllocated )
+      {
+        size_t inflatedNbAllocated;
+        if( prevNbAllocated < 16 ) 
+          inflatedNbAllocated = (prevNbAllocated>>1) + 1 + prevNbAllocated;//50% + 1 growth
+        else
+          inflatedNbAllocated = (prevNbAllocated>>3) + 4 + prevNbAllocated;//12.5% + 4 growth  (+4: just to maintain the 'pace' we had when < 16)
+        return std::max( nbRequested, inflatedNbAllocated );
+      }
+      else if( nbRequested < prevNbAllocated )
+      {
+        if( nbRequested == 0 )
+          return 0;
+
+        //Because it's exponentially growing and shrinking, we need to be careful for oscillation problems.
+        //Eg: push -> reallocate with X% more, then pop -> shrink to new size because >X% wasted, then push -> reallocate again by X%...
+        //To avoid this, we simply tolerate 25% of 'wasted' memory when we shrink back, while we grow by 12.5%.
+
+        if( prevNbAllocated < 16 )
+          return prevNbAllocated; //Avoid oscillation problems with small arrays, because of their different allocation policy above
+
+        size_t deflateThreshold = prevNbAllocated - (prevNbAllocated>>2);//25% shrink
+        return nbRequested <= deflateThreshold ? nbRequested : prevNbAllocated;
+      }
+      else
+        return nbRequested;
+    }
+
     void VariableArrayImpl::setData( void const *_src, void *_dst ) const
     {
       bits_t const *src = reinterpret_cast<bits_t const *>(_src);
@@ -41,7 +93,7 @@ namespace Fabric
         m_memberImpl->disposeDatas( dst->memberDatas + src->numMembers * m_memberSize, dst->numMembers - src->numMembers, m_memberSize );
       dst->numMembers = src->numMembers;
 
-      dst->allocNumMembers = AllocNumMembersForNumMembers( src->numMembers );
+      dst->allocNumMembers = src->numMembers;
       if ( dst->memberDatas )
         dst->memberDatas = reinterpret_cast<uint8_t *>( realloc( dst->memberDatas, dst->allocNumMembers * m_memberSize ) );
       else
@@ -244,7 +296,7 @@ namespace Fabric
         {
           if ( newNumMembers > oldAllocNumMembers )
           {
-            size_t newAllocNumMembers = AllocNumMembersForNumMembers( newNumMembers );
+            size_t newAllocNumMembers = ComputeAllocatedSize( oldAllocNumMembers, newNumMembers );
             if ( oldNumMembers )
             {
               size_t size = m_memberSize * newAllocNumMembers;
