@@ -76,7 +76,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -105,18 +105,19 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   });
 
   var resourceName = 'fireworks';
-  var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/'+resourceName+'.abc',
     dependentNode: viewport
   });
 
-  assets[resourceName].addOnLoadSuccessCallback(function(){
+  alembicLoadNode.addEventListener('loadSuccess', function(){
     // loop over all assets and create an instance
-    for(var name in assets[resourceName].getParsedNodes()) {
-      if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
+    for(var name in alembicLoadNode.getParsedNodes()) {
+      if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Points'))
       {
         var inst = scene.constructNode('Instance', {
-          transformNode: assets[resourceName].getCorrespondingTransform(name),
-          geometryNode: assets[resourceName].getParsedNodes()[name],
+          transformNode: alembicLoadNode.getCorrespondingTransform(name),
+          geometryNode: alembicLoadNode.getParsedNodes()[name],
           materialNode: pointMaterial
         });
       }
