@@ -24,6 +24,8 @@ class _INTERFACE( object ):
     self.RT = self.__client.rt
     self.DG = self.__client.dg
     self.DependencyGraph = self.DG
+    self.VP = self.__client.vp
+    self.EX = self.__client.ex
 
   def flush( self ):
     self.__client.executeQueuedCommands()
@@ -54,6 +56,8 @@ class _CLIENT( object ):
     self.mr = _MR( self )
     self.rt = _RT( self )
     self.dg = _DG( self )
+    self.vp = _VP( self )
+    self.ex = _EX( self )
 
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
@@ -122,9 +126,31 @@ class _CLIENT( object ):
 
     fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
+  def _handleStateNotification( self, newState ):
+    state = {}
+    self._patch( newState )
+
+    # FIXME what is build?
+    if 'build' in newState:
+      build._handleStateNotification( newState[ 'build' ] )
+    self.dg._handleStateNotification( newState[ 'DG' ] )
+    self.rt._handleStateNotification( newState[ 'RT' ] )
+    self.ex._handleStateNotification( newState[ 'EX' ] )
+    if 'VP' in newState:
+      self.vp.handleStateNotification( newState[ 'VP' ] )
+
+  def _handle( self, cmd, arg ):
+    try:
+      if cmd == 'state':
+        self._handleStateNotification( arg )
+      else:
+        raise Exception( 'unknown command' )
+    except Exception as e:
+      raise Exception( 'command "' + cmd + '": ' + e )
+
   def _route( self, src, cmd, arg ):
     if len(src) == 0:
-      self.__handle( cmd, arg )
+      self._handle( cmd, arg )
     else:
       src = collections.deque( src )
       firstSrc = src.popleft()
@@ -134,11 +160,11 @@ class _CLIENT( object ):
       elif firstSrc == 'DG':
         self.dg._route( src, cmd, arg )
       elif firstSrc == 'EX':
-        pass
+        self.ex._route( src, cmd, arg )
       elif firstSrc == 'IO':
         pass
       elif firstSrc == 'VP':
-        pass
+        self.vp._route( src, cmd, arg )
       elif firstSrc == 'GC':
         self.gc._route( src, cmd, arg )
       else:
@@ -188,7 +214,7 @@ class _GCOBJECT( object ):
   def _gcObjQueueCommand( self, cmd, arg = None, unwind = None, callback = None ):
     if self.__id is None:
       raise Exception( "GC object has already been disposed" )
-    self._nsobj._objQueueCommand( self.__id, cmd, arg, unwind, callback )
+    self._nsobj._objQueueCommand( [ self.__id ], cmd, arg, unwind, callback )
 
   def _registerCallback( self, callback ):
     self.__nextCallbackID = self.__nextCallbackID + 1
@@ -223,7 +249,7 @@ class _NAMESPACE( object ):
 
   def _objQueueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     if dst is not None:
-      dst = [ self.__name, dst ]
+      dst.insert( 0, self.__name )
     else:
       dst = [ self.__name ]
     self.__client.queueCommand( dst, cmd, arg, unwind, callback )
@@ -237,7 +263,7 @@ class _NAMESPACE( object ):
 class _DG( _NAMESPACE ):
   def __init__( self, client ):
     super( _DG, self ).__init__( client, 'DG' )
-    self._namedObjects = []
+    self._namedObjects = {}
 
   def createBinding( self ):
     return self._BINDING()
@@ -326,7 +352,7 @@ class _DG( _NAMESPACE ):
       self.__errors = None
       self._dg = dg
   
-    def _nObjQueueCommand( self, cmd, arg, unwind, callback ):
+    def _nObjQueueCommand( self, cmd, arg = None, unwind = None, callback = None ):
       if self.__name is None:
         raise Exception( 'NamedObject "' + name + '" has been deleted' )
       self._dg._objQueueCommand( [ self.__name ], cmd, arg, unwind, callback )
@@ -347,7 +373,7 @@ class _DG( _NAMESPACE ):
   
     def _route( self, src, cmd, arg ):
       if len( src ) == 0:
-        self.__handle( cmd, arg )
+        self._handle( cmd, arg )
       else:
         raise Exception( 'unroutable' )
   
@@ -363,6 +389,30 @@ class _DG( _NAMESPACE ):
       self.__bindings = []
       self._dg = dg
       self.__dst = dst
+
+    def _patch( self, state ):
+      self.__bindings = []
+      for i in range( 0, len( state ) ):
+        binding = {
+          'operator': self._dg._namedObjects[ state[ i ][ 'operator' ] ],
+          'parameterLayout': state[ i ][ 'parameterLayout' ]
+        }
+        self.__bindings.append( binding )
+
+    def _handle( self, cmd, arg ):
+      if cmd == 'delta':
+        self._patch( arg )
+      else:
+        raise Exception( 'command "' + cmd + '": unrecognized' )
+
+    def _route( self, src, cmd, arg ):
+      if len( src ) == 0:
+        self._handle( cmd, arg )
+      else:
+        raise Exception( 'unroutable' )
+
+    def _handleStateNotification( self, state ):
+      self._patch( state )
    
     def empty( self ):
       if self.__bindings is None:
@@ -457,22 +507,22 @@ class _DG( _NAMESPACE ):
       self.__mainThreadOnly = None
 
     def _patch( self, diff ):
-      super( _OPERATOR, self )._patch( diff )
+      super( _DG._OPERATOR, self )._patch( diff )
 
       if 'filename' in diff:
-        self.__filename = diff.filename
+        self.__filename = diff[ 'filename' ]
 
       if 'sourceCode' in diff:
-        self.__sourceCode = diff.sourceCode
+        self.__sourceCode = diff[ 'sourceCode' ]
 
       if 'entryFunctionName' in diff:
-        self.__entryFunctionName = diff.entryFunctionName
+        self.__entryFunctionName = diff[ 'entryFunctionName' ]
 
       if 'diagnostics' in diff:
-        self.__diagnostics = diff.diagnostics
+        self.__diagnostics = diff[ 'diagnostics' ]
 
       if 'mainThreadOnly' in diff:
-        self.__mainThreadOnly = diff.mainThreadOnly
+        self.__mainThreadOnly = diff[ 'mainThreadOnly' ]
 
     def getMainThreadOnly( self ):
       if self.__mainThreadOnly is None:
@@ -549,13 +599,13 @@ class _DG( _NAMESPACE ):
       self.__count = None
 
     def _patch( self, diff ):
-      super( _CONTAINER, self )._patch( diff )
+      super( _DG._CONTAINER, self )._patch( diff )
 
       if 'members' in diff:
-        self.__members = diff.members
+        self.__members = diff[ 'members' ]
 
       if 'count' in diff:
-        self.__count = diff.count
+        self.__count = diff[ 'count' ]
 
     def _handle( self, cmd, arg ):
       if cmd == 'dataChange':
@@ -564,7 +614,7 @@ class _DG( _NAMESPACE ):
         # FIXME invalidate cache here, see pzion comment in node.js
       else:
         # FIXME what happens if this calls _patch?
-        super( _CONTAINER, self )._handle( cmd, arg )
+        super( _DG._CONTAINER, self )._handle( cmd, arg )
 
     def getCount( self ):
       if self.__count is None:
@@ -580,7 +630,7 @@ class _DG( _NAMESPACE ):
         self._dg._executeQueuedCommands()
       return self.__members
 
-    def addMember( self, memberName, memberType, defaultValue ):
+    def addMember( self, memberName, memberType, defaultValue = None ):
       if self.__members is None:
         self.__members = {}
       if memberName in self.__members:
@@ -652,7 +702,7 @@ class _DG( _NAMESPACE ):
       # dictionary hack to simulate Python 3.x nonlocal
       data = { '_': None }
       def __callback( result ):
-        data[ '_' ] = self.__rt.assignPrototypes(
+        data[ '_' ] = self.__rt._assignPrototypes(
           result,
           self.__members[ memberName ][ 'type' ]
         )
@@ -685,7 +735,7 @@ class _DG( _NAMESPACE ):
         for memberName in result:
           member = result[ memberName ]
           for i in range( 0, len( member ) ):
-            self.__rt.assignPrototypes(
+            self.__rt._assignPrototypes(
               member[ i ],
               self.__members[ memberName ][ 'type' ]
             )
@@ -709,7 +759,7 @@ class _DG( _NAMESPACE ):
       def __callback( result ):
         for i in range( 0, len( result ) ):
           for memberName in result[ i ]:
-            self.__rt.assignPrototypes(
+            self.__rt._assignPrototypes(
               data[ i ][ memberName ],
               self.__members[ memberName ][ 'type' ]
             )
@@ -722,16 +772,16 @@ class _DG( _NAMESPACE ):
     def getMemberBulkData( self, member ):
       if type( member ) is not str:
         raise Exception( 'member: must be a string' )
-      return self.getMembersBulkData( [ member ] )[ member ];
+      return self.getMembersBulkData( [ member ] )[ member ]
      
     def getMembersBulkData( self, members ):
       # dictionary hack to simulate Python 3.x nonlocal
       data = { '_': None }
       def __callback( result ):
         for member in result:
-          memberData = data[ member ];
+          memberData = data[ member ]
           for i in range( 0, len( memberData ) ):
-            self.__rt.assignPrototypes(
+            self.__rt._assignPrototypes(
               memberData[ i ],
               self.__members[ member ][ 'type' ]
             )
@@ -815,12 +865,12 @@ class _DG( _NAMESPACE ):
 
       if 'dependencies' in diff:
         self.__dependencies = {}
-        for dependencyName in diff.dependencies:
-          dependencyNodeName = diff.dependencies[ dependencyName ]
+        for dependencyName in diff[ 'dependencies' ]:
+          dependencyNodeName = diff[ 'dependencies' ][ dependencyName ]
           self.__dependencies[ dependencyName ] = self._dg._namedObjects[ dependencyNodeName ]
 
       if 'bindings' in diff:
-        self.bindings.patch( diff.bindings )
+        self.bindings._patch( diff[ 'bindings' ] )
 
     def _route( self, src, cmd, arg ):
       if len( src ) == 1 and src[ 0 ] == 'bindings':
@@ -832,7 +882,7 @@ class _DG( _NAMESPACE ):
         del self.__evaluateAsyncFinishedCallbacks[ arg ]
         callback()
       else:
-        super( _DG._ODE, self )._route( src, cmd, arg )
+        super( _DG._NODE, self )._route( src, cmd, arg )
         
     def getType( self ):
       return 'Node'
@@ -984,7 +1034,7 @@ class _DG( _NAMESPACE ):
           result = results[ i ]
           data[ '_' ].append( {
             'node': self._dg._namedObjects[ result ],
-            'value': self._dg.getClient().rt.assignPrototypes( result.data, self.__typeName )
+            'value': self.__rt._assignPrototypes( result.data, self.__typeName )
           })
 
       self._nObjQueueCommand( 'select', self.__typeName, None, __callback )
@@ -1009,7 +1059,7 @@ class _DG( _NAMESPACE ):
     def _patch( self, diff ):
       super( _DG._EVENTHANDLER, self ).patch( diff )
       if 'bindingName' in diff:
-        self.__bindingName = diff.bindingName;
+        self.__bindingName = diff[ 'bindingName' ]
 
       if 'childEventHandlers' in diff:
         self.__childEventHandlers = []
@@ -1020,14 +1070,14 @@ class _DG( _NAMESPACE ):
       if 'scopes' in diff:
         self.__scopes = {}
         for name in diff[ 'scopes' ]:
-          nodeName = diff.scopes[ name ]
+          nodeName = diff[ 'scopes' ][ name ]
           self.__scopes[ name ] = self._dg._namedObjects[ nodeName ]
 
       if 'preDescendBindings' in diff:
-        self.preDescendBindings.patch( diff.preDescendBindings )
+        self.preDescendBindings.patch( diff[ 'preDescendBindings' ] )
 
       if 'postDescendBindings' in diff:
-        self.postDescendBindings.patch( diff.postDescendBindings )
+        self.postDescendBindings.patch( diff[ 'postDescendBindings' ] )
 
     def _route( self, src, cmd, arg ):
       if len( src ) == 1 and src[ 0 ] == 'preDescendBindings':
@@ -1365,8 +1415,26 @@ class _KLC( _NAMESPACE ):
 class _RT( _NAMESPACE ):
   def __init__( self, client ):
     super( _RT, self ).__init__( client, 'RT' )
+    self.__prototypes = {}
+    self.__registeredTypes = {}
 
-  #def getRegisteredTypes( self ):
+  def _assignPrototypes( self, data, typeName ):
+    if typeName[-2:] == '[]':
+      typeName = typeName[0:-2]
+      for i in range( 0, len( data ) ):
+        self._assignPrototypes( data[ i ], typeName )
+    elif typeName in self.__prototypes:
+      data = self.__prototypes[ typeName ]
+      if 'members' in self.__registeredTypes[ typeName ]:
+        members = self.__registeredTypes[ typeName ][ 'members' ]
+        for i in range( 0, len( members ) ):
+          member = members[ i ]
+          self._assignPrototypes( data[ member[ 'name' ] ], member[ 'type' ] )
+    return data
+    
+  def getRegisteredTypes( self ):
+    self._executeQueuedCommands()
+    return self.__registeredTypes
 
   def registerType( self, name, desc ):
     members = [ ]
@@ -1378,6 +1446,7 @@ class _RT( _NAMESPACE ):
       members.append( member )
 
     defaultValue = desc[ 'constructor' ]()
+    self.__prototypes[ name ] = defaultValue
 
     arg = {
       'name': name,
@@ -1388,14 +1457,46 @@ class _RT( _NAMESPACE ):
       arg[ 'klBindings' ] = desc[ 'klBindings' ]
 
     def __unwind():
-      pass
-      # FIXME unwind
-      #del RT.prototypes[ name ]
-
+      del self.__prototypes[ name ]
     self._queueCommand( 'registerType', arg, __unwind )
 
+  def _patch( self, diff ):
+    if 'registeredTypes' in diff:
+      self.__registeredTypes = {}
+      for typeName in diff[ 'registeredTypes' ]:
+        self.__registeredTypes[ typeName ] = self._assignPrototypes(
+          diff[ 'registeredTypes' ],
+          typeName
+        )
+
+  def _handleStateNotification( self, state ):
+    self.__prototypes = {}
+    self._patch( state )
+
+  def _handle( self, cmd, arg ):
+    if cmd == 'delta':
+      self._patch( arg )
+    else:
+      raise Exception( 'command "' + cmd + '": unrecognized' )
+  
   def _route( self, src, cmd, arg ):
-    pass
+    if len( src ) == 0:
+      self._handle( cmd, arg )
+    elif len( src ) == 1:
+      typeName = src[ 0 ]
+      try:
+        if cmd == 'delta':
+          self.__registeredTypes[ typeName ] = arg
+          self.__registeredTypes[ typeName ][ 'defaultValue' ] = self._assignPrototypes(
+              self.__registeredTypes[ typeName ][ 'defaultValue' ],
+              typeName
+            )
+        else:
+          raise Exception( 'unrecognized' )
+      except Exception as e:
+        raise Exception( '"' + cmd + '": ' + e )
+    else:
+      raise Exception( '"' + src + '": unroutable ' )
 
 class _GC( _NAMESPACE ):
   def __init__( self, client ):
@@ -1419,4 +1520,25 @@ class _GC( _NAMESPACE ):
     id = src.popleft()
     obj = self.__objects[ id ]
     obj._route( src, cmd, arg )
+
+class _VP( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _VP, self ).__init__( client, 'VP' )
+
+  def _handleStateNotification( self, state ):
+    pass
+
+  def _route( self, src, cmd, arg ):
+    pass
+
+class _EX( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _EX, self ).__init__( client, 'EX' )
+
+  def _handleStateNotification( self, state ):
+    pass
+
+  def _route( self, src, cmd, arg ):
+    pass
+
 
