@@ -335,127 +335,186 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKChainSolver',{
 
 
 
-FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
-  constructSolver: function(options, scene) {
 
-    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene),
-      parameterLayout,
-      bindToRig;
+FABRIC.RT.Hub = function(boneId, xfoId, hubParentSpaceId, spineBoneIds, spineBoneXfoId) {
+  this.boneId = boneId != undefined ? boneId : -1;
+  this.xfoId = xfoId != undefined ? xfoId : -1;
+  this.hubParentSpaceId = hubParentSpaceId != undefined ? hubParentSpaceId : -1;
+  this.spineBoneIds = spineBoneIds != undefined ? spineBoneIds : [];
+  this.spineBoneXfoId = spineBoneXfoId != undefined ? spineBoneXfoId : [];
+};
 
-    bindToRig = function() {
-
-      var rigNode = scene.getPrivateInterface(options.rigNode),
-        skeletonNode = rigNode.pub.getSkeletonNode(),
-        bones = skeletonNode.getBones(),
-        referencePose = skeletonNode.getReferencePose(),
-        boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['twistBones']]),
-        size,
-        name = options.name;
-
-      // first, we will compute the local transform of the end inside the start's space
-      var startXfo = referencePose[boneIDs.start];
-      var endXfo = referencePose[boneIDs.end];
-
-      // check if we know the U values
-      var uValues = options.uValues;
-      if (!uValues) {
-        uValues = [];
-        var boneLength = startXfo.inverse().multiply(endXfo).tr.length();
-        for (var i = 0; i < boneIDs.twistBones.length; i++) {
-          var local = startXfo.inverse().multiply(referencePose[boneIDs.twistBones[i]]);
-          var u = local.tr.length() / boneLength;
-          if (u > 1.0) {
-            throw ("Unexpected U value, twistBone '" + bones[boneIDs.twistBones[i]].name + "' outside of bone.");
-          }
-          uValues.push(u);
-        }
-      }
-      skeletonNode.addMember(name + 'start', 'Integer', boneIDs.start);
-      skeletonNode.addMember(name + 'end', 'Integer', boneIDs.end);
-      skeletonNode.addMember(name + 'twistBones', 'Integer[]', boneIDs.twistBones);
-      skeletonNode.addMember(name + 'uvalues', 'Scalar[]', uValues);
-
-      rigNode.addSolverOperator({
-          operatorName: 'solveTwistBones',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
-          entryFunctionName: 'solveTwistBones',
-          parameterLayout: [
-            'self.pose',
-            'skeleton.bones',
-            'skeleton.' + name + 'start',
-            'skeleton.' + name + 'end',
-            'skeleton.' + name + 'twistBones',
-            'skeleton.' + name + 'uvalues'
-          ]
-        });
-    };
-
-    bindToRig();
-
-    return solver;
-  }
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('Hub', {
+    members: {
+      boneId: 'Integer',
+      xfoId: 'Integer',
+      hubParentSpaceId: 'Integer',
+      spineBoneIds: 'Integer[]',
+      spineBoneXfoId: 'Integer[]'
+    },
+    constructor: FABRIC.RT.Hub
+  });
 });
 
-
-/*
-  The Blend Bone solver is usefull for procedural bones such as knee caps.
-  It interpolates 2 source bones onto a set of blend bones
-*/
-FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
   constructSolver: function(options, scene) {
-
+    scene.assignDefaults(options, {
+        rigNode: undefined,
+        manipulatorSizes: undefined
+      });
+    
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = rigNode.pub.getSkeletonNode(),
-      bones = skeletonNode.getBones(),
-      referencePose = skeletonNode.getReferencePose(),
-      boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['blendBones']]),
-      size,
-      name = options.name;
-
-    if (!options.blendWeights) {
-      throw ('Error in BlendBoneSolver: blendWeights not specified ');
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
+      name = solver.getName();
+    
+    var hubs = [];
+    var offsetXfos = [];
+    for(i=0; i<options.hubs.length; i++){
+      var hubParams = options.hubs[i];
+      var boneIDs = solver.generateBoneMapping(hubParams, ['bone', 'parentSpaceBone', ['spineBones']]);
+      var hubXfo = referencePose[boneIDs.bone];
+      var spineBoneXfos = [];
+      var spineBoneXfoIds;
+      if(boneIDs.spineBones){
+        for(var j=0; j<boneIDs.spineBones.length; j++){
+          spineBoneXfos.push(bones[boneIDs.spineBones[j]].referenceLocalPose);
+        }
+        spineBoneXfoIds = rigNode.addVariable('Xfo[]', spineBoneXfos);
+        hubXfo = referencePose[bones[boneIDs.spineBones[0]].parent].inverse().multiply(hubXfo);
+      }
+      var offsetXfo;
+      if(hubParams.neutralXfo){
+        offsetXfo = hubParams.neutralXfo.inverse().multiply(hubXfo);
+      
+        hubXfo = hubXfo.multiply(offsetXfo.inverse());
+      }else{
+        offsetXfo = new FABRIC.RT.Xfo();  
+      }
+      offsetXfos.push(offsetXfo);
+      
+      var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
+      var hub = new FABRIC.RT.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.spineBones, spineBoneXfoIds);
+      hubs.push(hub);
+      if (options.createManipulators) {
+        
+        solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: hubXfoId,
+          targetName: solver.getName()+i+'Xfo',
+          color: FABRIC.RT.rgb(1, 0, 0),
+          size: 1,
+          radius: 1,
+          structIndex: i,
+          attachmentOperator:{
+            operatorName: 'calcHubManipulatorAttachmentXfo',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
+            parameterLayout: [
+              'skeleton.bones',
+              'skeleton.hubs',
+              'skeleton.hubsoffsetXfos',
+              'rig.pose',
+              'charactercontroller.xfo',
+              'variables.poseVariables',
+              'self.structIndex',
+              'self.localXfo',
+              'self.parentXfo',
+              'self.targetXfo',
+              'self.globalXfo'
+            ]
+          },
+          radius: options.manipulatorSizes ? options.manipulatorSizes[i] : 0.9*(1.0/(i+1)),
+          screenTranslationManipulators: true,
+          drawOverlaid: true
+        });
+      }
     }
-    if (options.blendWeights.length != boneIDs.blendBones.length) {
-      throw ('Error in BlendBoneSolver: blendWeights.length != blendBones.length ');
-    }
-
-    // first, we will compute the local transform of the end inside the start's space
-    var startXfo = referencePose[boneIDs.start];
-    var endXfo = referencePose[boneIDs.end];
-
-    var blendBoneOffsets = [];
-    for (var i = 0; i < boneIDs.blendBones.length; i++) {
-      var blendedXfo = startXfo.clone();
-      blendedXfo.ori.sphericalLinearInterpolate(startXfo.ori, options.blendWeights[i]);
-      blendBoneOffsets.push(startXfo.inverse().multiply(blendedXfo));
-    }
-    skeletonNode.addMember(name + 'start', 'Integer', boneIDs.start);
-    skeletonNode.addMember(name + 'end', 'Integer', boneIDs.end);
-    skeletonNode.addMember(name + 'blendBones', 'Integer[]', boneIDs.blendBones);
-    skeletonNode.addMember(name + 'blendBoneOffsets', 'Xfo[]', blendBoneOffsets);
-    skeletonNode.addMember(name + 'blendWeights', 'Scalar[]', options.blendWeights);
-
+    skeletonNode.addMember('hubs', 'Hub[]', hubs);
+    skeletonNode.addMember('hubsoffsetXfos', 'Xfo[]', offsetXfos);
     rigNode.addSolverOperator({
-        operatorName: 'solveBlendBones',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
-        entryFunctionName: 'solveBlendBones',
+      operatorName: 'solveHubRigs',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+      entryFunctionName: 'solveHubRigs',
+      parameterLayout: [
+        'charactercontroller.xfo<>',
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.hubs',
+        'skeleton.hubsoffsetXfos',
+        'variables.poseVariables<>',
+        'self.index',
+        'self.debugGeometry'
+      ]
+    });
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      for(i=0; i<hubs.length; i++){
+        var color = FABRIC.RT.rgb(1, 0, 0);
+        var storeEulerAngles = false;
+        trackSet.addXfoTrack(solver.getName()+i+'Xfo', color, storeEulerAngles, trackBindings, hubs[i].xfoId);
+      }
+    }
+    
+    solver.setPose = function(pose, variablesNode) {
+      for(var i=0; i < hubs.length; i++){
+        var hub = hubs[i];
+        var xfo;
+        if(hub.spineBoneIds.length > 0){
+          if(hub.hubParentSpaceId == -1){
+          //  xfo = pose[hub.boneId];
+            xfo = pose[bones[hub.spineBoneIds[0]].parent].inverse().multiply(pose[hub.boneId]);
+          }
+          else
+            xfo = pose[hub.hubParentSpaceId].inverse().multiply(pose[hub.boneId]);
+        }
+        else{
+          // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
+       //   if (bones[hub.boneId].parent == -1)
+            xfo = pose[hub.boneId];
+       //   else
+       //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
+        }
+        variablesNode.setValue(xfo, hub.xfoId);
+        if(hub.spineBoneIds.length > 0){
+          var spineXfos = [];
+          for (var j = 0; j < hub.spineBoneIds.size; j++) {
+            if (bones[hub.spineBoneIds[j]].parent == - 1)
+              spineXfos[j] = pose[hub.spineBoneIds[j]];
+            else
+              spineXfos[j] = pose[bones[hub.spineBoneIds[j]].parent].inverse().multiply(pose[hub.spineBoneIds[j]]);
+          }
+          variablesNode.setValues(spineXfos, hub.spineBoneIds);
+        }
+      }
+    }
+    ''
+    solver.invert = function(variablesNode){
+      variablesNode.getDGNode().bindings.append(scene.constructOperator({
+        operatorName: 'invertHubRigs',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+        entryFunctionName: 'invertHubRigs',
         parameterLayout: [
-          'self.pose',
+          'sourcerig.pose',
           'skeleton.bones',
-          'skeleton.' + name + 'start',
-          'skeleton.' + name + 'end',
-          'skeleton.' + name + 'blendBones',
-          'skeleton.' + name + 'blendBoneOffsets',
-          'skeleton.' + name + 'blendWeights'
+          'skeleton.hubs',
+          'skeleton.hubsoffsetXfos',
+          'self.poseVariables',
+          'sourcerig.debugGeometry'
         ]
-      });
-
-    return solver;
+      }));
+    }
+    
+    
+    return solver; 
   }
 });
-
 
 
 
@@ -506,11 +565,19 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       handControlXfo,
       ankleOffsetXfo,
       ankleTipXfo,
-      i,
       twistManipulators = [];
-
+      
+  var addBlendInterface = function(ikblendId){
+    solver['getIKBlend'+j] = function(){
+      return rigNode.getValue('Number', ikblendId);
+    }
+    solver['setIKBlend'+j] = function(val){
+      rigNode.setValue(val, ikblendId);
+    }
+  }
+  
   var arms = [];
-  for(j=0; j<options.limbs.length; j++){
+  for(var j=0; j<options.limbs.length; j++){
       var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'wrist']);
       
       // compute the target
@@ -528,6 +595,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       var handControlXfoId = rigNode.addVariable('Xfo', handControlXfo);
       var ikblendId = rigNode.addVariable('Scalar', 0.0);
       
+      addBlendInterface(ikblendId);
+      
       var arm = new FABRIC.RT.Limb(boneIDs.bones, boneIDs.wrist, xfoIds, handControlXfoId, wristOffsetXfo, handControlXfo, ikblendId);
       arms.push(arm);
       if (options.createManipulators) {
@@ -539,44 +608,48 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
           xfoIndex: handControlXfoId,
           color: FABRIC.RT.rgb(1, 0, 0),
           targetName: solver.getName()+j+'IKGoal',
-          size: 1.0,
-          radius: 0.6,
+          size: options.ikGoalManipulatorSizes[j],
+          radius: options.ikGoalManipulatorSizes[j],
           screenTranslationManipulators: true
         });
 
         var xfoIndexArray = [];
         for (i = 0; i < xfoIds.length; i++) {
           xfoIndexArray.push(xfoIds[i]);
-          /*
-          solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
-            baseManipulatorType: 'CharacterManipulator',
-            rigNode: rigNode.pub,
-            xfoIndex: xfoIds[i],
-            boneIndex: boneIDs.bones[0],
-            extraIndexArray: xfoIndexArray,
-            targetName: solver.getName()+j+'Bone'+i,
-            length: bones[boneIDs.bones[i]].length,
-            boneVector: new FABRIC.RT.Vec3(1, 0, 0),
-            color: FABRIC.RT.rgb(0, 0, 1),
-            attachmentOperator:{
-              operatorName: 'calcManipulatorChainAttachmentXfo',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
-              parameterLayout: [
-                'skeleton.bones',
-                'variables.poseVariables',
-                'rig.pose',
-                'self.boneIndex',
-                'self.extraIndexArray',
-                
-                'self.localXfo',
-                'self.parentXfo',
-                'self.targetXfo',
-                'self.globalXfo'
-              ],
-              entryFunctionName: 'calcManipulatorChainAttachmentXfo'
-            }
-          });
-          */
+          
+          if(i<xfoIds.length-1){
+            solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
+              baseManipulatorType: 'CharacterManipulator',
+              rigNode: rigNode.pub,
+              xfoIndex: xfoIds[i],
+              boneIndex: boneIDs.bones[0],
+              extraIndexArray: xfoIndexArray,
+              targetName: solver.getName()+j+'Bone'+i,
+              length: bones[boneIDs.bones[i]].length,
+              boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+              axisConstraint: ((i==2) ? new FABRIC.RT.Vec3(0, 0, 1) : undefined),
+              color: FABRIC.RT.rgb(0, 0, 1),
+              attachmentOperator:{
+                operatorName: 'calcManipulatorChainAttachmentXfo',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+                parameterLayout: [
+                  'skeleton.bones',
+                  'variables.poseVariables',
+                  'rig.pose',
+                  'self.boneIndex',
+                  'self.extraIndexArray',
+                  
+                  'self.localXfo',
+                  'self.parentXfo',
+                  'self.targetXfo',
+                  'self.globalXfo'
+                ],
+                entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+              }
+            });
+          }
+          
+          if(i>0){
           if(i<2 || i==xfoIds.length-1){
             solver.constructManipulator(name+j+'BoneOri'+i, '3AxisRotationManipulator', {
               baseManipulatorType: 'CharacterManipulator',
@@ -585,7 +658,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               boneIndex: boneIDs.bones[0],
               extraIndexArray: xfoIndexArray,
               targetName: solver.getName()+j+'Bone'+i,
-              radius: i==0 ? 0.3 : 0.6,
+              radius: options.manipulatorSizes[i],
               attachmentOperator:{
                 operatorName: 'calcManipulatorChainAttachmentXfo',
                 srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
@@ -606,7 +679,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
             });
           }
           else{
-            
             solver.constructManipulator(name+j+'BoneOri'+i, 'RotationManipulator', {
               baseManipulatorType: 'CharacterManipulator',
               rigNode: rigNode.pub,
@@ -618,7 +690,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               localXfo: new FABRIC.RT.Xfo({
                 ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
               }),
-              radius: 0.6,
+              radius: options.manipulatorSizes[i],
               attachmentOperator:{
                 operatorName: 'calcManipulatorChainAttachmentXfo',
                 srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
@@ -638,7 +710,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
               }
             });
           }
-        
+          }
         }
       }
     }
@@ -865,7 +937,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
           color: FABRIC.RT.rgb(1, 0, 0),
           targetName: solver.getName()+j+'IKGoal',
           size: 1.0,
-          radius: 0.8,
+          radius: options.manipulatorSizes ? options.manipulatorSizes[options.manipulatorSizes.length-1] : 0.9,
           screenTranslationManipulators: true
         });
         
@@ -982,34 +1054,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
 });
 
 
-FABRIC.RT.Hub = function(boneId, xfoId, hubParentSpaceId, spineBoneIds, spineBoneXfoId) {
-  this.boneId = boneId != undefined ? boneId : -1;
-  this.xfoId = xfoId != undefined ? xfoId : -1;
-  this.hubParentSpaceId = hubParentSpaceId != undefined ? hubParentSpaceId : -1;
-  this.spineBoneIds = spineBoneIds != undefined ? spineBoneIds : [];
-  this.spineBoneXfoId = spineBoneXfoId != undefined ? spineBoneXfoId : [];
-};
 
-FABRIC.appendOnCreateContextCallback(function(context) {
-  context.RegisteredTypesManager.registerType('Hub', {
-    members: {
-      boneId: 'Integer',
-      xfoId: 'Integer',
-      hubParentSpaceId: 'Integer',
-      spineBoneIds: 'Integer[]',
-      spineBoneXfoId: 'Integer[]'
-    },
-    constructor: FABRIC.RT.Hub
-  });
-});
-
-FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('DigitSolver', {
   constructSolver: function(options, scene) {
-    scene.assignDefaults(options, {
-        rigNode: undefined,
-        manipulatorSizes: undefined
-      });
-    
+
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
@@ -1017,191 +1065,545 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
-      name = options.name;
+      name = solver.getName();
     
-    var hubs = [];
-    for(i=0; i<options.hubs.length; i++){
-      var boneIDs = solver.generateBoneMapping(options.hubs[i], ['bone', 'parentSpaceBone', ['spineBones']]);
-      var hubXfo = referencePose[boneIDs.bone];
-      var spineBoneXfos = [];
-      var spineBoneXfoIds;
-      if(boneIDs.spineBones){
-        for(var j=0; j<boneIDs.spineBones.length; j++){
-          spineBoneXfos.push(bones[boneIDs.spineBones[j]].referenceLocalPose);
-        }
-        spineBoneXfoIds = rigNode.addVariable('Xfo[]', spineBoneXfos);
-        hubXfo = referencePose[bones[boneIDs.spineBones[0]].parent].inverse().multiply(hubXfo);
+    var digits = [];
+    var digitsxfoIds = [];
+    var digitTipOffsets = [];
+    for(j=0; j<options.digits.length; j++){
+      var digitParams = options.digits[j];
+      var boneIDs = solver.generateBoneMapping(digitParams, [['bones']]);
+      
+      var defaultValues = [];
+      for(var i=0; i<boneIDs.bones.length; i++){
+        defaultValues.push(referenceLocalPose[boneIDs.bones[i]]);
+      }
+      var xfoIds = rigNode.addVariable('Xfo[]', defaultValues);
+      
+      digitsxfoIds.push(xfoIds);
+      digits.push(new FABRIC.RT.FKHierarchy(boneIDs.bones, xfoIds));
+      
+      var lastDigitId = boneIDs.bones[boneIDs.bones.length-1];
+      var tipBoneLength = digitParams.tipBoneLength ? digitParams.tipBoneLength : bones[lastDigitId].length;
+      if(digitParams.projectToGround == true){
+        var digitTipXfo = referencePose[lastDigitId].clone();
+        digitTipXfo.tr = digitTipXfo.tr.add(digitTipXfo.ori.getXaxis().multiplyScalar(tipBoneLength));
+        digitTipXfo.tr.y = 0.0;
+        digitTipOffsets.push((referencePose[lastDigitId].inverse().multiply(digitTipXfo)).tr);
+      }else{
+        digitTipOffsets.push(new FABRIC.RT.Vec3(tipBoneLength, 0,0));
       }
       
-      var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
-      var hub = new FABRIC.RT.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.spineBones, spineBoneXfoIds);
-      hubs.push(hub);
       
       if (options.createManipulators) {
-        
-        solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
-          baseManipulatorType: 'CharacterManipulator',
-          rigNode: rigNode.pub,
-          xfoIndex: hubXfoId,
-          targetName: solver.getName()+i+'Xfo',
-          color: FABRIC.RT.rgb(1, 0, 0),
-          size: 1,
-          radius: 1,
-          structIndex: i,
-          attachmentOperator:{
-            operatorName: 'calcHubManipulatorAttachmentXfo',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
-            parameterLayout: [
-              'skeleton.bones',
-              'skeleton.hubs',
-              'rig.pose',
-              'charactercontroller.xfo',
-              'variables.poseVariables',
-              'self.structIndex',
-              'self.localXfo',
-              'self.parentXfo',
-              'self.targetXfo',
-              'self.globalXfo'
-            ]
-          },
-          radius: options.manipulatorSizes ? options.manipulatorSizes[i] : 0.9*(1.0/(i+1)),
-          screenTranslationManipulators: true,
-          drawOverlaid: true
-        });
-        
-        /*
-        solver.constructManipulator(name+'HubTr'+i, 'ScreenTranslationManipulator', {
-          baseManipulatorType: 'CharacterManipulator',
-          rigNode: rigNode.pub,
-          xfoIndex: hubXfoId,
-          structIndex: i,
-          geometryNode: scene.pub.constructNode('Sphere', { radius: 0.3*(1.0/(i+1)) }),
-          color: FABRIC.RT.rgb(1, 0, 0),
-          targetName: solver.getName()+i+'Xfo',
-          attachmentOperator:{
-            operatorName: 'calcHubManipulatorAttachmentXfo',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
-            parameterLayout: [
-              'skeleton.bones',
-              'skeleton.hubs',
-              'rig.pose',
-              'charactercontroller.xfo',
-              'variables.poseVariables',
-              'self.structIndex',
-              'self.localXfo',
-              'self.parentXfo',
-              'self.targetXfo',
-              'self.globalXfo'
-            ]
-          }
-        });
-        
-        solver.constructManipulator(name+'HubOri'+i, '3AxisRotationManipulator', {
-          baseManipulatorType: 'CharacterManipulator',
-          rigNode: rigNode.pub,
-          xfoIndex: hubXfoId,
-          structIndex: i,
-          color: FABRIC.RT.rgb(0, 1, 0),
-          targetName: solver.getName()+i+'Xfo',
-          radius: 0.6,
-          attachmentOperator:{
-            operatorName: 'calcHubManipulatorAttachmentXfo',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
-            parameterLayout: [
-              'skeleton.bones',
-              'skeleton.hubs',
-              'rig.pose',
-              'charactercontroller.xfo',
-              'variables.poseVariables',
-              'self.structIndex',
-              'self.localXfo',
-              'self.parentXfo',
-              'self.targetXfo',
-              'self.globalXfo'
-            ]
-          }
-        });
-        */
+        var xfoIndexArray = [];
+        for (i = 0; i < boneIDs.bones.length; i++) {
+          xfoIndexArray.push(xfoIds[i]);
+          
+          solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
+            baseManipulatorType: 'CharacterManipulator',
+            rigNode: rigNode.pub,
+            xfoIndex: xfoIds[i],
+            boneIndex: boneIDs.bones[0],
+            extraIndexArray: xfoIndexArray,
+            targetName: solver.getName()+j+'Bone'+i,
+            length: bones[boneIDs.bones[i]].length,
+            boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+            axisConstraint: ((i==0) ? undefined : new FABRIC.RT.Vec3(0, 0, 1)),
+            color: FABRIC.RT.rgb(0, 0, 1),
+            attachmentOperator:{
+              operatorName: 'calcManipulatorChainAttachmentXfo',
+              srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+              parameterLayout: [
+                'skeleton.bones',
+                'variables.poseVariables',
+                'rig.pose',
+                'self.boneIndex',
+                'self.extraIndexArray',
+                
+                'self.localXfo',
+                'self.parentXfo',
+                'self.targetXfo',
+                'self.globalXfo'
+              ],
+              entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+            }
+          });
+        }
       }
     }
-    skeletonNode.addMember('hubs', 'Hub[]', hubs);
+    skeletonNode.addMember(name + 'digits', 'FKHierarchy[]', digits);
+    skeletonNode.addMember(name + 'digitTipOffsets', 'Vec3[]', digitTipOffsets);
+    
+    
+ 
     rigNode.addSolverOperator({
-      operatorName: 'solveHubRigs',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-      entryFunctionName: 'solveHubRigs',
+      operatorName: 'solveDigits',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveDigit.kl',
+      entryFunctionName: 'solveDigits',
       parameterLayout: [
-        'charactercontroller.xfo<>',
         'self.pose',
         'skeleton.bones',
-        'skeleton.hubs',
-        'variables.poseVariables<>',
+        'skeleton.' + name + 'digits',
+        'skeleton.' + name + 'digitTipOffsets',
+        
         'self.index',
+        'variables.poseVariables<>',
+        
         'self.debugGeometry'
       ]
     });
-    
+      
     solver.generateTracks = function(trackSet, trackBindings){
-      for(i=0; i<hubs.length; i++){
-        var color = FABRIC.RT.rgb(1, 0, 0);
-        var storeEulerAngles = false;
-        trackSet.addXfoTrack(solver.getName()+i+'Xfo', color, storeEulerAngles, trackBindings, hubs[i].xfoId);
-      }
-    }
-    
-    solver.setPose = function(pose, variablesNode) {
-      for(var i=0; i < hubs.length; i++){
-        var hub = hubs[i];
-        var xfo;
-        if(hub.spineBoneIds.length > 0){
-          if(hub.hubParentSpaceId == -1){
-          //  xfo = pose[hub.boneId];
-            xfo = pose[bones[hub.spineBoneIds[0]].parent].inverse().multiply(pose[hub.boneId]);
-          }
-          else
-            xfo = pose[hub.hubParentSpaceId].inverse().multiply(pose[hub.boneId]);
-        }
-        else{
-          // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
-       //   if (bones[hub.boneId].parent == -1)
-            xfo = pose[hub.boneId];
-       //   else
-       //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
-        }
-        variablesNode.setValue(xfo, hub.xfoId);
-        if(hub.spineBoneIds.length > 0){
-          var spineXfos = [];
-          for (var j = 0; j < hub.spineBoneIds.size; j++) {
-            if (bones[hub.spineBoneIds[j]].parent == - 1)
-              spineXfos[j] = pose[hub.spineBoneIds[j]];
-            else
-              spineXfos[j] = pose[bones[hub.spineBoneIds[j]].parent].inverse().multiply(pose[hub.spineBoneIds[j]]);
-          }
-          variablesNode.setValues(spineXfos, hub.spineBoneIds);
+      var color = FABRIC.RT.rgb(1, 0, 0);
+      var storeEulerAngles = false;
+      
+      for (var i = 0; i < digits.length; i++) {
+        for (var j = 0; j < digits[i].boneIds.length; j++) {
+          trackSet.addXfoTrack(solver.getName()+i+''+j, color, storeEulerAngles, trackBindings, digitsxfoIds[i][j]);
         }
       }
     }
     
-    solver.invert = function(variablesNode){
-      variablesNode.getDGNode().bindings.append(scene.constructOperator({
-        operatorName: 'invertHubRigs',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
-        entryFunctionName: 'invertHubRigs',
-        parameterLayout: [
-          'sourcerig.pose',
-          'skeleton.bones',
-          'skeleton.hubs',
-          'self.poseVariables',
-          'sourcerig.debugGeometry'
-        ]
-      }));
-    }
-    
-    
-    return solver; 
+    return solver;
   }
 });
+
+
+
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
+  constructSolver: function(options, scene) {
+    
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+      
+    var twistBones = [];
+    var baseBones = [];
+    var targetBones = [];
+    var twistWeights = [];
+    var oriOffsets = [];
+    for(i=0; i<options.twistBones.length; i++){
+      var twistBoneParams = options.twistBones[i];
+      var boneIDs = solver.generateBoneMapping(twistBoneParams, ['start', 'end', ['twistBones']]);
+
+      // first, we will compute the local transform of the end inside the start's space
+      var startXfo = referencePose[boneIDs.start];
+      var endXfo = referencePose[boneIDs.end];
+      
+      var weights = twistBoneParams.twistWeights;
+      if (!weights) {
+        weights = [];
+        var boneLength = startXfo.inverse().multiply(endXfo).tr.length();
+        for (var j = 0; j < boneIDs.twistBones.length; j++) {
+          var local = startXfo.inverse().multiply(referencePose[boneIDs.twistBones[j]]);
+          var u = local.tr.length() / boneLength;
+          if (u > 1.0) {
+            throw ("Unexpected U value, twistBone '" + bones[boneIDs.twistBones[j]].name + "' outside of bone.");
+          }
+          weights.push(u);
+        }
+      }
+      
+      baseBones.push(boneIDs.start);
+      targetBones.push(boneIDs.end);
+      twistBones.push(boneIDs.twistBones);
+      twistWeights.push(weights);
+      
+      var baseXfo = referencePose[boneIDs.start];
+      var endXfo = referencePose[boneIDs.end];
+    
+      var baseVec = (endXfo.tr.subtract(baseXfo.tr)).unit();
+      var endVec = endXfo.ori.getXaxis();
+      var boneOffsetRotation = new FABRIC.RT.Quat();
+      boneOffsetRotation.setFrom2Vectors(endVec, baseVec);
+      endXfo.ori = boneOffsetRotation.multiply(endXfo.ori);
+      endXfo.ori.alignWith(endXfo.ori);
+      var offsets = [];
+      for (var j = 0; j < boneIDs.twistBones.length; j++) {
+        boneXfo = referencePose[boneIDs.twistBones[j]];
+        var twistOri = baseXfo.ori.sphericalLinearInterpolate(endXfo.ori, weights[j]);
+        offsets.push(twistOri.inverse().multiply(boneXfo.ori));
+      }
+      oriOffsets.push(offsets);
+    }
+    
+    skeletonNode.addMember(name + 'start', 'Integer[]', baseBones);
+    skeletonNode.addMember(name + 'end', 'Integer[]', targetBones);
+    skeletonNode.addMember(name + 'twistBones', 'Integer[][]', twistBones);
+    skeletonNode.addMember(name + 'twistWeights', 'Scalar[][]', twistWeights);
+    skeletonNode.addMember(name + 'oriOffsets', 'Quat[][]', oriOffsets);
+
+    rigNode.addSolverOperator({
+        operatorName: 'solveTwistBones',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
+        entryFunctionName: 'solveTwistBones',
+        parameterLayout: [
+          'self.pose',
+          'skeleton.bones',
+          'skeleton.' + name + 'start',
+          'skeleton.' + name + 'end',
+          'skeleton.' + name + 'twistBones',
+          'skeleton.' + name + 'twistWeights',
+          'skeleton.' + name + 'oriOffsets'
+        ]
+      });
+
+    return solver;
+  }
+});
+
+
+/*
+  The Blend Bone solver is usefull for procedural bones such as knee caps.
+  It interpolates 2 source bones onto a set of blend bones
+*/
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+
+    var blendBones = [];
+    var baseBones = [];
+    var targetBones = [];
+    var blendWeights = [];
+    var blendBoneOffsets = [];
+    for(j=0; j<options.blendBones.length; j++){
+      var blendBoneParams = options.blendBones[j];
+      var boneIDs = solver.generateBoneMapping(blendBoneParams, ['bone', 'base', 'target']);
+      
+      if (!blendBoneParams.blendWeight) {
+        throw ('Error in BlendBoneSolver: blendWeight not specified ');
+      }
+      
+      var boneXfo = referencePose[boneIDs.bone];
+      var baseXfo = referencePose[boneIDs.base];
+      var targetXfo = referencePose[boneIDs.target];
+
+      var blendedQuat = baseXfo.ori.sphericalLinearInterpolate(targetXfo.ori, blendBoneParams.blendWeight);
+      blendBoneOffsets.push(blendedQuat.inverse().multiply(boneXfo.ori));
+      
+      blendBones.push(boneIDs.bone);
+      baseBones.push(boneIDs.base);
+      targetBones.push(boneIDs.target);
+      blendWeights.push(blendBoneParams.blendWeight);
+    }
+    skeletonNode.addMember(name + 'blendBones', 'Integer[]', blendBones);
+    skeletonNode.addMember(name + 'baseBones', 'Integer[]', baseBones);
+    skeletonNode.addMember(name + 'targetBones', 'Integer[]', targetBones);
+    skeletonNode.addMember(name + 'blendWeights', 'Scalar[]', blendWeights);
+    skeletonNode.addMember(name + 'blendBoneOffsets', 'Quat[]', blendBoneOffsets);
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveBlendBones',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveTwistBones.kl',
+      entryFunctionName: 'solveBlendBones',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.' + name + 'blendBones',
+        'skeleton.' + name + 'baseBones',
+        'skeleton.' + name + 'targetBones',
+        'skeleton.' + name + 'blendWeights',
+        'skeleton.' + name + 'blendBoneOffsets'
+      ]
+    });
+      
+    return solver;
+  }
+});
+
+
+
+/*
+  The Verlet Bone solver is for generating jiggle motion.
+*/
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletBoneSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+    
+    var verletBones = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var softLimitBounds = [];
+    var blendWeights = [];
+    var trPrev = [];
+    for(j=0; j<options.verletBones.length; j++){
+      var verletBoneParams = options.verletBones[j];
+      var boneIDs = solver.generateBoneMapping(verletBoneParams, ['bone']);
+      var boneXfo = referencePose[boneIDs.bone];
+      
+      verletBones.push(boneIDs.bone);
+      simulationWeights.push(verletBoneParams.simulationWeight);
+      springStrengths.push(verletBoneParams.springStrength);
+      dampening.push(verletBoneParams.dampening);
+      softLimitBounds.push(verletBoneParams.softLimitBounds);
+      trPrev.push(boneXfo.tr);
+    }
+    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    skeletonNode.addMember(name + 'softLimitBounds', 'Scalar[]', softLimitBounds);
+    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletBone',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletBone',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        'skeleton.' + name + 'verletBones',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening',
+        'skeleton.' + name + 'softLimitBounds',
+        
+        'self.debugGeometry'
+      ]
+    });
+      
+    return solver;
+  }
+});
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletMuscleBoneSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+    
+    var verletBones = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var softLimitBounds = [];
+    var blendWeights = [];
+    var trPrev = [];
+    var baseAttachmentBones = [];
+    var tipAttachmentBones = [];
+    var baseAttachmentOffsets = [];
+    var tipAttachmentOffsets = [];
+    var muscleReferenceLengths = [];
+    var muscleReferenceBiases = [];
+    for(j=0; j<options.muscles.length; j++){
+      var muscleParams = options.muscles[j];
+      var boneIDs = solver.generateBoneMapping(muscleParams, ['bone', 'baseAttachment', 'tipAttachment']);
+      var boneXfo = referencePose[boneIDs.bone];
+      
+      verletBones.push(boneIDs.bone);
+      simulationWeights.push(muscleParams.simulationWeight);
+      springStrengths.push(muscleParams.springStrength);
+      dampening.push(muscleParams.dampening);
+      trPrev.push(boneXfo.tr);
+      
+      var baseAttachmentTr = boneXfo.tr.add(boneXfo.ori.getXaxis().multiplyScalar(-muscleParams.baseOffset));
+      var baseAttachmentOffset = referencePose[boneIDs.baseAttachment].inverse().transformVector(baseAttachmentTr);
+      
+      var tipAttachmentTr = boneXfo.tr.add(boneXfo.ori.getXaxis().multiplyScalar(muscleParams.tipOffset));
+      var tipAttachmentOffset = referencePose[boneIDs.tipAttachment].inverse().transformVector(tipAttachmentTr);
+      
+      var muscleReferenceLength = muscleParams.baseOffset + muscleParams.tipOffset;
+      
+      baseAttachmentBones.push(boneIDs.baseAttachment);
+      tipAttachmentBones.push(boneIDs.tipAttachment);
+      baseAttachmentOffsets.push(baseAttachmentOffset);
+      tipAttachmentOffsets.push(tipAttachmentOffset);
+      muscleReferenceLengths.push(muscleReferenceLength);
+      muscleReferenceBiases.push(muscleParams.baseOffset / muscleReferenceLength);
+      softLimitBounds.push(muscleParams.softLimitBounds);
+    }
+    
+    skeletonNode.addMember(name + 'verletBones', 'Integer[]', verletBones);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    skeletonNode.addMember(name + 'softLimitBounds', 'Scalar[]', softLimitBounds);
+    rigNode.addMember(name + 'trPrev', 'Vec3[]', trPrev);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    skeletonNode.addMember(name + 'baseAttachmentBones', 'Integer[]', baseAttachmentBones);
+    skeletonNode.addMember(name + 'baseAttachmentOffsets', 'Vec3[]', baseAttachmentOffsets);
+    skeletonNode.addMember(name + 'tipAttachmentBones', 'Integer[]', tipAttachmentBones);
+    skeletonNode.addMember(name + 'tipAttachmentOffsets', 'Vec3[]', tipAttachmentOffsets);
+    skeletonNode.addMember(name + 'muscleReferenceLengths', 'Scalar[]', muscleReferenceLengths);
+    skeletonNode.addMember(name + 'muscleReferenceBiases', 'Scalar[]', muscleReferenceBiases);
+    
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletMuscleBone',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletMuscleBone',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        'skeleton.' + name + 'verletBones',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening',
+        'skeleton.' + name + 'softLimitBounds',
+        
+        'skeleton.' + name + 'baseAttachmentBones',
+        'skeleton.' + name + 'baseAttachmentOffsets',
+        'skeleton.' + name + 'tipAttachmentBones',
+        'skeleton.' + name + 'tipAttachmentOffsets',
+        'skeleton.' + name + 'muscleReferenceLengths',
+        'skeleton.' + name + 'muscleReferenceBiases',
+        
+        'self.debugGeometry'
+      ]
+    });
+      
+    return solver;
+  }
+});
+
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletChainSolver', {
+  constructSolver: function(options, scene) {
+
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+    
+    var verletChains = [];
+    var linkLengths = [];
+    var referenceLengths = [];
+    var simulationWeights = [];
+    var springStrengths = [];
+    var dampening = [];
+    var blendWeights = [];
+    var trPrevs = [];
+    
+    var baseAttachmentBones = [];
+    var tipAttachmentBones = [];
+    var baseAttachmentOffsets = [];
+    var tipAttachmentOffsets = [];
+    
+    for(j=0; j<options.verletChains.length; j++){
+      var verletChainParams = options.verletChains[j];
+      var boneIDs = solver.generateBoneMapping(verletChainParams, [['bones'], 'baseAttachment', 'tipAttachment']);
+      
+      var baseXfo = referencePose[boneIDs.bones[0]];
+      var baseAttachmentTr = baseXfo.tr.add(baseXfo.ori.getXaxis().multiplyScalar(-verletChainParams.baseOffset));
+      var baseAttachmentOffset = referencePose[boneIDs.baseAttachment].inverse().transformVector(baseAttachmentTr);
+      
+      var tipXfo = referencePose[boneIDs.bones[boneIDs.bones.length-1]];
+      var tipAttachmentTr = tipXfo.tr.add(tipXfo.ori.getXaxis().multiplyScalar(verletChainParams.tipOffset));
+      var tipAttachmentOffset = referencePose[boneIDs.tipAttachment].inverse().transformVector(tipAttachmentTr);
+      
+      var chainReferenceLength = baseAttachmentTr.distanceTo(tipAttachmentTr);
+      var chainLinkLengths = [verletChainParams.baseOffset];
+      var trPrev = [];
+      for(var i=0; i<boneIDs.bones.length; i++){
+        if(i>0){
+          chainLinkLengths.push(referencePose[boneIDs.bones[i]].tr.distanceTo(referencePose[boneIDs.bones[i-1]].tr));
+        }
+        trPrev.push(referencePose[boneIDs.bones[i]].tr);
+      }
+      
+      verletChains.push(boneIDs.bones);
+      referenceLengths.push(chainReferenceLength);
+      simulationWeights.push(verletChainParams.simulationWeight);
+      springStrengths.push(verletChainParams.springStrength);
+      dampening.push(verletChainParams.dampening);
+      
+      baseAttachmentBones.push(boneIDs.baseAttachment);
+      tipAttachmentBones.push(boneIDs.tipAttachment);
+      baseAttachmentOffsets.push(baseAttachmentOffset);
+      tipAttachmentOffsets.push(tipAttachmentOffset);
+      
+      chainLinkLengths.push(verletChainParams.tipOffset);
+      linkLengths.push(chainLinkLengths);
+      trPrevs.push(trPrev);
+    }
+    skeletonNode.addMember(name + 'verletChains', 'Integer[][]', verletChains);
+    skeletonNode.addMember(name + 'simulationWeights', 'Scalar[]', simulationWeights);
+    skeletonNode.addMember(name + 'springStrengths', 'Scalar[]', springStrengths);
+    skeletonNode.addMember(name + 'dampening', 'Scalar[]', dampening);
+    skeletonNode.addMember(name + 'referenceLengths', 'Scalar[]', referenceLengths);
+    skeletonNode.addMember(name + 'linkLengths', 'Scalar[][]', linkLengths);
+    
+    rigNode.addMember(name + 'trPrev', 'Vec3[][]', trPrevs);
+    rigNode.addMember(name + 'Gravity', 'Vec3', options.gravity);
+    rigNode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+    
+    skeletonNode.addMember(name + 'baseAttachmentBones', 'Integer[]', baseAttachmentBones);
+    skeletonNode.addMember(name + 'baseAttachmentOffsets', 'Vec3[]', baseAttachmentOffsets);
+    skeletonNode.addMember(name + 'tipAttachmentBones', 'Integer[]', tipAttachmentBones);
+    skeletonNode.addMember(name + 'tipAttachmentOffsets', 'Vec3[]', tipAttachmentOffsets);
+    
+    rigNode.addSolverOperator({
+      operatorName: 'solveVerletChain',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveVerlet.kl',
+      entryFunctionName: 'solveVerletChain',
+      parameterLayout: [
+        'globals.timestep',
+        'self.pose',
+        'self.' + name + 'trPrev',
+        'self.' + name + 'Gravity',
+        'skeleton.bones',
+        
+        'skeleton.' + name + 'verletChains',
+        'skeleton.' + name + 'simulationWeights',
+        'skeleton.' + name + 'springStrengths',
+        'skeleton.' + name + 'dampening',
+        
+        'skeleton.' + name + 'referenceLengths',
+        'skeleton.' + name + 'linkLengths',
+        
+        'skeleton.' + name + 'baseAttachmentBones',
+        'skeleton.' + name + 'baseAttachmentOffsets',
+        'skeleton.' + name + 'tipAttachmentBones',
+        'skeleton.' + name + 'tipAttachmentOffsets',
+        
+        'self.debugGeometry'
+      ]
+    });
+      
+    return solver;
+  }
+});
+
 
 

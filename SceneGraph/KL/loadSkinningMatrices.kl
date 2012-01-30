@@ -34,14 +34,14 @@ operator loadSkinningMatricesTexture(
   io Integer skinningMatriciesTextureUnit,
   io Size textureHeight
 ) {
-//  report("loadSkinningMatrices");
+  // report("loadSkinningMatrices");
 
   Integer location = shaderProgram.getUniformLocation(SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID);
-  if(location!=-1){
+  if(location!=-1 && poses.size() > 0){
     
     Mat44 skinningMatrices[];
+    skinningMatrices.resize(poses.size() * invMatrices.size());
     for (var Integer i = 0; i < poses.size(); i++) {
-      skinningMatrices.resize(skinningMatrices.size + invMatrices.size());
       for (var Integer j = 0; j < invMatrices.size(); j++) {
         if(boneMapping[j] < 0)
           continue;
