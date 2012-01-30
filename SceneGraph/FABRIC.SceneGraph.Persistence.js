@@ -296,6 +296,9 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
         },
         load: function(storage, callback) {
           storage.read(function(data){
+            if(!data){
+              return;
+            }
             dataObj = data;
             if(dataObj.metadata.binaryStorage){
               

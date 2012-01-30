@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shader>
-  <name>PhongSkinnedInstancesMaterial</name>
+  <name>PhongTexturedSkinnedInstancesMaterial</name>
   <prototypeMaterialType>InstancingMaterial</prototypeMaterialType>
   
   <uniforms>
@@ -11,8 +11,6 @@
     <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar" owner="light"/>
     
     <uniform name="u_materialAmbientColor" constant="ambientColor" type="Color" defaultValue="FABRIC.RT.rgba(0.0,0.0,0.0,1)"/>
-    <uniform name="u_materialDiffuseColor" constant="diffuseColor" type="Color" defaultValue="FABRIC.RT.rgba(0.8,0,0,1)"/>
-    <uniform name="u_materialSpecularColor" constant="specularColor" type="Color" defaultValue="FABRIC.RT.rgba(0.5,0.5,0.5,1)"/>
     <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
     
     <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
@@ -23,11 +21,15 @@
     <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
     <uniform name="u_numBonesPerInstance" constant="numBonesPerInstance" type="Integer"/>
     
+    <uniform name="u_samplerDiffuseMap" constant="diffuseTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerSpecularMap" constant="specularTexture" type="Integer" owner="texture"/>
+    
   </uniforms>
   
   <attributes>
     <attribute name="a_position" binding="positions"/>
     <attribute name="a_normal" binding="normals"/>
+    <attribute name="a_texCoord" binding="uvs0"/>
     <attribute name="a_weight" binding="boneWeights"/>
     <attribute name="a_index" binding="boneIds"/>
   </attributes>
@@ -36,6 +38,11 @@
     <light type="Light" binding="light"/>
   </lights>
   
+  <textures>
+    <texture binding="diffuseTexture"/>
+    <texture binding="specularTexture"/>
+  </textures>
+	
   <vertexshader>
     <source>
       <![CDATA[
@@ -51,6 +58,7 @@ uniform int u_numBonesPerInstance;
 
 attribute vec4 a_position;
 attribute vec3 a_normal;
+attribute vec4 a_texCoord;
 
 attribute vec4 a_weight;
 attribute vec4 a_index;
@@ -98,7 +106,8 @@ void skinInstancePositionsAndNormals(
   lightDir = vec3(u_lightPosition.xyz - modelCameraPosition.xyz);
   viewDir = vec3(-modelCameraPosition.xyz);
   
-  gl_Position = u_modelViewProjectionMatrix * transformedPosition;    
+  gl_Position = u_modelViewProjectionMatrix * transformedPosition;   
+  gl_TexCoord[0].xy = a_texCoord.xy; 
   
   normal = u_normalMatrix * transformedNormal.xyz;
 }
@@ -121,14 +130,15 @@ void main(){
       
       uniform float u_materialShininess;
       uniform vec4 u_materialAmbientColor;
-      uniform vec4 u_materialDiffuseColor;
-      uniform vec4 u_materialSpecularColor;
       
       varying vec3 normal;
       varying vec3 lightDir;
       varying vec3 viewDir;
       
+      uniform sampler2D u_samplerDiffuseMap;
+      uniform sampler2D u_samplerSpecularMap;
       
+
       ]]>
       </source>
       <include file="lighting.txt"/>
@@ -141,6 +151,7 @@ void main(){
         vec3 Nn = normalize(normal);
         
         float lightFactor = 1.0;
+        
         gl_FragColor = phong_shading(  Nn, 
                         Ln, 
                         Vn, 
@@ -149,8 +160,8 @@ void main(){
                         lightFactor,
                         u_lightCosCutoff,
                         u_lightColor,
-                        u_materialDiffuseColor, 
-                        u_materialSpecularColor,
+                        texture2D( u_samplerDiffuseMap, gl_TexCoord[0].st ), 
+                        texture2D( u_samplerSpecularMap, gl_TexCoord[0].st ),
                         u_materialShininess,
                         u_materialAmbientColor );
       }

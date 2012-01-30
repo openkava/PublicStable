@@ -36,6 +36,9 @@ operator debugGeometryDraw(
         report("ERROR in debugGeometryDraw");
         return;
       }
+      if(!debugGeometries[i].enabled){
+        continue;
+      }
       positions.resize(voff+debugGeometries[i].positions.size());
       vertexColors.resize(voff+debugGeometries[i].positions.size());
       for(j=0; j<debugGeometries[i].positions.size(); j++){

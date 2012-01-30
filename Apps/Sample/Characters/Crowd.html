@@ -32,10 +32,10 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/HashTable.js" charset="utf-8"></script>
     
@@ -78,6 +78,12 @@ s.parentNode.insertBefore(ga, s);
 </script>
 <script type="text/javascript">
 
+FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+
+
+FABRIC.SceneGraph.defineEffectFromFile('PhongTexturedSkinnedInstancesMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongTexturedSkinnedInstancesShader.xml');
+
+
 $(document).ready(function() {
 
 
@@ -114,7 +120,7 @@ $(document).ready(function() {
   $("#displayDebugging").attr('checked', crowdParams.displayDebugging);
   
 
-  var rigName = 'marama';
+  var rigName = 'USWolf';
   /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
@@ -136,17 +142,17 @@ $(document).ready(function() {
       break;
     case 'medium':
       agentCount = 600;
-      gridSize = 100;
+      gridSize = 200;
       cameraDist = 15;
       break;
     case 'huge':
       agentCount = 1500;
-      gridSize = 150;
+      gridSize = 300;
       cameraDist = 20;
       break;
     case 'massive':
       agentCount = 3000;
-      gridSize = 300;
+      gridSize = 500;
       cameraDist = 30;
       break;
   }
@@ -194,7 +200,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   
   var crowdNode;
   switch(rigName){
-  case 'walker':
+  case 'Spiedel':
   var agentRadius = 3.0;
   var cellSize = 20.0;
     var crowdNode = scene.constructNode('Crowd', {
@@ -217,10 +223,13 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         agentCount: agentCount,
         displayDebugging: crowdParams.displayDebugging
       });
+    rigFile = 'Assets/Spiedel.json';
+    animationLibraryFile = 'Assets/SpiedelAnimation.json';
+    minFrequency = 0.75;
     break;
-  case 'marama':
-  var agentRadius = 0.9;
-  var cellSize = 8.0;
+  case 'CMan0005':
+    var agentRadius = 0.9;
+    var cellSize = 8.0;
     var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 3.5,
         maxLinearAcceleration: 6,
@@ -242,6 +251,37 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         displayDebugging: crowdParams.displayDebugging,
         enableDebugging: false
       });
+    rigFile = 'Assets/CMan0005.json';
+    animationLibraryFile = 'Assets/CMan0005Animation.json';
+    minFrequency = 0.75;
+    break;
+  case 'USWolf':
+    var agentRadius = 0.9;
+    var cellSize = 8.0;
+    var crowdNode = scene.constructNode('Crowd', {
+        maxLinearVelocity: 3.5,
+        maxLinearAcceleration: 6,
+        maxAngularVelocity:  5,
+        maxAngularAcceleration: 5,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -98,
+        comHeight: 1.8,
+        circleSize: 0.6,
+        
+        cellsize: cellSize,
+        agentRadius: agentRadius,
+        x_count: Math.ceil(gridSize/cellSize)+2,
+        y_count: 1,
+        z_count: Math.ceil(gridSize/cellSize)+2,
+        displayGrid: true,
+        agentCount: agentCount,
+        displayDebugging: crowdParams.displayDebugging,
+        enableDebugging: false
+      });
+    rigFile = 'Assets/USWolf.json';
+    animationLibraryFile = 'Assets/USWolfAnimation.json';
+    minFrequency = 0.75;
     break;
   }
   
@@ -255,39 +295,55 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   crowdNode.setCrowdGoals(goals);
   
   var rigLoader = scene.constructManager('SceneDeserializer');
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
-  var nodeMap = rigLoader.load(storage);
+  var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
+  rigLoader.load(storage, function(nodeMap){
+    var characterInstances = {};
+    for(var i in nodeMap){
+      if(nodeMap[i].isTypeOf('CharacterInstance')){
+        characterInstances[i] = nodeMap[i];
+      }
+    }
+    var locomotionRig = nodeMap.LocomotionRig;
+    var ikrig = nodeMap.IKRig;
+    var characterMesh =  nodeMap.characterMesh;
+    var skeletonNode = ikrig.getSkeletonNode();
+    
+    ikrig.setControllerNode(crowdNode);
+    
+    var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+      characterRigNode: ikrig,
+      bulletWorldNode: bulletWorldNode,
+      enableDebugging: false
+    });
+    ikrig.setVariablesNode(locomotionVariables);
+  
+    var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+    rigLoader.load(storage, function(nodeMap){
+      var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
+      locomotionVariables.setAnimationLibraryNode(libraryAnimations);
+    });
+    
+    for(var i in characterInstances){
+      characterInstances[i].removeMaterialNode(0);
+      characterInstances[i].addMaterialNode(scene.constructNode('PhongTexturedSkinnedInstancesMaterial', {
+        lightNode: light,
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_desert_D.png' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_S.png' }),
+        numBonesPerInstance: characterInstances[i].getGeometryNode().getNumBones(),
+        instanceCount: agentCount
+      }));
+    }
+    /*
+    var characterInstance = scene.constructNode("CharacterInstance", {
+      rigNode:ikrig,
+      geometryNode: characterMesh,
+      materialNode: materialNode
+    });
+    */
+  });
+  
+  
 
-  var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
-  var locomotionRig = nodeMap.LocomotionRig;
-  var ikrig = nodeMap.IKRig;
-  var characterMesh =  nodeMap.characterMesh;
-  var skeletonNode = ikrig.getSkeletonNode();
-  
-  ikrig.setControllerNode(crowdNode);
-  
-  var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    characterRigNode: ikrig,
-    bulletWorldNode: bulletWorldNode,
-    enableDebugging: false
-  });
-  ikrig.setVariablesNode(locomotionVariables);
-  locomotionVariables.setAnimationLibrary(libraryAnimations);
-  
-  
-  var materialNode = scene.constructNode('PhongSkinnedInstancesMaterial', {
-    lightNode: light,
-    diffuseColor: FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0),
-    numBonesPerInstance: ikrig.getSkeletonNode().getNumBones(),
-    instanceCount: agentCount
-  });
-  
-  var characterInstance = scene.constructNode("CharacterInstance", {
-    rigNode:ikrig,
-    geometryNode: characterMesh,
-    materialNode: materialNode
-  });
-  
   /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,

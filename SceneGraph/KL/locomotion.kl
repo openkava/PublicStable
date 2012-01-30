@@ -168,10 +168,11 @@ operator evaluateLocomotionPoseVariables(
     hitPositionsPrevStep.resize(locomotionFeet.size);
     footXfos.resize(locomotionFeet.size);
     for(Integer j=0; j < locomotionFeet.size; j++){
-      plantLocations[j].setIdentity();
+      plantLocations[j] = controllerXfo * legs[locomotionFeet[j].limbId].ikGoalReferenceXfo;;
       hitPositions[j].setIdentity();
       hitPositionsPrevStep[j].setIdentity();
       footXfos[j] = legs[locomotionFeet[j].limbId].ikGoalReferenceXfo;
+      plantedFeet[j] = true;
     }
   }
   
@@ -198,7 +199,7 @@ operator evaluateLocomotionPoseVariables(
     );
   }
 
-  LinearKeyframeTrackSetBindings trackSet = animationLibrary[trackcontroller.activeTrackSet];
+  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
   FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
   LinearKeyframeTrackSetBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
   
@@ -216,7 +217,7 @@ operator evaluateLocomotionPoseVariables(
     t += timestep;
     trackcontroller.time = t;
     
-    poseVariables.evaluateKeyframeTracks(t, trackSet, bindings, trackcontroller.currKeys);
+    bindings.evaluateTracks(t, poseVariables, trackSet, trackcontroller.currKeys);
     
     /////////////////////////////////////////////////
     // Now store the com params for the next update.
@@ -226,20 +227,22 @@ operator evaluateLocomotionPoseVariables(
     
     /////////////////////////////////////////////////
     // Error dissapation
+    // If deactivate is true, it means we have just deactivated a state to get to this one.
     if(trackcontroller.deactivate){
       
       for(Integer j=0; j < locomotionFeet.size; j++){
         Limb leg = legs[locomotionFeet[j].limbId];
         prevUpdatePose.xfoValues[leg.ikGoalXfoId] = footXfos[j];
+        Xfo plantedXfo;
+        if(plantedFeet[j]){
+          plantedXfo = controllerXfo * footXfos[j];
+        }else{
+          plantedXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+        }
+        plantLocations[j] = plantedXfo;
         
         BULLLETWORLD_OPENBLOCKCOMMENT
         if(performRaycasting){
-          Xfo plantedXfo;
-          if(plantedFeet[j]){
-            plantedXfo = controllerXfo * footXfos[j];
-          }else{
-            plantedXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
-          }
           Scalar dist; Vec3 normal;
           if(fireRay(bulletworld, plantedXfo.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
             plantedXfo.tr += upvector * dist;
@@ -257,10 +260,12 @@ operator evaluateLocomotionPoseVariables(
         Limb leg = legs[locomotionFeet[j].limbId];
         poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantLocations[j];
         
+        BULLLETWORLD_OPENBLOCKCOMMENT
         if(performRaycasting){
           Scalar lift = poseVariables.xfoValues[leg.ikGoalXfoId].tr.y;
           addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
+        BULLLETWORLD_CLOSEBLOCKCOMMENT
         
         if(displayFootPinningDebugging){
           debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.6, Color(1.0, 0.0, 0.0, 1.0));
@@ -371,12 +376,7 @@ operator evaluateLocomotionPoseVariables(
     t += timeIncrement;
     trackcontroller.time = t;
     
-    poseVariables.evaluateKeyframeTracks(
-      trackcontroller.time,
-      trackSet,
-      bindings,
-      trackcontroller.currKeys
-    );
+    bindings.evaluateTracks(t, poseVariables, trackSet, trackcontroller.currKeys);
     
     /////////////////////////////////////////////////
     // Now store the com params for the next update.
