@@ -4,6 +4,7 @@
 //
 
 
+FABRIC.define(["SceneGraph/RT/Vec2", "SceneGraph/RT/Vec3", "SceneGraph/RT/Vec4", "SceneGraph/RT/Mat33", "SceneGraph/RT/Mat44", "SceneGraph/RT/Color"], function() {
 
 
 /**
@@ -55,4 +56,4 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 
-
+});

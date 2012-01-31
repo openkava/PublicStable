@@ -3,6 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLBuffer"], function() {
 
 /**
  * Struct to store the source code of a shader
@@ -120,3 +121,4 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+});
