@@ -8,7 +8,7 @@ FABRIC.define(["SceneGraph/RT/Math"], function(Math) {
 //determine if an object is a valid Vec3.
 FABRIC.RT.isVec3 = function(t) {
   return t && t.getType &&
-         t.getType() === 'FABRIC.RT.Vec3';
+         t.getType() === 'Vec3';
 };
 
 //Constructor:

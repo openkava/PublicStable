@@ -2,7 +2,7 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
-define(["FABRIC", "Math", "Vec3", "Quat"], function(FABRIC, Math, Vec3, Quat) {
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec3", "SceneGraph/RT/Quat"], function(Math, Vec3, Quat) {
 
 //determine if an object is a valid Xfo.
 FABRIC.RT.isXfoOrder = function(t) {
@@ -284,6 +284,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
-
+  FABRIC.RT.Xfo = Xfo;
   return Xfo;
 });

@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Mat33"], function(Math, Mat33) {
+  
 //determine if an object is a valid RotationOrder.
 FABRIC.RT.isRotationOrder = function(t) {
   return t && t.getType &&
@@ -269,3 +271,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+
+  return FABRIC.RT.Euler;
+});
+
+

@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC", "SceneGraph", "Materials"], function(FABRIC, SceneGraph, Materials) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function(SceneGraph) {
 
 // Note: the ids defined in this table are used in the KL/GLSL code.
 var Lights = {
@@ -52,6 +52,7 @@ SceneGraph.registerNodeType('Light', {
       redrawEventHandler = lightNode.constructEventHandlerNode('Redraw');
       redrawEventHandler.setScope('light', dgnode);
 
+      var Materials = FABRIC.require("SceneGraph/FABRIC.SceneGraph.Materials");
       redrawEventHandler.preDescendBindings.append(scene.constructOperator({
         operatorName: 'loadLight',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',

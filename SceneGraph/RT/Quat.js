@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC", "Math", "Vec3"], function(FABRIC, Math, Vec3) {
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec3", "SceneGraph/RT/Euler"], function(Math, Vec3, Euler) {
 
 //determine if an object is a valid RotationOrder.
 FABRIC.RT.isQuat = function(t) {
@@ -441,5 +441,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+  FABRIC.RT.Quat = Quat;
   return Quat;
 });

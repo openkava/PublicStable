@@ -3,7 +3,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC", "SceneGraph", "Geometry"], function(FABRIC, SceneGraph, Geometry) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Images",
+               "SceneGraph/FABRIC.SceneGraph.Lights"], function(SceneGraph, Geometry) {
 
  // Table storing all of the known shader attributes and their types.
   var Materials = {

@@ -14,6 +14,7 @@
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <!--
     <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
@@ -39,7 +40,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    
+    -->
 <script type="text/javascript">
 
  var _gaq = _gaq || [];
@@ -60,6 +61,14 @@ s.parentNode.insertBefore(ga, s);
     <script type="text/javascript">
     
 $(document).ready(function() {
+ 
+ FABRIC.require(["SceneGraph/RT/Color",
+                 "SceneGraph/FABRIC.SceneGraph",
+                 "SceneGraph/FABRIC.SceneGraph.Geometry",
+                 "SceneGraph/FABRIC.SceneGraph.Materials",
+                 "SceneGraph/FABRIC.SceneGraph.Primitives",
+                 "SceneGraph/FABRIC.SceneGraph.Manipulation"], function(Color, SceneGraph) {
+
   
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
@@ -211,6 +220,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       viewport.redraw();
       return true;
     }
+  });
   });
   
 });

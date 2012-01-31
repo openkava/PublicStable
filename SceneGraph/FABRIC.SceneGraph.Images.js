@@ -4,7 +4,7 @@
 //
 
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/RT/OGLTexture2D"], function(SceneGraph) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/RT/OGLTexture2D", "SceneGraph/RT/OGLTexture3D", "SceneGraph/RT/OGLTextureCube"], function(SceneGraph) {
 
 var Images = {};
 

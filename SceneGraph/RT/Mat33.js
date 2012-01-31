@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec3"], function(Math, Vec3) {
+
 //determine if an object is a valid Mat33.
 FABRIC.RT.isMat33 = function(t) {
   return t && t.getType &&
@@ -226,4 +228,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Mat33.kl')
     }
   });
+});
+
+  return FABRIC.RT.Mat33;
 });

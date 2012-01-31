@@ -2,6 +2,10 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+
+
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLShaderProgram"], function(Math) {
+  
 FABRIC.RT.OGLTexture3D = function(glInternalFormat, glFormat, glType) {
   this.glInternalFormat = glInternalFormat ? glInternalFormat : 0;
   this.glFormat = glFormat ? glFormat : 0;
@@ -74,4 +78,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+
+});
 
