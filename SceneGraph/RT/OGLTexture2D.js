@@ -2,6 +2,9 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLShaderProgram"], function(Math) {
+  
 /**
  * Constructor function to create a Ray object.
  * @constructor
@@ -84,4 +87,4 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
-
+});

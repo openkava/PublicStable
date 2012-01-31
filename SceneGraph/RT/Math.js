@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC"], function(FABRIC, Math) {
+FABRIC.define(function() {
   
 /**
  * The basic math module.

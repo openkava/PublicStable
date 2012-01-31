@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec4"], function(Math, Vec4) {
+
+
 //determine if an object is a valid Mat44.
 FABRIC.RT.isMat44 = function(t) {
   return t && t.getType &&
@@ -327,4 +330,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Mat44.kl')
     }
   });
+});
+
+  return FABRIC.RT.Mat44;
 });

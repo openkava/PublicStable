@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC", "Math"], function(FABRIC, Math) {
+FABRIC.define(["SceneGraph/RT/Math"], function(Math) {
 
 //determine if an object is a valid Vec3.
 FABRIC.RT.isVec3 = function(t) {

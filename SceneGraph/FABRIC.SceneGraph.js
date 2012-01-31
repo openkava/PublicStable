@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC"], function(FABRIC) {
+FABRIC.define(function() {
 
 /**
  * The scene graph is the core implementation of Fabric's
