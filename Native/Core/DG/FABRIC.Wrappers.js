@@ -634,7 +634,9 @@ function (fabricClient, logCallback, debugLogCallback) {
           'elementIndex': elementIndex
         }, function() {
         }, function(data) {
-          dataElement = RT.assignPrototypes(data, result.members[memberName].type);
+          // pull off the last [] since we're looking at an element
+          type = result.members[memberName].type
+          dataElement = RT.assignPrototypes(data, type.substring(0, type.length - 2));
         });
         executeQueuedCommands();
         return dataElement;
