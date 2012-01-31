@@ -277,7 +277,7 @@ namespace Fabric
         size_t count = computeState->getCount();
         RC::ConstHandle<RT::VariableArrayDesc> elementVariableArrayDesc = RC::ConstHandle<RT::VariableArrayDesc>::StaticCast( static_cast<ArrayProducerAdapter const *>( _adapter )->m_elementVariableArrayAdapter->getDesc() );
         elementVariableArrayDesc->setNumMembers( dstLValue, count );
-        void *firstMemberData = elementVariableArrayDesc->getMemberData( dstLValue, 0 );
+        void *firstMemberData = elementVariableArrayDesc->getMutableMemberData( dstLValue, 0 );
         computeState->produce( 0, count, firstMemberData );
       }
     }
@@ -296,7 +296,7 @@ namespace Fabric
       {
         RC::ConstHandle<RT::VariableArrayDesc> elementVariableArrayDesc =  RC::ConstHandle<RT::VariableArrayDesc>::StaticCast( static_cast<ArrayProducerAdapter const *>( _adapter )->m_elementVariableArrayAdapter->getDesc() );
         elementVariableArrayDesc->setNumMembers( dstLValue, countRValue );
-        void *firstMemberData = elementVariableArrayDesc->getMemberData( dstLValue, 0 );
+        void *firstMemberData = elementVariableArrayDesc->getMutableMemberData( dstLValue, 0 );
         arrayProducer->createComputeState()->produce( indexRValue, countRValue, firstMemberData );
       }
     }

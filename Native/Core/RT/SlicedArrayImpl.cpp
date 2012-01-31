@@ -145,7 +145,7 @@ namespace Fabric
       return srcBits->size;
     }
     
-    void const *SlicedArrayImpl::getMemberData( void const *data, size_t index ) const
+    void const *SlicedArrayImpl::getImmutableMemberData( void const *data, size_t index ) const
     { 
       bits_t const *srcBits = reinterpret_cast<bits_t const *>(data);
       if ( index >= srcBits->size )
@@ -153,7 +153,7 @@ namespace Fabric
       return m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->rcva->varArray, srcBits->offset + index );
     }
     
-    void *SlicedArrayImpl::getMemberData( void *data, size_t index ) const
+    void *SlicedArrayImpl::getMutableMemberData( void *data, size_t index ) const
     { 
       bits_t *srcBits = reinterpret_cast<bits_t *>(data);
       if ( index >= srcBits->size )

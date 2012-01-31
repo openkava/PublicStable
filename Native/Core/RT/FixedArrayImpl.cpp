@@ -26,7 +26,7 @@ namespace Fabric
       memset( m_defaultData, 0, getAllocSize() );
       void const *memberDefaultData = m_memberImpl->getDefaultData();
       for ( size_t i=0; i<m_length; ++i )
-        m_memberImpl->setData( memberDefaultData, getMemberData( m_defaultData, i ) );
+        m_memberImpl->setData( memberDefaultData, getMutableMemberData( m_defaultData, i ) );
     }
     
     FixedArrayImpl::~FixedArrayImpl()
@@ -115,14 +115,14 @@ namespace Fabric
       return m_length;
     }
           
-    void const *FixedArrayImpl::getMemberData( void const *data, size_t index ) const
+    void const *FixedArrayImpl::getImmutableMemberData( void const *data, size_t index ) const
     { 
       if ( index >= m_length )
         throw Exception( "index out of range" );
       return getImmutableMemberData_NoCheck( data, index );
     }
     
-    void *FixedArrayImpl::getMemberData( void *data, size_t index ) const
+    void *FixedArrayImpl::getMutableMemberData( void *data, size_t index ) const
     { 
       if ( index >= m_length )
         throw Exception( "index out of range" );
