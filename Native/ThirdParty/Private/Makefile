@@ -363,7 +363,7 @@ Build/.opencv.build: Build/.opencv.configure
 
 Build/.opencv.configure: Build/.opencv.patch
 	for ARCH in $(ARCHS); do \
-		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_PNG=OFF ); \
+		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
 	done
 	touch $@
 
