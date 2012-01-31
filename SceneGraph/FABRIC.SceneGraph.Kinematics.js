@@ -3,6 +3,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+define(["FABRIC", "SceneGraph"], function(FABRIC, SceneGraph) {
+
+var Kinematics = {};
+
 FABRIC.SceneGraph.registerNodeType('Transform', {
   briefDesc: 'The Transform node implements a global or hierarchical transform.',
   detailedDesc: 'The Transform node uses a redraw eventhandler to draw an OpenGL projection. The node can be used in '+
@@ -253,5 +257,6 @@ FABRIC.SceneGraph.registerNodeType('AimTransform', {
     return aimTransformNode;
   }});
 
-
+  return Kinematics;
+});
 

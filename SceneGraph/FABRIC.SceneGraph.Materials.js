@@ -3,23 +3,26 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-/**
- * Table storing all of the known shader attributes and their types.
- */
-FABRIC.SceneGraph.getShaderParamID = ( function(){
-  var paramCount = 0;
-  var paramMap = {};
-  return function(name){
-    if(paramMap[name]){
-      return paramMap[name];
-    }
-    else{
-      paramCount++;
-      paramMap[name] = paramCount;
-      return paramCount;
-    }
-  }
-})();
+define(["FABRIC", "SceneGraph", "Geometry"], function(FABRIC, SceneGraph, Geometry) {
+
+ // Table storing all of the known shader attributes and their types.
+  var Materials = {
+    getShaderParamID: ( function(){
+      var paramCount = 0;
+      var paramMap = {};
+      return function(name){
+        if(paramMap[name]){
+          return paramMap[name];
+        }
+        else{
+          paramCount++;
+          paramMap[name] = paramCount;
+          return paramCount;
+        }
+      }
+    })()
+  };
+  FABRIC.SceneGraph.getShaderParamID = Materials.getShaderParamID;
 
 
 FABRIC.SceneGraph.registerNodeType('Shader', {
@@ -66,7 +69,7 @@ FABRIC.SceneGraph.registerNodeType('Shader', {
     // Uniform Values
     for (i in options.shaderUniforms) {
       shaderProgram.uniformValues.push(new FABRIC.RT.OGLShaderValue(
-        options.shaderUniforms[i].name, FABRIC.SceneGraph.getShaderParamID(i)));
+        options.shaderUniforms[i].name, Materials.getShaderParamID(i)));
     }
 
     ///////////////////////////////////////////////////
@@ -74,7 +77,7 @@ FABRIC.SceneGraph.registerNodeType('Shader', {
     var attributeValues = [];
     for (i in options.shaderAttributes) {
       shaderProgram.attributeValues.push(new FABRIC.RT.OGLShaderValue(
-        options.shaderAttributes[i].name, FABRIC.SceneGraph.getShaderParamID(i)));
+        options.shaderAttributes[i].name, Materials.getShaderParamID(i)));
     }
 
     ///////////////////////////////////////////////////
@@ -298,7 +301,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
         preProcessorDefinitions: {
           ATTRIBUTE_NAME: uniformName,
-          ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID(uniformName),
+          ATTRIBUTE_ID: Materials.getShaderParamID(uniformName),
           DATA_TYPE: uniform.type
         },
         entryFunctionName: 'loadUniform',
@@ -335,7 +338,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
           preProcessorDefinitions: {
             ATTRIBUTE_NAME: capitalizeFirstLetter(textureName),
-            ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID(textureName),
+            ATTRIBUTE_ID: Materials.getShaderParamID(textureName),
             DATA_TYPE: 'Integer'
           },
           entryFunctionName: 'loadUniform',
@@ -1186,3 +1189,7 @@ FABRIC.SceneGraph.registerNodeType('GaussianBlurPostProcessEffect', {
     var edgeDetectionEffect = scene.constructNode('PostProcessEffect', options);
     return edgeDetectionEffect;
   }});
+
+
+  return Materials;
+});

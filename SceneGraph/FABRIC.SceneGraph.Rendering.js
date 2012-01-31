@@ -3,6 +3,11 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+define(["FABRIC", "SceneGraph"], function(FABRIC, SceneGraph) {
+
+  var Rendering = {};
+  
+  
 /**
  * The rendering scene graph is the core implementation of Fabric's
  * additional rendering pipeline and capabilities.
@@ -527,3 +532,8 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
 
     return deferredRenderNode;
 }});
+
+
+  return Rendering;
+});
+
