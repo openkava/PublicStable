@@ -5,8 +5,6 @@ import ctypes
 import collections
 import atexit
 
-# FIXME fix object hierarchy, static variables, visibility
-
 # FIXME Windows
 if os.name == 'posix':
   fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
@@ -137,9 +135,6 @@ class _CLIENT( object ):
     self.__queuedUnwinds.append( unwind )    
     self.__queuedCallbacks.append( callback )    
 
-    # FIXME leaving this in for debug only
-    self.executeQueuedCommands()
-
   def executeQueuedCommands( self ):
     commands = self.__queuedCommands
     self.__queuedCommands = []
@@ -233,7 +228,12 @@ class _CLIENT( object ):
 
     for i in range( 0, len( notifications ) ):
       n = notifications[ i ]
-      self._route( n[ 'src' ], n[ 'cmd' ], n[ 'arg' ] )
+
+      arg = None
+      if 'arg' in n:
+        arg = n[ 'arg' ]
+
+      self._route( n[ 'src' ], n[ 'cmd' ], arg )
 
   def __getNotifyCallback( self ):
     # use a closure here so that 'self' is maintained without us
@@ -775,7 +775,7 @@ class _DG( _NAMESPACE ):
       self._dg._executeQueuedCommands()
       return data[ '_' ]
 
-    def setData( self, memberName, sliceIndex, data ):
+    def setData( self, memberName, sliceIndex, data = None ):
       if data is None:
         data = sliceIndex
         sliceIndex = 0
@@ -841,15 +841,19 @@ class _DG( _NAMESPACE ):
       # dictionary hack to simulate Python 3.x nonlocal
       data = { '_': None }
       def __callback( result ):
+        obj = {}
         for member in result:
-          memberData = data[ member ]
+          memberobj = []
+          obj[ member ] = memberobj
+
+          memberData = result[ member ]
           for i in range( 0, len( memberData ) ):
-            # FIXME this is incorrect, ignoring return value
-            self.__rt._assignPrototypes(
+            memberobj.append( self.__rt._assignPrototypes(
               memberData[ i ],
               self.__members[ member ][ 'type' ]
+              )
             )
-        data[ '_' ] = result
+        data[ '_' ] = obj
 
       self._nObjQueueCommand( 'getMembersBulkData', members, None, __callback )
       self._dg._executeQueuedCommands()
@@ -1021,7 +1025,7 @@ class _DG( _NAMESPACE ):
       self.__onloadProgressCallbacks = []
       self.__onloadFailureCallbacks = []
 
-    def _handle( cmd, arg ):
+    def _handle( self, cmd, arg ):
       if cmd == 'resourceLoadSuccess':
         for i in range( 0, len( onloadSuccessCallbacks ) ):
           onloadSuccessCallbacks[ i ]( self )
@@ -1056,8 +1060,7 @@ class _DG( _NAMESPACE ):
 
       if 'eventHandlers' in diff:
         self.__eventHandlers = []
-        for index in diff[ 'eventHandlers' ]:
-          name = diff[ 'eventHandlers' ][ index ]
+        for name in diff[ 'eventHandlers' ]:
           self.__eventHandlers.append( self._dg._namedObjects[ name ] )
 
     def _handle( self, cmd, arg ):
@@ -1080,7 +1083,7 @@ class _DG( _NAMESPACE ):
       return self.__eventHandlers
 
     def fire( self ):
-      self._nObjQueueCommand( 'fire', eventHandler.getName() )
+      self._nObjQueueCommand( 'fire' )
       self._dg._executeQueuedCommands()
 
     # FIXME what is this doing, also where are eventHandlers set?
@@ -1121,14 +1124,13 @@ class _DG( _NAMESPACE ):
       self.postDescendBindings = self._dg._createBindingList( [ name, 'postDescendBindings' ] )
 
     def _patch( self, diff ):
-      super( _DG._EVENTHANDLER, self ).patch( diff )
+      super( _DG._EVENTHANDLER, self )._patch( diff )
       if 'bindingName' in diff:
         self.__bindingName = diff[ 'bindingName' ]
 
       if 'childEventHandlers' in diff:
         self.__childEventHandlers = []
-        for index in diff[ 'childEventHandlers' ]:
-          name = diff[ 'childEventHandlers' ][ index ]
+        for name in diff[ 'childEventHandlers' ]:
           self.__childEventHandlers.append( self._dg._namedObjects[ name ] )
 
       if 'scopes' in diff:
@@ -1138,10 +1140,10 @@ class _DG( _NAMESPACE ):
           self.__scopes[ name ] = self._dg._namedObjects[ nodeName ]
 
       if 'preDescendBindings' in diff:
-        self.preDescendBindings.patch( diff[ 'preDescendBindings' ] )
+        self.preDescendBindings._patch( diff[ 'preDescendBindings' ] )
 
       if 'postDescendBindings' in diff:
-        self.postDescendBindings.patch( diff[ 'postDescendBindings' ] )
+        self.postDescendBindings._patch( diff[ 'postDescendBindings' ] )
 
     def _route( self, src, cmd, arg ):
       if len( src ) == 1 and src[ 0 ] == 'preDescendBindings':
@@ -1153,7 +1155,7 @@ class _DG( _NAMESPACE ):
         src.popleft()
         self.postDescendBindings._route( src, cmd, arg )
       else:
-        super( _DG._EVENTHANDLER )._route( src, cmd, arg )
+        super( _DG._EVENTHANDLER, self )._route( src, cmd, arg )
     
     def getType( self ):
       return 'EventHandler'
@@ -1169,12 +1171,14 @@ class _DG( _NAMESPACE ):
 
     def appendChildEventHandler( self, childEventHandler ):
       oldChildEventHandlers = self.__childEventHandlers
+      self.__childEventHandlers = None
       def __unwind():
         self.__childEventHandlers = oldChildEventHandlers
       self._nObjQueueCommand( 'appendChildEventHandler', childEventHandler.getName(), __unwind )
 
     def removeChildEventHandler( self, childEventHandler ):
       oldChildEventHandlers = self.__childEventHandlers
+      self.__childEventHandlers = None
       def __unwind():
         self.__childEventHandlers = oldChildEventHandlers
       self._nObjQueueCommand( 'removeChildEventHandler', childEventHandler.getName(), __unwind )
@@ -1358,6 +1362,7 @@ class _MR( _NAMESPACE ):
         count[ '_' ] = result
   
       self._gcObjQueueCommand( 'getCount', None, None, __getCount )
+      self._nsobj._executeQueuedCommands()
       return count[ '_' ]
   
     def produce( self, index = None, count = None ):
