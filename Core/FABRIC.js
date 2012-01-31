@@ -3,7 +3,11 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC = (function() {
+
+define([], function() {
+
+// TODO: make Fabric a private variable by uncommenting the var statement.
+ /*var*/ FABRIC = (function() {
 
   var requiredVersion = [1,0,19];
   // we keep an array of context ids,
@@ -569,3 +573,6 @@ FABRIC = (function() {
     getBrowserVersion: function(){ return BrowserDetect.version; }
   };
 })();
+
+  return FABRIC;
+});

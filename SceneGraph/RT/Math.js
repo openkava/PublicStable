@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+define(["FABRIC"], function(FABRIC, Math) {
+  
 /**
  * The basic math module.
  */
@@ -97,3 +99,5 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+  return Math;
+});

@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+define(["FABRIC", "Math"], function(FABRIC, Math) {
+
 //determine if an object is a valid Vec3.
 FABRIC.RT.isVec3 = function(t) {
   return t && t.getType &&
@@ -14,7 +16,7 @@ FABRIC.RT.isVec3 = function(t) {
 //    (none)
 //    x, y, z
 //    Vec3
-FABRIC.RT.Vec3 = function() {
+var Vec3 = function() {
   if (arguments.length == 3 &&
       FABRIC.RT.isScalar(arguments[0]) && 
       FABRIC.RT.isScalar(arguments[1]) && 
@@ -36,11 +38,11 @@ FABRIC.RT.Vec3 = function() {
   else throw'new Vec3: invalid arguments';
   };
 
-FABRIC.RT.Vec3.prototype = {
+Vec3.prototype = {
 
   //set: see constructor for supported args
   set: function() {
-    FABRIC.RT.Vec3.apply(this, arguments);
+    Vec3.apply(this, arguments);
     return this;
   },
 
@@ -88,19 +90,19 @@ FABRIC.RT.Vec3.prototype = {
 
   // Returns the result of adding the argument to the vector
   add: function(v) {
-    return new FABRIC.RT.Vec3(this.x + v.x, this.y + v.y, this.z + v.z);
+    return new Vec3(this.x + v.x, this.y + v.y, this.z + v.z);
   },
 
   subtract: function(v) {
-    return new FABRIC.RT.Vec3(this.x - v.x, this.y - v.y, this.z - v.z);
+    return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z);
   },
 
   multiply: function(v) {
-    return new FABRIC.RT.Vec3(this.x * v.x, this.y * v.y, this.z * v.z);
+    return new Vec3(this.x * v.x, this.y * v.y, this.z * v.z);
   },
 
   multiplyScalar: function(s) {
-    return new FABRIC.RT.Vec3(this.x * s, this.y * s, this.z * s);
+    return new Vec3(this.x * s, this.y * s, this.z * s);
   },
 
   divide: function(v) {
@@ -109,7 +111,7 @@ FABRIC.RT.Vec3.prototype = {
       Math.checkDivisor(v.y, 'Vec3.divide v.y');
       Math.checkDivisor(v.z, 'Vec3.divide v.z');
     }
-    return new FABRIC.RT.Vec3(this.x / v.x, this.y / v.y, this.z / v.z);
+    return new Vec3(this.x / v.x, this.y / v.y, this.z / v.z);
   },
 
   divideScalar: function(s) {
@@ -118,7 +120,7 @@ FABRIC.RT.Vec3.prototype = {
   },
 
   negate: function() {
-    return new FABRIC.RT.Vec3(-this.x, - this.y, - this.z);
+    return new Vec3(-this.x, - this.y, - this.z);
   },
 
   inverse: function() {
@@ -127,7 +129,7 @@ FABRIC.RT.Vec3.prototype = {
       Math.checkDivisor(this.y, 'Vec3.inverse this.y');
       Math.checkDivisor(this.z, 'Vec3.inverse this.z');
     }
-    return new FABRIC.RT.Vec3(1.0/this.x, 1.0/this.y, 1.0/this.z);
+    return new Vec3(1.0/this.x, 1.0/this.y, 1.0/this.z);
   },
 
   dot: function(v) {
@@ -135,7 +137,7 @@ FABRIC.RT.Vec3.prototype = {
   },
 
   cross: function(v) {
-    return new FABRIC.RT.Vec3((this.y * v.z) - (this.z * v.y),
+    return new Vec3((this.y * v.z) - (this.z * v.y),
       (this.z * v.x) - (this.x * v.z),
     (this.x * v.y) - (this.y * v.x));
   },
@@ -167,7 +169,7 @@ FABRIC.RT.Vec3.prototype = {
   },
 
   clamp: function(min, max) {
-    return new FABRIC.RT.Vec3(
+    return new Vec3(
       (this.x < min.x ? min.x : (this.x > max.x ? max.x : this.x)),
       (this.y < min.y ? min.y : (this.y > max.y ? max.y : this.y)),
       (this.z < min.z ? min.z : (this.z > max.z ? max.z : this.z))
@@ -194,21 +196,21 @@ FABRIC.RT.Vec3.prototype = {
 
   // Returns a copy of the vector
   clone: function() {
-    return new FABRIC.RT.Vec3(this.x, this.y, this.z);
+    return new Vec3(this.x, this.y, this.z);
   },
   toString: function() {
-    return 'FABRIC.RT.Vec3(' + this.x + ',' + this.y + ',' + this.z + ')';
+    return 'Vec3(' + this.x + ',' + this.y + ',' + this.z + ')';
   },
   getType: function() {
-    return 'FABRIC.RT.Vec3';
+    return 'Vec3';
   }
 };
 
 //Vec3 constants
-FABRIC.RT.Vec3.origin = new FABRIC.RT.Vec3(0, 0, 0);
-FABRIC.RT.Vec3.xAxis = new FABRIC.RT.Vec3(1, 0, 0);
-FABRIC.RT.Vec3.yAxis = new FABRIC.RT.Vec3(0, 1, 0);
-FABRIC.RT.Vec3.zAxis = new FABRIC.RT.Vec3(0, 0, 1);
+Vec3.origin = new Vec3(0, 0, 0);
+Vec3.xAxis = new Vec3(1, 0, 0);
+Vec3.yAxis = new Vec3(0, 1, 0);
+Vec3.zAxis = new Vec3(0, 0, 1);
 
 // distanceFromLineToLine():
 //    Input:  two 3D lines L1 and L2
@@ -223,7 +225,7 @@ FABRIC.RT.Vec3.zAxis = new FABRIC.RT.Vec3(0, 0, 1);
  * @param {object} l2_p1 A vec3 object representing the second point of the second line.
  * @return {number} The distance between the lines.
  */
-FABRIC.RT.Vec3.distanceFromLineToLine = function(
+Vec3.distanceFromLineToLine = function(
   l1_p0, l1_p1,
   l2_p0, l2_p1
 ) {
@@ -274,7 +276,7 @@ FABRIC.RT.Vec3.distanceFromLineToLine = function(
  * @return {number} The factor for multiplying the rayDirection to reach the intersection,
  * or -1 if there is no intersection.
  */
-FABRIC.RT.Vec3.rayIntersectPlane = function(
+Vec3.rayIntersectPlane = function(
   rayStart, rayDirection,
   planePoint, planeNormal
 ) {
@@ -304,10 +306,16 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       x: 'Scalar', y: 'Scalar', z: 'Scalar'
     },
-    constructor: FABRIC.RT.Vec3,
+    constructor: Vec3,
     klBindings: {
       filename: 'Vec3.kl',
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Vec3.kl')
     }
   });
+});
+
+
+  FABRIC.RT.Vec3 = Vec3;
+  
+  return Vec3;
 });

@@ -2,6 +2,7 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+define(["FABRIC", "Math", "Vec3", "Quat"], function(FABRIC, Math, Vec3, Quat) {
 
 //determine if an object is a valid Xfo.
 FABRIC.RT.isXfoOrder = function(t) {
@@ -17,7 +18,7 @@ FABRIC.RT.isXfoOrder = function(t) {
 //    Vec3(tr), Quat
 //    Vec3(tr), Quat, Vec3(sc)
 //    Xfo
-FABRIC.RT.Xfo = function() {
+var Xfo = function() {
   var good = true;
   //First, check if we have ([ori], [tr], [sc])
   if (arguments[0]) {
@@ -89,11 +90,11 @@ FABRIC.RT.Xfo = function() {
     throw'Xfo: invalid arguments';
 };
 
-FABRIC.RT.Xfo.prototype = {
+Xfo.prototype = {
 
   //set: see constructor for supported args
   set: function() {
-    FABRIC.RT.Xfo.apply(this, arguments);
+    Xfo.apply(this, arguments);
     return this;
   },
 
@@ -210,7 +211,7 @@ FABRIC.RT.Xfo.prototype = {
       }
     }
 
-    var result = new FABRIC.RT.Xfo();
+    var result = new Xfo();
     result.tr = this.tr.add(this_ori.rotateVector(this.sc.multiply(xf.tr)));
     result.ori = this_ori.multiply(xf_ori);
     result.ori.setUnit();
@@ -228,7 +229,7 @@ FABRIC.RT.Xfo.prototype = {
   },
 
   inverse: function() {
-    var result = new FABRIC.RT.Xfo();
+    var result = new Xfo();
     if(this.sc.x != this.sc.y || this.sc.x != this.sc.z) {
       var relativePrecision = Math.abs(this.sc.x)*Math.PRECISION*10.0;
       if( Math.abs(this.sc.x - this.sc.y) > relativePrecision || Math.abs(this.sc.x - this.sc.z) > relativePrecision ) {
@@ -242,7 +243,7 @@ FABRIC.RT.Xfo.prototype = {
   },
 
   clone: function() {
-    var newXfo = new FABRIC.RT.Xfo;
+    var newXfo = new Xfo;
     newXfo.ori = this.ori.clone();
     newXfo.tr = this.tr.clone();
     newXfo.sc = this.sc.clone();
@@ -250,11 +251,11 @@ FABRIC.RT.Xfo.prototype = {
   },
 
   toString: function() {
-    return 'FABRIC.RT.Xfo(' + this.ori.toString() + ',' + this.tr.toString() + ',' + this.sc.toString() + ')';
+    return 'Xfo(' + this.ori.toString() + ',' + this.tr.toString() + ',' + this.sc.toString() + ')';
   },
 
   getType: function() {
-    return 'FABRIC.RT.Xfo';
+    return 'Xfo';
   }
 };
 
@@ -264,10 +265,10 @@ FABRIC.RT.Xfo.prototype = {
  */
 FABRIC.RT.xfo = function() {
   // The following is a bit of a hack. Not sure if we can combine new and apply.
-  if (arguments.length === 0) return new FABRIC.RT.Xfo();
-  if (arguments.length === 1) return new FABRIC.RT.Xfo(arguments[0]);
-  if (arguments.length === 2) return new FABRIC.RT.Xfo(arguments[0], arguments[1]);
-  if (arguments.length === 3) return new FABRIC.RT.Xfo(arguments[0], arguments[1], arguments[2]);
+  if (arguments.length === 0) return new Xfo();
+  if (arguments.length === 1) return new Xfo(arguments[0]);
+  if (arguments.length === 2) return new Xfo(arguments[0], arguments[1]);
+  if (arguments.length === 3) return new Xfo(arguments[0], arguments[1], arguments[2]);
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -275,10 +276,14 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       ori: 'Quat', tr: 'Vec3', sc: 'Vec3'
     },
-    constructor: FABRIC.RT.Xfo,
+    constructor: Xfo,
     klBindings: {
       filename: 'Xfo.kl',
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Xfo.kl')
     }
   });
+});
+
+
+  return Xfo;
 });
