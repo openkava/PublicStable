@@ -233,7 +233,7 @@ namespace Fabric
       return bits->numMembers;
     }
     
-    void const *VariableArrayImpl::getMemberData( void const *data, size_t index ) const
+    void const *VariableArrayImpl::getImmutableMemberData( void const *data, size_t index ) const
     { 
       bits_t const *bits = reinterpret_cast<bits_t const *>(data);
       size_t numMembers = bits->numMembers;
@@ -242,7 +242,7 @@ namespace Fabric
       return getImmutableMemberData_NoCheck( data, index );
     }
     
-    void *VariableArrayImpl::getMemberData( void *data, size_t index ) const
+    void *VariableArrayImpl::getMutableMemberData( void *data, size_t index ) const
     { 
       bits_t *bits = reinterpret_cast<bits_t *>(data);
       size_t numMembers = bits->numMembers;
@@ -264,7 +264,7 @@ namespace Fabric
       {
         for ( size_t i=0; i<numMembers; ++i )
         {
-          void *memberData = getMemberData( data, i+dstOffset );
+          void *memberData = getMutableMemberData( data, i+dstOffset );
           getMemberImpl()->setData( &((uint8_t const *)members)[i*m_memberSize], memberData );
         }
       }

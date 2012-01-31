@@ -55,12 +55,12 @@ namespace Fabric
       
       void const *getImmutableElementData( size_t index ) const
       {
-        return m_slicedArrayDesc->getMemberData( (void const *)m_slicedArrayData, index );
+        return m_slicedArrayDesc->getImmutableMemberData( (void const *)m_slicedArrayData, index );
       }
       
       void *getMutableElementData( size_t index )
       {
-        return m_slicedArrayDesc->getMemberData( m_slicedArrayData, index );
+        return m_slicedArrayDesc->getMutableMemberData( m_slicedArrayData, index );
       }
       
       size_t size() const
@@ -215,7 +215,7 @@ namespace Fabric
       }
     }
     
-    RC::ConstHandle<Container::Member> Container::getMember( std::string const &name ) const
+    RC::ConstHandle<Container::Member> Container::getImmutableMember( std::string const &name ) const
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
@@ -223,7 +223,7 @@ namespace Fabric
       return it->second;
     }
 
-    RC::Handle<Container::Member> Container::getMember( std::string const &name )
+    RC::Handle<Container::Member> Container::getMutableMember( std::string const &name )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
@@ -234,14 +234,14 @@ namespace Fabric
 
     RC::ConstHandle< RT::Desc > Container::getDesc( std::string const &name ) const
     {
-      return getMember( name )->getDesc();
+      return getImmutableMember( name )->getDesc();
     }
     
     void const *Container::getConstData( std::string const &name, size_t index ) const
     {
       if ( index >= m_count )
         throw Exception( "index out of range" );
-      return getMember( name )->getImmutableElementData( index );
+      return getImmutableMember( name )->getImmutableElementData( index );
     }
 
     void *Container::getMutableData( std::string const &name, size_t index )
@@ -268,14 +268,14 @@ namespace Fabric
       }
       jsonNotify( "dataChange", 10, &json );
 
-      return getMember( name )->getMutableElementData( index );
+      return getMutableMember( name )->getMutableElementData( index );
     }
     
     void Container::getData( std::string const &name, size_t index, void *dstData ) const
     {
       if ( index >= m_count )
         throw Exception( "index out of range" );
-      RC::ConstHandle<Member> member = getMember( name );
+      RC::ConstHandle<Member> member = getImmutableMember( name );
       return member->getDesc()->setData( member->getImmutableElementData( index ), dstData );
     }
 
@@ -283,7 +283,7 @@ namespace Fabric
     {
       if ( index >= m_count )
         throw Exception( "index out of range" );
-      RC::ConstHandle<Member> member = getMember( name );
+      RC::ConstHandle<Member> member = getImmutableMember( name );
       return member->getDesc()->encodeJSON( member->getImmutableElementData( index ), resultEncoder );
     }
     
@@ -292,7 +292,7 @@ namespace Fabric
       if ( index >= m_count )
         throw Exception( "index out of range" );
       
-      RC::Handle<Member> member = getMember( name );
+      RC::Handle<Member> member = getMutableMember( name );
       setOutOfDate();
       member->getDesc()->setData( data, member->getMutableElementData( index ) );
       
@@ -613,7 +613,7 @@ namespace Fabric
       setCount( size_t( newCount ) );
     }
     
-    void Container::jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder )
+    void Container::jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder ) const
     {
       RC::ConstHandle<Member> member;
       size_t sliceIndex = SIZE_MAX;
@@ -629,7 +629,7 @@ namespace Fabric
           {
             valueEntity.requireString();
             std::string memberName = valueEntity.stringToStdString();
-            member = getMember( memberName );
+            member = getImmutableMember( memberName );
           }
           else if ( keyString.stringIs( "sliceIndex", 10 ) )
           {
@@ -774,7 +774,7 @@ namespace Fabric
       
       void const *data = getConstData( memberName, sliceIndex );
       
-      void const *memberData = arrayDesc->getMemberData( data, elementIndex );
+      void const *memberData = arrayDesc->getImmutableMemberData( data, elementIndex );
       JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
       arrayDesc->getMemberDesc()->encodeJSON( memberData, resultEncoder );
     }
@@ -1001,7 +1001,7 @@ namespace Fabric
       if ( handle.empty() )
         throw Exception( "missing 'file'" );
 
-      RC::ConstHandle<Container::Member> member = getMember( memberName );
+      RC::ConstHandle<Container::Member> member = getImmutableMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if ( desc->getUserName() != "FabricResource" )
         throw Exception( "member " + _(memberName) + " is not of type FabricResource" );

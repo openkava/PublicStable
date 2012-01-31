@@ -23,8 +23,8 @@ namespace Fabric
       size_t getNumMembers() const;
       StructMemberInfo const &getMemberInfo( size_t index ) const;
       
-      void const *getMemberData( void const *data, size_t index ) const;
-      void *getMemberData( void *data, size_t index ) const;
+      void const *getImmutableMemberData( void const *data, size_t index ) const;
+      void *getMutableMemberData( void *data, size_t index ) const;
      
       bool hasMember( std::string const &name ) const;
       size_t getMemberIndex( std::string const &name ) const;

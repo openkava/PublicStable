@@ -112,7 +112,7 @@ namespace Fabric
     static cl_context CreateContext( void const * const clDeviceIDsRValue, int32_t *clErrCode )
     {
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
-      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getImmutableMemberData( &clDeviceIDsRValue, 0 );
       cl_int errcode;
       // [pzion 20110711] FIXME: workaround for OpenGL/OpenCL interop
       cl_context result = clCreateContext( 0, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
@@ -141,7 +141,7 @@ namespace Fabric
 #elif defined( FABRIC_OS_WINDOWS )
 
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
-      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getImmutableMemberData( &clDeviceIDsRValue, 0 );
 
       cl_context_properties props[] = 
       {
@@ -213,7 +213,7 @@ namespace Fabric
     static int32_t BuildProgram( cl_program clProgram, void const * const clDeviceIDsRValue, void const * const optionsStringRValue )
     {
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
-      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getImmutableMemberData( &clDeviceIDsRValue, 0 );
       char const *options = stringDesc->getValueData( &optionsStringRValue );
       cl_int result = clBuildProgram( clProgram, num_devices, devices, options, NULL, NULL );
       return result;
@@ -291,7 +291,7 @@ namespace Fabric
       )
     {
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
-      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getImmutableMemberData( &eventWaitListArrayRValue, 0 ): NULL;
       cl_int result = clEnqueueReadBuffer( command_queue, buffer, blocking_read? CL_TRUE: CL_FALSE, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event );
       return result;
     }
@@ -304,10 +304,10 @@ namespace Fabric
       )
     {
       cl_uint num_mem_objects = clMemVariableArrayDesc->getNumMembers( &memObjectsArrayRValue );
-      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getMemberData( &memObjectsArrayRValue, 0 ): NULL;
+      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getImmutableMemberData( &memObjectsArrayRValue, 0 ): NULL;
 
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
-      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getImmutableMemberData( &eventWaitListArrayRValue, 0 ): NULL;
 
       cl_int result = clEnqueueAcquireGLObjects( command_queue, num_mem_objects, mem_objects, num_events_in_wait_list, event_wait_list, event );
       return result;
@@ -321,10 +321,10 @@ namespace Fabric
       )
     {
       cl_uint num_mem_objects = clMemVariableArrayDesc->getNumMembers( &memObjectsArrayRValue );
-      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getMemberData( &memObjectsArrayRValue, 0 ): NULL;
+      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getImmutableMemberData( &memObjectsArrayRValue, 0 ): NULL;
 
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
-      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getImmutableMemberData( &eventWaitListArrayRValue, 0 ): NULL;
 
       cl_int result = clEnqueueReleaseGLObjects( command_queue, num_mem_objects, mem_objects, num_events_in_wait_list, event_wait_list, event );
       return result;
@@ -333,7 +333,7 @@ namespace Fabric
     static int32_t EnqueueWriteBuffer( cl_command_queue command_queue, cl_mem buffer, bool blocking_write, size_t offset, size_t cb, void const *ptr, void const * const eventWaitListArrayRValue, cl_event *event )
     {
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
-      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getImmutableMemberData( &eventWaitListArrayRValue, 0 ): NULL;
       cl_int result = clEnqueueWriteBuffer( command_queue, buffer, blocking_write? CL_TRUE: CL_FALSE, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event );
       return result;
     }
@@ -362,7 +362,7 @@ namespace Fabric
       )
     {
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
-      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getImmutableMemberData( &eventWaitListArrayRValue, 0 ): NULL;
       cl_int result = clEnqueueNDRangeKernel(
         command_queue,
         kernel,
