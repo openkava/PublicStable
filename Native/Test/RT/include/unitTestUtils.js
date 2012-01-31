@@ -1,41 +1,39 @@
 
+var fs = require('fs');
+
 var onCreateContextCallbacks = [];
 var KLAppendMap = {};
 
-FABRIC = {
-  RT: F.RT,
-  DependencyGraph: F.DependencyGraph,
-  DG: F.DG,
-  UnitTests: {},
-  appendOnCreateContextCallback: function(callback) {
+FABRIC.UnitTests = {};
+FABRIC.UnitTestUtils = {};
+FABRIC.appendOnCreateContextCallback = function(callback) {
     onCreateContextCallbacks.push(callback);
-  },
-  loadResourceURL: function(url)
-  {
-    url = url.replace('FABRIC_ROOT', 'unitTestFile://../../../Web');
-    var data = F.IO.getUserTextFile(url);
+  };
+  
+FABRIC.loadResourceURL = function(url) {
+    url = url.replace('FABRIC_ROOT', '../../../Web');
+    var data = fs.readFileSync(url, 'ascii');
     data = data.replace(/\0/g,'');//Not sure why I get /0 characters...
     var klClassName = url.match(/[^\/]+(?=\.kl)/gi);
     if( klClassName !== null ) {
       var klAppend = KLAppendMap[ klClassName[0] ];
       if( klAppend !== undefined ){
-        //print(klAppend);
+        //console.log(klAppend);
         data += klAppend;
       }
     }
     return data;
   }
-};
 
 function onPostLoad()
 {
   for (var i = 0; i < onCreateContextCallbacks.length; ++i) {
-    onCreateContextCallbacks[i](F);
+    onCreateContextCallbacks[i](FABRIC);
   }
   onCreateContextCallbacks.length = 0;
 }
 
-function appendToKLCode(type, code) {
+FABRIC.UnitTestUtils.appendToKLCode = function(type, code) {
   if( KLAppendMap[type] === undefined )
     KLAppendMap[type] = code;
   else
@@ -46,20 +44,20 @@ function appendKLBinaryOpAdaptor(type, op, adaptor, otherType) {
   if( otherType == undefined )
     otherType = type;
   var code = "\nfunction " + type + ' ' + type + "." + adaptor + "( in " + otherType + " other ) {\n  return this " + op + " other;\n}\n\n";
-  appendToKLCode(type, code);
+  FABRIC.UnitTestUtils.appendToKLCode(type, code);
 }
 
 function appendKLInPlaceOpAdaptor(type, op, adaptor, otherType) {
   if( otherType == undefined )
     otherType = type;
   var code = "\nfunction " + type + "." + adaptor + "( in " + otherType + " other ) {\n this " + op + " other;\n}\n\n";
-  appendToKLCode(type, code);
+  FABRIC.UnitTestUtils.appendToKLCode(type, code);
 }
 
-function appendKLOpAdaptors(type, operators) {
+FABRIC.UnitTestUtils.appendKLOpAdaptors = function(type, operators) {
 
   var code = "\nfunction " + type + ".set( in " + type + " other ) {\n this = other;\n}\n\n";
-  appendToKLCode(type, code);
+  FABRIC.UnitTestUtils.appendToKLCode(type, code);
 
   for( var i = 0; i < operators.length; ++i ) {
     var op = operators[i];
@@ -108,7 +106,7 @@ function defineInPlaceOpAdaptor(type, binaryop) {
   };
 }
 
-function defineInPlaceOpAdaptors(type, operators) {
+FABRIC.UnitTestUtils.defineInPlaceOpAdaptors = function(type, operators) {
   for( var i = 0; i < operators.length; ++i ) {
     var op = operators[i];
     var otherType = type;
@@ -227,25 +225,25 @@ function generateAppendResult(type)
     }
   }
   klCode += '  results.push(data);\nreturn 1.0;\n}\n\n';
-  appendToKLCode(type, klCode);
+  FABRIC.UnitTestUtils.appendToKLCode(type, klCode);
 }
 
-function loadType(type){
- load("../../../Web/SceneGraph/RT/" + type + ".js");
+FABRIC.UnitTestUtils.loadType = function(type){
+ require("../../../../Web/SceneGraph/RT/" + type + ".js");
  generateAppendResult(type);
  onPostLoad();
 }
 
-function loadTestFile( prefix )
+FABRIC.UnitTestUtils.loadTestFile = function( prefix )
 {
-  var unitTestsCode = F.IO.getUserTextFile('unitTestFile://'+prefix+'UnitTests.jskl');
+  var unitTestsCode = fs.readFileSync(prefix+'UnitTests.jskl', 'ascii');
   return unitTestsCode.replace(/\0/g,'');//Not sure why I get /0 characters...
 }
 
-function runTests(type, localVariables, unitTestsCode)
+FABRIC.UnitTestUtils.runTests = function(type, localVariables, unitTestsCode)
 {
   if( unitTestsCode === undefined ) {
-    unitTestsCode = loadTestFile( type );
+    unitTestsCode = FABRIC.UnitTestUtils.loadTestFile( type );
   }
   var testFuncName = 'run' + type + 'Tests';
 
@@ -302,7 +300,7 @@ function runTests(type, localVariables, unitTestsCode)
       if(diagnostics[i].filename.match('.kl') === null) {
         li -= nbPrefixKLLines;
       }
-      print(diagnostics[i].level +': '+ diagnostics[i].filename + ' (li ' + li + ', col ' + diagnostics[i].column + '): ' + diagnostics[i].desc);
+      console.log(diagnostics[i].level +': '+ diagnostics[i].filename + ' (li ' + li + ', col ' + diagnostics[i].column + '): ' + diagnostics[i].desc);
     }
   }
 
@@ -318,7 +316,7 @@ function runTests(type, localVariables, unitTestsCode)
   var errors = node.getErrors();
   if ( errors.length > 0 ) {
     for ( var i in errors )
-      print( errors[i] );
+      console.log( errors[i] );
   }
   else {
     node.evaluate();
@@ -329,19 +327,19 @@ function runTests(type, localVariables, unitTestsCode)
 
   //Compare KL and JS results
   if(jsTests.length != klTests.length || jsResults.length != klResults.length) {
-    print('Unexpected: JS and KL have different number of tests');
+    console.log('Unexpected: JS and KL have different number of tests');
   }
 
   for( var i in jsTests ) {
     var test = jsTests[i];
     if( test !== klTests[i] ) {
-      print('Unexpected: JS and KL tests out of synch: JS test = '+ test + ', KL test = ' + klTests[i]);
+      console.log('Unexpected: JS and KL tests out of synch: JS test = '+ test + ', KL test = ' + klTests[i]);
     }
 
     var jsResult = jsResults[i];
     var klResult = klResults[i];
     if(jsResult.length != klResult.length) {
-      print('Unexpected: test \''+ test + '\': JS and KL have different result sizes');
+      console.log('Unexpected: test \''+ test + '\': JS and KL have different result sizes');
     }
     var resultString = '[';
     for( var j in jsResult ) {
@@ -349,13 +347,13 @@ function runTests(type, localVariables, unitTestsCode)
 			var jsVal = roundNumber(jsResult[j]);
       var klVal = roundNumber(klResult[j]);
       if( jsVal !== klVal ) {
-        print('Unexpected: test \''+ test + '\' value # ' + j + ' differs between JS ( ' + jsVal + ' ) and KL (' + klVal + ')');
+        console.log('Unexpected: test \''+ test + '\' value # ' + j + ' differs between JS ( ' + jsVal + ' ) and KL (' + klVal + ')');
       }
       if( resultString.length != 1 )
         resultString += ',';
       resultString += ' ' + jsVal;
     }
     resultString += ' ]';
-    print( '\'' + test + '\': ' + resultString );
+    console.log( '\'' + test + '\': ' + resultString );
   }
 };
