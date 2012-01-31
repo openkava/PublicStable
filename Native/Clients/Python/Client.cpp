@@ -91,6 +91,7 @@ namespace Fabric
     void Client::setJSONNotifyCallback( void (*callback)(const char *) )
     {
       m_notifyCallback = callback;
+      notifyInitialState();
     }
 
     void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const

@@ -16,6 +16,25 @@ else:
 def createClient():
   return _INTERFACE( fabric )
 
+# take a python class and convert its members down to a hierarchy of
+# dictionaries, ignoring methods
+def typeToDict( obj ):
+  if type( obj ) is list:
+    objlist = []
+    for elem in obj:
+      objlist.append( typeToDict( elem ) )
+    return objlist
+
+  elif not hasattr( obj, '__dict__' ):
+    return obj
+
+  else:
+    objdict = {}
+    for member in vars( obj ):
+      attr = getattr( obj, member )
+      objdict[ member ] = typeToDict( attr )
+    return objdict
+
 # this is the interface object that gets returned to the user
 class _INTERFACE( object ):
   def __init__( self, fabric ):
@@ -23,6 +42,7 @@ class _INTERFACE( object ):
     self.KLC = self.__client.klc
     self.MR = self.__client.mr
     self.RT = self.__client.rt
+    self.RegisteredTypesManager = self.RT
     self.DG = self.__client.dg
     self.DependencyGraph = self.DG
     self.VP = self.__client.vp
@@ -61,6 +81,9 @@ class _CLIENT( object ):
     self.vp = _VP( self )
     self.ex = _EX( self )
     self.io = _IO( self )
+    self.build = _BUILD( self )
+
+    self.__state = {}
 
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
@@ -95,6 +118,12 @@ class _CLIENT( object ):
   def close( self ):
     fabric.close( self.__fabricClient )
 
+  def getLicenses( self ):
+    return self.__state.licenses;
+
+  def getContextID( self ):
+    return self.__state.contextID;
+
   def queueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     command = { 'dst': dst, 'cmd': cmd }
     if ( arg is not None ):
@@ -114,6 +143,9 @@ class _CLIENT( object ):
     self.__queuedUnwinds = []
     callbacks = self.__queuedCallbacks
     self.__queuedCallbacks = []
+
+    if len( commands ) < 1:
+      return
 
     jsonEncodedCommands = json.dumps( commands )
     jsonEncodedResults = self.__jsonExec( jsonEncodedCommands, len( jsonEncodedCommands ) )
@@ -139,26 +171,33 @@ class _CLIENT( object ):
     fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
   def _handleStateNotification( self, newState ):
-    state = {}
+    self.__state = {}
     self._patch( newState )
 
     # FIXME what is build?
     if 'build' in newState:
-      build._handleStateNotification( newState[ 'build' ] )
+      self.build._handleStateNotification( newState[ 'build' ] )
     self.dg._handleStateNotification( newState[ 'DG' ] )
     self.rt._handleStateNotification( newState[ 'RT' ] )
     self.ex._handleStateNotification( newState[ 'EX' ] )
     if 'VP' in newState:
       self.vp.handleStateNotification( newState[ 'VP' ] )
 
+  def _patch( self, diff ):
+    if 'licenses' in diff:
+      self.__state[ 'licenses' ] = diff[ 'licenses' ]
+    if 'contextID' in diff:
+      self.__state[ 'contextID' ] = diff[ 'contextID' ]
+
   def _handle( self, cmd, arg ):
-    try:
+    # FIXME add exception handling
+    #try:
       if cmd == 'state':
         self._handleStateNotification( arg )
       else:
         raise Exception( 'unknown command' )
-    except Exception as e:
-      raise Exception( 'command "' + cmd + '": ' + e )
+    #except Exception as e:
+      #raise Exception( 'command "' + cmd + '": ' + str( e ) )
 
   def _route( self, src, cmd, arg ):
     if len(src) == 0:
@@ -331,7 +370,7 @@ class _DG( _NAMESPACE ):
         raise Exception( 'unhandled type "' + type + '"' )
     return self._namedObjects[ name ]
 
-  def __handleStateNotification( self, state ):
+  def _handleStateNotification( self, state ):
     self._namedObjects = {}
     for namedObjectName in state:
       namedObjectState = state[ namedObjectName ]
@@ -361,7 +400,7 @@ class _DG( _NAMESPACE ):
   class _NAMEDOBJECT( object ):
     def __init__( self, dg, name ):
       self.__name = name
-      self.__errors = None
+      self.__errors = []
       self._dg = dg
   
     def _nObjQueueCommand( self, cmd, arg = None, unwind = None, callback = None ):
@@ -595,6 +634,7 @@ class _DG( _NAMESPACE ):
 
       def __unwind():
         self.__entryFunctionName = oldEntryFunctionName
+
       self._nObjQueueCommand( 'setEntryFunctionName', entryFunctionName, __unwind )
       self.__diagnostics = None
 
@@ -678,7 +718,8 @@ class _DG( _NAMESPACE ):
       # dictionary hack to simulate Python 3.x nonlocal
       data = { '_': None }
       def __callback( result ):
-        data[ '_' ] = result
+        data[ '_' ] = self.__rt._assignPrototypes( result,
+          self.__members[ memberName ][ 'type' ] )
 
       args = { 'memberName': memberName, 'sliceIndex': sliceIndex }
       self._nObjQueueCommand( 'getData', args, None, __callback )
@@ -736,7 +777,7 @@ class _DG( _NAMESPACE ):
       args = {
         'memberName': memberName,
         'sliceIndex': sliceIndex,
-        'data': data
+        'data': typeToDict( data )
       }
       self._nObjQueueCommand( 'setData', args )
 
@@ -747,13 +788,14 @@ class _DG( _NAMESPACE ):
         for memberName in result:
           member = result[ memberName ]
           for i in range( 0, len( member ) ):
+            # FIXME this is incorrect, ignoring return value
             self.__rt._assignPrototypes(
               member[ i ],
               self.__members[ memberName ][ 'type' ]
             )
         data[ '_' ] = result
 
-      self._nObjQueueCommand( 'getDataElement', None, None, __callback )
+      self._nObjQueueCommand( 'getBulkData', None, None, __callback )
       self._dg._executeQueuedCommands()
       return data[ '_' ]
 
@@ -771,6 +813,7 @@ class _DG( _NAMESPACE ):
       def __callback( result ):
         for i in range( 0, len( result ) ):
           for memberName in result[ i ]:
+            # FIXME this is incorrect, ignoring return value
             self.__rt._assignPrototypes(
               data[ i ][ memberName ],
               self.__members[ memberName ][ 'type' ]
@@ -793,6 +836,7 @@ class _DG( _NAMESPACE ):
         for member in result:
           memberData = data[ member ]
           for i in range( 0, len( memberData ) ):
+            # FIXME this is incorrect, ignoring return value
             self.__rt._assignPrototypes(
               memberData[ i ],
               self.__members[ member ][ 'type' ]
@@ -1432,38 +1476,50 @@ class _RT( _NAMESPACE ):
 
   def _assignPrototypes( self, data, typeName ):
     if typeName[-2:] == '[]':
+      obj = []
       typeName = typeName[0:-2]
       for i in range( 0, len( data ) ):
-        self._assignPrototypes( data[ i ], typeName )
+        obj.append( self._assignPrototypes( data[ i ], typeName ) )
+      return obj
+
     elif typeName in self.__prototypes:
-      data = self.__prototypes[ typeName ]
+      obj = self.__prototypes[ typeName ]()
       if 'members' in self.__registeredTypes[ typeName ]:
         members = self.__registeredTypes[ typeName ][ 'members' ]
         for i in range( 0, len( members ) ):
           member = members[ i ]
-          self._assignPrototypes( data[ member[ 'name' ] ], member[ 'type' ] )
-    return data
+          setattr( obj, member[ 'name' ],
+            self._assignPrototypes( data[ member[ 'name' ] ], member[ 'type' ] )
+          )
+      return obj
+
+    else:
+      return data
     
   def getRegisteredTypes( self ):
     self._executeQueuedCommands()
     return self.__registeredTypes
 
   def registerType( self, name, desc ):
-    members = [ ]
-    for descMemberName in desc[ 'members' ]:
+    members = []
+    for i in range( 0, len( desc[ 'members' ] ) ):
+      member = desc[ 'members' ][ i ]
+      memberName, memberType =  member.popitem()
+      if len( member ) > 0:
+        raise Exception( 'improperly formatted member' )
       member = {
-        'name': descMemberName,
-        'type': desc[ 'members' ][ descMemberName ]
+        'name': memberName,
+        'type': memberType
       }
       members.append( member )
 
     defaultValue = desc[ 'constructor' ]()
-    self.__prototypes[ name ] = defaultValue
+    self.__prototypes[ name ] = desc[ 'constructor' ]
 
     arg = {
       'name': name,
       'members': members,
-      'defaultValue': defaultValue
+      'defaultValue': typeToDict( defaultValue )
     }
     if ( 'klBindings' in desc ):
       arg[ 'klBindings' ] = desc[ 'klBindings' ]
@@ -1476,10 +1532,7 @@ class _RT( _NAMESPACE ):
     if 'registeredTypes' in diff:
       self.__registeredTypes = {}
       for typeName in diff[ 'registeredTypes' ]:
-        self.__registeredTypes[ typeName ] = self._assignPrototypes(
-          diff[ 'registeredTypes' ],
-          typeName
-        )
+        self.__registeredTypes[ typeName ] = diff[ 'registeredTypes' ][ typeName ]
 
   def _handleStateNotification( self, state ):
     self.__prototypes = {}
@@ -1556,6 +1609,16 @@ class _EX( _NAMESPACE ):
 class _IO( _NAMESPACE ):
   def __init__( self, client ):
     super( _IO, self ).__init__( client, 'IO' )
+
+  def _handleStateNotification( self, state ):
+    pass
+
+  def _route( self, src, cmd, arg ):
+    pass
+
+class _BUILD( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _BUILD, self ).__init__( client, 'build' )
 
   def _handleStateNotification( self, state ):
     pass
