@@ -385,8 +385,9 @@ class _DG( _NAMESPACE ):
   def _handle( self, cmd, arg ):
     # FIXME no logging callback implemented yet
     if cmd == 'log':
-      if ( self.__logCallback ):
-        self.__logCallback( arg )
+      pass
+      #if ( self.__logCallback ):
+      #  self.__logCallback( arg )
     else:
       raise Exception( 'command "' + cmd + '": unrecognized' )
 
@@ -614,7 +615,7 @@ class _DG( _NAMESPACE ):
       oldSourceCode = self.__sourceCode
       self.__sourceCode = sourceCode
       oldDiagnostics = self.__diagnostics
-      self.__diagnostics = None
+      self.__diagnostics = []
 
       def __unwind():
         self.__filename = oldFilename
@@ -640,10 +641,10 @@ class _DG( _NAMESPACE ):
         self.__entryFunctionName = oldEntryFunctionName
 
       self._nObjQueueCommand( 'setEntryFunctionName', entryFunctionName, __unwind )
-      self.__diagnostics = None
+      self.__diagnostics = []
 
     def getDiagnostics( self ):
-      if self.__diagnostics is None:
+      if len( self.__diagnostics ) == 0:
         self._dg._executeQueuedCommands()
       return self.__diagnostics
 
@@ -816,14 +817,16 @@ class _DG( _NAMESPACE ):
       # dictionary hack to simulate Python 3.x nonlocal
       data = { '_': None }
       def __callback( result ):
+        obj = []
         for i in range( 0, len( result ) ):
+          sliceobj = {}
+          obj.append( sliceobj )
           for memberName in result[ i ]:
-            # FIXME this is incorrect, ignoring return value
-            self.__rt._assignPrototypes(
-              data[ i ][ memberName ],
+            sliceobj[ memberName ] = self.__rt._assignPrototypes(
+              result[ i ][ memberName ],
               self.__members[ memberName ][ 'type' ]
             )
-        data[ '_' ] = result
+        data[ '_' ] = obj
 
       self._nObjQueueCommand( 'getSlicesBulkData', indices, None, __callback )
       self._dg._executeQueuedCommands()
@@ -856,7 +859,7 @@ class _DG( _NAMESPACE ):
       self._nObjQueueCommand( 'setSlicesBulkData', data )
 
     def setSliceBulkData( self, sliceIndex, data ):
-      args = { 'sliceIndex': sliceIndex, 'data': data }
+      args = [ { 'sliceIndex': sliceIndex, 'data': data } ]
       self._nObjQueueCommand( 'setSlicesBulkData', args )
 
     def getBulkDataJSON( self ):
