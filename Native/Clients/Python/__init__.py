@@ -35,6 +35,10 @@ def typeToDict( obj ):
       objdict[ member ] = typeToDict( attr )
     return objdict
 
+# used in unit tests
+def stringify( obj ):
+  return json.dumps( typeToDict( obj ) )
+
 # this is the interface object that gets returned to the user
 class _INTERFACE( object ):
   def __init__( self, fabric ):
@@ -757,7 +761,8 @@ class _DG( _NAMESPACE ):
       def __callback( result ):
         data[ '_' ] = self.__rt._assignPrototypes(
           result,
-          self.__members[ memberName ][ 'type' ]
+          # remove the braces since we are getting a single element
+          self.__members[ memberName ][ 'type' ][0:-2]
         )
 
       args = {
