@@ -1,5 +1,4 @@
 #!/bin/sh
-
 . ../helpers.sh
 
 BUILD_OS=$(uname -s)
