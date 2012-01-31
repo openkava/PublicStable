@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function(SceneGraph) {
+
 FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
   briefDesc: 'The CameraManipulator is a basic tool for controling viewport cameras.',
   detailedDesc: 'The CameraManipulator is a basic tool for controling viewport cameras.' +
@@ -1367,5 +1369,5 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
     return manipulatorNode;
   }});
 
-
-
+  
+});

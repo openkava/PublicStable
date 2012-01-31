@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/FABRIC.SceneGraph.Geometry"], function(SceneGraph, Geometry) {
+
 // NOTE: The following primitives are examples of procedural geometry generation.
 // Geometry data is stored in 2 separate nodes that contain data of different
 // dimensions. uniforms and attributes. Currently, we can only (legally) write to a
@@ -755,4 +757,4 @@ FABRIC.SceneGraph.registerNodeType('Teapot', {
     return teapotNode;
   }});
 
-
+});

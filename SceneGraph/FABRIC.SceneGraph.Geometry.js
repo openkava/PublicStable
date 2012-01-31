@@ -3,8 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-
-define(["FABRIC", "SceneGraph"], function(FABRIC, SceneGraph) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/FABRIC.SceneGraph.Kinematics"], function(SceneGraph) {
 
 var Geometry = {};
 
