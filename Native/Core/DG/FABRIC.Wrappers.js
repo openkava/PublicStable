@@ -119,7 +119,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       if ('registeredTypes' in diff) {
         RT.registeredTypes = {};
         for (var typeName in diff.registeredTypes) {
-          RT.registeredTypes[typeName] = RT.assignPrototypes(diff.registeredTypes[typeName], typeName);
+          RT.registeredTypes[typeName] = diff.registeredTypes[typeName];
         }
       }
     };
