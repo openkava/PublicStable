@@ -3,9 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/RT/Xfo"], function(SceneGraph, Xfo) {
-
-var Kinematics = {};
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/RT/Xfo"], function() {
 
 FABRIC.SceneGraph.registerNodeType('Transform', {
   briefDesc: 'The Transform node implements a global or hierarchical transform.',
@@ -257,6 +255,5 @@ FABRIC.SceneGraph.registerNodeType('AimTransform', {
     return aimTransformNode;
   }});
 
-  return Kinematics;
 });
 

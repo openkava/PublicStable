@@ -9,7 +9,7 @@ FABRIC.define(["SceneGraph/RT/Vec2", "SceneGraph/RT/Vec3", "SceneGraph/RT/Color"
  * The scene graph is the core implementation of Fabric's
  * node graph in javascript.
  */
-var sceneGraph = {
+FABRIC.SceneGraph = {
   managerDescriptions: {},
   nodeDescriptions: {},
   assetLoaders: {},
@@ -111,8 +111,8 @@ var sceneGraph = {
     
     // [pzion 20110711] This is a bit of a hack: we populate the *global*
     // OpenGL constants structure if it doesn't alrady exist.
-    if (!sceneGraph.OpenGLConstants)
-      sceneGraph.OpenGLConstants = JSON.parse(context.EX.getLoadedExts().FabricOGL.jsConstants);
+    if (!FABRIC.SceneGraph.OpenGLConstants)
+      FABRIC.SceneGraph.OpenGLConstants = JSON.parse(context.EX.getLoadedExts().FabricOGL.jsConstants);
 
     // EAch Viewport creates a new fabricwindow which is the origin of
     // window redraw events.
@@ -258,11 +258,11 @@ var sceneGraph = {
     };
     
     scene.constructManager = function(type, options) {
-      if (!sceneGraph.managerDescriptions[type]) {
+      if (!FABRIC.SceneGraph.managerDescriptions[type]) {
         throw ('Manager Constructor not Registered:' + type);
       }
       options = (options ? options : {});
-      var managerNode = sceneGraph.managerDescriptions[type].factoryFn(options, scene);
+      var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
       if (!managerNode) {
         throw (' Factory function method must return an object');
       }
@@ -280,12 +280,12 @@ var sceneGraph = {
     };
     
     scene.constructNode = function(type, options) {
-      if (!sceneGraph.nodeDescriptions[type]) {
+      if (!FABRIC.SceneGraph.nodeDescriptions[type]) {
         throw ('Node Constructor not Registered:' + type);
       }
       options = (options ? options : {});
       if(!options.type) options.type = type;
-      var sceneGraphNode = sceneGraph.nodeDescriptions[type].factoryFn(options, scene);
+      var sceneGraphNode = FABRIC.SceneGraph.nodeDescriptions[type].factoryFn(options, scene);
       if (!sceneGraphNode) {
         throw (' Factory function method must return an object');
       }
@@ -561,8 +561,8 @@ var sceneGraph = {
     };
     scene.pub.importAssetFile = function(file, options, callback) {
       var ext = file.split('.').pop().toLocaleLowerCase();
-      if (sceneGraph.assetLoaders[ext]) {
-        var assets = sceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
+      if (FABRIC.SceneGraph.assetLoaders[ext]) {
+        var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
         return assets;
       }
       else {
@@ -780,7 +780,7 @@ var sceneGraph = {
   }
 };
 
-sceneGraph.registerNodeType('SceneGraphNode', {
+FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
   briefDesc: 'The base class for the SceneGraphNodes.',
   detailedDesc: 'The SceneGraphNode is a basic wrapper for Fabric\'s DGNode. Each SceneGraphNode can '+
                 'contain several DGNodes. Furthermore the SceneGraphNode implements the concept of a '+
@@ -1056,7 +1056,7 @@ sceneGraph.registerNodeType('SceneGraphNode', {
     return sceneGraphNode;
   }});
 
-sceneGraph.registerNodeType('Viewport', {
+FABRIC.SceneGraph.registerNodeType('Viewport', {
   briefDesc: 'The Viewport node implements the basic OpenGL canvas.',
   detailedDesc: 'Utilizing a redraw eventhandler, the ViewPort node offers a powerful OpenGL canvas, ' +
                 'which is connected to an embed element inside the DOM. The most important parameter of '+
@@ -1589,7 +1589,7 @@ sceneGraph.registerNodeType('Viewport', {
     return viewportNode;
   }});
 
-sceneGraph.registerNodeType('ResourceLoad', {
+FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   briefDesc: 'The ResourceLoad node implements the loading of a resource from an URL.',
   detailedDesc: 'Based on is \'url\' member, the ResourceLoad node will asynchronously load the associated ' +
                 'resource to its \'resource\' member. Until the data is loaded, resource.dataSize will be zero. ' +
@@ -1724,7 +1724,7 @@ sceneGraph.registerNodeType('ResourceLoad', {
     return resourceLoadNode;
   }});
 
-sceneGraph.registerNodeType('Camera', {
+FABRIC.SceneGraph.registerNodeType('Camera', {
   briefDesc: 'The Camera node implements an OpenGL camera for the ViewPort node.',
   detailedDesc: 'The Camera node uses a redraw event handler to draw the camera projection to '+
                 'the OpenGL canvas.',
@@ -1869,7 +1869,7 @@ sceneGraph.registerNodeType('Camera', {
 
 
 
-sceneGraph.registerNodeType('FreeCamera', {
+FABRIC.SceneGraph.registerNodeType('FreeCamera', {
   briefDesc: 'The FreeCamera node implements an OpenGL camera in a free roaming mode.',
   detailedDesc: 'The FreeCamera node uses the Camera node to implement a free roaming camera without a target point.',
   parentNodeDesc: 'Camera',
@@ -1894,7 +1894,7 @@ sceneGraph.registerNodeType('FreeCamera', {
 
 
 
-sceneGraph.registerNodeType('TargetCamera', {
+FABRIC.SceneGraph.registerNodeType('TargetCamera', {
   briefDesc: 'The TargetCamera node implements an OpenGL camera in using a target point',
   detailedDesc: 'The TargetCamera node uses the Camera node to implement a camera with a target point, similar to the GLUT lookat camera.',
   parentNodeDesc: 'Camera',
@@ -1932,6 +1932,5 @@ sceneGraph.registerNodeType('TargetCamera', {
     return targetCameraNode;
   }});
 
-  FABRIC.SceneGraph = sceneGraph;
-  return sceneGraph;
+  return FABRIC.SceneGraph;
 });

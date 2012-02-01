@@ -2,17 +2,14 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
-
-
-//define([], function() {
-
-// TODO: make Fabric a private variable by uncommenting the var statement.
- var FABRIC = (function() {
+ 
+var FABRIC = (function() {
 
   var requiredVersion = [1,0,19];
   // we keep an array of context ids,
   // so we can open the debugger with one
   var contextIDs = [];
+  var fabricRootURL;
   
   
 /** vim: et:ts=4:sw=4:sts=4
@@ -1530,7 +1527,12 @@ var requirejs, require, define;
 
                     //Join the path parts together, then figure out if baseUrl is needed.
                     url = syms.join("/") + (ext || ".js");
-                    url = (url.charAt(0) === '/' || url.match(/^\w+:/) ? "" : config.baseUrl) + url;
+                    /////////////////////////////////////////////
+                    // Fabric specific modification.
+                    // We decorate the URL with the current version number of Fabric.
+                    // this is to ensure that when updated versions are released,
+                    // cached versions of the files are not used. 
+                    url = (url.charAt(0) === '/' || url.match(/^\w+:/) ? "" : config.baseUrl) + url + '?ver=' + requiredVersion.join('');
                 }
 
                 return config.urlArgs ? url +
@@ -2011,6 +2013,7 @@ var requirejs, require, define;
                     src.pop(); // remove the 'Core' folder.
                     subPath = src.length ? src.join('/')  + '/' : './';
                     cfg.baseUrl = subPath;
+                    fabricRootURL = subPath;
                 }
                 break;
             }
@@ -2508,29 +2511,10 @@ var requirejs, require, define;
   var processURL = function(url) {
     if (url.split('/')[0] === 'FABRIC_ROOT') {
       // Remove the "FABRIC_ROOT" and replace it with
-      // the path to the Fabric SDK. If the loaded HTML
-      // file under the Fabric URL, then it can locate
-      // it automaticaly. Otherwize it must be specified. 
-      url = url.split('/').splice(1).join('/');
-      var urlSections = document.location.href.split('/');
-      do {
-        urlSections.pop();
-      }while (urlSections.length > 0 &&
-              urlSections[urlSections.length - 1].toLowerCase() !== 'fabric');
-      
-      if (urlSections.length == 0) {
-        if( FABRIC.fabricSDKPath ){
-          return FABRIC.fabricSDKPath + '/' + url;
-        }else{
-          throw ('Fabric SDK Path not provided. \n\
-                 specify the location of the Fabric SDK by setting FABRIC.fabricSDKPath prior to constr');
-        }
-      }
-      return urlSections.join('/') + '/' + url;
+      // the path to the Fabric SDK.
+      return fabricRootURL + url.split('/').splice(1).join('/') + '?ver=' + requiredVersion.join('');
     }else{
-      var urlSections = document.location.href.split('/');
-      urlSections.pop();
-      return urlSections.join('/') + '/' + url;
+      return url + '?' + requiredVersion.join('');
     }
   };
 
@@ -2663,6 +2647,3 @@ var requirejs, require, define;
     RT: {}
   };
 })();
-
-//  return FABRIC;
-//});

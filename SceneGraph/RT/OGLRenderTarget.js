@@ -28,8 +28,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
- 
-
 /**
  * Constructor function to create a OGLRenderTarget object.
  * @constructor

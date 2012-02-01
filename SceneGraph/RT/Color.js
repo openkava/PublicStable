@@ -5,10 +5,6 @@
 
 FABRIC.define(["SceneGraph/RT/Math"], function() {
 
-/**
- * The basic math module.
- */
-FABRIC.RT = FABRIC.RT ? FABRIC.RT : {};
 
 /**
  * Function to determine if an object is a valid color.
