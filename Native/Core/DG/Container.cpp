@@ -554,11 +554,10 @@ namespace Fabric
     {
       std::string name;
       RC::ConstHandle<RT::Desc> desc;
-      std::vector<uint8_t> defaultValue;
 
       arg.requireObject();
       JSON::ObjectDecoder argObjectDecoder( arg );
-      JSON::Entity keyString, valueEntity;
+      JSON::Entity keyString, valueEntity, defaultValueEntity;
       while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
@@ -576,14 +575,20 @@ namespace Fabric
           }
           else if ( keyString.stringIs( "defaultValue", 12 ) )
           {
-            defaultValue.resize( desc->getAllocSize(), 0 );
-            desc->decodeJSON( valueEntity, &defaultValue[0] );
+            defaultValueEntity = valueEntity;
           }
         }
         catch ( Exception e )
         {
           argObjectDecoder.rethrow( e );
         }
+      }
+
+      std::vector<uint8_t> defaultValue;
+      if ( defaultValueEntity )
+      {
+        defaultValue.resize( desc->getAllocSize(), 0 );
+        desc->decodeJSON( defaultValueEntity, &defaultValue[0] );
       }
       
       if ( name.empty() )

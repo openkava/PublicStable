@@ -10,7 +10,7 @@ dirs = [
   'BULLET',
   #'CIMG',
   'EXR',
-  'FILESTREAM',
+  #'FILESTREAM',
   'HDR',
   'LIDAR',
   'Math',
