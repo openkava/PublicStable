@@ -14,13 +14,17 @@ else:
 def createClient():
   return _INTERFACE( fabric )
 
+# used in unit tests
+def stringify( obj ):
+  return json.dumps( _typeToDict( obj ) )
+
 # take a python class and convert its members down to a hierarchy of
 # dictionaries, ignoring methods
-def typeToDict( obj ):
+def _typeToDict( obj ):
   if type( obj ) is list:
     objlist = []
     for elem in obj:
-      objlist.append( typeToDict( elem ) )
+      objlist.append( _typeToDict( elem ) )
     return objlist
 
   elif not hasattr( obj, '__dict__' ):
@@ -30,12 +34,8 @@ def typeToDict( obj ):
     objdict = {}
     for member in vars( obj ):
       attr = getattr( obj, member )
-      objdict[ member ] = typeToDict( attr )
+      objdict[ member ] = _typeToDict( attr )
     return objdict
-
-# used in unit tests
-def stringify( obj ):
-  return json.dumps( typeToDict( obj ) )
 
 # this is the interface object that gets returned to the user
 class _INTERFACE( object ):
@@ -173,7 +173,6 @@ class _CLIENT( object ):
     self.__state = {}
     self._patch( newState )
 
-    # FIXME what is build?
     if 'build' in newState:
       self.build._handleStateNotification( newState[ 'build' ] )
     self.dg._handleStateNotification( newState[ 'DG' ] )
@@ -189,14 +188,13 @@ class _CLIENT( object ):
       self.__state[ 'contextID' ] = diff[ 'contextID' ]
 
   def _handle( self, cmd, arg ):
-    # FIXME add exception handling
-    #try:
+    try:
       if cmd == 'state':
         self._handleStateNotification( arg )
       else:
         raise Exception( 'unknown command' )
-    #except Exception as e:
-      #raise Exception( 'command "' + cmd + '": ' + str( e ) )
+    except Exception as e:
+      raise Exception( 'command "' + cmd + '": ' + str( e ) )
 
   def _route( self, src, cmd, arg ):
     if len(src) == 0:
@@ -211,8 +209,6 @@ class _CLIENT( object ):
         self.dg._route( src, cmd, arg )
       elif firstSrc == 'EX':
         self.ex._route( src, cmd, arg )
-      elif firstSrc == 'IO':
-        self.io._route( src, cmd, arg )
       elif firstSrc == 'VP':
         self.vp._route( src, cmd, arg )
       elif firstSrc == 'GC':
@@ -670,7 +666,6 @@ class _DG( _NAMESPACE ):
         sliceIndex = arg[ 'sliceIndex' ]
         # FIXME invalidate cache here, see pzion comment in node.js
       else:
-        # FIXME what happens if this calls _patch?
         super( _DG._CONTAINER, self )._handle( cmd, arg )
 
     def getCount( self ):
@@ -783,7 +778,7 @@ class _DG( _NAMESPACE ):
       args = {
         'memberName': memberName,
         'sliceIndex': sliceIndex,
-        'data': typeToDict( data )
+        'data': _typeToDict( data )
       }
       self._nObjQueueCommand( 'setData', args )
 
@@ -879,43 +874,10 @@ class _DG( _NAMESPACE ):
     def setBulkDataJSON( self, data ):
       self._nObjQueueCommand( 'setBulkDataJSON', data )
      
-    def putResourceToUserFile( self, memberName, uTitle, extension, defaultFileName ):
+    def putResourceToFile( self, fileHandle, memberName ):
       args = {
         'memberName': memberName,
-        'uiOptions': {
-          'title': uiTitle,
-          'extension': extension,
-          'defaultFileName': defaultFileName
-        }
-      }
-      self._nObjQueueCommand( 'putResourceToUserFile', args )
-      self._dg._executeQueuedCommands()
-
-    def getResourceFromUserFile( self, memberName, uTitle, extension ):
-      args = {
-        'memberName': memberName,
-        'uiOptions': {
-          'title': uiTitle,
-          'extension': extension
-        }
-      }
-      self._nObjQueueCommand( 'getResourceFromUserFile', args )
-      self._dg._executeQueuedCommands()
-
-    def getResourceFromFile( self, memberName, handleBasedPath ):
-      args = {
-        'memberName': memberName,
-        # FIXME this doesn't exist
-        'path': handleBasedPathToArray( handleBasedPath )
-      }
-      self._nObjQueueCommand( 'getResourceFromFile', args )
-      self._dg._executeQueuedCommands()
-
-    def putResourceToFile( self, memberName, handleBasedPath ):
-      args = {
-        'memberName': memberName,
-        # FIXME this doesn't exist
-        'path': handleBasedPathToArray( handleBasedPath )
+        'path': fileHandle
       }
       self._nObjQueueCommand( 'putResourceToFile', args )
       self._dg._executeQueuedCommands()
@@ -1086,13 +1048,11 @@ class _DG( _NAMESPACE ):
       self._nObjQueueCommand( 'fire' )
       self._dg._executeQueuedCommands()
 
-    # FIXME what is this doing, also where are eventHandlers set?
     def setSelectType( self, tn ):
       self._nObjQueueCommand( 'setSelectType', tn )
       self._dg._executeQueuedCommands()
       self.__typeName = tn
 
-    # FIXME the indexing of namedObjects is almost certainly incorrect
     def select( self ):
       # dictionary hack to simulate Python 3.x nonlocal
       data = { '_': None }
@@ -1532,7 +1492,7 @@ class _RT( _NAMESPACE ):
     arg = {
       'name': name,
       'members': members,
-      'defaultValue': typeToDict( defaultValue )
+      'defaultValue': _typeToDict( defaultValue )
     }
     if ( 'klBindings' in desc ):
       arg[ 'klBindings' ] = desc[ 'klBindings' ]
@@ -1599,44 +1559,179 @@ class _GC( _NAMESPACE ):
     obj = self.__objects[ id ]
     obj._route( src, cmd, arg )
 
-class _VP( _NAMESPACE ):
-  def __init__( self, client ):
-    super( _VP, self ).__init__( client, 'VP' )
-
-  def _handleStateNotification( self, state ):
-    pass
-
-  def _route( self, src, cmd, arg ):
-    pass
-
 class _EX( _NAMESPACE ):
   def __init__( self, client ):
     super( _EX, self ).__init__( client, 'EX' )
+    self.__loadedExts = {}
+
+  def _patch( self, diff ):
+    for name in diff:
+      if diff[ name ]:
+        self.__loadedExts = diff[ name ]
+      elif name in self.__loadedExts:
+        del self.__loadedExts[ name ]
 
   def _handleStateNotification( self, state ):
-    pass
+    self.__loadedExts = {}
+    self._patch( state )
+
+  def _handle( self, cmd, arg ):
+    if cmd == 'delta':
+      self._patch( arg )
+    else:
+      raise Exception( 'command "' + cmd + '": unrecognized' )
 
   def _route( self, src, cmd, arg ):
-    pass
+    if len( src ) > 0:
+      self._handle( cmd, arg )
+    else:
+      raise Exception( 'unroutable' )
+
+  def getLoadedExts( self ):
+    return self.__loadedExts
 
 class _IO( _NAMESPACE ):
   def __init__( self, client ):
     super( _IO, self ).__init__( client, 'IO' )
 
-  def _handleStateNotification( self, state ):
-    pass
+    self.forOpen = 'openMode'
+    self.forOpenWithWriteAccess = 'openWithWriteAccessMode'
+    self.forSave = 'saveMode'
 
-  def _route( self, src, cmd, arg ):
-    pass
+  def __queryUserFile( self, funcname, mode, uiTitle, extension, defaultFileName ):
+    if mode != self.forOpen and mode != self.forOpenWithWriteAccess and mode != self.forSave:
+      raise Exception( 'Invalid mode: "' + mode + '": can be IO.forOpen, IO.forOpenWithWriteAccess or IO.forSave' )
+
+    # dictionary hack to simulate Python 3.x nonlocal
+    data = { '_': None }
+    def __callback( result ):
+      data[ '_' ] = result
+    args = {
+      'existingFile': mode == self.forOpenWithWriteAccess or mode == self.forOpen,
+      'writeAccess': mode == self.forOpenWithWriteAccess or mode == self.forSave,
+      'uiOptions': {
+        'title': uiTitle,
+        'extension': extension,
+        'defaultFileName': defaultFileName
+      }
+    }
+    self._queueCommand( funcname, args, None, __callback )
+    self._executeQueuedCommands()
+    return data
+
+  def queryUserFileAndFolderHandle( self, mode, uiTitle, extension, defaultFileName ):
+    return self.__queryUserFile( 'queryUserFileAndFolder', mode, uiTitle, extension, defaultFileName )
+
+  def queryUserFileHandle( self, mode, uiTitle, extension, defaultFileName ):
+    return self.__queryUserFile( 'queryUserFile', mode, uiTitle, extension, defaultFileName )
+
+  def getTextFileContent( self, handle ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    data = { '_': None }
+    def __callback( result ):
+      data[ '_' ] = result
+    self._queueCommand( 'getTextFileContent', handle, None, __callback )
+    self._executeQueuedCommands()
+    return data
+
+  def putTextFileContent( self, handle, content, append ):
+    args = {
+      'content': content,
+      'file': hande,
+      'append': append
+    }
+    self._queueCommand( 'getTextFileContent', handle )
+    self._executeQueuedCommands()
+
+  def buildFileHandleFromRelativePath( self, handle ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    data = { '_': None }
+    def __callback( result ):
+      data[ '_' ] = result
+    self._queueCommand( 'createFileHandleFromRelativePath', handle, None, __callback )
+    self._executeQueuedCommands()
+    return data
+    
+  def buildFolderHandleFromRelativePath( self, handle ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    data = { '_': None }
+    def __callback( result ):
+      data[ '_' ] = result
+    self._queueCommand( 'createFolderHandleFromRelativePath', handle, None, __callback )
+    self._executeQueuedCommands()
+    return data
+    
+  def getFileHandleInfo( self, handle ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    data = { '_': None }
+    def __callback( result ):
+      data[ '_' ] = result
+    self._queueCommand( 'getFileInfo', handle, None, __callback )
+    self._executeQueuedCommands()
+    return data
 
 class _BUILD( _NAMESPACE ):
   def __init__( self, client ):
     super( _BUILD, self ).__init__( client, 'build' )
+    self.__build = {}
+
+  def _handleStateNotification( self, state ):
+    pass
+
+  def _patch( self, diff ):
+    for name in diff:
+      self.__build[ name ] = diff[ name ]
+
+  def _handleStateNotification( self, state ):
+    self._patch( state )
+
+  def _handle( self, cmd, arg ):
+    if cmd == 'delta':
+      self._patch( arg )
+    else:
+      raise Exception( 'command "' + cmd + '": unrecognized' )
+
+  def _route( self, src, cmd, arg ):
+    if len( src ) == 0:
+      self._handle( cmd, arg )
+    else:
+      raise Exception( 'unroutable' )
+
+  def isExpired( self ):
+    return self.__build[ 'isExpired' ]
+
+  def getName( self ):
+    return self.__build[ 'getName' ]
+
+  def getPureVersion( self ):
+    return self.__build[ 'pureVersion' ]
+
+  def getFullVersion( self ):
+    return self.__build[ 'fullVersion' ]
+
+  def getDesc( self ):
+    return self.__build[ 'desc' ]
+
+  def getCopyright( self ):
+    return self.__build[ 'copyright' ]
+
+  def getURL( self ):
+    return self.__build[ 'url' ]
+
+  def getOS( self ):
+    return self.__build[ 'os' ]
+
+  def getArch( self ):
+    return self.__build[ 'arch' ]
+
+class _VP( _NAMESPACE ):
+  def __init__( self, client ):
+    super( _VP, self ).__init__( client, 'VP' )
+    self.__viewPorts = {}
 
   def _handleStateNotification( self, state ):
     pass
 
   def _route( self, src, cmd, arg ):
     pass
-
 
