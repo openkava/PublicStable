@@ -1001,7 +1001,7 @@ namespace Fabric
         }
       }
       
-      if ( handle.empty() )
+      if ( memberName.empty() )
         throw Exception( "missing 'memberName'" );
       if ( handle.empty() )
         throw Exception( "missing 'file'" );
