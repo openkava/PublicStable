@@ -35,7 +35,7 @@ binding.setParameterLayout([
 ]);
 
 rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
-rlnode.setData("url", 0, "file:tomatoes_960_640.png");
+rlnode.setData("url", 0, "testfile://tomatoes_960_640.png");
 
 node = FABRIC.DependencyGraph.createNode("node");
 node.setDependency(rlnode, "loadnode");

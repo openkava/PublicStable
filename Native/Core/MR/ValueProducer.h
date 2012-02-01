@@ -12,10 +12,11 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
-    class JSONObjectGenerator;
+    class Encoder;
+    class ObjectDecoder;
+    class ObjectEncoder;
   };
   
   namespace RT
@@ -34,9 +35,9 @@ namespace Fabric
       public:
      
         virtual void produce( void *data ) const = 0;
-        virtual void produceJSON( Util::JSONGenerator &jg ) const;
+        virtual void produceJSON( JSON::Encoder &jg ) const;
         void produceJSONAsync(
-          Util::JSONObjectGenerator &jsonObjectGenerator,
+          JSON::ObjectEncoder &jsonObjectEncoder,
           void (*finishedCallback)( void * ),
           void *finishedUserdata
           );

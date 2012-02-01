@@ -113,6 +113,10 @@ buildFlags = {
     }, 
   # === LINUX ===
   'Linux': {
+    'ccDefs': [
+      '__STDC_LIMIT_MACROS',
+      '__STDC_CONSTANT_MACROS'
+    ],
     'ccflags': ['-fPIC'],
     'i686' : {
       'ccflags': [ '-m32' ],

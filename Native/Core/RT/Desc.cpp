@@ -2,17 +2,13 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "Desc.h"
-#include "Impl.h"
-#include "FixedArrayDesc.h"
-#include "VariableArrayDesc.h"
+#include <Fabric/Core/RT/Desc.h>
 
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/Encoder.h>
+#include <Fabric/Core/RT/FixedArrayDesc.h>
+#include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -74,24 +70,14 @@ namespace Fabric
       return m_impl->descData( data );
     }
     
-    RC::Handle<JSON::Value> Desc::getJSONValue( void const *data ) const
+    void Desc::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
-      return m_impl->getJSONValue( data );
+      m_impl->encodeJSON( data, encoder );
     }
     
-    void Desc::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    void Desc::decodeJSON( JSON::Entity const &entity, void *data ) const
     {
-      m_impl->generateJSON( data, jsonGenerator );
-    }
-    
-    void Desc::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
-    {
-      m_impl->decodeJSON( entityInfo, data );
-    }
-    
-    void Desc::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const
-    {
-      m_impl->setDataFromJSONValue( value, data );
+      m_impl->decodeJSON( entity, data );
     }
 
     void Desc::setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const
@@ -115,18 +101,23 @@ namespace Fabric
       return m_impl->isShallow();
     }
 
-    void Desc::jsonDesc( Util::JSONGenerator &resultJG ) const
+    bool Desc::isExportable() const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      jsonDesc( resultJOG );
+      return m_impl->isExportable();
     }
     
-    void Desc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void Desc::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      resultJOG.makeMember( "name" ).makeString( getUserName() );
-      resultJOG.makeMember( "size" ).makeInteger( getAllocSize() );
-      Util::JSONGenerator defaultValueJG = resultJOG.makeMember( "defaultValue" );
-      generateJSON( getDefaultData(), defaultValueJG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      jsonDesc( resultObjectEncoder );
+    }
+    
+    void Desc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
+    {
+      resultObjectEncoder.makeMember( "name" ).makeString( getUserName() );
+      resultObjectEncoder.makeMember( "size" ).makeInteger( getAllocSize() );
+      JSON::Encoder defaultValueObjectEncoder = resultObjectEncoder.makeMember( "defaultValue" );
+      encodeJSON( getDefaultData(), defaultValueObjectEncoder );
     }
 
     size_t Desc::getIndirectMemoryUsage( void const *data ) const

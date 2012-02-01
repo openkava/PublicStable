@@ -37,7 +37,7 @@ namespace Fabric
       {
         if ( i > 0 )
           result += ",";
-        result += m_memberAdapter->toString( m_arrayDesc->getMemberData( data, i ) );
+        result += m_memberAdapter->toString( m_arrayDesc->getImmutableMemberData( data, i ) );
       }
       return result + "]";
     }

@@ -23,7 +23,7 @@ namespace Fabric
       size_t getValueLength( void const *src ) const;
       void setValue( char const *data, size_t length, void *dst ) const;
       
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       
     protected:
     

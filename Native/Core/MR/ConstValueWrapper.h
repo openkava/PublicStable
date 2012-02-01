@@ -27,7 +27,7 @@ namespace Fabric
       static RC::Handle<ConstValueWrapper> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
-        RC::ConstHandle<JSON::Value> const &jsonValue
+        JSON::Entity const &jsonEntity
         );
       
       virtual RC::ConstHandle<ValueProducer> getUnwrapped() const;
@@ -38,11 +38,11 @@ namespace Fabric
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
-        RC::ConstHandle<JSON::Value> const &jsonValue
+        JSON::Entity const &jsonEntity
         );
     
       virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
+      virtual void toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const;
     
     private:
     

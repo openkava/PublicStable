@@ -4,10 +4,8 @@
 
 #include "NamedObject.h"
 #include "Context.h"
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
 {
@@ -19,7 +17,7 @@ namespace Fabric
       : CompiledObject( context )
       , m_context( context.ptr() )
     {
-      if ( name.length() == 0 )
+      if ( name.empty() )
         throw Exception( "name must be non-empty" );
         
       m_notificationSrc.push_back( "DG" );
@@ -37,47 +35,38 @@ namespace Fabric
     }
 
     void NamedObject::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( dst.size() - dstOffset == 0 )
-      {
-        try
-        {
-          jsonExec( cmd, arg, resultJAG );
-        }
-        catch ( Exception e )
-        {
-          throw "command " + _(cmd) + ": " + e;
-        }
-      }
+        jsonExec( cmd, arg, resultArrayEncoder );
       else throw Exception( "unroutable" );
     }
       
-    void NamedObject::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void NamedObject::jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       throw Exception( "unknown command" );
     }
       
-    void NamedObject::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void NamedObject::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      jsonDesc( resultJOG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      jsonDesc( resultObjectEncoder );
     }
     
-    void NamedObject::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void NamedObject::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "type", 4 );
-        jsonDescType( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "type", 4 );
+        jsonDescType( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "errors", 6 );
-        jsonDescErrors( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "errors", 6 );
+        jsonDescErrors( memberEncoder );
       }
     }
     
@@ -99,10 +88,10 @@ namespace Fabric
     {
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
-        Util::JSONObjectGenerator jog = jg.makeObject();
-        Util::JSONGenerator deltaJG = jog.makeMember( memberData, memberLength );
-        deltaJG.appendJSON( memberDeltaJSON );
+        JSON::Encoder jsonEncoder( &json );
+        JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
+        JSON::Encoder deltaEncoder = jsonObjectEncoder.makeMember( memberData, memberLength );
+        deltaEncoder.appendJSON( memberDeltaJSON );
       }
       jsonNotifyDelta( json );
     }
@@ -111,13 +100,13 @@ namespace Fabric
     {
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescErrors( jg );
       }
       jsonNotifyMemberDelta( "errors", 6, json );
     }
 
-    void NamedObject::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const
+    void NamedObject::jsonGetMemoryUsage( JSON::Encoder &jg ) const
     {
       jg.makeInteger( 0 );
     }

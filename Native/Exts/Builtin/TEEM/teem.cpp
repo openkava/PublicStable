@@ -9,9 +9,8 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 #include <teem/nrrd.h>
 //#include <teem/gage.h>
 
-FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
-  KL::Data data,
-  KL::Size dataSize,
+void FabricTeemNRRDLoadUShortFromFile(
+  KL::String fileName,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::Size &imageDepth,
@@ -19,31 +18,6 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
   KL::Mat44 &xfoMat
   )
 {
-  imageWidth = 0;
-  imageHeight = 0;
-  imageDepth = 0;
-
-  imageUShortVoxels.resize( 0 );
-
-  //The library expects a file; so create a temporary one until we have use File-based IO in Fabric
-#if defined(FABRIC_OS_WINDOWS)
-  char const *dir = getenv("APPDATA");
-  if(dir == NULL)
-    dir = getenv("TEMP");
-  if(dir == NULL)
-    dir = getenv("TMP");
-  if(dir == NULL)
-    Fabric::EDK::throwException("FabricTeemNRRDLoadUShort: environment variable APP_DATA or TMP or TEMP is undefined");
-  KL::String fileName( _tempnam( dir, "tmpfab_" ) );
-#else
-  KL::String fileName(tmpnam(NULL));
-#endif
-
-  FILE * file = fopen(fileName.data(),"wb");
-  fwrite(data,dataSize,1,file);
-  fclose(file);
-  file = NULL;
-
   Nrrd* nin = nrrdNew();
   if(nrrdLoad(nin, fileName.data(), NULL))
   {
@@ -149,5 +123,57 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
   delete[] gradVec;
 */
   nrrdNuke(nin);
+}
+
+FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShortFromFileHandle(
+  KL::String handle,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::Size &imageDepth,
+  KL::VariableArray<KL::Byte> &imageUShortVoxels,
+  KL::Mat44 &xfoMat
+  )
+{
+  KL::FileHandleWrapper wrapper(handle);
+  wrapper.ensureIsValidFile();
+  return FabricTeemNRRDLoadUShortFromFile(wrapper.getPath(),imageWidth,imageHeight,imageDepth,imageUShortVoxels,xfoMat);
+}
+
+FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
+  KL::Data data,
+  KL::Size dataSize,
+  KL::Size &imageWidth,
+  KL::Size &imageHeight,
+  KL::Size &imageDepth,
+  KL::VariableArray<KL::Byte> &imageUShortVoxels,
+  KL::Mat44 &xfoMat
+  )
+{
+  imageWidth = 0;
+  imageHeight = 0;
+  imageDepth = 0;
+
+  imageUShortVoxels.resize( 0 );
+
+  //The library expects a file; so create a temporary one until we have use File-based IO in Fabric
+#if defined(FABRIC_OS_WINDOWS)
+  char const *dir = getenv("APPDATA");
+  if(dir == NULL)
+    dir = getenv("TEMP");
+  if(dir == NULL)
+    dir = getenv("TMP");
+  if(dir == NULL)
+    Fabric::EDK::throwException("FabricTeemNRRDLoadUShort: environment variable APP_DATA or TMP or TEMP is undefined");
+  KL::String fileName( _tempnam( dir, "tmpfab_" ) );
+#else
+  KL::String fileName(tmpnam(NULL));
+#endif
+
+  FILE * file = fopen(fileName.data(),"wb");
+  fwrite(data,dataSize,1,file);
+  fclose(file);
+  file = NULL;
+
+  return FabricTeemNRRDLoadUShortFromFile(fileName,imageWidth,imageHeight,imageDepth,imageUShortVoxels,xfoMat);
 }
 

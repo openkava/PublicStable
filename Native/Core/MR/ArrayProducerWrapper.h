@@ -28,9 +28,9 @@ namespace Fabric
       virtual RC::ConstHandle<ArrayProducer> getUnwrapped() const = 0;
 
       virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
     protected:
@@ -40,23 +40,23 @@ namespace Fabric
         );
     
       void jsonExecGetCount(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
 
       void jsonExecProduce(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
       void jsonExecProduceAsync(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     
       void jsonExecFlush(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     
     private:

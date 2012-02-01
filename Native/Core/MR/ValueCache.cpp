@@ -66,8 +66,8 @@ namespace Fabric
     ValueCache::ComputeState::ComputeState( RC::ConstHandle<ValueCache> const &valueCache )
       : ValueProducer::ComputeState( valueCache )
       , m_valueCache( valueCache )
-      , m_mutex( valueCache->m_mutex )
       , m_inputValueProducerComputeState( valueCache->m_input->createComputeState() )
+      , m_mutex( valueCache->m_mutex )
     {
     }
     

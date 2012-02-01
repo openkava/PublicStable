@@ -23,13 +23,9 @@
 #include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Decode.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -45,674 +41,725 @@ namespace Fabric
     }
   
     void Interface::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( dst.size() - dstOffset == 0 )
-        jsonExec( cmd, arg, resultJAG );
-      else m_gcContainer->jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+        jsonExec( cmd, arg, resultArrayEncoder );
+      else m_gcContainer->jsonRoute( dst, dstOffset, cmd, arg, resultArrayEncoder );
     }
       
     void Interface::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "createConstValue" )
-        jsonExecCreateConstValue( arg, resultJAG );
-      else if ( cmd == "createValueGenerator" )
-        jsonExecCreateValueGenerator( arg, resultJAG );
-      else if ( cmd == "createValueMap" )
-        jsonExecCreateValueMap( arg, resultJAG );
-      else if ( cmd == "createValueTransform" )
-        jsonExecCreateValueTransform( arg, resultJAG );
-      else if ( cmd == "createValueCache" )
-        jsonExecCreateValueCache( arg, resultJAG );
-      else if ( cmd == "createConstArray" )
-        jsonExecCreateConstArray( arg, resultJAG );
-      else if ( cmd == "createArrayGenerator" )
-        jsonExecCreateArrayGenerator( arg, resultJAG );
-      else if ( cmd == "createArrayMap" )
-        jsonExecCreateArrayMap( arg, resultJAG );
-      else if ( cmd == "createArrayTransform" )
-        jsonExecCreateArrayTransform( arg, resultJAG );
-      else if ( cmd == "createArrayCache" )
-        jsonExecCreateArrayCache( arg, resultJAG );
-      else if ( cmd == "createReduce" )
-        jsonExecCreateReduce( arg, resultJAG );
+      if ( cmd.stringIs( "createConstValue", 16 ) )
+        jsonExecCreateConstValue( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueGenerator", 20 ) )
+        jsonExecCreateValueGenerator( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueMap", 14 ) )
+        jsonExecCreateValueMap( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueTransform", 20 ) )
+        jsonExecCreateValueTransform( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createValueCache", 16 ) )
+        jsonExecCreateValueCache( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createConstArray", 16 ) )
+        jsonExecCreateConstArray( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayGenerator", 20 ) )
+        jsonExecCreateArrayGenerator( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayMap", 14 ) )
+        jsonExecCreateArrayMap( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayTransform", 20 ) )
+        jsonExecCreateArrayTransform( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createArrayCache", 16 ) )
+        jsonExecCreateArrayCache( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "createReduce", 12 ) )
+        jsonExecCreateReduce( arg, resultArrayEncoder );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
     void Interface::jsonExecCreateConstArray(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
       RC::ConstHandle<RT::Desc> elementTypeRTDesc;
-      try
-      {
-        elementTypeRTDesc = m_rtManager->getDesc( argObject->get( "elementType" )->toString()->value() );
-      }
-      catch ( Exception e )
-      {
-        throw "elementType: " + e;
-      }
-      
-      RC::ConstHandle<JSON::Value> dataJSONValue = argObject->maybeGet("data");
-      if ( dataJSONValue )
-      {
-        try
-        {
-          RC::ConstHandle<JSON::Array> dataJSONArray = dataJSONValue->toArray();
-          
-          ConstArrayWrapper::Create(
-            m_rtManager,
-            elementTypeRTDesc,
-            dataJSONArray
-            )->reg( m_gcContainer, id_ );
-          
-          return;
-        }
-        catch ( Exception e )
-        {
-          throw "data: " + e;
-        }
-      }
+      JSON::Entity dataEntity;
+      std::string jsonData;
 
-      RC::ConstHandle<JSON::Value> jsonDataJSONValue = argObject->maybeGet("jsonData");
-      if ( jsonDataJSONValue )
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          RC::ConstHandle<JSON::String> jsonDataJSONString = jsonDataJSONValue->toString();
-          
-          Util::JSONDecoder jsonDecoder( jsonDataJSONString->data(), jsonDataJSONString->length() );
-          Util::JSONEntityInfo jsonEntityInfo;
-          if ( !jsonDecoder.getNext( jsonEntityInfo ) )
-            throw Exception("missing JSON data");
-          /*
-          jsonEntityInfo.type = Util::ET_ARRAY;
-          jsonEntityInfo.data = "[]";
-          jsonEntityInfo.length = 2;
-          jsonEntityInfo.value.array.size = 0;
-          */
-          ConstArrayWrapper::Create(
-            m_rtManager,
-            elementTypeRTDesc,
-            jsonEntityInfo
-            )->reg( m_gcContainer, id_ );
-          if ( jsonDecoder.getNext( jsonEntityInfo ) )
-            throw Exception("extra JSON data");
-          return;
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "elementType", 11 ) )
+          {
+            valueEntity.requireString();
+            std::string elementTypeName = valueEntity.stringToStdString();
+            elementTypeRTDesc = m_rtManager->getDesc( elementTypeName );
+          }
+          else if ( keyString.stringIs( "data", 4 ) )
+          {
+            dataEntity = valueEntity;
+          }
+          else if ( keyString.stringIs( "jsonData", 8 ) )
+          {
+            valueEntity.requireString();
+            jsonData = valueEntity.stringToStdString();
+          }
         }
         catch ( Exception e )
         {
-          throw "jsonData: " + e;
+          argObjectDecoder.rethrow( e );
         }
       }
       
-      throw Exception( "missing both data and jsonData" );
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !elementTypeRTDesc )
+        throw Exception( "missing 'elementType'" );
+        
+      if ( !jsonData.empty() )
+      {
+        if ( dataEntity )
+          throw Exception( "cannot have both 'data' and 'jsonData'" );
+        
+        JSON::Decoder jsonDataDecoder( jsonData.data(), jsonData.length() );
+        try
+        {
+          if ( !jsonDataDecoder.getNext( dataEntity ) )
+            throw Exception( "missing JSON entity" );
+          JSON::Entity extraEntity;
+          if ( jsonDataDecoder.getNext( extraEntity ) )
+            throw Exception( "extra JSON entity" );
+        }
+        catch ( Exception e )
+        {
+          throw "'jsonData': " + e;
+        }
+      }
+      
+      if ( dataEntity )
+      {
+        ConstArrayWrapper::Create(
+          m_rtManager,
+          elementTypeRTDesc,
+          dataEntity
+          )->reg( m_gcContainer, id_ );
+      }
+      else throw Exception( "must have exactly one of 'data' and 'jsonData'" );
     }
     
     void Interface::jsonExecCreateArrayMap(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<ArrayProducerWrapper> inputArrayProducer;
-      try
-      {
-        inputArrayProducer = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
-        if ( !inputArrayProducer )
-          throw "must be an array producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputID: " + e;
-      }
-      
-      RC::Handle<KLC::ArrayMapOperatorWrapper> mapOperator;
-      try
-      {
-        mapOperator = GC::DynCast<KLC::ArrayMapOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !mapOperator )
-          throw "must be a map operator";
-      }
-      catch ( Exception e )
-      {
-        throw "mapOperatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedID" );
-      if ( sharedValueProducerIDValue )
+      RC::Handle<ArrayProducerWrapper> input;
+      RC::Handle<KLC::ArrayMapOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          sharedValueProducer = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
-          if ( !sharedValueProducer )
-            throw "must be a value producer";
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be an array producer";
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ArrayMapOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be an array map operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
         }
         catch ( Exception e )
         {
-          throw "sharedID: " + e;
+          argObjectDecoder.rethrow( e );
         }
       }
       
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
       ArrayMapWrapper::Create(
-        inputArrayProducer,
-        mapOperator,
-        sharedValueProducer
+        input,
+        operator_,
+        shared
         )->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateValueMap(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> inputWrapper;
-      try
-      {
-        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
-        if ( !inputWrapper )
-          throw "must be a value producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputID: " + e;
-      }
-      
-      RC::Handle<KLC::ValueMapOperatorWrapper> operatorWrapper;
-      try
-      {
-        operatorWrapper = GC::DynCast<KLC::ValueMapOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !operatorWrapper )
-          throw "must be a value map operator";
-      }
-      catch ( Exception e )
-      {
-        throw "operatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedWrapper;
-      RC::ConstHandle<JSON::Value> sharedIDValue = argObject->maybeGet( "sharedID" );
-      if ( sharedIDValue )
+      RC::Handle<ValueProducerWrapper> input;
+      RC::Handle<KLC::ValueMapOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          sharedWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedIDValue->toString()->value() ) );
-          if ( !sharedWrapper )
-            throw "must be a value producer";
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be a value producer";
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ValueMapOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be a value map operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
         }
         catch ( Exception e )
         {
-          throw "sharedID: " + e;
+          argObjectDecoder.rethrow( e );
         }
       }
       
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
       ValueMapWrapper::Create(
-        inputWrapper,
-        operatorWrapper,
-        sharedWrapper
+        input,
+        operator_,
+        shared
         )->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateValueTransform(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> inputWrapper;
-      try
-      {
-        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
-        if ( !inputWrapper )
-          throw "must be a value producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputID: " + e;
-      }
-      
-      RC::Handle<KLC::ValueTransformOperatorWrapper> operatorWrapper;
-      try
-      {
-        operatorWrapper = GC::DynCast<KLC::ValueTransformOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !operatorWrapper )
-          throw "must be a value transform operator";
-      }
-      catch ( Exception e )
-      {
-        throw "operatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedWrapper;
-      RC::ConstHandle<JSON::Value> sharedIDValue = argObject->maybeGet( "sharedID" );
-      if ( sharedIDValue )
+      RC::Handle<ValueProducerWrapper> input;
+      RC::Handle<KLC::ValueTransformOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          sharedWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedIDValue->toString()->value() ) );
-          if ( !sharedWrapper )
-            throw "must be a value producer";
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be a value producer";
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ValueTransformOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be a value transform operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
         }
         catch ( Exception e )
         {
-          throw "sharedID: " + e;
+          argObjectDecoder.rethrow( e );
         }
       }
       
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
       ValueTransformWrapper::Create(
-        inputWrapper,
-        operatorWrapper,
-        sharedWrapper
+        input,
+        operator_,
+        shared
         )->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateValueGenerator(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<KLC::ValueGeneratorOperatorWrapper> operatorWrapper;
-      try
-      {
-        operatorWrapper = GC::DynCast<KLC::ValueGeneratorOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !operatorWrapper )
-          throw "must be a value transform operator";
-      }
-      catch ( Exception e )
-      {
-        throw "operatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedWrapper;
-      RC::ConstHandle<JSON::Value> sharedIDValue = argObject->maybeGet( "sharedID" );
-      if ( sharedIDValue )
+      RC::Handle<KLC::ValueGeneratorOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          sharedWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedIDValue->toString()->value() ) );
-          if ( !sharedWrapper )
-            throw "must be a value producer";
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ValueGeneratorOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be a value generator operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
         }
         catch ( Exception e )
         {
-          throw "sharedID: " + e;
+          argObjectDecoder.rethrow( e );
         }
       }
       
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
       ValueGeneratorWrapper::Create(
-        operatorWrapper,
-        sharedWrapper
+        operator_,
+        shared
         )->reg( m_gcContainer, id_ );
     }
  
     void Interface::jsonExecCreateArrayCache(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
       RC::Handle<ArrayProducerWrapper> input;
-      try
-      {
-        input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
-        if ( !input )
-          throw "must be an array producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputID: " + e;
-      }
-      
-      ArrayCacheWrapper::Create( input )->reg( m_gcContainer, id_ );
-    }
-    
-    void Interface::jsonExecCreateArrayTransform(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
-      )
-    {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
-      std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<ArrayProducerWrapper> input;
-      try
-      {
-        input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
-        if ( !input )
-          throw "must be an array producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputID: " + e;
-      }
-      
-      RC::Handle<KLC::ArrayTransformOperatorWrapper> operator_;
-      try
-      {
-        operator_ = GC::DynCast<KLC::ArrayTransformOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !operator_ )
-          throw "must be a value transform operator";
-      }
-      catch ( Exception e )
-      {
-        throw "operatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedID" );
-      if ( sharedValueProducerIDValue )
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
         try
         {
-          sharedValueProducer = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
-          if ( !sharedValueProducer )
-            throw "must be a value producer";
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be an array producer";
+          }
         }
         catch ( Exception e )
         {
-          throw "sharedID: " + e;
+          argObjectDecoder.rethrow( e );
         }
       }
       
-      ArrayTransformWrapper::Create(
-        input,
-        operator_,
-        sharedValueProducer
-        )->reg( m_gcContainer, id_ );
-    }
-    
-    void Interface::jsonExecCreateReduce(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
-      )
-    {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
       
-      std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<ArrayProducerWrapper> inputArrayProducer;
-      try
-      {
-        inputArrayProducer = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputArrayProducerID" )->toString()->value() ) );
-        if ( !inputArrayProducer )
-          throw "must be an array producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputArrayProducerID: " + e;
-      }
-      
-      RC::Handle<KLC::ReduceOperatorWrapper> reduceOperator;
-      try
-      {
-        reduceOperator = GC::DynCast<KLC::ReduceOperatorWrapper>( m_gcContainer->getObject( argObject->get( "reduceOperatorID" )->toString()->value() ) );
-        if ( !reduceOperator )
-          throw "must be a reduce operator";
-      }
-      catch ( Exception e )
-      {
-        throw "reduceOperatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
-      if ( sharedValueProducerIDValue )
-      {
-        try
-        {
-          sharedValueProducer = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
-          if ( !sharedValueProducer )
-            throw "must be a value producer";
-        }
-        catch ( Exception e )
-        {
-          throw "sharedValueProducerID: " + e;
-        }
-      }
-      
-      ReduceWrapper::Create(
-        inputArrayProducer,
-        reduceOperator,
-        sharedValueProducer
-        )->reg( m_gcContainer, id_ );
-    }
-    
-    void Interface::jsonExecCreateArrayGenerator(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
-      )
-    {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
-      std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> countValueProducer;
-      try
-      {
-        countValueProducer = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "countID" )->toString()->value() ) );
-        if ( !countValueProducer )
-          throw "must be a value producer";
-      }
-      catch ( Exception e )
-      {
-        throw "countID: " + e;
-      }
-      
-      RC::Handle<KLC::ArrayGeneratorOperatorWrapper> arrayGeneratorOperator;
-      try
-      {
-        arrayGeneratorOperator = GC::DynCast<KLC::ArrayGeneratorOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !arrayGeneratorOperator )
-          throw "must be an array generator operator";
-      }
-      catch ( Exception e )
-      {
-        throw "operatorID: " + e;
-      }
-      
-      RC::Handle<ValueProducerWrapper> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedID" );
-      if ( sharedValueProducerIDValue )
-      {
-        try
-        {
-          sharedValueProducer = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
-          if ( !sharedValueProducer )
-            throw "must be a value producer";
-        }
-        catch ( Exception e )
-        {
-          throw "sharedID: " + e;
-        }
-      }
-      
-      ArrayGeneratorWrapper::Create(
-        countValueProducer,
-        arrayGeneratorOperator,
-        sharedValueProducer
-        )->reg( m_gcContainer, id_ );
-    }
-    
-    void Interface::jsonExecCreateConstValue(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
-      )
-    {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
-      std::string id_;
-      try
-      {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
-      
-      RC::ConstHandle<RT::Desc> valueTypeRTDesc;
-      try
-      {
-        valueTypeRTDesc = m_rtManager->getDesc( argObject->get( "valueType" )->toString()->value() );
-      }
-      catch ( Exception e )
-      {
-        throw "valueType: " + e;
-      }
-      
-      RC::ConstHandle<JSON::Value> dataJSONValue;
-      try
-      {
-        dataJSONValue = argObject->get( "data" );
-      }
-      catch ( Exception e )
-      {
-        throw "data: " + e;
-      }
-      
-      ConstValueWrapper::Create(
-        m_rtManager,
-        valueTypeRTDesc,
-        dataJSONValue
+      ArrayCacheWrapper::Create(
+        input
         )->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateValueCache(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
+      RC::Handle<ValueProducerWrapper> input;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        id_ = argObject->get( "id" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be a value producer";
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
       
-      RC::Handle<ValueProducerWrapper> inputWrapper;
-      try
-      {
-        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
-        if ( !inputWrapper )
-          throw "must be a value producer";
-      }
-      catch ( Exception e )
-      {
-        throw "inputID: " + e;
-      }
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
       
       ValueCacheWrapper::Create(
-        inputWrapper
+        input
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateArrayTransform(
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
+      )
+    {
+      std::string id_;
+      RC::Handle<ArrayProducerWrapper> input;
+      RC::Handle<KLC::ArrayTransformOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
+      {
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be an array producer";
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ArrayTransformOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be an array transform operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
+      
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
+      ArrayTransformWrapper::Create(
+        input,
+        operator_,
+        shared
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateReduce(
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
+      )
+    {
+      std::string id_;
+      RC::Handle<ArrayProducerWrapper> input;
+      RC::Handle<KLC::ReduceOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
+      {
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "inputID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string inputID = valueEntity.stringToStdString();
+            input = GC::DynCast<ArrayProducerWrapper>( m_gcContainer->getObject( inputID ) );
+            if ( !input )
+              throw "must be an array producer";
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ReduceOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be a reduce operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
+      
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !input )
+        throw Exception( "missing 'inputID'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
+      ReduceWrapper::Create(
+        input,
+        operator_,
+        shared
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateArrayGenerator(
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
+      )
+    {
+      std::string id_;
+      RC::Handle<ValueProducerWrapper> count;
+      RC::Handle<KLC::ArrayGeneratorOperatorWrapper> operator_;
+      RC::Handle<ValueProducerWrapper> shared;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
+      {
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "countID", 7 ) )
+          {
+            valueEntity.requireString();
+            std::string countID = valueEntity.stringToStdString();
+            count = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( countID ) );
+            if ( !count )
+              throw "must be a value producer";
+          }
+          else if ( keyString.stringIs( "operatorID", 10 ) )
+          {
+            valueEntity.requireString();
+            std::string operatorID = valueEntity.stringToStdString();
+            operator_ = GC::DynCast<KLC::ArrayGeneratorOperatorWrapper>( m_gcContainer->getObject( operatorID ) );
+            if ( !operator_ )
+              throw "must be an array generator operator";
+          }
+          else if ( keyString.stringIs( "sharedID", 8 ) )
+          {
+            valueEntity.requireString();
+            std::string sharedID = valueEntity.stringToStdString();
+            shared = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedID ) );
+            if ( !shared )
+              throw "must be a value producer";
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
+      
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !count )
+        throw Exception( "missing 'countID'" );
+      if ( !operator_ )
+        throw Exception( "missing 'operatorID'" );
+      
+      ArrayGeneratorWrapper::Create(
+        count,
+        operator_,
+        shared
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateConstValue(
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
+      )
+    {
+      std::string id_;
+      RC::ConstHandle<RT::Desc> valueTypeRTDesc;
+      JSON::Entity dataEntity;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
+      {
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "valueType", 9 ) )
+          {
+            valueEntity.requireString();
+            std::string valueTypeName = valueEntity.stringToStdString();
+            valueTypeRTDesc = m_rtManager->getDesc( valueTypeName );
+          }
+          else if ( keyString.stringIs( "data", 4 ) )
+          {
+            dataEntity = valueEntity;
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
+      }
+      
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
+      if ( !valueTypeRTDesc )
+        throw Exception( "missing 'valueType'" );
+      if ( !dataEntity )
+        throw Exception( "missing 'data'" );
+        
+      ConstValueWrapper::Create(
+        m_rtManager,
+        valueTypeRTDesc,
+        dataEntity
         )->reg( m_gcContainer, id_ );
     }
   }

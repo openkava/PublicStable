@@ -1,3 +1,4 @@
+console.log(FABRIC);
 FABRIC.UnitTest = function() {
   var indentLevel = 0;
 

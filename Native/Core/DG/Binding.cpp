@@ -9,10 +9,7 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Base/JSON/Null.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -152,22 +149,22 @@ namespace Fabric
       m_bindingLists.erase( it );
     }
       
-    void Binding::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Binding::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       
       {
-        Util::JSONGenerator parameterLayoutJG = resultJOG.makeMember( "parameterLayout", 15 );
+        JSON::Encoder parameterLayoutEncoder = resultObjectEncoder.makeMember( "parameterLayout", 15 );
         if ( m_prototype )
-          m_prototype->jsonDesc( parameterLayoutJG );
-        else parameterLayoutJG.makeNull();
+          m_prototype->jsonDesc( parameterLayoutEncoder );
+        else parameterLayoutEncoder.makeNull();
       }
       
       {
-        Util::JSONGenerator operatorJG = resultJOG.makeMember( "operator", 8 );
+        JSON::Encoder operatorEncoder = resultObjectEncoder.makeMember( "operator", 8 );
         if ( m_operator )
-          operatorJG.makeString( m_operator->getName() );
-        else operatorJG.makeNull();
+          operatorEncoder.makeString( m_operator->getName() );
+        else operatorEncoder.makeNull();
       }
     }
     

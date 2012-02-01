@@ -5,9 +5,7 @@
 #include "BooleanDesc.h"
 
 #include <Fabric/Core/RT/BooleanImpl.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -29,10 +27,10 @@ namespace Fabric
       m_booleanImpl->setValue( value, data );
     }
     
-    void BooleanDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void BooleanDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      ComparableDesc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "boolean" );
+      ComparableDesc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "boolean" );
     }
   };
 };
