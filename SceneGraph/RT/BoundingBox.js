@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Vec3"], function() {
+  
 /**
  * Constructor for a bounding box object.
  * @constructor
@@ -19,4 +21,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     },
     constructor: FABRIC.RT.BoundingBox
   });
+});
+
 });

@@ -3,9 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC", "SceneGraph"], function(FABRIC, SceneGraph) {
-
-  var Animation = {};
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function() {
+  
 
 FABRIC.SceneGraph.registerNodeType('Animation', {
   briefDesc: 'The AnimationTrack node implements an array of animation tracks.',
@@ -793,5 +792,6 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     return trackDisplayNode;
   }});
 
-  return Animation;
+});
+
 });

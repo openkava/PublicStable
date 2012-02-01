@@ -3,6 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Xfo"], function() {
 
 /**
  * Constructor for a bone object.
@@ -42,4 +43,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     },
     constructor: FABRIC.RT.Bone
   });
+});
+
+
 });

@@ -4,6 +4,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
+  
 /**
  * The rselection manager provides selection functionality to the scene graph.
  * additional rendering pipeline and capabilities.
@@ -540,3 +544,6 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
     });
     return selectableInstance;
   }});
+
+
+});

@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec3"], function() {
+  
+  
 /**
  * Constructor function to create a Ray object.
  * @constructor
@@ -185,4 +188,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     },
     constructor: FABRIC.RT.RayIntersection
   });
+});
+
+
 });

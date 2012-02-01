@@ -3,7 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/FABRIC.SceneGraph.Geometry"], function(SceneGraph, Geometry) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
 
 // NOTE: The following primitives are examples of procedural geometry generation.
 // Geometry data is stored in 2 separate nodes that contain data of different

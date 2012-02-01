@@ -1,5 +1,7 @@
 
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec3", "SceneGraph/RT/Quat", "SceneGraph/RT/Xfo"], function() {
+
 
 FABRIC.RT.PoseVariables = function() {
   this.scalarValues = [];
@@ -76,4 +78,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
         })
     }
   });
+});
+
 });

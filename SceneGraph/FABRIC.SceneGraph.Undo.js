@@ -4,6 +4,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function() {
+  
 /**
  * The UndoManager provides undo / redo functionality to the scene graph.
  */
@@ -164,3 +166,6 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
     
     return undoManager;
   }});
+
+
+});

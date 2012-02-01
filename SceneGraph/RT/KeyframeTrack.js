@@ -4,6 +4,11 @@
 //
 
 
+FABRIC.define(["SceneGraph/RT/Math",
+               "SceneGraph/RT/Color"], function() {
+
+
+
 FABRIC.RT.KeyframeTrack = function(name, color, keys) {
   this.name = name ? name : "";
   this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
@@ -161,5 +166,5 @@ FABRIC.RT.KeyframeTrackSet.prototype = {
   }
 };
 
-
+});
 

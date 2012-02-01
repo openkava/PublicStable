@@ -4,7 +4,8 @@
 //
 
 
-define(["FABRIC", "SceneGraph"], function(FABRIC, SceneGraph) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
 
   var Bullet = {};
   
@@ -252,7 +253,7 @@ var BulletAnchor = function(options) {
 BulletAnchor.prototype = {
 };
 
-SceneGraph.registerNodeType('BulletWorldNode', {
+FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
   briefDesc: 'The BulletWorldNode represents a bullet physics simulation world.',
   detailedDesc: 'The BulletWorldNode represents a bullet physics simulation world.',
   factoryFn: function(options, scene) {
@@ -682,7 +683,7 @@ SceneGraph.registerNodeType('BulletWorldNode', {
     return bulletWorldNode;
   }});
 
-SceneGraph.registerNodeType('BulletRigidBodyTransform', {
+FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
   briefDesc: 'The BulletRigidBodyTransform represents a bullet physics rigid body based transform.',
   detailedDesc: 'The BulletRigidBodyTransform represents a bullet physics rigid body based transform.',
   factoryFn: function(options, scene) {
@@ -784,7 +785,7 @@ SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     return rigidBodyTransformNode;
   }});
 
-SceneGraph.registerNodeType('BulletForceManipulator', {
+FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
   briefDesc: 'The BulletForceManipulator is a basic tool introducing new forces into a BulletWorld.',
   detailedDesc: 'The BulletForceManipulator is a basic tool introducing new forces into a BulletWorld.',
   parentNodeDesc: 'SceneGraphNode',
@@ -907,6 +908,6 @@ SceneGraph.registerNodeType('BulletForceManipulator', {
   Bullet.BulletSoftBody = BulletSoftBody;
   Bullet.BulletShape = BulletShape;
   Bullet.BulletForce = BulletForce;
-  BulletConstraint = BulletConstraint;
+  Bullet.BulletConstraint = BulletConstraint;
   return Bullet;
 });

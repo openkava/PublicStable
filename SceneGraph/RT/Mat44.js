@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec4"], function(Math, Vec4) {
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec4"], function() {
 
 
 //determine if an object is a valid Mat44.

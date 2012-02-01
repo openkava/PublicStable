@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec2"], function() {
+  
+  
 //determine if an object is a valid Mat22.
 FABRIC.RT.isMat22 = function(t) {
   return t && t.getType &&
@@ -184,4 +187,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Mat22.kl')
     }
   });
+});
+
 });

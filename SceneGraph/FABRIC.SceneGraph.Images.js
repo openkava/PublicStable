@@ -4,11 +4,14 @@
 //
 
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/RT/OGLTexture2D", "SceneGraph/RT/OGLTexture3D", "SceneGraph/RT/OGLTextureCube"], function(SceneGraph) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/RT/OGLTexture2D",
+               "SceneGraph/RT/OGLTexture3D",
+               "SceneGraph/RT/OGLTextureCube"
+               ],
+              function() {
 
-var Images = {};
-
-SceneGraph.registerNodeType('Image', {
+FABRIC.SceneGraph.registerNodeType('Image', {
   briefDesc: 'The Texture node is an Image node which can be used for texturing of a 3D object.',
   detailedDesc: 'The Texture node is an Image node which can be used for texturing of a 3D object.',
   parentNodeDesc: 'SceneGraphNode',
@@ -18,7 +21,7 @@ SceneGraph.registerNodeType('Image', {
   }});
 
 
-SceneGraph.registerNodeType('RenderTargetBufferTexture', {
+FABRIC.SceneGraph.registerNodeType('RenderTargetBufferTexture', {
   briefDesc: 'The RenderTargetBufferTexture is used to bind render target buffers to be used as textures.',
   detailedDesc: 'The RenderTargetBufferTexture is used to bind render target buffers to be used as textures.',
   parentNodeDesc: 'Image',
@@ -46,7 +49,7 @@ SceneGraph.registerNodeType('RenderTargetBufferTexture', {
   }});
 
 
-SceneGraph.registerNodeType('Image2D', {
+FABRIC.SceneGraph.registerNodeType('Image2D', {
   briefDesc: 'The Image node holds image data, and optionally creates an URL image loader and an OpenGL texture.',
   detailedDesc: 'The Image node holds generic image data (members: pixels, width, height). ' +
                 'If \'options.createResourceLoadNode\', an URL-based image loader will be incorporated, and currently supports ' +
@@ -86,8 +89,8 @@ SceneGraph.registerNodeType('Image2D', {
       oglTexture = FABRIC.RT.oglTexture2D();
     } else if(options.format == 'RGB') {
       oglTexture = FABRIC.RT.oglTexture2D();
-      oglTexture.glInternalFormat = SceneGraph.OpenGLConstants.GL_RGB8;
-      oglTexture.glFormat = SceneGraph.OpenGLConstants.GL_RGB;
+      oglTexture.glInternalFormat = FABRIC.SceneGraph.OpenGLConstants.GL_RGB8;
+      oglTexture.glFormat = FABRIC.SceneGraph.OpenGLConstants.GL_RGB;
     } else if(options.format == 'Color') {
       oglTexture = FABRIC.RT.oglTexture2D_Color();
     } else if(options.format == 'Scalar') {
@@ -95,8 +98,8 @@ SceneGraph.registerNodeType('Image2D', {
     } else
       throw('Pixel format "'+options.format+'" is not support by Image2D!');
     if(!options.glRepeat) {
-      oglTexture.wrapS = SceneGraph.OpenGLConstants.GL_CLAMP;
-      oglTexture.wrapT = SceneGraph.OpenGLConstants.GL_CLAMP;
+      oglTexture.wrapS = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+      oglTexture.wrapT = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
     }
     oglTexture.forceRefresh = options.forceRefresh;
     
@@ -260,7 +263,7 @@ SceneGraph.registerNodeType('Image2D', {
     return imageNode;
   }});
 
-SceneGraph.registerNodeType('Image3D', {
+FABRIC.SceneGraph.registerNodeType('Image3D', {
   briefDesc: 'The Image node holds 3D image data, and optionally creates an URL image loader and an OpenGL texture.',
   detailedDesc: 'The Image node holds generic image data (members: pixels, width, height, depth), which might be color or grayscale. ' +
                 'If \'options.createResourceLoadNode\', an URL-based image loader will be incorporated, and currently supports ' +
@@ -389,9 +392,9 @@ SceneGraph.registerNodeType('Image3D', {
          oglTexture = FABRIC.RT.oglTexture3D_RGBA();
 
       if(!options.glRepeat) {
-        oglTexture.wrapS = SceneGraph.OpenGLConstants.GL_CLAMP;
-        oglTexture.wrapT = SceneGraph.OpenGLConstants.GL_CLAMP;
-        oglTexture.wrapR = SceneGraph.OpenGLConstants.GL_CLAMP;
+        oglTexture.wrapS = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+        oglTexture.wrapT = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+        oglTexture.wrapR = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
       }
       redrawEventHandler.addMember('oglTexture3D', 'OGLTexture3D', oglTexture);
       redrawEventHandler.addMember('forceSingleRefresh', 'Boolean', false);
@@ -478,7 +481,7 @@ SceneGraph.registerNodeType('Image3D', {
     return imageNode;
   }});
 
-SceneGraph.registerNodeType('CubeMap', {
+FABRIC.SceneGraph.registerNodeType('CubeMap', {
   briefDesc: 'The CubeMap node contains 6 Image nodes which can be used to texture with cubic mapping. ',
   detailedDesc: 'The CubeMap node contains 6 Image nodes which can be used to texture with cubic mapping. ' +
                 'This means it requires six images to be aligned in a cubic fashion.',
@@ -525,7 +528,7 @@ SceneGraph.registerNodeType('CubeMap', {
     return cubMapNode;
   }});
 
-SceneGraph.registerNodeType('Video', {
+FABRIC.SceneGraph.registerNodeType('Video', {
   briefDesc: 'The Video node is an Image node that changes over time.',
   detailedDesc: 'The Video node uses the ffmpeg extension to load animated video footage into an Image node. ' +
                 'For that the image content is repeatedly copied onto the GPU.',
@@ -655,7 +658,7 @@ SceneGraph.registerNodeType('Video', {
     return videoNode;
   }});
 
-SceneGraph.registerNodeType('PointSpriteTexture', {
+FABRIC.SceneGraph.registerNodeType('PointSpriteTexture', {
   briefDesc: 'The PointSpriteTexture is an Image node that can be used to texture a point using a sprite.',
   detailedDesc: 'The PointSpriteTexture is an Image node that can be used to texture a point using a sprite. ' +
                 'You can specify the resolution of the sprite.',
@@ -692,7 +695,7 @@ SceneGraph.registerNodeType('PointSpriteTexture', {
   }});
 
 
-SceneGraph.registerNodeType('ScreenGrab', {
+FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
   briefDesc: 'The ScreenGrab node stores the viewport to an Image node.',
   detailedDesc: 'The ScreenGrab node stores the viewport to an Image node by encoding PNG using a ResourceLoadNode. ',
   parentNodeDesc: 'SceneGraphNode',
@@ -747,7 +750,5 @@ SceneGraph.registerNodeType('ScreenGrab', {
   }
 });
 
-
-  return Images;
 });
 

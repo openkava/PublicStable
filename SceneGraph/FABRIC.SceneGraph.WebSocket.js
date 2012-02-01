@@ -2,6 +2,9 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function() {
+
 FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
   briefDesc: 'The WebSocket manager wraps the HTML5 websocket functionality.',
   detailedDesc: 'The WebSocket manager wraps the HTML5 websocket functionality. It provides access to send and message callbacks.',
@@ -126,4 +129,7 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
     
     return manager;
   }
+});
+
+
 });

@@ -1,5 +1,7 @@
 
 
+FABRIC.define(["SceneGraph/FABRIC.Characters"], function() {
+
 
 
 
@@ -726,3 +728,4 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     return locomotionVariables;
   }});
 
+});

@@ -4,6 +4,10 @@
 //
 
 
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Materials"], function() {
+
 FABRIC.RT.DebugGeometry = function(enabled) {
   this.positions = [];
   this.vertexColors = [];

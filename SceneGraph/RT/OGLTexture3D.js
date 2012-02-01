@@ -4,7 +4,7 @@
 //
 
 
-FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLShaderProgram"], function(Math) {
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLShaderProgram"], function() {
   
 FABRIC.RT.OGLTexture3D = function(glInternalFormat, glFormat, glType) {
   this.glInternalFormat = glInternalFormat ? glInternalFormat : 0;

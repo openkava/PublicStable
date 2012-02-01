@@ -3,11 +3,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/FABRIC.SceneGraph.Kinematics"], function(SceneGraph) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/FABRIC.SceneGraph.Kinematics"], function() {
 
-var Geometry = {};
 
-SceneGraph.registerNodeType('Geometry', {
+FABRIC.SceneGraph.registerNodeType('Geometry', {
   briefDesc: 'The Geometry node is a base abstract node for all geometry nodes.',
   detailedDesc: 'The Geometry node defines the basic structure of a geometry, such as the uniforms, attributes, '+
                 'and bounding box dgnodes. It also configures services for raycasting, and uploading vertex ' +
@@ -93,7 +92,7 @@ SceneGraph.registerNodeType('Geometry', {
       }
       if(name == 'indices'){
         var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
-        var attributeID = SceneGraph.getShaderParamID(name);
+        var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
         var indicesBuffer = new FABRIC.RT.OGLBuffer(name, attributeID, registeredTypes.Integer);
         indicesBuffer.dynamic = options.dynamicIndices;
         redrawEventHandler.addMember('indicesBuffer', 'OGLBuffer', indicesBuffer);
@@ -119,7 +118,7 @@ SceneGraph.registerNodeType('Geometry', {
         if(attributeoptions.genVBO && redrawEventHandler){
           var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
           var typeDesc = registeredTypes[type];
-          var attributeID = SceneGraph.getShaderParamID(name);
+          var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
           var bufferMemberName = name + 'Buffer';
           
           var buffer = new FABRIC.RT.OGLBuffer(name, attributeID, typeDesc);
@@ -158,7 +157,7 @@ SceneGraph.registerNodeType('Geometry', {
     };
     geometryNode.pub.setAttributeStatic = function(name) {
       var buffer = redrawEventHandler.getData(name + 'Buffer');
-      buffer.bufferUsage = SceneGraph.OpenGLConstants.GL_STATIC_DRAW;
+      buffer.bufferUsage = FABRIC.SceneGraph.OpenGLConstants.GL_STATIC_DRAW;
       redrawEventHandler.setData(name + 'Buffer', 0, buffer);
     };
     geometryNode.pub.getUniformValue = function(name) {
@@ -298,7 +297,7 @@ SceneGraph.registerNodeType('Geometry', {
   }});
 
 
-SceneGraph.registerNodeType('GeometryDataCopy', {
+FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
   briefDesc: 'The GeometryDataCopy node is created using an existing Geometry node, and is used to build deformation stacks.',
   detailedDesc: 'When a node is evaluated, all the operators are evaluated. By splitting geometry into multiple data copies,' +
                 ' only operators on nodes that are dirty will be evaluated. This makes it easy to build chains of nodes which,'+
@@ -379,7 +378,7 @@ SceneGraph.registerNodeType('GeometryDataCopy', {
   }});
 
 
-SceneGraph.registerNodeType('Points', {
+FABRIC.SceneGraph.registerNodeType('Points', {
   briefDesc: 'The Points node defines a renderable points geometry type.',
   detailedDesc: 'The Points node defines a renderable points geometry type. The Points node applies a custom draw operator and rayIntersection operator.',
   parentNodeDesc: 'Geometry',
@@ -430,7 +429,7 @@ SceneGraph.registerNodeType('Points', {
 
 
 
-SceneGraph.registerNodeType('Lines', {
+FABRIC.SceneGraph.registerNodeType('Lines', {
   briefDesc: 'The Lines node defines a renderable lines geometry type.',
   detailedDesc: 'The Lines node defines a renderable lines geometry type. The Lines node applies a custom draw operator and rayIntersection operator.',
   parentNodeDesc: 'Geometry',
@@ -482,7 +481,7 @@ SceneGraph.registerNodeType('Lines', {
   }});
 
 
-SceneGraph.registerNodeType('LineStrip', {
+FABRIC.SceneGraph.registerNodeType('LineStrip', {
   briefDesc: 'The Lines node defines a renderable lines geometry type.',
   detailedDesc: 'The Lines node defines a renderable lines geometry type. The Lines node applies a custom draw operator and rayIntersection operator.',
   parentNodeDesc: 'Geometry',
@@ -536,7 +535,7 @@ SceneGraph.registerNodeType('LineStrip', {
 
 
 
-SceneGraph.registerNodeType('Triangles', {
+FABRIC.SceneGraph.registerNodeType('Triangles', {
   briefDesc: 'The Triangles node defines a renderable triangles geometry type.',
   detailedDesc: 'The Triangles node defines a renderable triangles geometry type. The Lines node applies a custom draw operator and rayIntersection operator.',
   parentNodeDesc: 'Geometry',
@@ -624,7 +623,7 @@ SceneGraph.registerNodeType('Triangles', {
   }});
 
 
-SceneGraph.registerNodeType('Instance', {
+FABRIC.SceneGraph.registerNodeType('Instance', {
   briefDesc: 'The Instance node represents a rendered geometry on screen.',
   detailedDesc: 'The Instance node represents a rendered geometry on screen. The Instance node propagates render events from Materials to Geometries, and also provides facilities for raycasting.',
   parentNodeDesc: 'SceneGraphNode',
@@ -665,16 +664,16 @@ SceneGraph.registerNodeType('Instance', {
     redrawEventHandler.setScope('instance', dgnode);
     
     var preProcessorDefinitions = {
-      MODELMATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('modelMatrix'),
-      MODELMATRIXINVERSE_ATTRIBUTE_ID: SceneGraph.getShaderParamID('modelMatrixInverse'),
-      VIEWMATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('viewMatrix'),
-      CAMERAMATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('cameraMatrix'),
-      CAMERAPOSITION_ATTRIBUTE_ID: SceneGraph.getShaderParamID('cameraPosition'),
-      PROJECTIONMATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('projectionMatrix'),
-      PROJECTIONMATRIXINV_ATTRIBUTE_ID: SceneGraph.getShaderParamID('projectionMatrixInv'),
-      NORMALMATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('normalMatrix'),
-      MODELVIEW_MATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('modelViewMatrix'),
-      MODELVIEWPROJECTION_MATRIX_ATTRIBUTE_ID: SceneGraph.getShaderParamID('modelViewProjectionMatrix')
+      MODELMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelMatrix'),
+      MODELMATRIXINVERSE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelMatrixInverse'),
+      VIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('viewMatrix'),
+      CAMERAMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('cameraMatrix'),
+      CAMERAPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('cameraPosition'),
+      PROJECTIONMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrix'),
+      PROJECTIONMATRIXINV_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrixInv'),
+      NORMALMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('normalMatrix'),
+      MODELVIEW_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewMatrix'),
+      MODELVIEWPROJECTION_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewProjectionMatrix')
     };
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
         operatorName: 'loadProjectionMatrices',
@@ -908,7 +907,7 @@ SceneGraph.registerNodeType('Instance', {
 
 
 // TODO: convert this to a manager
-SceneGraph.registerNodeType('LayerManager', {
+FABRIC.SceneGraph.registerNodeType('LayerManager', {
   briefDesc: '',
   detailedDesc: '',
   parentNodeDesc: 'SceneGraphNode',
@@ -933,5 +932,4 @@ SceneGraph.registerNodeType('LayerManager', {
 });
 
 
-  return Geometry;
 });
