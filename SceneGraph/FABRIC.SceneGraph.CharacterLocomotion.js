@@ -1,6 +1,6 @@
 
 
-FABRIC.define(["SceneGraph/FABRIC.Characters"], function() {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph.Characters"], function() {
 
 
 
