@@ -43,23 +43,53 @@ EOF
     echo "Exporting FABRIC_BUILD_TYPE=$FABRIC_BUILD_TYPE"
     export FABRIC_BUILD_TYPE="$FABRIC_BUILD_TYPE"
 
-    echo "Setting up ~/Library/Fabric -> .../FabricEngine/Library/Fabric"
-    FABRIC_LIBRARY_FABRIC_SRC_PATH="$FABRIC_DIST_PATH/FabricEngine/Library/Fabric"
-    FABRIC_LIBRARY_FABRIC_DST_PATH="$HOME/Library/Fabric"
-    ln -shf "$FABRIC_LIBRARY_FABRIC_SRC_PATH" "$FABRIC_LIBRARY_FABRIC_DST_PATH"
+    case "$FABRIC_BUILD_OS" in
+      Darwin)
+        FABRIC_LIBRARY_DST_DIR="$HOME/Library/Fabric"
+        ;;
+      Linux)
+        FABRIC_LIBRARY_DST_DIR="$HOME/.fabric"
+        ;;
+    esac
+    echo "Creating directory $FABRIC_LIBRARY_DST_DIR"
+    mkdir -p "$FABRIC_LIBRARY_DST_DIR"
 
-    echo "Setting up ~/node_modules/Fabric -> .../FabricEngine/node_modules/Fabric"
-    FABRIC_NODE_MODULE_SRC_PATH="$FABRIC_DIST_PATH/FabricEngine/node_modules/Fabric"
-    FABRIC_NODE_MODULE_DST_PATH="$HOME/node_modules/Fabric"
-    ln -shf "$FABRIC_NODE_MODULE_SRC_PATH" "$FABRIC_NODE_MODULE_DST_PATH"
+    case "$FABRIC_BUILD_OS" in
+      Darwin)
+        FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Fabric"
+        ;;
+      Linux)
+        FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/Exts"
+        ;;
+    esac
+    FABRIC_EXTS_DST="$FABRIC_LIBRARY_DST_DIR/Exts"
+    echo "Setting up $FABRIC_EXTS_DST -> $FABRIC_EXTS_SRC"
+    ln -snf "$FABRIC_EXTS_SRC" "$FABRIC_EXTS_DST"
 
-    FABRIC_NPAPI_DST="$HOME/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin"
+    FABRIC_NODE_MODULE_SRC="$FABRIC_DIST_PATH/FabricEngine/node_modules/Fabric"
+    FABRIC_NODE_MODULE_DST="$HOME/node_modules/Fabric"
+    echo "Linking $FABRIC_NODE_MODULE_DST -> $FABRIC_NODE_MODULE_SRC"
+    ln -snf "$FABRIC_NODE_MODULE_SRC" "$FABRIC_NODE_MODULE_DST"
+
+    case "$FABRIC_BUILD_OS" in
+      Darwin)
+        FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin"
+        FABRIC_NPAPI_DST_DIR="$HOME/Library/Internet Plug-Ins"
+        FABRIC_NPAPI_DST="$FABRIC_NPAPI_DST_DIR/Fabric.$FABRIC_BUILD_ARCH.plugin"
+        ;;
+      Linux)
+        FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/NPAPI/libFabricPlugin.so"
+        FABRIC_NPAPI_DST_DIR="$HOME/.mozilla/plugins"
+        FABRIC_NPAPI_DST="$FABRIC_NPAPI_DST_DIR/libFabricPlugin.so"
+        ;;
+    esac
     if [ "$FABRIC_NPAPI_LINK" -eq 1 ]; then
-      FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin"
-      echo "Setting up ~/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin -> .../FabricEngine/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin"
-      ln -shf "$FABRIC_NPAPI_SRC" "$FABRIC_NPAPI_DST"
+      echo "Creating directory $FABRIC_NPAPI_DST_DIR"
+      mkdir -p "$FABRIC_NPAPI_DST_DIR"
+      echo "Linking $FABRIC_NPAPI_DST -> $FABRIC_NPAPI_SRC"
+      ln -snf "$FABRIC_NPAPI_SRC" "$FABRIC_NPAPI_DST"
     else
-      echo "Removing ~/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin"
+      echo "Removing $FABRIC_NPAPI_DST"
       rm -f "$FABRIC_NPAPI_DST"
     fi
   fi
