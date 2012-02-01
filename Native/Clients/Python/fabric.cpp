@@ -5,9 +5,8 @@
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Clients/Python/Client.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Build.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <map>
 #include <time.h>

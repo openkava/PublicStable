@@ -4,12 +4,10 @@
  
 #include <Fabric/Clients/Python/Client.h>
 #include <Fabric/Core/DG/Context.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
-#include <Fabric/Core/IO/Stream.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
@@ -102,7 +100,7 @@ namespace Fabric
     void Client::jsonExecAndAllocCStr( char const *data, size_t length, const char **str )
     {
       Util::SimpleString *jsonEncodedResults = new Util::SimpleString();
-      Util::JSONGenerator resultJSON( jsonEncodedResults );
+      JSON::Encoder resultJSON( jsonEncodedResults );
 
       jsonExec( data, length, resultJSON );
 
