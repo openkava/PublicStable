@@ -1315,11 +1315,11 @@ class _MR( _NAMESPACE ):
     reduce = self._VALUEPRODUCER( self )
     arg = {
       'id': reduce.getID(),
-      'inputArrayProducerID': inputArrayProducer.getID(),
-      'reduceOperatorID': reduceOperator.getID()
+      'inputID': inputArrayProducer.getID(),
+      'operatorID': reduceOperator.getID()
     }
     if ( sharedValueProducer is not None ):
-      arg[ 'sharedValueProducerID' ] = sharedValueProducer.getID()
+      arg[ 'sharedID' ] = sharedValueProducer.getID()
 
     self._queueCommand( 'createReduce', arg, reduce.unwind )
     return reduce

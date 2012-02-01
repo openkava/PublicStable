@@ -6,7 +6,6 @@
 #define _FABRIC_PYTHON_CLIENT_H
 
 #include <Fabric/Core/DG/Client.h>
-#include <Fabric/Core/Util/Log.h>
 #include <Fabric/Core/Util/Mutex.h>
 #include <Fabric/Core/Util/Cond.h>
 #include <Fabric/Core/Util/TLS.h>
