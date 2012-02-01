@@ -14,7 +14,7 @@ var Lights = {
   }
 };
 
-SceneGraph.registerNodeType('Light', {
+FABRIC.SceneGraph.registerNodeType('Light', {
   briefDesc: 'The Light node is an abstract base node used by the Light types in the SceneGraph.',
   detailedDesc: 'The Light node is an abstract base node used by the Light types in the SceneGraph.',
   parentNodeDesc: 'SceneGraphNode',
@@ -57,12 +57,12 @@ SceneGraph.registerNodeType('Light', {
         operatorName: 'loadLight',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
         preProcessorDefinitions: {
-          LIGHTTYPE_ATTRIBUTE_ID: Materials.getShaderParamID('lightType'),
-          LIGHTCOLOR_ATTRIBUTE_ID: Materials.getShaderParamID('lightColor'),
-          LIGHTPOSITION_ATTRIBUTE_ID: Materials.getShaderParamID('lightPosition'),
-          LIGHTDIR_ATTRIBUTE_ID: Materials.getShaderParamID('lightDir'),
-          LIGHTCOSCUTOFF_ATTRIBUTE_ID: Materials.getShaderParamID('lightCosCutoff'),
-          LIGHTVIEWMATRIX_ATTRIBUTE_ID: Materials.getShaderParamID('lightShadowMapMatrix')
+          LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
+          LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
+          LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+          LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
+          LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
+          LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
         },
         entryFunctionName: 'loadLight',
         parameterLayout: [
@@ -84,12 +84,12 @@ SceneGraph.registerNodeType('Light', {
               operatorName: 'loadLightMatrixUniform',
               srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
               preProcessorDefinitions: {
-                LIGHTTYPE_ATTRIBUTE_ID: Materials.getShaderParamID('lightType'),
-                LIGHTCOLOR_ATTRIBUTE_ID: Materials.getShaderParamID('lightColor'),
-                LIGHTPOSITION_ATTRIBUTE_ID: Materials.getShaderParamID('lightPosition'),
-                LIGHTDIR_ATTRIBUTE_ID: Materials.getShaderParamID('lightDir'),
-                LIGHTCOSCUTOFF_ATTRIBUTE_ID: Materials.getShaderParamID('lightCosCutoff'),
-                LIGHTVIEWMATRIX_ATTRIBUTE_ID: Materials.getShaderParamID('lightShadowMapMatrix')
+                LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
+                LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
+                LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+                LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
+                LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
+                LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
               },
               entryFunctionName: 'loadLightMatrixUniform',
               parameterLayout: [
@@ -219,7 +219,7 @@ SceneGraph.registerNodeType('Light', {
   }});
 
 
-SceneGraph.registerNodeType('PointLight', {
+FABRIC.SceneGraph.registerNodeType('PointLight', {
   briefDesc: 'The PointLight node represents a point light in the SceneGraph.',
   detailedDesc: 'The PointLight node represents a point light in the SceneGraph. A Point light casts light in all directions from a point in space.',
   parentNodeDesc: 'Light',
@@ -286,7 +286,7 @@ SceneGraph.registerNodeType('PointLight', {
     return pointLightNode;
   }});
 
-SceneGraph.registerNodeType('DirectionalLight', {
+FABRIC.SceneGraph.registerNodeType('DirectionalLight', {
   briefDesc: 'The DirectionalLight node represents a directional light in the SceneGraph.',
   detailedDesc: 'The DirectionalLight node represents a directional light in the SceneGraph.' +
                 'A Directional Light casts light in only one direction and the position is not used in lighting calculations.',
@@ -332,12 +332,12 @@ SceneGraph.registerNodeType('DirectionalLight', {
         operatorName: 'loadDirectionalLight',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
         preProcessorDefinitions: {
-          LIGHTTYPE_ATTRIBUTE_ID: Materials.getShaderParamID('lightType'),
-          LIGHTCOLOR_ATTRIBUTE_ID: Materials.getShaderParamID('lightColor'),
-          LIGHTPOSITION_ATTRIBUTE_ID: Materials.getShaderParamID('lightPosition'),
-          LIGHTDIR_ATTRIBUTE_ID: Materials.getShaderParamID('lightDir'),
-          LIGHTCOSCUTOFF_ATTRIBUTE_ID: Materials.getShaderParamID('lightCosCutoff'),
-          LIGHTVIEWMATRIX_ATTRIBUTE_ID: Materials.getShaderParamID('lightShadowMapMatrix')
+          LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
+          LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
+          LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+          LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
+          LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
+          LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
         },
         entryFunctionName: 'loadDirectionalLight',
         parameterLayout: [
@@ -400,7 +400,7 @@ SceneGraph.registerNodeType('DirectionalLight', {
   }});
 
 
-SceneGraph.registerNodeType('SpotLight', {
+FABRIC.SceneGraph.registerNodeType('SpotLight', {
   briefDesc: 'The SpotLight node represents a spot light in the SceneGraph.',
   detailedDesc: 'The SpotLight node represents a spot light in the SceneGraph. ' +
                 'A Spot Light casts light in a cone orriginating from a specified position and with an angle specified by the cone angle. ' +
@@ -461,12 +461,12 @@ SceneGraph.registerNodeType('SpotLight', {
           operatorName: 'loadSpotLight',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
           preProcessorDefinitions: {
-            LIGHTTYPE_ATTRIBUTE_ID: Materials.getShaderParamID('lightType'),
-            LIGHTCOLOR_ATTRIBUTE_ID: Materials.getShaderParamID('lightColor'),
-            LIGHTPOSITION_ATTRIBUTE_ID: Materials.getShaderParamID('lightPosition'),
-            LIGHTDIR_ATTRIBUTE_ID: Materials.getShaderParamID('lightDir'),
-            LIGHTCOSCUTOFF_ATTRIBUTE_ID: Materials.getShaderParamID('lightCosCutoff'),
-            LIGHTVIEWMATRIX_ATTRIBUTE_ID: Materials.getShaderParamID('lightShadowMapMatrix')
+            LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
+            LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
+            LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+            LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
+            LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
+            LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
           },
           entryFunctionName: 'loadSpotLight',
           parameterLayout: [

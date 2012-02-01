@@ -3,6 +3,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Rendering"], function() {
+
 FABRIC.SceneGraph.defineEffectFromFile('VolumeMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/VolumeShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('ScreenProjectionTextureMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/ScreenProjectionTextureShader.xml');
 
@@ -863,3 +867,4 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
   }
 });
 
+});

@@ -2,6 +2,8 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
 
 FABRIC.SceneGraph.registerNodeType('ObjResource', {
   briefDesc: 'The ObjResource node is a resource load node able to load OBJ files.',
@@ -270,3 +272,4 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options) {
   return resourceLoadNode;
 });
 
+});

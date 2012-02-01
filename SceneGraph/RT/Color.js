@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math"], function() {
+
 /**
  * The basic math module.
  */
@@ -143,10 +145,10 @@ FABRIC.RT.Color.prototype = {
     this.a = a / 255;
   },
   clampColorValues: function() {
-    this.r = Math.min(Math.max(this.r, 0), 1);
-    this.g = Math.min(Math.max(this.g, 0), 1);
-    this.b = Math.min(Math.max(this.b, 0), 1);
-    this.a = Math.min(Math.max(this.a, 0), 1);
+    this.r = Math.clamp(this.r, 0, 1);
+    this.g = Math.clamp(this.g, 0, 1);
+    this.b = Math.clamp(this.b, 0, 1);
+    this.a = Math.clamp(this.a, 0, 1);
     return this;
   },
 
@@ -348,4 +350,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Color.kl')
     }
   });
+});
+
+  return FABRIC.RT.Color;
 });

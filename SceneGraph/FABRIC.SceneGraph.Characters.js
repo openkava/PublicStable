@@ -3,6 +3,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
+
 FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
   briefDesc: 'The CharacterMesh node represents a deformable Triangles node.',
   detailedDesc: 'The CharacterMesh node represents a deformable Triangles node. It is typically deformed through a GLSL skinning operator, driven by a CharacterRig node.',
@@ -1278,3 +1282,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     }
     return manipulatorNode;
   }});
+
+
+});

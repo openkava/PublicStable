@@ -2659,7 +2659,8 @@ var requirejs, require, define;
     getBrowser: function(){ return BrowserDetect.browser; },
     getBrowserVersion: function(){ return BrowserDetect.version; },
     define: define,
-    require: require
+    require: require,
+    RT: {}
   };
 })();
 

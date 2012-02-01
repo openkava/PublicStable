@@ -3,6 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(function() {
 
 /**
  * Constructor for a hashtable object
@@ -49,4 +50,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/HashTable.kl')
     }
   });
+});
+
 });

@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/Math"], function() {
+
+
 //determine if an object is a valid Vec2.
 FABRIC.RT.isVec2 = function(t) {
   return t && t.getType &&
@@ -204,4 +207,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Vec2.kl')
     }
   });
+});
+
+  return FABRIC.RT.Vec2;
 });

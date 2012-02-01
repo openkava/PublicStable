@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+
+FABRIC.define(["SceneGraph/RT/Color"], function() {
+
 /**
  * Function to determine if an object is a valid rgba.
  * @param {object} rgba The rgba object to validate.
@@ -161,4 +164,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/RGBA.kl')
     }
   });
+});
+
 });

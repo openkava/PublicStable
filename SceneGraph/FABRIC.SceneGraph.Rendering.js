@@ -3,10 +3,11 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC", "SceneGraph"], function(FABRIC, SceneGraph) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Kinematics",
+               "SceneGraph/FABRIC.SceneGraph.Materials"], function() {
 
-  var Rendering = {};
-  
   
 /**
  * The rendering scene graph is the core implementation of Fabric's
@@ -534,6 +535,5 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
 }});
 
 
-  return Rendering;
 });
 

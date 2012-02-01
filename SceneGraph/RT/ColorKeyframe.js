@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/RT/KeyframeTrack"], function() {
+  
 /**
  * A function to create a linear key frame object.
  * @constructor
@@ -124,3 +126,4 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 
+});

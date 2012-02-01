@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Characters"], function() {
+  
 FABRIC.RT.SolverHelperFunctions = function() {
 };
 
@@ -1605,5 +1608,5 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('VerletChainSolver', {
   }
 });
 
-
+});
 

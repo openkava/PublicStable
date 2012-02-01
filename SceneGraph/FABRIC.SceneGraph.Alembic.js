@@ -2,6 +2,12 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Animation"], function() {
+  
+  
 FABRIC.SceneGraph.registerParser('abc', function(scene, assetUrl, options) {
   
   var results = {};
@@ -425,4 +431,6 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
     
     return resourceLoadNode;
   }
+});
+
 });

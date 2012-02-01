@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function() {
+
 //////////////////////////////////////////////////////////////////////////////
 // The SceneSerializer is a tool for writing out all the data for a collection
 // of nodes that the developer wishes to save.
@@ -926,3 +929,4 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
   }
 });
 
+});

@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(function() {
+FABRIC.define(["SceneGraph/RT/Vec2", "SceneGraph/RT/Vec3", "SceneGraph/RT/Color", "SceneGraph/RT/Ray", "SceneGraph/RT/Xfo"], function() {
 
 /**
  * The scene graph is the core implementation of Fabric's

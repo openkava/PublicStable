@@ -14,30 +14,6 @@
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     
 <script type="text/javascript">
 
@@ -58,15 +34,19 @@ s.parentNode.insertBefore(ga, s);
 
     <script type="text/javascript">
     
-$(document).ready(function() {
   
+FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
+                 "SceneGraph/FABRIC.SceneGraph.Lights",
+                 "SceneGraph/FABRIC.SceneGraph.Primitives",
+                 "SceneGraph/FABRIC.SceneGraph.Materials",
+                 "SceneGraph/FABRIC.SceneGraph.Manipulation"], function(Color, SceneGraph) {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
   });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   // Create a camera to draw the scene from
@@ -303,6 +283,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   })
 //  .addMaterialNode( wireframeMaterial );
 
+$(document).ready(function() {
+ 
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -321,6 +303,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     }
   });
   
+});
 });
 
 // jQuert UI Styling classes

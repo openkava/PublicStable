@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLShaderProgram"], function(Math) {
+FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/OGLShaderProgram"], function() {
   
 /**
  * Constructor function to create a Ray object.
