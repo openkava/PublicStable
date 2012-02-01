@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph"], function() {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph", "SceneGraph/RT/KeyframeTrack"], function() {
   
 
 FABRIC.SceneGraph.registerNodeType('Animation', {
@@ -791,7 +791,5 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     }
     return trackDisplayNode;
   }});
-
-});
 
 });

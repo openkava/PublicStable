@@ -4,7 +4,8 @@
 //
 
 
-FABRIC.define(["SceneGraph/RT/KeyframeTrack"], function() {
+FABRIC.define(["SceneGraph/RT/KeyframeTrack",
+               "SceneGraph/RT/KeyframeTrackBindings"], function() {
 
 /**
  * A function to create a linear key frame object.

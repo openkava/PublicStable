@@ -123,7 +123,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           
           var buffer = new FABRIC.RT.OGLBuffer(name, attributeID, typeDesc);
           if(attributeoptions.dynamic){
-            buffer.bufferUsage = SceneGraph.OpenGLConstants.GL_DYNAMIC_DRAW;
+            buffer.bufferUsage = FABRIC.SceneGraph.OpenGLConstants.GL_DYNAMIC_DRAW;
           }
           redrawEventHandler.addMember(bufferMemberName, 'OGLBuffer', buffer);
           redrawEventHandler.preDescendBindings.append(scene.constructOperator({
@@ -152,7 +152,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     };
     geometryNode.pub.setAttributeDynamic = function(name) {
       var buffer = redrawEventHandler.getData(name + 'Buffer');
-      buffer.bufferUsage = SceneGraph.OpenGLConstants.GL_DYNAMIC_DRAW;
+      buffer.bufferUsage = FABRIC.SceneGraph.OpenGLConstants.GL_DYNAMIC_DRAW;
       redrawEventHandler.setData(name + 'Buffer', 0, buffer);
     };
     geometryNode.pub.setAttributeStatic = function(name) {

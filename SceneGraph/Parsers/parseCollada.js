@@ -4,8 +4,13 @@
 //
 
 
-define(["FABRIC", "Math", "Vec2", "Vec3", "Vec4", "Quat", "Xfo", "Mat44", "Color", "KeyframeTrack"],
-       function(FABRIC, Math, Vec2, Vec3, Vec4, Quat, Xfo, Mat44, Color, KeyframeTrack) {
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Materials",
+               "SceneGraph/FABRIC.SceneGraph.Animation",
+               "SceneGraph/FABRIC.SceneGraph.Characters",
+               "SceneGraph/RT/Mat44",
+               "SceneGraph/RT/LinearKeyframe"], function() {
+
 
 FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, callback) {
   
@@ -399,7 +404,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         float_array.push(parseFloat(text_array[i]));
       }
     }
-    var mat = makeRT(Mat44, float_array);
+    var mat = makeRT(FABRIC.RT.Mat44, float_array);
     mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
     return mat;
   }
@@ -501,7 +506,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       name:  node.getAttribute('name'),
       type:  node.getAttribute('type'),
       instance_geometry: undefined,
-      xfo: new Xfo(),
+      xfo: new FABRIC.RT.Xfo(),
       children:[]
     };
     if(parentId){
@@ -514,28 +519,25 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         case 'translate': {
           var sid = child.getAttribute('sid');
           var str = child.textContent.split(new RegExp("\\s+"));
-          var tr = new Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
+          var tr = new FABRIC.RT.Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
           tr = tr.multiplyScalar(options.scaleFactor);
-          nodeData.xfo = nodeData.xfo.multiply(new Xfo({tr:tr}));
+          nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({tr:tr}));
           break;
         }
         case 'rotate': {
           var sid = child.getAttribute('sid');
           var str = child.textContent.split(new RegExp("\\s+"));
-          var q = new Quat().setFromAxisAndAngle(
-                    new Vec3(
-                      parseFloat(str[0]),
-                      parseFloat(str[1]),
-                      parseFloat(str[2])),
+          var q = new FABRIC.RT.Quat().setFromAxisAndAngle(
+                    new FABRIC.RT.Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2])),
                     Math.degToRad(parseFloat(str[3])));
-          nodeData.xfo = nodeData.xfo.multiply(new Xfo({ori:q}));
+          nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({ori:q}));
           break;
         }
         case 'scale': {
           var sid = child.getAttribute('sid');
           var str = child.textContent.split(new RegExp("\\s+"));
-          var sc = new Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
-          nodeData.xfo = nodeData.xfo.multiply(new Xfo({sc:sc}));
+          var sc = new FABRIC.RT.Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
+          nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({sc:sc}));
           break;
         }
         case 'matrix':
@@ -674,19 +676,19 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     };
     var constructUVs = function(args){
       if(options.flipUVs){
-        return new Vec2(args[0],1.0-args[1]);
+        return new FABRIC.RT.Vec2(args[0],1.0-args[1]);
       }else{
-        return new Vec2(args[0],args[1]);
+        return new FABRIC.RT.Vec2(args[0],args[1]);
       }
     }
     var constructVec3 = function(args){
-      return new Vec3(args[0],args[1],args[2]);
+      return new FABRIC.RT.Vec3(args[0],args[1],args[2]);
     }
     var constructScaledVec3 = function(args){
-      return new Vec3(args[0]*options.scaleFactor,args[1]*options.scaleFactor,args[2]*options.scaleFactor);
+      return new FABRIC.RT.Vec3(args[0]*options.scaleFactor,args[1]*options.scaleFactor,args[2]*options.scaleFactor);
     }
     var constructColor = function(args){
-      return new Color(args[0],args[1],args[2],args[3]);
+      return new FABRIC.RT.Color(args[0],args[1],args[2],args[3]);
     }
     for(var semantic in trianglesData.inputs){
       var input = trianglesData.inputs[semantic];
@@ -825,9 +827,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         fksolver = rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
       }
       // Construct the track set for this rig.
-      var trackSet = new KeyframeTrackSet(skeletonNode.getName()+'Animation');
+      var trackSet = new FABRIC.RT.KeyframeTrackSet(skeletonNode.getName()+'Animation');
       var xfoVarBindings = fksolver.getXfoVarBindings();
-      var trackBindings = new KeyframeTrackBindings();
+      var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
       
       for (var i = 0; i < bones.length; i++) {
         var boneName = bones[i].name;
@@ -853,17 +855,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
           var generateKeyframeTrack = function(channelName, keytimes, keyvalues, scaleFactor){
             var color;
             switch (channelName.substr(channelName.lastIndexOf('.')+1)) {
-            case 'x': color = Color.rgb(1, 0, 0);        break;
-            case 'y': color = Color.rgb(0, 1, 0);        break;
-            case 'z': color = Color.rgb(0, 0, 1);        break;
-            case 'w': color = Color.rgb(0.7, 0.7, 0.7);  break;
+            case 'x': color = FABRIC.RT.rgb(1, 0, 0);        break;
+            case 'y': color = FABRIC.RT.rgb(0, 1, 0);        break;
+            case 'z': color = FABRIC.RT.rgb(0, 0, 1);        break;
+            case 'w': color = FABRIC.RT.rgb(0.7, 0.7, 0.7);  break;
             default:
               throw 'unsupported channel:' + channelName;
             }
             
             // now let's reformat the linear data
-            var track = new KeyframeTrack(bones[i].name+'.'+channelName, color);
-            var key = function(t, v){ return new LinearKeyframe(t, v); }
+            var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
+            var key = function(t, v){ return new FABRIC.RT.LinearKeyframe(t, v); }
             for (var j = 0; j < keytimes.length; j++) {
               track.keys.push(key(keytimes[j], keyvalues[j] * scaleFactor));
             }
@@ -894,7 +896,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
             for (var j = 0; j < outputSource.technique.accessor.count; j++) {
               var matrixValues = getSourceData(outputSource, j);
               var mat = makeRT(Mat44, matrixValues);
-              var xfo = new Xfo();
+              var xfo = new FABRIC.RT.Xfo();
               xfo.setFromMat44(mat);
               tr_x_keyvalues.push(xfo.tr.x);
               tr_y_keyvalues.push(xfo.tr.y);
@@ -1027,8 +1029,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         
         // If the tip of the bone is below the floor, then 
         // shorten the bone till it touches the floor.
-        var downVec = new Vec3(0, -1, 0);
-        var boneVec = bones[i].referencePose.ori.rotateVector(new Vec3(bones[i].length, 0, 0));
+        var downVec = new FABRIC.RT.Vec3(0, -1, 0);
+        var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
         if(bones[i].referencePose.tr.y > 0 && boneVec.dot(downVec) > bones[i].referencePose.tr.y){
           bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
         }
@@ -1119,7 +1121,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     var invmatrices = [];
     for (var j = 0; j < jointDataSource.data.length; j++) {
       var bindPoseValues = getSourceData(bindPoseDataSource, j);
-      var mat = makeRT(Mat44, bindPoseValues);//.transpose();
+      var mat = makeRT(FABRIC.RT.Mat44, bindPoseValues);//.transpose();
       mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
       invmatrices[j] = mat.multiply(controllerData.bind_shape_matrix);
     }
@@ -1163,7 +1165,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       if (data.length === 1) return new Vec4(data[0], 0, 0, 0);
       if (data.length === 2) return new Vec4(data[0], data[1], 0, 0);
       if (data.length === 3) return new Vec4(data[0], data[1], data[2], 0);
-      return new Vec4(data[0], data[1], data[2], data[3]);
+      return new FABRIC.RT.Vec4(data[0], data[1], data[2], data[3]);
     };
     
     var bid = 0;

@@ -145,4 +145,4 @@ FABRIC.SceneGraph.registerNodeType('DebugGeometryDraw', {
     return debugGeometryDraw;
   }});
 
-
+});
