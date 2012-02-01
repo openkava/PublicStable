@@ -2,19 +2,21 @@
 # Copyright 2010-2011 Fabric Engine Inc. All rights reserved.
 #
 
-import os, platform, posixpath, glob
+import os, platform, posixpath, glob, sys
 
 CacheDir( '.sconscache' )
 
-buildOS = platform.system()
-Export( 'buildOS' );
-if buildOS == 'Darwin':
-  buildArch = 'universal'
-else:
-  buildArch = ARGUMENTS.get( 'ARCH', platform.machine() )
-Export( 'buildArch' )
-buildType = ARGUMENTS.get( 'TYPE', 'Debug' )
-Export( 'buildType' )
+try:
+  buildOS = os.environ['FABRIC_BUILD_OS']
+  Export( 'buildOS' );
+  buildArch = os.environ['FABRIC_BUILD_ARCH']
+  Export( 'buildArch' )
+  buildType = os.environ['FABRIC_BUILD_TYPE']
+  Export( 'buildType' )
+except:
+  print "Must source fabric-build-env.sh first"
+  sys.exit(1)
+
 thirdPartyDir = os.path.join(os.getcwd(), 'ThirdParty' )
 
 # [pzion 20110726] !!!!!!!!!!!!!!!!!!!!
