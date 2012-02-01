@@ -104,15 +104,12 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   
   // import the cow
   var cow;
-  var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/cow.obj');
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    cow = evt.loadedGeometries.cow;
-    
-    
+  scene.importAssetFile('../BasicDemos/Models/cow.obj', {}, function(assetNodes){
+   
+    cow = assetNodes.cow;
     // add a gimpact shape
     bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createGImpact(cow));
   });
-
   
   // create a force manipulator
   var manipulatorNode = scene.constructNode('BulletForceManipulator', {
@@ -121,8 +118,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     radius: 10.0,
     useFalloff: false
   });
-
-  
   
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     

@@ -179,29 +179,27 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var light = scene.constructNode('PointLight', { transformNode: camera.getTransformNode() });
   var material = scene.constructNode('PhongVertexColorMaterial', { lightNode: light });
 
-  var resourceLoadNode = scene.importAssetFile('Models/bunny.obj', {
-   splitMaterials: false
-  });
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    var geometry = evt.loadedGeometries['bunny'];
-    geometry.addVertexAttributeValue('vertexColors', 'Color', {
-      defaultValue:baseColor,
-      genVBO:true
-    });
-  
-    var instanceNode = scene.constructNode('Instance', { geometryNode: geometry, materialNode: material });
-  
-  
-
-    paintManipulator.addPaintableNode(instanceNode);
-  
-    var onPaintFn = function(evt) {
-      if( evt.paintData.points.length == 0 ){
-        return;
-      }
-      geometry.reloadVBO('vertexColors');
-    };
-    paintManipulator.addEventListener('onpaint', onPaintFn);
+  scene.importAssetFile('Models/bunny.obj', {
+     splitMaterials: false
+   },
+   function(assetNodes){
+     var geometry = assetNodes.bunny;
+     geometry.addVertexAttributeValue('vertexColors', 'Color', {
+       defaultValue:baseColor,
+       genVBO:true
+     });
+   
+     var instanceNode = scene.constructNode('Instance', { geometryNode: geometry, materialNode: material });
+   
+     paintManipulator.addPaintableNode(instanceNode);
+   
+     var onPaintFn = function(evt) {
+       if( evt.paintData.points.length == 0 ){
+         return;
+       }
+       geometry.reloadVBO('vertexColors');
+     };
+     paintManipulator.addEventListener('onpaint', onPaintFn);
    });
   
 
