@@ -201,18 +201,17 @@ $(document).ready(function() {
     filepath: '/tmp/meshes.bin'
   });
 
-  var resourceLoadNode = scene.importAssetFile('Models/cow.obj');
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    for(var name in evt.loadedGeometries) {
+  scene.importAssetFile('Models/cow.obj', {}, function(assetNodes){
+    for(var name in assetNodes) {
       scene.constructNode('Instance', {
-        geometryNode: evt.loadedGeometries[name],
+        geometryNode: assetNodes[name],
         materialNode: material,
         transformNode: scene.constructNode('Transform', {
           hierarchical: false,
           globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
         }),
       });
-      var persistedTrianglesNode = fsNode.addTrianglesNode(evt.loadedGeometries[name]);
+      var persistedTrianglesNode = fsNode.addTrianglesNode(assetNodes[name]);
       scene.constructNode('Instance', {
         geometryNode: persistedTrianglesNode,
         materialNode: material,

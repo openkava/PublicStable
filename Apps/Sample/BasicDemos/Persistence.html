@@ -98,31 +98,28 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
   var modelName = 'cow';
-  var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
-   splitMaterials: true
-  });
   var instances = [];
-  objResource.addEventListener('objparsesuccess', function(evt){
-    
-    for(var name in evt.loadedGeometries){
-       var material = scene.constructNode('PhongMaterial', {
-         diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-         lightNode: light
-       });
-      var instance = scene.constructNode('Instance', {
-        geometryNode: evt.loadedGeometries[name],
-        materialNode: material,
-        transformNode: scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
-        }),
-      });
-      instances.push(instance);
-    }
-    
-    viewport.redraw();
-  });
-  
+  scene.importAssetFile('Models/' + modelName + '.obj', {
+      splitMaterials: true
+    },
+    function(assetNodes){
+      for(var name in assetNodes){
+         var material = scene.constructNode('PhongMaterial', {
+           diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+           lightNode: light
+         });
+        var instance = scene.constructNode('Instance', {
+          geometryNode: assetNodes[name],
+          materialNode: material,
+          transformNode: scene.constructNode('Transform', {
+            hierarchical: false,
+            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+          }),
+        });
+        instances.push(instance);
+      }
+      viewport.redraw();
+    });
   
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
   var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');

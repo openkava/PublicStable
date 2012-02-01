@@ -192,12 +192,12 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'shapes';
-  var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/'+resourceName+'.abc',
     dependentNode: viewport
   });
 
-  assets[resourceName].addEventListener('loadSuccess', function(){
-      
+  alembicLoadNode.addEventListener('loadSuccess', function(){
       var shaderColor = {
         '/headXfo/head': FABRIC.RT.rgb(1.0, 0.6, 0.0, 1),
         '/l_eyeXfo/l_eye': FABRIC.RT.rgb(0.0, 0.0, 0.0, 1),
@@ -206,11 +206,11 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       
       // loop over all assets and create an instance
       for(var name in shaderColor) {
-        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Triangles'))
+        if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Triangles'))
         {
           var inst = scene.constructNode('Instance', {
-            transformNode: assets[resourceName].getCorrespondingTransform(name),
-            geometryNode: assets[resourceName].getParsedNodes()[name],
+            transformNode: alembicLoadNode.getCorrespondingTransform(name),
+            geometryNode: alembicLoadNode.getParsedNodes()[name],
             materialNode: scene.constructNode('PhongMaterial', {
               diffuseColor: shaderColor[name],
               specularColor: FABRIC.RT.rgb(0.15, 0.15, 0.15, 1),
@@ -224,12 +224,12 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       var shapes = {};
       for(var i=0;i<shapeNames.length;i++) {
         var name = shapeNames[i];
-        shapes[name] = assets[resourceName].getParsedNodes()['/'+name+'Xfo/'+name];
+        shapes[name] = alembicLoadNode.getParsedNodes()['/'+name+'Xfo/'+name];
       }
       
       // construct the shape mixer
       var mixer = scene.constructNode('ShapeMixer', {
-        target: assets[resourceName].getParsedNodes()['/headXfo/head'],
+        target: alembicLoadNode.getParsedNodes()['/headXfo/head'],
         shapes: shapes
       });
       

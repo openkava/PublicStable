@@ -327,10 +327,9 @@ $(document).ready(function() {
   var carSlicedTransform = scene.constructNode("Transform", { name:"CarsTransform" } );
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
     
-  var resourceLoadNode = scene.importAssetFile('Models/carmod2.obj');
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+  scene.importAssetFile('Models/carmod2.obj', {}, function(assetNodes){
     scene.constructNode('Instance', {
-      geometryNode: evt.loadedGeometries['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
+      geometryNode: assetNodes['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
       materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
         diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
         transformTextureNode: scene.constructNode('TransformTexture', {
@@ -341,7 +340,7 @@ $(document).ready(function() {
       }),
       transformNode: carSlicedTransform
     });
-   });
+  });
   
 
   scene.constructNode('MoveCarsNode', {
