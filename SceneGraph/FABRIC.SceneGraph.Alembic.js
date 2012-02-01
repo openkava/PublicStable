@@ -255,7 +255,9 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
           uniformsdgnode.setDependency(resourceloaddgnode,'alembic');
           var attributesdgnode = pointsNode.getAttributesDGNode();
           attributesdgnode.setDependency(resourceloaddgnode,'alembic');
+          pointsNode.pub.addVertexAttributeValue('orientations','Quat',{ genVBO:true });
           pointsNode.pub.addVertexAttributeValue('sizes','Scalar',{ genVBO:true });
+          pointsNode.pub.addVertexAttributeValue('scales','Vec3',{ genVBO:true });
           pointsNode.pub.addVertexAttributeValue('colors','Color',{ genVBO:true });
 
           // create a function to access the number of sample of this node
@@ -281,7 +283,9 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
               'uniforms.identifier',
               'uniforms.alembicTime',
               'self.positions<>',
+              'self.orientations<>',
               'self.sizes<>',
+              'self.scales<>',
               'self.colors<>'
             ],
             entryFunctionName: 'alembicParsePointsAttributes',
