@@ -8,9 +8,9 @@ Import( 'baseEnv', 'buildOS' )
 dirs = [
   'ALEMBIC',
   'BULLET',
-  #'CIMG',
+  'CIMG',
   'EXR',
-  #'FILESTREAM',
+  'FILESTREAM',
   'HDR',
   'LIDAR',
   'Math',
