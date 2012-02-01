@@ -3,6 +3,12 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.DebugGeometry",
+               "SceneGraph/RT/HashTable"], function() {
+
 // The Particles node is a relative of the 'Redraw' node.
 // It is bound to a 'Geometry' which it renders for each Instance.
 
@@ -101,3 +107,4 @@ FABRIC.SceneGraph.registerNodeType('Particles', {
   }});
 
 
+});

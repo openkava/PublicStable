@@ -2,6 +2,10 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
+  
 FABRIC.SceneGraph.registerParser('las', function(scene, assetUrl, options) {
   
   var results = {};
@@ -98,4 +102,6 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
     
     return resourceLoadNode;
   }
+});
+
 });

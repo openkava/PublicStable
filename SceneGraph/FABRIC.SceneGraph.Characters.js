@@ -9,6 +9,7 @@ FABRIC.define(["SceneGraph/RT/Bone",
                "SceneGraph/RT/KeyframeTrackBindings",
                "SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Animation",
                "SceneGraph/FABRIC.SceneGraph.CharacterSolvers",
                "SceneGraph/FABRIC.SceneGraph.DebugGeometry"], function() {
 
