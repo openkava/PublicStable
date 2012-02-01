@@ -6,10 +6,8 @@
 
 FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
-
-  var Bullet = {};
   
-var BulletWorld = function(options) {
+FABRIC.RT.BulletWorld = function(options) {
   if(!options)
     options = {};
   this.localData = null;
@@ -21,11 +19,11 @@ var BulletWorld = function(options) {
   this.hitNormal= new FABRIC.RT.Vec3(0,1,0);
 };
 
-BulletWorld.prototype = {
+FABRIC.RT.BulletWorld.prototype = {
 };
 
 
-var BulletSoftBody = function( options ) {
+FABRIC.RT.BulletSoftBody = function( options ) {
   if(!options)
     options = {};
   this.localData = null;
@@ -43,22 +41,11 @@ var BulletSoftBody = function( options ) {
 };
 
 
-BulletSoftBody.prototype = {
+FABRIC.RT.BulletSoftBody.prototype = {
 };
 
 
-var BulletShape = function(options) {
-  if(!options)
-    options = {};
-  this.localData = null;
-  this.name = options.name ? options.name : 'Shape';
-  this.type = options.type ? options.type : -1;
-  this.parameters = [];
-  this.vertices = [];
-  this.indices = [];
-};
-
-  var BulletShapes = {
+  var BulletShapeTypes = {
     BULLET_BOX_SHAPE: 0,
     BULLET_CONVEX_HULL_SHAPE: 4,
     BULLET_SPHERE_SHAPE: 8,
@@ -72,51 +59,62 @@ var BulletShape = function(options) {
     BULLET_SOFTBODY_SHAPE: 32
   };
   
-BulletShape.prototype = {
+FABRIC.RT.BulletShape = function(options) {
+  if(!options)
+    options = {};
+  this.localData = null;
+  this.name = options.name ? options.name : 'Shape';
+  this.type = options.type ? options.type : -1;
+  this.parameters = [];
+  this.vertices = [];
+  this.indices = [];
 };
 
-BulletShape.createBox = function(halfExtends) {
+FABRIC.RT.BulletShape.prototype = {
+};
+
+FABRIC.RT.BulletShape.createBox = function(halfExtends) {
   if(halfExtends == undefined) {
     halfExtends = new FABRIC.RT.Vec3(1.0,1.0,1.0);
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_BOX_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_BOX_SHAPE;
   shape.parameters.push(halfExtends.x);
   shape.parameters.push(halfExtends.y);
   shape.parameters.push(halfExtends.z);
   return shape;
 };
 
-BulletShape.createSphere = function(radius) {
+FABRIC.RT.BulletShape.createSphere = function(radius) {
   if(radius == undefined) {
     radius = 1.0;
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_SPHERE_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_SPHERE_SHAPE;
   shape.parameters.push(radius);
   return shape;
 };
 
-BulletShape.createCylinder = function(radius,height) {
+FABRIC.RT.BulletShape.createCylinder = function(radius,height) {
   if(radius == undefined) {
     radius = 0.5;
   }
   if(height == undefined) {
     height = 1.0;
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_CYLINDER_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_CYLINDER_SHAPE;
   shape.parameters.push(radius);
   shape.parameters.push(height * 0.5);
   return shape;
 };
 
-BulletShape.createPlane = function(normal) {
+FABRIC.RT.BulletShape.createPlane = function(normal) {
   if(normal == undefined) {
     normal = new FABRIC.RT.Vec3(0.0,1.0,0.0);
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_PLANE_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_PLANE_SHAPE;
   shape.parameters.push(normal.x);
   shape.parameters.push(normal.y);
   shape.parameters.push(normal.z);
@@ -124,39 +122,39 @@ BulletShape.createPlane = function(normal) {
   return shape;
 };
 
-BulletShape.createConvexHull = function(geometryNode) {
+FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
   if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
     throw('You need to specify the geometryNode for createConvexHull.');
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_CONVEX_HULL_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_CONVEX_HULL_SHAPE;
   shape.geometryNode = geometryNode;
   return shape;
 };
 
-BulletShape.createTriangleMesh = function(geometryNode) {
+FABRIC.RT.BulletShape.createTriangleMesh = function(geometryNode) {
   if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
     throw('You need to specify the geometryNode for createTriangleMesh.');
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_TRIANGLEMESH_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_TRIANGLEMESH_SHAPE;
   shape.geometryNode = geometryNode;
   return shape;
 };
 
-BulletShape.createGImpact = function(geometryNode) {
+FABRIC.RT.BulletShape.createGImpact = function(geometryNode) {
   if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
     throw('You need to specify the geometryNode for createGImpact.');
   }
-  var shape = new BulletShape();
-  shape.type = BulletShapes.BULLET_GIMPACT_SHAPE;
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = BulletShapeTypes.BULLET_GIMPACT_SHAPE;
   shape.geometryNode = geometryNode;
   return shape;
 };
 
 
 
-var BulletRigidBody = function(options) {
+FABRIC.RT.BulletRigidBody = function(options) {
   if(options == undefined)
     options = {};
   this.localData = null;
@@ -167,10 +165,10 @@ var BulletRigidBody = function(options) {
   this.restitution = options.restitution != undefined ? options.restitution: 0.0;
 };
 
-BulletRigidBody.prototype = {
+FABRIC.RT.BulletRigidBody.prototype = {
 };
 
-var BulletForce = function(options) {
+FABRIC.RT.BulletForce = function(options) {
   if(!options)
     options = {};
   this.name = options.name ? options.name : 'Force';
@@ -184,10 +182,17 @@ var BulletForce = function(options) {
   this.autoDisable = options.autoDisable != undefined ? options.autoDisable : false;
 };
 
-BulletForce.prototype = {
+FABRIC.RT.BulletForce.prototype = {
 };
 
- var BulletConstraint = function(options) {
+// constants
+var BulletConstraintTypes = {
+  BULLET_POINT2POINT_CONSTRAINT: 3,
+  BULLET_HINGE_CONSTRAINT: 4,
+  BULLET_SLIDER_CONSTRAINT: 7
+}
+
+FABRIC.RT.BulletConstraint = function(options) {
   if(!options)
     options = {};
   this.localData = null;
@@ -204,41 +209,35 @@ BulletForce.prototype = {
   this.parameters = [];
 };
 
-// constants
-var BulletConstraintTypes = {
-  BULLET_POINT2POINT_CONSTRAINT: 3,
-  BULLET_HINGE_CONSTRAINT: 4,
-  BULLET_SLIDER_CONSTRAINT: 7
-}
 
-BulletConstraint.prototype = {
+FABRIC.RT.BulletConstraint.prototype = {
 };
 
-BulletConstraint.createPoint2Point = function(options) {
+FABRIC.RT.BulletConstraint.createPoint2Point = function(options) {
   if(!options)
     options = {};
-  var constraint = new BulletConstraint(options);
+  var constraint = new FABRIC.RT.BulletConstraint(options);
   constraint.type = BulletConstraintTypes.BULLET_POINT2POINT_CONSTRAINT;
   return constraint;
 };
 
-BulletConstraint.createHinge = function(options) {
+FABRIC.RT.BulletConstraint.createHinge = function(options) {
   if(!options)
     options = {};
-  var constraint = new BulletConstraint(options);
+  var constraint = new FABRIC.RT.BulletConstraint(options);
   constraint.type = BulletConstraintTypes.BULLET_HINGE_CONSTRAINT;
   return constraint;
 };
 
-BulletConstraint.createSlider = function(options) {
+FABRIC.RT.BulletConstraint.createSlider = function(options) {
   if(!options)
     options = {};
-  var constraint = new BulletConstraint(options);
+  var constraint = new FABRIC.RT.BulletConstraint(options);
   constraint.type = BulletConstraintTypes.BULLET_SLIDER_CONSTRAINT;
   return constraint;
 };
 
-var BulletAnchor = function(options) {
+FABRIC.RT.BulletAnchor = function(options) {
   if(!options)
     options = {};
   this.localData = null;
@@ -250,7 +249,7 @@ var BulletAnchor = function(options) {
   this.disableCollision = options.disableCollision != undefined ? options.disableCollision : true;
 };
 
-BulletAnchor.prototype = {
+FABRIC.RT.BulletAnchor.prototype = {
 };
 
 FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
@@ -269,7 +268,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     // create the bullet node
     var bulletWorldNode = scene.constructNode('SceneGraphNode', {name: 'BulletWorldNode'});
     var dgnode = bulletWorldNode.constructDGNode('DGNode');
-    dgnode.addMember('world', 'BulletWorld', new BulletWorld(options));
+    dgnode.addMember('world', 'BulletWorld', new FABRIC.RT.BulletWorld(options));
     dgnode.addMember('prevTime', 'Scalar');
 
     // create the dgnodes to store shapes and bodies
@@ -303,7 +302,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       shapedgnode.addMember(shapeName+'Shape', 'BulletShape', shape);
 
       // copy the points for convex hulls
-      if(shape.type == BulletShapes.BULLET_CONVEX_HULL_SHAPE) {
+      if(shape.type == BulletShapeTypes.BULLET_CONVEX_HULL_SHAPE) {
         if(!shape.geometryNode){
           throw('You need to specify geometryNode for a convex hull shape!');
         }
@@ -321,7 +320,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       }
 
       // copy the points for convex hulls
-      if(shape.type == BulletShapes.BULLET_GIMPACT_SHAPE || shape.type == BulletShapes.BULLET_TRIANGLEMESH_SHAPE)
+      if(shape.type == BulletShapeTypes.BULLET_GIMPACT_SHAPE || shape.type == BulletShapeTypes.BULLET_TRIANGLEMESH_SHAPE)
       {
         if(!shape.geometryNode)
           throw('You need to specify geometryNode for a gimpact or trianglemeshshape shape!')
@@ -384,7 +383,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
 
       // check if the shape is a collision surface (turn passive if so)
       var shape = shapedgnode.getData(shapeName+'Shape',0);
-      if(shape.type == BulletShapes.BULLET_TRIANGLEMESH_SHAPE) {
+      if(shape.type == BulletShapeTypes.BULLET_TRIANGLEMESH_SHAPE) {
         for(var i=0;i<body.length;i++)
           body[i].mass = 0.0;
       }
@@ -625,8 +624,8 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       // create a shape
       // create the ground rigid body
       var groundTrans = new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0,-options.groundPlaneSize,0)});
-      bulletWorldNode.pub.addShape('Ground',BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlaneSize,options.groundPlaneSize,options.groundPlaneSize)));
-      bulletWorldNode.pub.addRigidBody('Ground',new BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
+      bulletWorldNode.pub.addShape('Ground', new FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlaneSize,options.groundPlaneSize,options.groundPlaneSize)));
+      bulletWorldNode.pub.addRigidBody('Ground', new FABRIC.RT.BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
       
       if(options.createGroundPlaneGrid){
         var instanceNode = scene.constructNode('Instance', {
@@ -816,7 +815,7 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
     bulletWorldNode.setupRaycasting();
 
     // introduce a new force....!
-    var force = new BulletForce({
+    var force = new FABRIC.RT.BulletForce({
       enable: false,
       autoDisable: true,
       factor: options.factor,
@@ -904,10 +903,4 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
     return forceManipulatorNode;
   }});
 
-  Bullet.BulletWorld = BulletWorld;
-  Bullet.BulletSoftBody = BulletSoftBody;
-  Bullet.BulletShape = BulletShape;
-  Bullet.BulletForce = BulletForce;
-  Bullet.BulletConstraint = BulletConstraint;
-  return Bullet;
 });

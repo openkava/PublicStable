@@ -14,32 +14,6 @@
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Alembic.js" charset="utf-8"></script>
 
 <script type="text/javascript">
 
@@ -58,40 +32,18 @@ s.parentNode.insertBefore(ga, s);
 
 </script>
     <script type="text/javascript">
-$(document).ready(function() {
+    
+FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
+                "SceneGraph/FABRIC.SceneGraph.Geometry",
+                "SceneGraph/FABRIC.SceneGraph.Materials",
+                "SceneGraph/FABRIC.SceneGraph.Manipulation",
+                "SceneGraph/FABRIC.SceneGraph.Alembic"], function() {
 
-  $('#play').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-play'
-      }
-    });
-  $('#step').button({
-    text: true,
-    icons: {
-      primary: 'ui-icon-step'
-    }
-  });  
-
-  $('#importModel').button().change(function(e) {
-      // TODO: Enable file importing
-        console.log($(this).val());
-      var assets = scene.importAssetFile($(this).val());
-      for (i in assets) {
-        assets[i].addMaterialNode(redMaterial);
-        drawNode.setGeometryNode(assets[i]);
-      }
-
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
-    });
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -118,74 +70,88 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       color: FABRIC.RT.rgb(0.1, 0.1, 0.1, 1)
     });
   
-  $('#loadingDialog').dialog({
-    modal: true
-  });
-
-  // create the alembic content, and fire the load once it is loaded
-  var resourceName = 'face';
-  var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
-    dependentNode: viewport
-  });
-
-  assets[resourceName].addEventListener('loadSuccess', function(){
-    // loop over all assets and create an instance
-    for(var name in assets[resourceName].getParsedNodes()) {
-      if(assets[resourceName].getParsedNodes()[name].isTypeOf('Triangles'))
-      {
-        var inst = scene.constructNode('Instance', {
-          transformNode: assets[resourceName].getCorrespondingTransform(name),
-          geometryNode: assets[resourceName].getParsedNodes()[name],
-          materialNode: phongMaterial
-        });
-        inst.addMaterialNode(wireMaterial);
+  $(document).ready(function() {
+  
+    $('#play').button({
+        text: true,
+        icons: {
+          primary: 'ui-icon-play'
+        }
+      });
+    $('#step').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-step'
       }
-    }
-      
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-  });
-
-  $('#play').button()
-    .click(function() {
-      var options;
-      if ($(this).text() == 'Play') {
-        $(this).button('option', {
-          label: 'Pause',
-          icons: {
-            primary: 'ui-icon-pause'
-          }
-        });
-        scene.animation.play();
-      } else {
-        $(this).button('option', {
-          label: 'Play',
-          icons: {
-            primary: 'ui-icon-play'
-          }
-        });
-        scene.animation.pause();
-      }
-    });
-  $('#step').button()
-    .click(function() {
-      scene.animation.step();
+    });  
+    $('#loadingDialog').dialog({
+      modal: true
     });
   
-  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-    $('#loadingProgressBar').progressbar({
-      value: (1.0-(doneWeight/totalWeight))*100
+    // create the alembic content, and fire the load once it is loaded
+    var resourceName = 'face';
+    var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
+      dependentNode: viewport
     });
-    if (nbRemaining===0) {
+  
+    assets[resourceName].addEventListener('loadSuccess', function(){
+      // loop over all assets and create an instance
+      for(var name in assets[resourceName].getParsedNodes()) {
+        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Triangles'))
+        {
+          var inst = scene.constructNode('Instance', {
+            transformNode: assets[resourceName].getCorrespondingTransform(name),
+            geometryNode: assets[resourceName].getParsedNodes()[name],
+            materialNode: phongMaterial
+          });
+          inst.addMaterialNode(wireMaterial);
+        }
+      }
+        
+      $('#loadingDialog').dialog('close');
       viewport.redraw();
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
-      return true;
-    }
-  });
+    });
   
+    $('#play').button()
+      .click(function() {
+        var options;
+        if ($(this).text() == 'Play') {
+          $(this).button('option', {
+            label: 'Pause',
+            icons: {
+              primary: 'ui-icon-pause'
+            }
+          });
+          scene.animation.play();
+        } else {
+          $(this).button('option', {
+            label: 'Play',
+            icons: {
+              primary: 'ui-icon-play'
+            }
+          });
+          scene.animation.pause();
+        }
+      });
+    $('#step').button()
+      .click(function() {
+        scene.animation.step();
+      });
+    
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      $('#loadingProgressBar').progressbar({
+        value: (1.0-(doneWeight/totalWeight))*100
+      });
+      if (nbRemaining===0) {
+        viewport.redraw();
+        var errors = scene.getErrors();
+        if (errors.length > 0) {
+          throw (errors.toString());
+        }
+        return true;
+      }
+    });
+  });
 });
 
 // jQuert UI Styling classes
