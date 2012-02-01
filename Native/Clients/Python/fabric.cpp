@@ -17,28 +17,31 @@ namespace Fabric
 {
   namespace Python
   {
-    extern "C" FABRIC_CLI_EXPORT void* createClient()
+    extern "C" FABRIC_CLI_EXPORT void identify()
     {
       FABRIC_LOG( "%s version %s", Fabric::buildName, Fabric::buildFullVersion );
       struct tm const *lt = localtime( &Fabric::buildExpiry );
       char buf[1024];
       strftime( buf, 1024, "This build of Fabric will expire on %Y-%m-%d at %H:%M:%S", lt );
       FABRIC_LOG( "%s", buf );
+    }
 
+    extern "C" FABRIC_CLI_EXPORT void createClient( void **ptr )
+    {
       RC::Handle<Client> client = Client::Create();
 
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling createClient: %x", client.ptr());
+      FABRIC_LOG( "calling createClient: %lx", client.ptr());
 #endif
 
       client->retain();
-      return client.ptr();
+      *ptr = client.ptr();
     }
     
     extern "C" FABRIC_CLI_EXPORT void jsonExec( void *client_, char const *data, size_t length, const char **result )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling jsonExec: %x", client_ );
+      FABRIC_LOG( "calling jsonExec: %lx", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
@@ -57,7 +60,7 @@ namespace Fabric
     extern "C" FABRIC_CLI_EXPORT void freeString( void *client_, void *string )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling freeString: %x (%x)", client_, string );
+      FABRIC_LOG( "calling freeString: %lx (%lx)", client_, string );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
@@ -70,7 +73,7 @@ namespace Fabric
         )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling setJSONNotifyCallback: %x", client_ );
+      FABRIC_LOG( "calling setJSONNotifyCallback: %lx", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
@@ -80,7 +83,7 @@ namespace Fabric
     extern "C" FABRIC_CLI_EXPORT void close( void *client_ )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling close: %x", client_ );
+      FABRIC_LOG( "calling close: %lx", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
@@ -90,7 +93,7 @@ namespace Fabric
     extern "C" FABRIC_CLI_EXPORT void waitForClose( void *client_ )
     {
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling waitForClose: %x", client_ );
+      FABRIC_LOG( "calling waitForClose: %lx", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
