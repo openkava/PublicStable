@@ -7,13 +7,9 @@
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/Operator.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -86,7 +82,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDesc( jg );
       }
       m_context->jsonNotify( src, "delta", 5, &json );
@@ -214,76 +210,73 @@ namespace Fabric
     }
 
     void BindingList::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( dst.size() - dstOffset == 0 )
-      {
-        try
-        {
-          jsonExec( cmd, arg, resultJAG );
-        }
-        catch ( Exception e )
-        {
-          throw "command " + _(cmd) + ": " + e;
-        }
-      }
+      if ( dst.size() == dstOffset )
+        jsonExec( cmd, arg, resultArrayEncoder );
       else throw Exception( "unroutable" );
     }
 
     void BindingList::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "append" )
-        jsonExecAppend( arg, resultJAG );
-      else if ( cmd == "insert" )
-        jsonExecInsert( arg, resultJAG );
-      else if ( cmd == "remove" )
-        jsonExecRemove( arg, resultJAG );
+      if ( cmd.stringIs( "append", 6 ) )
+        jsonExecAppend( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "insert", 6 ) )
+        jsonExecInsert( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "remove", 6 ) )
+        jsonExecRemove( arg, resultArrayEncoder );
       else throw Exception( "unknown command" );
     }
       
-    void BindingList::jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void BindingList::jsonExecAppend( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-    
       RC::Handle<Operator> operator_;
-      try
-      {
-        operator_ = m_context->getOperator( argJSONObject->get( "operatorName" )->toString()->value() );
-      }
-      catch ( Exception e )
-      {
-        throw "'operatorName': " + e;
-      }
-      
       std::vector<std::string> parameterLayout;
-      try
+
+      arg.requireObject();
+      JSON::ObjectDecoder objectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
-        RC::ConstHandle<JSON::Array> parameterLayoutJSONArray = argJSONObject->get("parameterLayout")->toArray();
-        size_t parameterLayoutJSONArraySize = parameterLayoutJSONArray->size();
-        for ( size_t i=0; i<parameterLayoutJSONArraySize; ++i )
+        try
         {
-          try
+          if ( keyString.stringIs( "operatorName", 12 ) )
           {
-            parameterLayout.push_back( parameterLayoutJSONArray->get(i)->toString()->value() );
+            valueEntity.requireString();
+            operator_ = m_context->getOperator( valueEntity.stringToStdString() );
           }
-          catch ( Exception e )
+          else if ( keyString.stringIs( "parameterLayout", 15 ) )
           {
-            throw "index " + _(i) + ": " + e;
+            valueEntity.requireArray();
+            JSON::ArrayDecoder arrayDecoder( valueEntity );
+            JSON::Entity elementEntity;
+            while ( arrayDecoder.getNext( elementEntity ) )
+            {
+              try
+              {
+                elementEntity.requireString();
+                parameterLayout.push_back( elementEntity.stringToStdString() );
+              }
+              catch ( Exception e )
+              {
+                throw "index " + _(parameterLayout.size()) + ": " + e;
+              }
+            }
           }
         }
-      }
-      catch ( Exception e )
-      {
-        throw "'parameterLayout': " + e;
+        catch ( Exception e )
+        {
+          objectDecoder.rethrow( e );
+        }
       }
       
       RC::Handle<Binding> binding = Binding::Create( m_context );
@@ -292,50 +285,52 @@ namespace Fabric
       append( binding );
     }
       
-    void BindingList::jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void BindingList::jsonExecInsert( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-    
       RC::Handle<Operator> operator_;
-      try
-      {
-        operator_ = m_context->getOperator( argJSONObject->get( "operatorName" )->toString()->value() );
-      }
-      catch ( Exception e )
-      {
-        throw "'operatorName': " + e;
-      }
-      
       std::vector<std::string> parameterLayout;
-      try
+      size_t beforeIndex;
+
+      arg.requireObject();
+      JSON::ObjectDecoder objectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
-        RC::ConstHandle<JSON::Array> parameterLayoutJSONArray = argJSONObject->get("parameterLayout")->toArray();
-        size_t parameterLayoutJSONArraySize = parameterLayoutJSONArray->size();
-        for ( size_t i=0; i<parameterLayoutJSONArraySize; ++i )
+        try
         {
-          try
+          if ( keyString.stringIs( "operatorName", 12 ) )
           {
-            parameterLayout.push_back( parameterLayoutJSONArray->get(i)->toString()->value() );
+            valueEntity.requireString();
+            operator_ = m_context->getOperator( valueEntity.stringToStdString() );
           }
-          catch ( Exception e )
+          else if ( keyString.stringIs( "parameterLayout", 15 ) )
           {
-            throw "index " + _(i) + ": " + e;
+            valueEntity.requireArray();
+            JSON::ArrayDecoder arrayDecoder( valueEntity );
+            JSON::Entity elementEntity;
+            while ( arrayDecoder.getNext( elementEntity ) )
+            {
+              try
+              {
+                elementEntity.requireString();
+                parameterLayout.push_back( elementEntity.stringToStdString() );
+              }
+              catch ( Exception e )
+              {
+                throw "index " + _(parameterLayout.size()) + ": " + e;
+              }
+            }
+          }
+          else if ( keyString.stringIs( "beforeIndex", 11 ) )
+          {
+            valueEntity.requireInteger();
+            beforeIndex = valueEntity.integerValue();
           }
         }
-      }
-      catch ( Exception e )
-      {
-        throw "'parameterLayout': " + e;
-      }
-      
-      size_t beforeIndex;
-      try
-      {
-        beforeIndex = argJSONObject->get( "beforeIndex" )->toInteger()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'beforeIndex': " + e;
+        catch ( Exception e )
+        {
+          objectDecoder.rethrow( e );
+        }
       }
       
       RC::Handle<Binding> binding = Binding::Create( m_context );
@@ -344,30 +339,39 @@ namespace Fabric
       insert( binding, beforeIndex );
     }
       
-    void BindingList::jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void BindingList::jsonExecRemove( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-          
       size_t index;
-      try
+
+      arg.requireObject();
+      JSON::ObjectDecoder objectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( objectDecoder.getNext( keyString, valueEntity ) )
       {
-        index = argJSONObject->get( "index" )->toInteger()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'index': " + e;
+        try
+        {
+          if ( keyString.stringIs( "index", 5 ) )
+          {
+            valueEntity.requireInteger();
+            index = valueEntity.integerValue();
+          }
+        }
+        catch ( Exception e )
+        {
+          objectDecoder.rethrow( e );
+        }
       }
       
       remove( index );
     }
     
-    void BindingList::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void BindingList::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONArrayGenerator resultJSONArray = resultJG.makeArray();
+      JSON::ArrayEncoder resultArrayEncoder = resultEncoder.makeArray();
       for ( Bindings::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
       {
-        Util::JSONGenerator elementJG = resultJSONArray.makeElement();
-        (*it)->jsonDesc( elementJG );
+        JSON::Encoder elementEncoder = resultArrayEncoder.makeElement();
+        (*it)->jsonDesc( elementEncoder );
       }
     }
   };

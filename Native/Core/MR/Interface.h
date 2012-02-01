@@ -11,14 +11,9 @@
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONArrayGenerator;
-  };
-  
   namespace JSON
   {
-    class Value;
+    class ArrayEncoder;
   };
   
   namespace MR
@@ -33,72 +28,72 @@ namespace Fabric
         );
     
       void jsonRoute(
-        std::vector<std::string> const &dst,
+        std::vector<JSON::Entity> const &dst,
         size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
       void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateConstValue(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateValueCache(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateValueGenerator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateValueMap(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateValueTransform(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateConstArray(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateArrayGenerator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateArrayMap(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateArrayTransform(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateArrayCache(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
       void jsonExecCreateReduce(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
     private:

@@ -9,7 +9,7 @@
 #include <Fabric/Core/MR/ValueProducerWrapper.h>
 #include <Fabric/Core/KLC/ValueGeneratorOperator.h>
 #include <Fabric/Core/KLC/ValueGeneratorOperatorWrapper.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -52,16 +52,16 @@ namespace Fabric
       return "ValueGenerator";
     }
     
-    void ValueGeneratorWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ValueGeneratorWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "operator" );
+        JSON::Encoder jg = objectEncoder.makeMember( "operator" );
         m_operator->toJSON( jg );
       }
 
       if ( m_sharedValueProducer )
       {
-        Util::JSONGenerator jg = jog.makeMember( "shared" );
+        JSON::Encoder jg = objectEncoder.makeMember( "shared" );
         m_sharedValueProducer->toJSON( jg );
       }
     }

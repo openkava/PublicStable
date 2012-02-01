@@ -1,5 +1,5 @@
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/Core/MT/Impl.h>
@@ -63,7 +63,7 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions)
 {
   displayHeader();
-  FABRIC_LOG( "Debug with: gdb --pid=%d", getpid() );
+  FABRIC_DEBUG_LOG( "Debug with: gdb --pid=%d", getpid() );
   llvmInitialize();
   extern void InitializeBrowserFunctions(NPNetscapeFuncs* browser_functions);
   InitializeBrowserFunctions(browser_functions);

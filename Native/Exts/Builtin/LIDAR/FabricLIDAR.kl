@@ -18,6 +18,7 @@ struct LidarReader {
 };
 
 function FabricLIDAR_Reader_Decode( Data resourceData, Size resourceDataSize, io LidarReader lidar );
+function FabricLIDAR_Reader_OpenFileHandle( String handle, io LidarReader lidar );
 function FabricLIDAR_Reader_Free( io LidarReader lidar );
 function FabricLIDAR_Reader_GetCount( io LidarReader lidar, io Size count );
 function FabricLIDAR_Reader_GetPoints( io LidarReader lidar, io Vec3 positions<>, io Color colors<> );
@@ -31,6 +32,11 @@ function LidarReader.loadResource(io FabricResource resource, io String url) {
     return;
   this.url = url;
   FabricLIDAR_Reader_Decode(resource.data.data(), resource.data.dataSize(), this);
+}
+
+function LidarReader.loadFileHandle(in String handle) {
+  this.url = handle;
+  FabricLIDAR_Reader_OpenFileHandle(handle, this);
 }
 
 function LidarReader.getCount(io Size count) {

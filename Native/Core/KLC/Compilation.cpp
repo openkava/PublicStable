@@ -7,7 +7,6 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -96,105 +95,137 @@ namespace Fabric
     }
         
     void Compilation::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "addSource" )
-        jsonExecAddSource( arg, resultJAG );
-      else if ( cmd == "removeSource" )
-        jsonExecRemoveSource( arg, resultJAG );
-      else if ( cmd == "getSources" )
-        jsonExecGetSources( arg, resultJAG );
-      else if ( cmd == "run" )
-        jsonExecRun( arg, resultJAG );
-      else GC::Object::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "addSource", 9 ) )
+        jsonExecAddSource( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "removeSource", 12 ) )
+        jsonExecRemoveSource( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "getSources", 10 ) )
+        jsonExecGetSources( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "run", 3 ) )
+        jsonExecRun( arg, resultArrayEncoder );
+      else GC::Object::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
     void Compilation::jsonExecAddSource(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string sourceName;
-      try
-      {
-        sourceName = argObject->get("sourceName")->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "sourceName: " + e;
-      }
-      
       std::string sourceCode;
-      try
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        sourceCode = argObject->get("sourceCode")->toString()->value();
+        try
+        {
+          if ( keyString.stringIs( "sourceName", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceName = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sourceCode", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceCode = valueEntity.stringToStdString();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
-      catch ( Exception e )
-      {
-        throw "sourceCode: " + e;
-      }
+
+      if ( sourceName.empty() )
+        throw Exception( "missing 'sourceName'" );
+      if ( sourceCode.empty() )
+        throw Exception( "missing 'sourceCode'" );
       
       add( sourceName, sourceCode );
     }
     
     void Compilation::jsonExecRemoveSource(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string sourceName;
-      try
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        sourceName = argObject->get("sourceName")->toString()->value();
+        try
+        {
+          if ( keyString.stringIs( "sourceName", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceName = valueEntity.stringToStdString();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
-      catch ( Exception e )
-      {
-        throw "sourceName: " + e;
-      }
+
+      if ( sourceName.empty() )
+        throw Exception( "missing 'sourceName'" );
       
       remove( sourceName );
     }
     
     void Compilation::jsonExecGetSources(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
-      Util::JSONObjectGenerator jog = jg.makeObject();
+      JSON::Encoder resultEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( SourceMap::const_iterator it = m_sources.begin(); it != m_sources.end(); ++it )
       {
-        Util::JSONGenerator subJG = jog.makeMember( it->first );
-        subJG.makeString( it->second.sourceCode );
+        resultObjectEncoder.makeMember( it->first ).makeString( it->second.sourceCode );
       }
     }
     
     void Compilation::jsonExecRun(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string id_;
-      try
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        id_ = argObject->get( "id" )->toString()->value();
+        try
+        {
+          if ( keyString.stringIs( "id", 2 ) )
+          {
+            valueEntity.requireString();
+            id_ = valueEntity.stringToStdString();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
-      catch ( Exception e )
-      {
-        throw "id: " + e;
-      }
+
+      if ( id_.empty() )
+        throw Exception( "missing 'id'" );
       
-      RC::Handle<Executable> executable = run();
-      executable->reg( m_gcContainer, id_ );
+      run()->reg( m_gcContainer, id_ );
     }
   }
 }

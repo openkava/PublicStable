@@ -5,10 +5,10 @@
 #ifndef _FABRIC_UTIL_DEBUG_H
 #define _FABRIC_UTIL_DEBUG_H
 
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Util/AutoPtr.h>
 #include <Fabric/Core/Util/TLS.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/Util/Timer.h>
 
 #include <stdarg.h>

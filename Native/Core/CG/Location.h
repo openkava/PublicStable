@@ -5,10 +5,8 @@
 #ifndef _FABRIC_CG_LOCATION_H
 #define _FABRIC_CG_LOCATION_H
 
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/Util/Format.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/RC/String.h>
 
 namespace Fabric
@@ -62,12 +60,12 @@ namespace Fabric
         return m_filename->stdString() + ":" + _(m_line) + ":" + _(m_column);
       }
       
-      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
+      void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const
       {
-        Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
-        jsonArrayGenerator.makeElement().makeString( m_filename );
-        jsonArrayGenerator.makeElement().makeInteger( m_line );
-        jsonArrayGenerator.makeElement().makeInteger( m_column );
+        JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
+        jsonArrayEncoder.makeElement().makeString( m_filename );
+        jsonArrayEncoder.makeElement().makeInteger( m_line );
+        jsonArrayEncoder.makeElement().makeInteger( m_column );
       }
       
     private:

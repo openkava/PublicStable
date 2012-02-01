@@ -1,19 +1,5 @@
-TRACE: 1.454728264932426e-15
-TRACE: 2.3315531792572886
-TRACE: 2.1490077401200587
-TRACE: 2.1490077401200587
-TRACE: 2.3315531792572886
-TRACE: 2.3315531792572886
-TRACE: 2.1490077401200587
 Math.Warning: Quat.setFrom2Vectors: bad divisor (ambiguous answer)
 Math.Warning: Vec3.divideScalar: bad divisor: 0
-[FABRIC] [MT] TRACE: -8.74227E-8
-[FABRIC] [MT] TRACE: 2.33155
-[FABRIC] [MT] TRACE: 2.14901
-[FABRIC] [MT] TRACE: 2.14901
-[FABRIC] [MT] TRACE: 2.33155
-[FABRIC] [MT] TRACE: 2.33155
-[FABRIC] [MT] TRACE: 2.14901
 [FABRIC] [MT] Math.Warning: Quat.setFromMat33: ambiguous answer: bad divisor: 0
 [FABRIC] [MT] Math.Warning: Vec3.divide: bad divisor: 0
 'set': [ 1, 2, 3, 4 ]

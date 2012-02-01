@@ -14,9 +14,9 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
+    class Encoder;
   };
   
   namespace CG
@@ -39,7 +39,7 @@ namespace Fabric
       
       static RC::ConstHandle<ExprVector> Create( RC::ConstHandle<Expr> const &first = 0, RC::ConstHandle<ExprVector> const &remaining = 0 );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
+      void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
       
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
           

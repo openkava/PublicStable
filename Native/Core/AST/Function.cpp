@@ -55,12 +55,12 @@ namespace Fabric
     {
     }
     
-    void Function::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void Function::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      FunctionBase::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "friendlyName" ).makeString( m_friendlyName );
-      jsonObjectGenerator.makeMember( "entryName" ).makeString( m_entryName );
-      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ), includeLocation );
+      FunctionBase::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "friendlyName" ).makeString( m_friendlyName );
+      jsonObjectEncoder.makeMember( "entryName" ).makeString( m_entryName );
+      m_params->appendJSON( jsonObjectEncoder.makeMember( "params" ), includeLocation );
     }
     
     std::string const *Function::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const

@@ -55,7 +55,7 @@ LidarReader::LocalData::~LocalData() {
   mStream.clear();
 }
 
-FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Open(
+void FabricLIDAR_Reader_Open(
   KL::String & fileName,
   LidarReader & lidar
 )
@@ -125,6 +125,27 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Decode(
 
 #ifndef NDEBUG
     printf("  { FabricLIDAR } : FabricLIDAR_Reader_Decode completed.\n");
+#endif
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricLIDAR_Reader_OpenFileHandle(
+  KL::String handle,
+  LidarReader & lidar
+)
+{
+  if(lidar.localData == NULL) {
+#ifndef NDEBUG
+    printf("  { FabricLIDAR} : FabricLIDAR_Reader_OpenFileHandle called.\n");
+#endif
+
+    KL::FileHandleWrapper wrapper(handle);
+    wrapper.ensureIsValidFile();
+    KL::String fileName = wrapper.getPath();
+    FabricLIDAR_Reader_Open(fileName,lidar);
+
+#ifndef NDEBUG
+    printf("  { FabricLIDAR } : FabricLIDAR_Reader_OpenFileHandle completed.\n");
 #endif
   }
 }

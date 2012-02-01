@@ -1,0 +1,14 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fileSystemFlags', 'ExtSLName' )
+
+fileSystemPluginEnv = extsEnv.Clone()
+fileSystemPluginEnv.MergeFlags( fileSystemFlags )
+fileSystemPlugin = fileSystemPluginEnv.SharedLibrary( ExtSLName('FabricFILESYSTEM'), Glob('*.cpp') ),
+fileSystemManifest = fileSystemPluginEnv.File('FabricFILESYSTEM.fpm.json'),
+fileSystemKL = fileSystemPluginEnv.File('FabricFILESYSTEM.kl'),
+fileSystemFiles = [fileSystemManifest, fileSystemPlugin, fileSystemKL]
+
+Return( 'fileSystemFiles' )

@@ -32,7 +32,7 @@ struct AlembicHandle {
   Vec2 timeRange;
 };
 
-function FabricALEMBICDecode( Data objData, Size objDataSize, io AlembicHandle handle );
+function FabricALEMBICOpenFileHandle( String fileHandle, io AlembicHandle handle );
 function FabricALEMBICFreeAlembicHandle( io AlembicHandle handle );
 function FabricALEMBICGetIdentifiers( io AlembicHandle handle, io String identifiers[] );
 function FabricALEMBICParseXform( io AlembicHandle handle, io String identifier, io Scalar time, io Xfo transform );
@@ -51,9 +51,15 @@ function ~AlembicHandle() = "FabricALEMBICFreeAlembicHandle";
 function AlembicHandle.loadResource(io FabricResource resource) {
   if(this.pointer)
     return;
-  if(resource.data.dataSize() == 0)
+  if(resource.dataExternalLocation == "")
     return;
-  FabricALEMBICDecode(resource.data.data(), resource.data.dataSize(), this);
+  FabricALEMBICOpenFileHandle(resource.dataExternalLocation, this);
+}
+
+function AlembicHandle.loadFileHandle(String fileHandle) {
+  if(this.pointer)
+    return;
+  FabricALEMBICOpenFileHandle(fileHandle, this);
 }
 
 function AlembicHandle.getIdentifiers(io String identifiers[]) {

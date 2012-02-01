@@ -28,11 +28,11 @@ namespace Fabric
     {
     }
     
-    void VarDeclVector::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
+    void VarDeclVector::appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const
     {
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
+        (*it)->appendJSON( jsonArrayEncoder.makeElement(), includeLocation );
     }
     
     void VarDeclVector::registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

@@ -112,7 +112,7 @@ Alembic::Abc::IObject getObjectFromArchive(Alembic::Abc::IArchive * archive, con
 }
 
 FABRIC_EXT_EXPORT void FabricALEMBICOpen(
-  KL::String fileName,
+  const KL::String& fileName,
   AlembicHandle &handle
   )
 {
@@ -147,37 +147,17 @@ FABRIC_EXT_EXPORT void FabricALEMBICOpen(
 }
 
 
-FABRIC_EXT_EXPORT void FabricALEMBICDecode(
-  KL::Data objData,
-  KL::Size objDataSize,
+FABRIC_EXT_EXPORT void FabricALEMBICOpenFileHandle(
+  const KL::String& fileHandle,
   AlembicHandle &handle
   )
 {
   Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
   if( archive == NULL )
   {
-#if defined(FABRIC_OS_WINDOWS)
-    char const *dir = getenv("APPDATA");
-    if(dir == NULL)
-      dir = getenv("TEMP");
-    if(dir == NULL)
-      dir = getenv("TMP");
-    if(dir == NULL)
-      Fabric::EDK::throwException("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
-    KL::String fileName( _tempnam( dir, "tmpfab_" ) );
-#else
-    KL::String fileName(tmpnam(NULL));
-#endif
-
-    // save the file to disk
-    FILE * file = fopen(fileName.data(),"wb");
-    if(!file)
-      Fabric::EDK::throwException("Alembic extension: Cannot write to temporary file.");
-    fwrite(objData,objDataSize,1,file);
-    fclose(file);
-    file = NULL;
-
-    return FabricALEMBICOpen(fileName,handle);
+    KL::FileHandleWrapper fileWrapper( fileHandle );
+    fileWrapper.ensureIsValidFile();
+    return FabricALEMBICOpen(fileWrapper.getPath(),handle);
   }
 }
 
@@ -232,33 +212,34 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
     offset = 0;
     for(size_t i=1;i<iObjects.size();i++)
     {
-      identifiers[offset] = iObjects[i].getFullName().c_str();
-      identifiers[offset] += "|";
+      std::string identifier = iObjects[i].getFullName().c_str();
+      identifier += "|";
       int numSamples = 1;
       const Alembic::Abc::MetaData &md = iObjects[i].getMetaData();
       if(Alembic::AbcGeom::IXform::matches(md)) {
-        identifiers[offset] += "Xform|";
+        identifier += "Xform|";
         numSamples = Alembic::AbcGeom::IXform(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       } else if(Alembic::AbcGeom::IPolyMesh::matches(md)) {
-        identifiers[offset] += "PolyMesh|";
+        identifier += "PolyMesh|";
         numSamples = Alembic::AbcGeom::IPolyMesh(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       } else if(Alembic::AbcGeom::ICurves::matches(md)) {
-        identifiers[offset] += "Curves|";
+        identifier += "Curves|";
         numSamples = Alembic::AbcGeom::ICurves(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       } else if(Alembic::AbcGeom::INuPatch::matches(md)) {
-        identifiers[offset] += "NuPatch|";
+        identifier += "NuPatch|";
         numSamples = Alembic::AbcGeom::INuPatch(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       } else if(Alembic::AbcGeom::IPoints::matches(md)) {
-        identifiers[offset] += "Points|";
+        identifier += "Points|";
         numSamples = Alembic::AbcGeom::IPoints(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       } else if(Alembic::AbcGeom::ISubD::matches(md)) {
-        identifiers[offset] += "SubD|";
+        identifier += "SubD|";
         numSamples = Alembic::AbcGeom::ISubD(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       } else if(Alembic::AbcGeom::ICamera::matches(md)) {
-        identifiers[offset] += "Camera|";
+        identifier += "Camera|";
         numSamples = Alembic::AbcGeom::ICamera(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
       }
-      identifiers[offset] += boost::lexical_cast<std::string>(numSamples).c_str();
+      identifier += boost::lexical_cast<std::string>(numSamples).c_str();
+      identifiers[offset] = identifier.c_str();
       offset++;
     }
   }

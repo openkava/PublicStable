@@ -62,32 +62,6 @@ function (fabricClient, logCallback, debugLogCallback) {
       executeQueuedCommands();
   };
 
-  var handleBasedPathToArray = function(handleBasedPath)
-  {
-    var result = [];
-    if(!handleBasedPath.folderHandle)
-      throw 'Error: handleBasePath must have a \'folderHandle\' member containing the handle returned by queryUserFileAndFolderHandle';
-    result[0] = handleBasedPath.folderHandle;
-    if(handleBasedPath.subFolders)
-      result = result.concat(handleBasedPath.subFolders);
-    if(!handleBasedPath.fileName)
-      throw 'Error: handleBasePath must have a \'fileName\' member';
-    result.push(handleBasedPath.fileName);
-    return result;
-  }
-
-  var arrayToHandleBasedPath = function(array)
-  {
-    if(array.length < 2)
-      throw 'Error: handleBasedPathArray should have at least 2 entries (folderHandle and fileName)';
-    var result = {
-      folderHandle: array[0],
-      fileName: array[array.length-1],
-      subFolders: array.slice(1,array.length-1)
-    };
-    return result;
-  }
-
   var createRT = function() {
     var RT = {};
 
@@ -740,41 +714,10 @@ function (fabricClient, logCallback, debugLogCallback) {
         result.queueCommand('setBulkDataJSON', data);
       };
 
-      result.pub.putResourceToUserFile = function(memberName, uiTitle, extension, defaultFileName) {
-        result.queueCommand('putResourceToUserFile', {
-          'memberName': memberName,
-          'uiOptions': {
-            'title': uiTitle,
-            'extension': extension,
-            'defaultFileName': defaultFileName
-          }
-        });
-        executeQueuedCommands();
-      };
-
-      result.pub.getResourceFromUserFile = function(memberName, uiTitle, extension) {
-        result.queueCommand('getResourceFromUserFile', {
-          'memberName': memberName,
-          'uiOptions': {
-            'title': uiTitle,
-            'extension': extension
-          }
-        });
-        executeQueuedCommands();
-      };
-
-      result.pub.getResourceFromFile = function(memberName, handleBasedPath) {
-        result.queueCommand('getResourceFromFile', {
-          'memberName': memberName,
-          'path': handleBasedPathToArray(handleBasedPath)
-        });
-        executeQueuedCommands();
-      }
-
-      result.pub.putResourceToFile = function(memberName, handleBasedPath) {
+      result.pub.putResourceToFile = function(fileHandle, memberName) {
         result.queueCommand('putResourceToFile', {
           'memberName': memberName,
-          'path': handleBasedPathToArray(handleBasedPath)
+          'file': fileHandle
         });
         executeQueuedCommands();
       }
@@ -1352,12 +1295,12 @@ function (fabricClient, logCallback, debugLogCallback) {
       queueCommand(['IO'], cmd, arg, unwind, callback);
     };
 
-    IO.pub.queryUserFileAndFolderHandle = function(mode, uiTitle, extension, defaultFileName) {
+    var queryUserFile = function(funcname, mode, uiTitle, extension, defaultFileName) {
       if(mode !== IO.pub.forOpen && mode !== IO.pub.forOpenWithWriteAccess && mode !== IO.pub.forSave)
         throw 'Invalid mode: \"' + mode + '\': can be IO.forOpen, IO.forOpenWithWriteAccess or IO.forSave';
-      var handleBasedPath;
-      IO.queueCommand('queryUserFileAndFolder', {
-        'existingFile': mode === IO.pub.forOpen,
+      var result = {};
+      IO.queueCommand(funcname, {
+        'existingFile': mode === IO.pub.forOpenWithWriteAccess || mode === IO.pub.forOpen,
         'writeAccess': mode === IO.pub.forOpenWithWriteAccess || mode === IO.pub.forSave,
         'uiOptions': {
           'title': uiTitle,
@@ -1366,17 +1309,23 @@ function (fabricClient, logCallback, debugLogCallback) {
         }
       }, function() {
       }, function(data) {
-        handleBasedPath = arrayToHandleBasedPath(data);
+        result = data;
       });
       executeQueuedCommands();
-      return handleBasedPath;
+      return result;
     };
 
-    IO.pub.getTextFile = function(handleBasedPath) {
+    IO.pub.queryUserFileAndFolderHandle = function(mode, uiTitle, extension, defaultFileName) {
+      return queryUserFile('queryUserFileAndFolder', mode, uiTitle, extension, defaultFileName);
+    };
+
+    IO.pub.queryUserFileHandle = function(mode, uiTitle, extension, defaultFileName) {
+      return queryUserFile('queryUserFile', mode, uiTitle, extension, defaultFileName);
+    };
+
+    IO.pub.getTextFileContent = function(handle) {
       var fileContent;
-      IO.queueCommand('getTextFile', {
-        'path': handleBasedPathToArray(handleBasedPath)
-      }, function() {
+      IO.queueCommand('getTextFileContent', handle, function() {
       }, function(data) {
         fileContent = data;
       });
@@ -1384,40 +1333,44 @@ function (fabricClient, logCallback, debugLogCallback) {
       return fileContent;
     }
 
-    IO.pub.putTextFile = function(content, handleBasedPath) {
-      IO.queueCommand('putTextFile', {
+    IO.pub.putTextFileContent = function(handle, content, append) {
+      IO.queueCommand('putTextFileContent', {
         'content': content,
-        'path': handleBasedPathToArray(handleBasedPath)
+        'file': handle,
+        'append': append
       });
       executeQueuedCommands();
     }
 
-    IO.pub.getUserTextFile = function(uiTitle, extension) {
-      var fileContent;
-      IO.queueCommand('getUserTextFile', {
-        'uiOptions': {
-          'title': uiTitle,
-          'extension': extension
-        }
-      }, function() {
+    IO.pub.buildFileHandleFromRelativePath = function(handle) {
+      var handle;
+      IO.queueCommand('createFileHandleFromRelativePath', handle, function() {
       }, function(data) {
-        fileContent = data;
+        handle = data;
       });
       executeQueuedCommands();
-      return fileContent;
-    };
+      return handle;
+    }
 
-    IO.pub.putUserTextFile = function(content, uiTitle, extension, defaultFileName) {
-      IO.queueCommand('putUserTextFile', {
-        'content': content,
-        'uiOptions': {
-          'title': uiTitle,
-          'extension': extension,
-          'defaultFileName': defaultFileName
-        }
+    IO.pub.buildFolderHandleFromRelativePath = function(handle) {
+      var handle;
+      IO.queueCommand('createFolderHandleFromRelativePath', handle, function() {
+      }, function(data) {
+        handle = data;
       });
       executeQueuedCommands();
-    };
+      return handle;
+    }
+
+    IO.pub.getFileHandleInfo = function(handle) {
+      var handle;
+      IO.queueCommand('getFileInfo', handle, function() {
+      }, function(data) {
+        handle = data;
+      });
+      executeQueuedCommands();
+      return handle;
+    }
 
     return IO;
   };
@@ -2106,11 +2059,11 @@ function (fabricClient, logCallback, debugLogCallback) {
         
         var arg = {
           id: reduce.id,
-          inputArrayProducerID: inputArrayProducer.getID(),
-          reduceOperatorID: reduceOperator.getID()
+          inputID: inputArrayProducer.getID(),
+          operatorID: reduceOperator.getID()
         };
         if (sharedValueProducer)
-          arg.sharedValueProducerID = sharedValueProducer.getID();
+          arg.sharedID = sharedValueProducer.getID();
         
         queueCommand(['MR'], 'createReduce', arg, function () {
           delete reduce.id;

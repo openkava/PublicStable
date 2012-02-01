@@ -17,11 +17,28 @@ function FabricVIDEOOpenResource(
   io VideoHandle handle
 );
 
+function FabricVIDEOOpenFileHandle(
+  String fileHandle,
+  io VideoHandle handle
+);
+
+function FabricVIDEOCreateFromFileHandle(
+  String file,
+  Size width,
+  Size height,
+  io VideoHandle handle,
+);
+
 function FabricVIDEOFreeHandle( io VideoHandle handle );
   
 function FabricVIDEOSeekTime( io VideoHandle handle, io Scalar time);
 
 function FabricVIDEOGetAllPixels(
+  io VideoHandle handle,
+  io RGB pixels[]
+);
+
+function FabricVIDEOWriteAllPixels(
   io VideoHandle handle,
   io RGB pixels[]
 );

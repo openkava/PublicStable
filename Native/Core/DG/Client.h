@@ -14,16 +14,14 @@ namespace Fabric
 {
   namespace Util
   {
-    class JSONGenerator;
-    class JSONArrayGenerator;
     class SimpleString;
-  };
+  }
   
   namespace JSON
   {
-    class Value;
-    class Object;
-    class Array;
+    class ArrayEncoder;
+    class Encoder;
+    struct Entity;
   };
   
   namespace DG
@@ -39,20 +37,24 @@ namespace Fabric
       void jsonExec(
         char const *jsonEncodedCommandsData,
         size_t jsonEncodedCommandsLength,
-        Util::JSONGenerator &resultJG
+        JSON::Encoder &resultEncoder
         ) const;
 
       virtual void notify( Util::SimpleString const &jsonEncodedNotifications ) const = 0;
       
       void jsonRoute(
-        std::vector<std::string> const &dst,
+        std::vector<JSON::Entity> const &dst,
         size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonExec(
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
+        );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
 
     protected:
     

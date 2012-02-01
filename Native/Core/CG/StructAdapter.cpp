@@ -193,7 +193,7 @@ namespace Fabric
       {
         if ( i > 0 )
           result += ",";
-        result += m_structDesc->getMemberInfo(i).name + ":" + m_memberAdapters[i]->toString( m_structDesc->getMemberData( data, i ) );
+        result += m_structDesc->getMemberInfo(i).name + ":" + m_memberAdapters[i]->toString( m_structDesc->getImmutableMemberData( data, i ) );
       }
       return result + "}";
     }
