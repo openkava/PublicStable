@@ -2426,9 +2426,6 @@ function (fabricClient, logCallback, debugLogCallback) {
         case 'EX':
           EX.route(src, cmd, arg);
           break;
-        case 'IO':
-          IO.route(src, cmd, arg);
-          break;
         case 'VP':
           VP.route(src, cmd, arg);
           break;
