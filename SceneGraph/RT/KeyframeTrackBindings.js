@@ -1,5 +1,6 @@
 
 
+FABRIC.define(["SceneGraph/RT/KeyframeTrack"], function() {
 
 
 FABRIC.RT.KeyframeTrackBinding = function(varId, trackIds) {
@@ -98,3 +99,4 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 */
 
+});

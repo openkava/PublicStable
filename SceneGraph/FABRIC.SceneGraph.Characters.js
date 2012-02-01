@@ -4,8 +4,14 @@
 //
 
 
-FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
-               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
+FABRIC.define(["SceneGraph/RT/Bone",
+               "SceneGraph/RT/PoseVariables",
+               "SceneGraph/RT/KeyframeTrackBindings",
+               "SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.CharacterSolvers",
+               "SceneGraph/FABRIC.SceneGraph.DebugGeometry"], function() {
+
 
 FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
   briefDesc: 'The CharacterMesh node represents a deformable Triangles node.',
