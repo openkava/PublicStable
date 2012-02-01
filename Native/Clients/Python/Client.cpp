@@ -15,6 +15,7 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
+#include <Fabric/Core/MT/Util.h>
 
 #include <vector>
 #include <string>
@@ -126,18 +127,16 @@ namespace Fabric
 
     void Client::close()
     {
-      m_closeMutex.acquire();
+      Util::Mutex::Lock lock( m_closeMutex );
       m_closed = true;
       m_closeCond.broadcast();
-      m_closeMutex.release();
     }
 
     void Client::waitForClose()
     {
-      m_closeMutex.acquire();
+      Util::Mutex::Lock lock( m_closeMutex );
       if ( !m_closed )
         m_closeCond.wait( m_closeMutex );
-      m_closeMutex.release();
     }
 
     void Client::ScheduleAsyncUserCallback(
