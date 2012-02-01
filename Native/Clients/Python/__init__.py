@@ -7,16 +7,35 @@ import atexit
 
 # FIXME Windows
 if os.name == 'posix':
-  fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
+  _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
 else:
   raise Exception('not implemented for Windows yet!')
 
+# catch uncaught exceptions so that we don't wait on threads 
+_uncaughtException = False
+_oldExceptHook = sys.excepthook
+def _excepthook( type, value, traceback):
+  global _uncaughtException
+  _uncaughtException = True
+  _oldExceptHook( type, value, traceback )
+sys.excepthook = _excepthook
+
+# print app and version information
+_fabric.identify()
+
 def createClient():
-  return _INTERFACE( fabric )
+  return _INTERFACE( _fabric )
 
 # used in unit tests
 def stringify( obj ):
   return json.dumps( _typeToDict( obj ) )
+
+# global for tracking GC ids for core objects
+_gcId = 0
+def _getNextGCId():
+  global _gcId
+  _gcId = _gcId + 1
+  return _gcId
 
 # take a python class and convert its members down to a hierarchy of
 # dictionaries, ignoring methods
@@ -70,7 +89,8 @@ class _INTERFACE( object ):
 
 class _CLIENT( object ):
   def __init__( self, fabric ):
-    self.__fabricClient = fabric.createClient()
+    self.__fabric = fabric
+    self.__fabricClient = self.__createClient()
     self.__queuedCommands = []
     self.__queuedUnwinds = []
     self.__queuedCallbacks = []
@@ -90,25 +110,22 @@ class _CLIENT( object ):
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
 
-    # catch uncaught exceptions so that we don't wait on threads 
-    self.__uncaughtException = False
-    self.__oldExceptHook = sys.excepthook
-    def __excepthook( type, value, traceback):
-      self.__uncaughtException = True
-      self.__oldExceptHook( type, value, traceback )
-    sys.excepthook = __excepthook
-
     # prevent exit until all our threads complete
     atexit.register( self.__waitForClose )
 
   def __waitForClose( self ):
-    if not self.__uncaughtException:
-      fabric.waitForClose( self.__fabricClient )
+    if not _uncaughtException:
+      self.__fabric.waitForClose( self.__fabricClient )
+
+  def __createClient( self ):
+    result = ctypes.c_void_p()
+    self.__fabric.createClient( ctypes.pointer( result ) )
+    return result
 
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
 
-    fabric.jsonExec(
+    self.__fabric.jsonExec(
       self.__fabricClient,
       data,
       length,
@@ -118,7 +135,7 @@ class _CLIENT( object ):
     return result
 
   def close( self ):
-    fabric.close( self.__fabricClient )
+    self.__fabric.close( self.__fabricClient )
 
   def getLicenses( self ):
     return self.__state.licenses;
@@ -167,7 +184,7 @@ class _CLIENT( object ):
       elif ( callback is not None ):
         callback( result[ 'result' ] )
 
-    fabric.freeString( self.__fabricClient, jsonEncodedResults )
+    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
   def _handleStateNotification( self, newState ):
     self.__state = {}
@@ -244,11 +261,11 @@ class _CLIENT( object ):
     return self.__CFUNCTYPE_notifyCallback
 
   def __registerNotifyCallback( self ):
-    fabric.setJSONNotifyCallback( self.__fabricClient, self.__getNotifyCallback() )
+    self.__fabric.setJSONNotifyCallback( self.__fabricClient, self.__getNotifyCallback() )
 
 class _GCOBJECT( object ):
   def __init__( self, nsobj ):
-    self.__id = "GC_" + str(nsobj._getClient().gc.getNextID())
+    self.__id = "GC_" + str( _getNextGCId() )
     self.__nextCallbackID = 0
     self.__callbacks = {}
     self._nsobj = nsobj
@@ -1386,6 +1403,14 @@ class _KLC( _NAMESPACE ):
   def __init__( self, client ):
     super( _KLC, self ).__init__( client, 'KLC' )
 
+  def createCompilation( self, sourceName, sourceCode ):
+    raise Exception( 'KLC.createCompilation(): not implemented yet' )
+    return self._COMPILATION( self )
+
+  def createExecutable( self, sourceName, sourceCode ):
+    raise Exception( 'KLC.createExecutable(): not implemented yet' )
+    return self._EXECUTABLE( self )
+
   def __createOperator( self, sourceName, sourceCode, operatorName, cmd ):
     operator = self._OPERATOR( self )
     arg = {
@@ -1440,6 +1465,22 @@ class _KLC( _NAMESPACE ):
   
       self._gcObjQueueCommand( 'getDiagnostics', None, None, __getDiagnostics )
       return diagnostics[ '_' ]
+
+  class _EXECUTABLE( _GCOBJECT ):
+    def __init__( self, klc ):
+      super( _KLC._COMPILATION, self ).__init__( klc )
+
+  class _COMPILATION( _GCOBJECT ):
+    def __init__( self, klc ):
+      super( _KLC._COMPILATION, self ).__init__( klc )
+      self.__sourceCodes = {}
+
+    def addSource( self, sourceName, sourceCode ):
+      oldSourceCode = None
+      if sourceName in self.__sourceCodes:
+        oldSourceCode = self.__sourceCodes[ sourceName ]
+
+      self.__sourceCodes[ sourceName ] = sourceCode
 
 class _RT( _NAMESPACE ):
   def __init__( self, client ):
@@ -1539,13 +1580,7 @@ class _RT( _NAMESPACE ):
 class _GC( _NAMESPACE ):
   def __init__( self, client ):
     super( _GC, self ).__init__( client, 'GC' )
-    self.__nextID = 0
     self.__objects = {}
-
-  def getNextID( self ):
-    id = self.__nextID
-    self.__nextID = self.__nextID + 1
-    return id
 
   def addObject( self, obj ):
     self.__objects[ obj.getID() ] = obj
