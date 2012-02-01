@@ -66,13 +66,13 @@ FABRIC.SceneGraph = {
   registerParser: function(ext, parserFn) {
     ext = ext.toLocaleLowerCase();
     if (!this.assetLoaders[ext]) {
-      this.assetLoaders[ext] = function(scene, assetFile, options) {
+      this.assetLoaders[ext] = function(scene, assetFile, options, callback) {
         if (!options) options = {};
         var pathArray = assetFile.split('/');
         var fileName = pathArray.pop();
         options.baseName = fileName.split('.')[0];
         options.basePath = pathArray.join('/');
-        return parserFn(scene, assetFile, options);
+        return parserFn(scene, assetFile, options, callback);
       }
     }
   },
@@ -539,10 +539,10 @@ FABRIC.SceneGraph = {
     scene.pub.getGlobalsNode = function() {
       return globalsNode;
     };
-    scene.pub.importAssetFile = function(file, options) {
+    scene.pub.importAssetFile = function(file, options, callback) {
       var ext = file.split('.').pop().toLocaleLowerCase();
       if (FABRIC.SceneGraph.assetLoaders[ext]) {
-        var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options);
+        var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
         return assets;
       }
       else {
@@ -671,13 +671,9 @@ FABRIC.SceneGraph = {
         }));
         
         var isPlaying = false, time = 0;
-        var onAdvanceCallback;
         var setTime = function(t, redraw) {
           time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
           globalsNode.setData('time', 0, time);
-          if( onAdvanceCallback){
-            onAdvanceCallback.call();
-          }
           scene.pub.fireEvent('timechanged', { time: time, playing: isPlaying });
           if(redraw !== false){
             scene.pub.redrawAllViewports(true);
@@ -731,13 +727,13 @@ FABRIC.SceneGraph = {
           play: function() {
             prevTime = (new Date).getTime();
             isPlaying = true;
-            // Note: this is a big ugly hack to work arround the fact that
+            // Note: this is a big ugly hack to work around the fact that
             // we have zero or more windows. What happens when we have
             // multiple viewports? Should the 'play' controls be moved to
             // Viewport?
-              prevTime = (new Date).getTime();
-              scene.getContext().VP.viewPort.setRedrawFinishedCallback(advanceTime);
-              scene.getContext().VP.viewPort.needsRedraw();
+            prevTime = (new Date).getTime();
+            scene.getContext().VP.viewPort.setRedrawFinishedCallback(advanceTime);
+            scene.getContext().VP.viewPort.needsRedraw();
           },
           pause: function() {
             isPlaying = false;
@@ -745,8 +741,9 @@ FABRIC.SceneGraph = {
           },
           reset: function() {
             isPlaying = false;
-            time = 0.0;
-            globalsNode.setBulkData({'time': [0], time_prevupdate: [0] });
+            scene.getContext().VP.viewPort.setRedrawFinishedCallback(null);
+            setTime(0, true);
+            globalsNode.setData('time_prevupdate', 0, 0);
           },
           step: function() {
             advanceTime();
@@ -1006,20 +1003,22 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       },
       readData: function(sceneDeserializer, nodeData) {
         for(var referenceName in nodeReferences){
-          if(nodeData[referenceName].constructor.name == 'Array'){
-            for(var i=0; i<nodeReferences[referenceName].length; i++){
-              var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+          if(nodeData[referenceName]){
+            if(nodeData[referenceName].constructor.name == 'Array'){
+              for(var i=0; i<nodeReferences[referenceName].length; i++){
+                var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+                if(dgnode){
+                  nodeReferenceInterfaces[referenceName].adderFn(dgnode);
+                }
+              }
+            }
+            else if(typeof nodeData[referenceName] == 'string'){
+              var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
               if(dgnode){
-                nodeReferenceInterfaces[referenceName].adderFn(dgnode);
+                nodeReferenceInterfaces[referenceName].setterFn(dgnode);
               }
             }
           }
-          else if(typeof nodeData[referenceName] == 'string'){
-            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
-            if(dgnode){
-              nodeReferenceInterfaces[referenceName].setterFn(dgnode);
-            }
-          } 
         }
         for(var memberName in memberInterfaces){
           if(nodeData[memberName]){
