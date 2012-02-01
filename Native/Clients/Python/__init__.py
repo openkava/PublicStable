@@ -304,7 +304,7 @@ class _NAMESPACE( object ):
 
   def _objQueueCommand( self, dst, cmd, arg = None, unwind = None, callback = None ):
     if dst is not None:
-      dst.insert( 0, self.__name )
+      dst = [ self.__name ] + dst
     else:
       dst = [ self.__name ]
     self.__client.queueCommand( dst, cmd, arg, unwind, callback )
@@ -418,7 +418,7 @@ class _DG( _NAMESPACE ):
         self.__errors = diff[ 'errors' ]
   
     def _destroy( self ):
-      del self._dg._namedObjects[ name ]
+      del self._dg._namedObjects[ self.__name ]
       self.__name = None
   
     def _handle( self, cmd, arg ):
@@ -997,7 +997,7 @@ class _DG( _NAMESPACE ):
       oldDependency = None
       if dependencyName in self.__dependencies:
         oldDependency = self.__dependencies[ dependencyName ]
-      self.__dependencies[ dependencyName ] = dependencyNode
+        del self.__dependencies[ dependencyName ]
       
       def __unwind():
         if ( oldDependency is not None ):
