@@ -4,11 +4,12 @@
 //
 
 
-FABRIC.RT.DebugGeometry = function() {
+FABRIC.RT.DebugGeometry = function(enabled) {
   this.positions = [];
   this.vertexColors = [];
   this.pointsIndices = [];
   this.linesIndices = [];
+  this.enabled = enabled != undefined ? enabled : true;
 };
 
 FABRIC.RT.DebugGeometry.prototype = {
@@ -22,7 +23,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       positions: 'Vec3[]',
       vertexColors: 'Color[]',
       pointsIndices: 'Integer[]',
-      linesIndices: 'Integer[]'
+      linesIndices: 'Integer[]',
+      enabled: 'Boolean'
     },
     constructor: FABRIC.RT.DebugGeometry,
     klBindings: {

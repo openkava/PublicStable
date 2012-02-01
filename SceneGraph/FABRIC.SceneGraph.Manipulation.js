@@ -1192,7 +1192,8 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
         length: 35,
         boneVector: new FABRIC.RT.Vec3(1, 0, 0),
         baseManipulatorType: 'InstanceManipulator',
-        xfoFilter: { ori: true }
+        xfoFilter: { ori: true },
+        axisConstraint: undefined
       });
     
     options.geometryNode = scene.pub.constructNode('LineVector', { to: options.boneVector.multiplyScalar(options.length) });
@@ -1237,11 +1238,16 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
         lengthRatio = 0,
         translationRatio = 0;
       ray2 = ray;
-      if (evt.ctrlKey) {
-        normal = localAxis;
+      if(options.axisConstraint){
+        normal = manipulatorNode.getManipulationSpaceXfo().ori.rotateVector(options.axisConstraint);
       }
-      else {
-        normal = planeNormal;
+      else{
+        if (evt.ctrlKey) {
+          normal = localAxis;
+        }
+        else {
+          normal = planeNormal;
+        }
       }
       hitPoint1 = ray1.intersectPlane(planePoint, normal).point;
       hitPoint2 = ray2.intersectPlane(planePoint, normal).point;
@@ -1276,10 +1282,10 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
         angle = -angle;
       }
       
-      dragXfo.ori = dragXfo.ori.multiply(new FABRIC.RT.Quat().setFromAxisAndAngle(normal, angle));
+      dragXfo.ori = (new FABRIC.RT.Quat().setFromAxisAndAngle(normal, angle)).multiply(dragXfo.ori);
       
       if(parentManipulator){
-        manipulatorNode.setTargetOri(dragXfo.ori.multiply(parentXfo.ori.inverse()));
+        manipulatorNode.setTargetOri(parentXfo.ori.inverse().multiply(dragXfo.ori));
       }else{
         manipulatorNode.setTargetXfo(dragXfo);
       }

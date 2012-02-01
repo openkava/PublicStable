@@ -97,12 +97,14 @@ operator alembicParsePointsAttributes(
   io AlembicHandle handle,
   io String identifier,
   io Scalar time,
-  io Vec3 vertices<>,
+  io Vec3 positions<>,
+  io Quat orientations<>,
   io Scalar sizes<>,
+  io Vec3 scales<>,
   io Color colors<>
 ) {
-  if(vertices.size() > 0){
-    handle.parsePointsAttributes(identifier,time,vertices,sizes,colors);
+  if(positions.size() > 0){
+    handle.parsePointsAttributes(identifier,time,positions,orientations,sizes,scales,colors);
   }
 }
 

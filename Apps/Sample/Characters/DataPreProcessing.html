@@ -205,7 +205,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   //////////////////////////////////////////////
   //
-  var rigName = 'Spiedel';
+  var rigName = 'USWolf';
   
   var assetNodes, bindPoseRig, fkrigNode, rigInstances = {}, skeletonNode, materialNode;
   switch(rigName){
@@ -270,6 +270,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       }));
     
     break;
+  /*
   case 'walker':
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
@@ -300,6 +301,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
   
     break;
+  */
   case 'centipede':
     assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
   
@@ -377,6 +379,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
     
     break;
+  /*
   case 'marama':
     assetNodes = scene.importAssetFile('Assets/Marama3.DAE', { scaleFactor: scaleFactor } );
   
@@ -423,19 +426,19 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
     loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
     loadAnimationFile('Assets/Marama3_Run.DAE', fkrigNode);
-    /*
+    
     loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
- /*   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
     loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
- *//*
+
     loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
     loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
-    /*
+   
     loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
     loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
-    */
+    
     break;
-  
+  */
   case 'CMan0005':
     scaleFactor = 0.05;
     assetNodes = scene.importAssetFile('Assets/CMan0005.DAE', { scaleFactor: scaleFactor } );
@@ -542,10 +545,72 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/CMan0005_Run.DAE', fkrigNode);
 
     break;
+  case 'USWolf':
+    scaleFactor = 0.02;
+    assetNodes = scene.importAssetFile('Assets/USWolf.DAE', { scaleFactor: scaleFactor } );
+  
+    fkrigNode = assetNodes.Object01CharacterRig;
+    
+    rigInstances.rig = assetNodes.Object01Mesh_06___DefaultCharacterInstance;
+    
+    rigInstances.rig.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_desert_D.png' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_S.png' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_B.png' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['USWolfPelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['USWolfLThigh', 'USWolfLCalf'], ankle:'USWolfLAnkle' },
+               { bones:['USWolfRThigh', 'USWolfRCalf'], ankle:'USWolfRAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'DigitSolver', {
+      digits:[
+	{ bones:['USWolfLToe'], projectToGround:true, tipBoneLength: 0.3 },
+	{ bones:['USWolfRToe'], projectToGround:true, tipBoneLength: 0.3 }
+      ]
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['USWolfSpine1', 'USWolfSpine2', 'USWolfSpine3', 'USWolfRibcage', 'USWolfNeck', 'USWolfHead',
+               'USWolfLCollarbone', 'USWolfLUpperArm', 'USWolfLForeArm',
+               'USWolfRCollarbone', 'USWolfRUpperArm', 'USWolfRForeArm',
+               'USWolfLPalm', 'USWolfLThumb1', 'USWolfLThumb2' , 'USWolfLIndex1', 'USWolfLIndex2', 'USWolfLFingers1' , 'USWolfLFingers2',
+               'USWolfRPalm', 'USWolfRThumb1', 'USWolfRThumb2' , 'USWolfRIndex1', 'USWolfRIndex2', 'USWolfRFingers1' , 'USWolfRFingers2' ]
+      }
+    });
+    
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'USWolfPelvisBone001'
+    });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/USWolf_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/USWolf_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode);
+
+    break;
   }
-  /*
+  
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
-  */
+  
   
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,

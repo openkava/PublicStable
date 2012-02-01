@@ -130,7 +130,7 @@ $(document).ready(function() {
   var constructBulletScene = true;
   
   var rigName = 'Spiedel';
-  /*
+  
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -144,7 +144,7 @@ $(document).ready(function() {
   }else if(rigName =='walker' || rigName =='walker'){
     rigName = 'CMan0005';
   }
-  */
+  
   if(constructBulletScene){
     
     // create a simulation world
@@ -342,9 +342,27 @@ $(document).ready(function() {
         circleSize: 0.6
       });
     rigFile = 'Assets/CMan0005.json';
-    animationLibraryFile = 'Assets/CMan0005_Animation.json';
+    animationLibraryFile = 'Assets/CMan0005Animation.json';
     minFrequency = 0.75;
     break;
+  case 'USWolf':
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: 8,
+        maxLinearAcceleration: 16,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -40,
+        comHeight: 2.0,
+        circleSize: 0.6
+      });
+    rigFile = 'Assets/USWolf.json';
+    animationLibraryFile = 'Assets/USWolfAnimation.json';
+    minFrequency = 0.75;
+    break;
+  /*
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -360,6 +378,7 @@ $(document).ready(function() {
       });
     diffuseColor = FABRIC.RT.rgba(0.6, 0.0, 0.3, 1.0);
     break;
+  */
   case 'centipede':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -375,6 +394,7 @@ $(document).ready(function() {
     minFrequency = 0.0;
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
+  /*
   case 'marama':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -393,31 +413,30 @@ $(document).ready(function() {
     minFrequency = 0.5;
     diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
+  */
   }
+  var locomotionVariables;
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
   rigLoader.load(storage, function(nodeMap){
-    
-  var ikrig = nodeMap.IKRig;
-//  var characterMesh =  nodeMap.characterMesh;
-
-  var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
-  var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
-  animationLoader.load(storage, function(animationLoaderNodeMap){
-    var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
-    
-    ikrig.setControllerNode(locomotionControllerNode);
-    
-    var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-      characterRigNode: ikrig,
-      bulletWorldNode: bulletWorldNode,
-      minFrequency: minFrequency
+    var ikrig = nodeMap.IKRig;
+  //  var characterMesh =  nodeMap.characterMesh;
+  
+    var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
+    var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+    animationLoader.load(storage, function(animationLoaderNodeMap){
+      var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
+      
+      ikrig.setControllerNode(locomotionControllerNode);
+      
+      locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+        characterRigNode: ikrig,
+        bulletWorldNode: bulletWorldNode,
+        minFrequency: minFrequency
+      });
+      locomotionVariables.setAnimationLibraryNode(libraryAnimations);
+      ikrig.setVariablesNode(locomotionVariables);
     });
-    locomotionVariables.setAnimationLibrary(libraryAnimations);
-    ikrig.setVariablesNode(locomotionVariables);
-  });
-    
-    
   });
   
 
@@ -613,14 +632,16 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="Spiedel">Quadruped
+              <!--
                 <option value="centipede">Centipede
-                <option value="CMan0005">Human
-              </select>
             -->
+                <option value="CMan0005">Human
+                <option value="USWolf">SpaceMan
+                
+              </select>
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
