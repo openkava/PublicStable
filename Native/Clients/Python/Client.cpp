@@ -3,11 +3,15 @@
  */
  
 #include <Fabric/Clients/Python/Client.h>
+#include <Fabric/Clients/Python/IOManager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/ResourceManager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
@@ -50,9 +54,8 @@ namespace Fabric
       CG::CompileOptions compileOptions;
       compileOptions.setGuarded( false );
 
-      //RC::Handle<IO::Manager> ioManager = IOManager::Create();
-      //RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true, true );
-      RC::Handle<DG::Context> dgContext = DG::Context::Create( NULL, pluginPaths, compileOptions, true, true );
+      RC::Handle<IO::Manager> ioManager = IOManager::Create( &Client::ScheduleAsyncUserCallback, NULL );
+      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true, true );
 #if defined(FABRIC_MODULE_OPENCL)
       OCL::registerTypes( dgContext->getRTManager() );
 #endif
@@ -71,6 +74,7 @@ namespace Fabric
       : DG::Client( context )
       , m_closeMutex( "Python Client" )
       , m_closed( false )
+      , m_scheduleAsyncMutex( "PyClient Schedule Async" )
     {
     }
 
@@ -134,6 +138,15 @@ namespace Fabric
       if ( !m_closed )
         m_closeCond.wait( m_closeMutex );
       m_closeMutex.release();
+    }
+
+    void Client::ScheduleAsyncUserCallback(
+        void *scheduleUserData,
+        void (*callbackFunc)(void *),
+        void *callbackFuncUserData
+        )
+    {
+      (*callbackFunc)(callbackFuncUserData);
     }
   }
 };
