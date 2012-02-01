@@ -97,19 +97,19 @@ namespace Fabric
         void * const *prefixes
         ) const;
 
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonDesc( Util::JSONGenerator &resultJG ) const;
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
-      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
-      void jsonDescFilename( Util::JSONGenerator &resultJG ) const;
-      void jsonDescSourceCode( Util::JSONGenerator &resultJG ) const;
-      void jsonDescEntryFunctionName( Util::JSONGenerator &resultJG ) const;
-      void jsonDescDiagnostics( Util::JSONGenerator &resultJG ) const;
-      void jsonDescMainThreadOnly( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      static void jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetSourceCode( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetEntryFunctionName( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonExecSetMainThreadOnly( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonDesc( JSON::Encoder &resultEncoder ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
+      virtual void jsonDescType( JSON::Encoder &resultEncoder ) const;
+      void jsonDescFilename( JSON::Encoder &resultEncoder ) const;
+      void jsonDescSourceCode( JSON::Encoder &resultEncoder ) const;
+      void jsonDescEntryFunctionName( JSON::Encoder &resultEncoder ) const;
+      void jsonDescDiagnostics( JSON::Encoder &resultEncoder ) const;
+      void jsonDescMainThreadOnly( JSON::Encoder &resultEncoder ) const;
       
     protected:
     

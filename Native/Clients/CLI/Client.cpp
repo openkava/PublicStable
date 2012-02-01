@@ -4,14 +4,17 @@
  
 #include <Fabric/Clients/CLI/Client.h>
 #include <Fabric/Core/DG/Context.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
-#include <Fabric/Core/IO/Stream.h>
+#include <Fabric/Core/IO/ResourceManager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
+#include <fstream>
 
 #include <node.h>
 #include <string>
@@ -20,106 +23,77 @@ namespace Fabric
 {
   namespace CLI
   {
-    class IOStream : public IO::Stream
+    class TestSynchronousFileResourceProvider : public IO::ResourceProvider
     {
     public:
 
-      static RC::Handle<IOStream> Create(
-        std::string const &url,
-        DataCallback dataCallback,
-        EndCallback endCallback,
-        FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        )
+      static RC::Handle<TestSynchronousFileResourceProvider> Create()
       {
-        return new IOStream( url, dataCallback, endCallback, failureCallback, target, userData );
+        return new TestSynchronousFileResourceProvider();
       }
-      
-    protected:
 
-      IOStream(
-        std::string const &url,
-        DataCallback dataCallback,
-        EndCallback endCallback,
-        FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        )
-        : IO::Stream( dataCallback, endCallback, failureCallback, target, userData )
-        , m_url( url )
+      virtual char const * getUrlScheme() const
       {
-        size_t colonIndex = m_url.find( ':' );
-        if ( colonIndex == m_url.length() )
-          onFailure( m_url, "malformed URL" );
+        return "testfile";
+      }
+
+      virtual void get( char const *url, bool getAsFile, void* userData )
+      {
+        if( strncmp( "testfile://", url, 11 ) != 0 )
+            throw Exception( "Error: URL not properly formatted for local files" );//Don't put filename as it might be private
+
+        std::string fileWithPath = IO::ChangeSeparatorsURLToFile( std::string( url+11 ) );
+        if( !IO::FileExists( fileWithPath ) )
+            throw Exception( "Error: file doesn't exist" );//Don't put filename as it might be private
+
+        std::string extension = IO::GetExtension( fileWithPath );
+        size_t fileSize = IO::GetFileSize( fileWithPath );
+
+        if( getAsFile )
+        {
+          IO::ResourceManager::onFileAsyncThreadCall( fileWithPath.c_str(), userData );
+          IO::ResourceManager::onProgressAsyncThreadCall( extension.c_str(), fileSize, fileSize, userData );
+        }
         else
         {
-          std::string method = m_url.substr( 0, colonIndex );
-          if ( method != "file" )
-            onFailure( m_url, "unsupported method " + _(method) );
-          else
+          std::ifstream file( fileWithPath.c_str(), std::ios::in | std::ios::binary );
+          if( !file.is_open() )
+            IO::ResourceManager::onFailureAsyncThreadCall( "Unable to open file", userData );
+
+          file.exceptions( std::ifstream::badbit );
+          try
           {
-            std::string filename = m_url.substr( colonIndex+1, m_url.length() - colonIndex - 1 );
-            if ( filename.length() == 0 )
-              onFailure( m_url, "empty filename" );
-            else
+            size_t fileSize = IO::GetFileSize( fileWithPath.c_str() );
+            static const size_t maxReadSize = 1<<16;//64K buffers
+            char data[maxReadSize];
+            size_t offset = 0;
+            while( offset != fileSize )
             {
-              FILE *fp = fopen( filename.c_str(), "rb" );
-              if ( fp == NULL )
-                onFailure( m_url, "unable to open file" );
-
-              fseek(fp, 0, SEEK_END);
-              size_t totalSize = ftell(fp);
-              fseek(fp, 0, SEEK_SET); 
-      
-              static const size_t maxReadSize = 1<<16;//64K buffers
-              uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
-              size_t offset = 0;
-              for (;;)
-              {
-                size_t readSize = fread( &data[0], 1, maxReadSize, fp );
-                if ( ferror( fp ) )
-                  onFailure( m_url, "error while reading file" );
-
-                onData( m_url, "text/plain", totalSize, offset, readSize, data );
-
-                if ( readSize < maxReadSize )
-                  break;
-                offset += readSize;
-              }
-              free( data );
-              fclose( fp );
-
-              onEnd( m_url, "text/plain" );
+              size_t nbRead = std::min( maxReadSize, fileSize-offset );
+              file.read( data, nbRead );
+              IO::ResourceManager::onDataAsyncThreadCall( offset, nbRead, data, userData );
+              offset += nbRead;
+              IO::ResourceManager::onProgressAsyncThreadCall( "text/plain", offset, fileSize, userData );
             }
+          }
+          catch(...)
+          {
+            IO::ResourceManager::onFailureAsyncThreadCall( "Error while reading file", userData );
           }
         }
       }
-      
-    private:
 
-      std::string m_url;
+    private:
+      TestSynchronousFileResourceProvider(){}
     };
 
     class IOManager : public IO::Manager
     {
     public:
     
-      static RC::Handle<IOManager> Create()
+      static RC::Handle<IOManager> Create( IO::ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
       {
-        return new IOManager;
-      }
-    
-      virtual RC::Handle<IO::Stream> createStream(
-        std::string const &url,
-        IO::Stream::DataCallback dataCallback,
-        IO::Stream::EndCallback endCallback,
-        IO::Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData
-        ) const
-      {
-        return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
+        return new IOManager( scheduleFunc, scheduleFuncUserData );
       }
 
       virtual std::string queryUserFilePath(
@@ -129,6 +103,7 @@ namespace Fabric
         std::string const &extension
         ) const
       {
+        //For unit test purposes only
         if ( !IO::DirExists( "TMP" ) )
 	        IO::CreateDir( "TMP" );
         if(existingFile)
@@ -139,8 +114,9 @@ namespace Fabric
   
     protected:
     
-      IOManager()
+      IOManager( IO::ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData ) : IO::Manager( scheduleFunc, scheduleFuncUserData )
       {
+        getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( TestSynchronousFileResourceProvider::Create() ), true );
       }
     };
     
@@ -235,7 +211,7 @@ namespace Fabric
       CG::CompileOptions compileOptions;
       compileOptions.setGuarded( false );
 
-      RC::Handle<IO::Manager> ioManager = IOManager::Create();
+      RC::Handle<IO::Manager> ioManager = IOManager::Create( &ClientWrap::ScheduleAsyncUserCallback, this );
       RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true, true );
 #if defined(FABRIC_MODULE_OPENCL)
       OCL::registerTypes( dgContext->getRTManager() );
@@ -270,6 +246,9 @@ namespace Fabric
       for ( std::vector<std::string>::const_iterator it=clientWrap->m_bufferedNotifications.begin(); it!=clientWrap->m_bufferedNotifications.end(); ++it )
         clientWrap->notify( it->data(), it->length() );
       clientWrap->m_bufferedNotifications.clear();
+      for ( std::vector<AsyncCallbackData>::const_iterator it2=clientWrap->m_bufferedAsyncUserCallbacks.begin(); it2!=clientWrap->m_bufferedAsyncUserCallbacks.end(); ++it2 )
+        (*(it2->m_callbackFunc))( it2->m_callbackFuncUserData );
+      clientWrap->m_bufferedAsyncUserCallbacks.clear();
     }
     
 #define UNWRAP \
@@ -292,7 +271,7 @@ namespace Fabric
       Util::SimpleString jsonEncodedResults;
       {
         v8::Handle<v8::Object> v8This = args.This();
-        Util::JSONGenerator resultJSON( &jsonEncodedResults );
+        JSON::Encoder resultJSON( &jsonEncodedResults );
         wrap->m_client->jsonExec(
           const_cast<char const *>(*v8JSONEncodedCommandsUtf8Value),
           size_t(v8JSONEncodedCommandsUtf8Value.length()),
@@ -344,5 +323,20 @@ namespace Fabric
         uv_async_send( &m_uvAsync );
       }
     }
+    
+    void ClientWrap::ScheduleAsyncUserCallback( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData )
+    {
+      ClientWrap *clientWrap = static_cast<ClientWrap *>( scheduleUserData );
+      if ( clientWrap->m_mainThreadTLS )//[JeromeCG 20111221] I didn't want to call synchronously even if in main thread, however calling uv_async_send seems to cause a crash??
+        (*callbackFunc)(callbackFuncUserData);
+      else {
+        Util::Mutex::Lock lock( clientWrap->m_mutex );
+        AsyncCallbackData cbData;
+        cbData.m_callbackFunc = callbackFunc;
+        cbData.m_callbackFuncUserData = callbackFuncUserData;
+        clientWrap->m_bufferedAsyncUserCallbacks.push_back( cbData );//Note: even if m_mainThreadTLS
+        uv_async_send( &clientWrap->m_uvAsync );
+      }
+    }    
   };
 };

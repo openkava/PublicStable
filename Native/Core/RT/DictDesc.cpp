@@ -6,10 +6,8 @@
 #include "DictImpl.h"
 #include "ComparableDesc.h"
 
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -48,12 +46,12 @@ namespace Fabric
       return m_dictImpl->getSize( data );
     }    
         
-    void DictDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void DictDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "dict" );
-      resultJOG.makeMember( "keyType" ).makeString( m_keyDesc->getUserName() );
-      resultJOG.makeMember( "valueType" ).makeString( m_valueDesc->getUserName() );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "dict" );
+      resultObjectEncoder.makeMember( "keyType" ).makeString( m_keyDesc->getUserName() );
+      resultObjectEncoder.makeMember( "valueType" ).makeString( m_valueDesc->getUserName() );
     }
 
     RC::ConstHandle<ComparableDesc> DictDesc::getKeyDesc() const

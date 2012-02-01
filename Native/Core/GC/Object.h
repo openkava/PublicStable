@@ -15,13 +15,13 @@ namespace Fabric
 {
   namespace Util
   {
-    class JSONArrayGenerator;
     class SimpleString;
   };
   
   namespace JSON
   {
-    class Value;
+    class ArrayEncoder;
+    struct Entity;
   };
   
   namespace GC
@@ -67,17 +67,17 @@ namespace Fabric
       void reg( Container *container, std::string const &id_ );
 
       virtual void jsonRoute(
-        std::vector<std::string> const &dst,
+        std::vector<JSON::Entity> const &dst,
         size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
       virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
       void jsonNotify(

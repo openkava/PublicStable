@@ -12,14 +12,9 @@
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONEntityInfo;
-  };
-  
   namespace JSON
   {
-    class Array;
+    struct Entity;
   };
   
   namespace RT
@@ -38,13 +33,7 @@ namespace Fabric
       static RC::Handle<ConstArray> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
-        RC::ConstHandle<JSON::Array> const &jsonArray
-        );
-
-      static RC::Handle<ConstArray> Create(
-        RC::ConstHandle<RT::Manager> const &rtManager,
-        RC::ConstHandle<RT::Desc> const &elementDesc,
-        Util::JSONEntityInfo const &entityInfo
+        JSON::Entity const &entity
         );
 
       static RC::Handle<ConstArray> Create(
@@ -73,7 +62,7 @@ namespace Fabric
         static RC::Handle<ComputeState> Create( RC::ConstHandle<ConstArray> const &constArray );
       
         virtual void produce( size_t index, void *data ) const;
-        virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
+        virtual void produceJSON( size_t index, JSON::Encoder &jg ) const;
       
       protected:
       
@@ -87,13 +76,7 @@ namespace Fabric
       ConstArray(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
-        RC::ConstHandle<JSON::Array> const &jsonArray
-        );
-
-      ConstArray(
-        RC::ConstHandle<RT::Manager> const &rtManager,
-        RC::ConstHandle<RT::Desc> const &elementDesc,
-        Util::JSONEntityInfo const &entityInfo
+        JSON::Entity const &entity
         );
 
       ConstArray(

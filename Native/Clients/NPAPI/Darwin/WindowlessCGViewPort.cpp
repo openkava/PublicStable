@@ -132,7 +132,7 @@ namespace Fabric
           FABRIC_ASSERT( m_windowAGLContext );
           aglDestroyPixelFormat( aglPixelFormat );
           
-          FABRIC_CONFIRM( aglSetWindowRef( m_windowAGLContext, m_windowRef ) );
+          FABRIC_VERIFY( aglSetWindowRef( m_windowAGLContext, m_windowRef ) );
         }
       }
 
@@ -169,7 +169,7 @@ namespace Fabric
           CGColorSpaceRelease( cgColorSpace );
           CGDataProviderRelease( cgDataProvider );
           
-          FABRIC_CONFIRM( aglSetWindowRef( m_windowAGLContext, m_windowRef ) );
+          FABRIC_VERIFY( aglSetWindowRef( m_windowAGLContext, m_windowRef ) );
         }
 
         didResize( m_windowWidth, m_windowHeight );

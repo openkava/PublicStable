@@ -16,7 +16,9 @@ namespace Fabric
 {
   namespace JSON
   {
+    class ArrayEncoder;
     class CommandChannel;
+    struct Entity;
   }
   
   namespace GC
@@ -36,11 +38,11 @@ namespace Fabric
       RC::Handle<Object> getObject( std::string const &id_ ) const;
       
       void jsonRoute(
-        std::vector<std::string> const &dst,
+        std::vector<JSON::Entity> const &dst,
         size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
         
       void jsonNotify(

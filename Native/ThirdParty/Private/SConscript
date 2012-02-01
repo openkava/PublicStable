@@ -130,7 +130,8 @@ tiffFlags = {}
 tiffFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'tiff' ), os.path.join( osArchIncludeBaseDir, 'tiff' )]
 if buildOS == 'Windows':
   tiffFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
-  tiffFlags['LIBS'] = archLibs( 'tiff', ['tiff','zlib'] )
+  tiffFlags['LIBS'] = archLibs( 'tiff', ['libtiff'] )
+  tiffFlags['LIBS'].append( archLibs( 'zlib', ['zlib'] ) )
 else:  
   tiffFlags['LIBS'] = [archLibs( 'tiff', ['tiff'] ), 'z']
 Export('tiffFlags')
@@ -165,9 +166,9 @@ else:
 # Maybe there's a compile option for that...
 if buildOS == 'Windows':
   if buildType == 'Debug':
-    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_date_time-vc100-mt-sgd-1_47', 'libboost_iostreams-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47'] ))
+    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_date_time-vc100-mt-sgd-1_47', 'libboost_iostreams-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47', 'libboost_system-vc100-mt-sgd-1_47', 'libboost_filesystem-vc100-mt-sgd-1_47'] ))
   else:
-    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_date_time-vc100-mt-s-1_47', 'libboost_iostreams-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47'] ))
+    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_date_time-vc100-mt-s-1_47', 'libboost_iostreams-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47', 'libboost_system-vc100-mt-s-1_47', 'libboost_filesystem-vc100-mt-s-1_47'] ))
 else:  
   alembicLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_date_time', 'boost_iostreams', 'boost_thread'] ))
 
@@ -186,6 +187,24 @@ alembicFlags = {
     'LIBS': alembicLibs
 }
 Export( 'alembicFlags' )
+
+# fileSystem
+fileSystemLibs = []
+if buildOS == 'Windows':
+  if buildType == 'Debug':
+    fileSystemLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_serialization-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47', 'libboost_system-vc100-mt-sgd-1_47', 'libboost_filesystem-vc100-mt-sgd-1_47'] ))
+  else:
+    fileSystemLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_serialization-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47', 'libboost_system-vc100-mt-s-1_47', 'libboost_filesystem-vc100-mt-s-1_47'] ))
+else:  
+  fileSystemLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_serialization', 'boost_thread', 'boost_system', 'boost_filesystem'] ))
+fileSystemFlags = {
+    'CPPPATH': [
+      os.path.join( includeBaseDir, 'boost' )
+    ],
+    'LIBS': fileSystemLibs
+}
+
+Export( 'fileSystemFlags' )
 
 # secure serializers
 secureFlags = {

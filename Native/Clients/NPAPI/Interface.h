@@ -49,6 +49,7 @@ namespace Fabric
       int32_t nppWriteReady( NPP npp, NPStream* stream );
       int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
+      NPError nppStreamAsFile( NPP npp, NPStream *stream, const char* fname );
       
     protected:
     
@@ -56,7 +57,7 @@ namespace Fabric
       ~Interface();
           
       void jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength,
-        Util::JSONGenerator &resultJG
+        JSON::Encoder &resultEncoder
         );
       void setJSONNotifyCallback( NPObject *npObject );
       

@@ -7,7 +7,7 @@
 
 #include <Fabric/Core/KL/Source.h>
 #include <Fabric/Core/KL/Location.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {

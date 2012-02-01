@@ -4,9 +4,7 @@
  
 #include "OpaqueDesc.h"
 #include <Fabric/Core/RT/OpaqueImpl.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -18,10 +16,10 @@ namespace Fabric
     {
     }
     
-    void OpaqueDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void OpaqueDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "opaque" );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "opaque" );
     }
   };
 };

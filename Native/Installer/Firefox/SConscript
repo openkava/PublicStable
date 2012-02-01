@@ -6,7 +6,7 @@
 # with the MIME type application/x-xpinstall
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'extFiles', 'distDir' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'installerExtFiles', 'distDir' )
 
 firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
 
@@ -60,7 +60,7 @@ if buildOS == 'Windows':
 
 installerFiles.append( Install(
   firefoxExtensionDir.Dir('plugins'),
-  extFiles
+  installerExtFiles
 ) )
 
 installerEnv = baseEnv.Clone()

@@ -38,10 +38,10 @@ namespace Fabric
     {
     }
     
-    void CreateArrayCache::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void CreateArrayCache::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_input->appendJSON( jsonObjectGenerator.makeMember( "input" ), includeLocation );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_input->appendJSON( jsonObjectEncoder.makeMember( "input" ), includeLocation );
     }
     
     void CreateArrayCache::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

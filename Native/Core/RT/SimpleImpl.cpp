@@ -21,5 +21,10 @@ namespace Fabric
     {
       return true;
     }
-  };
-};
+
+    bool SimpleImpl::isExportable() const
+    {
+      return true;
+    }
+  }
+}

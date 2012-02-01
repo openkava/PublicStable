@@ -13,7 +13,6 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
-#include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
 {
@@ -55,7 +54,7 @@ namespace Fabric
 
     void Context::registerViewPort( std::string const &name, ViewPort *viewPort )
     {
-      FABRIC_CONFIRM( m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second );
+      FABRIC_VERIFY( m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second );
     }
     
     void Context::unregisterViewPort( std::string const &name, ViewPort *viewPort )
@@ -72,72 +71,66 @@ namespace Fabric
     }
 
     void Context::jsonRoute(
-      std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( dst.size() - dstOffset >= 1 && dst[dstOffset] == "VP" )
+      ActiveContextBracket activeContextBracket( this );
+      if ( dst.size() - dstOffset >= 1 && dst[dstOffset].stringIs( "VP", 2 ) )
       {
         try
         {
-          jsonRouteViewPorts( dst, dstOffset + 1, cmd, arg, resultJAG );
+          jsonRouteViewPorts( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
         }
         catch ( Exception e )
         {
           throw "'viewPorts': " + e;
         }
       }
-      else return DG::Context::jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+      else return DG::Context::jsonRoute( dst, dstOffset, cmd, arg, resultArrayEncoder );
     }
     
     void Context::jsonExec(
-      std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd, JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      DG::Context::jsonExec( cmd, arg, resultJAG );
+      DG::Context::jsonExec( cmd, arg, resultArrayEncoder );
     }
 
-    void Context::jsonRouteViewPorts( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Context::jsonRouteViewPorts( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd,
+      JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       if ( dst.size() - dstOffset == 1 )
       {
-        std::string viewPortName = dst[dstOffset];
+        std::string viewPortName = dst[dstOffset].stringToStdString();
         ViewPorts::const_iterator it = m_viewPorts.find( viewPortName );
         if ( it == m_viewPorts.end() )
           throw Exception( "unroutable" );
         
-        try
-        {
-          it->second->jsonExec( cmd, arg, resultJAG );
-        }
-        catch ( Exception e )
-        {
-          throw "command " + _(cmd) + ": " + e;
-        }
+        it->second->jsonExec( cmd, arg, resultArrayEncoder );
       }
       else throw Exception( "unroutable" );
     }
     
-    void Context::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Context::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      DG::Context::jsonDesc( resultJOG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      DG::Context::jsonDesc( resultObjectEncoder );
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "VP", 2 );
-        jsonDescViewPorts( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "VP", 2 );
+        jsonDescViewPorts( memberEncoder );
       }
     }
     
-    void Context::jsonDescViewPorts( Util::JSONGenerator &resultJG ) const
+    void Context::jsonDescViewPorts( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( ViewPorts::const_iterator it=m_viewPorts.begin(); it!=m_viewPorts.end(); ++it )
       {
-        Util::JSONGenerator viewPortJG = resultJOG.makeMember( it->first );
-        it->second->jsonDesc( viewPortJG );
+        JSON::Encoder viewPortEncoder = resultObjectEncoder.makeMember( it->first );
+        it->second->jsonDesc( viewPortEncoder );
       }
     }
 
