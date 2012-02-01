@@ -877,7 +877,7 @@ class _DG( _NAMESPACE ):
     def putResourceToFile( self, fileHandle, memberName ):
       args = {
         'memberName': memberName,
-        'path': fileHandle
+        'file': fileHandle
       }
       self._nObjQueueCommand( 'putResourceToFile', args )
       self._dg._executeQueuedCommands()
@@ -989,14 +989,14 @@ class _DG( _NAMESPACE ):
 
     def _handle( self, cmd, arg ):
       if cmd == 'resourceLoadSuccess':
-        for i in range( 0, len( onloadSuccessCallbacks ) ):
-          onloadSuccessCallbacks[ i ]( self )
+        for i in range( 0, len( self.__onloadSuccessCallbacks ) ):
+          self.__onloadSuccessCallbacks[ i ]( self )
       elif cmd == 'resourceLoadProgress':
-        for i in range( 0, len( onloadProgressCallbacks ) ):
-          onloadProgressCallbacks[ i ]( self, arg )
+        for i in range( 0, len( self.__onloadProgressCallbacks ) ):
+          self.__onloadProgressCallbacks[ i ]( self, arg )
       elif cmd == 'resourceLoadFailure':
-        for i in range( 0, len( onloadFailureCallbacks ) ):
-          onloadFailureCallbacks[ i ]( self )
+        for i in range( 0, len( self.__onloadFailureCallbacks ) ):
+          self.__onloadFailureCallbacks[ i ]( self )
       else:
         super( _DG._RESOURCELOADNODE, self )._handle( cmd, arg )
 
@@ -1617,7 +1617,7 @@ class _IO( _NAMESPACE ):
     }
     self._queueCommand( funcname, args, None, __callback )
     self._executeQueuedCommands()
-    return data
+    return data[ '_' ]
 
   def queryUserFileAndFolderHandle( self, mode, uiTitle, extension, defaultFileName ):
     return self.__queryUserFile( 'queryUserFileAndFolder', mode, uiTitle, extension, defaultFileName )
@@ -1632,15 +1632,15 @@ class _IO( _NAMESPACE ):
       data[ '_' ] = result
     self._queueCommand( 'getTextFileContent', handle, None, __callback )
     self._executeQueuedCommands()
-    return data
+    return data[ '_' ]
 
-  def putTextFileContent( self, handle, content, append ):
+  def putTextFileContent( self, handle, content, append = None ):
     args = {
       'content': content,
-      'file': hande,
-      'append': append
+      'file': handle,
+      'append': False if append is None else append
     }
-    self._queueCommand( 'getTextFileContent', handle )
+    self._queueCommand( 'putTextFileContent', args )
     self._executeQueuedCommands()
 
   def buildFileHandleFromRelativePath( self, handle ):
@@ -1650,7 +1650,7 @@ class _IO( _NAMESPACE ):
       data[ '_' ] = result
     self._queueCommand( 'createFileHandleFromRelativePath', handle, None, __callback )
     self._executeQueuedCommands()
-    return data
+    return data[ '_' ]
     
   def buildFolderHandleFromRelativePath( self, handle ):
     # dictionary hack to simulate Python 3.x nonlocal
@@ -1659,7 +1659,7 @@ class _IO( _NAMESPACE ):
       data[ '_' ] = result
     self._queueCommand( 'createFolderHandleFromRelativePath', handle, None, __callback )
     self._executeQueuedCommands()
-    return data
+    return data[ '_' ]
     
   def getFileHandleInfo( self, handle ):
     # dictionary hack to simulate Python 3.x nonlocal
@@ -1668,7 +1668,7 @@ class _IO( _NAMESPACE ):
       data[ '_' ] = result
     self._queueCommand( 'getFileInfo', handle, None, __callback )
     self._executeQueuedCommands()
-    return data
+    return data[ '_' ]
 
 class _BUILD( _NAMESPACE ):
   def __init__( self, client ):

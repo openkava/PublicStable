@@ -36,6 +36,13 @@ namespace Fabric
       Client( RC::Handle<DG::Context> const &context );
       virtual ~Client();
 
+      Util::Mutex m_scheduleAsyncMutex;
+      static void ScheduleAsyncUserCallback(
+          void *scheduleUserData,
+          void (*callbackFunc)(void *),
+          void *callbackFuncUserData
+          );
+
       void (*m_notifyCallback)(const char *);
 
       // map of const char * pointers that we have passed to Python
