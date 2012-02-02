@@ -57,7 +57,7 @@ EOF
 
     case "$FABRIC_BUILD_OS" in
       Darwin)
-        FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Fabric"
+        FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Fabric/Exts"
         ;;
       Linux)
         FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/Exts"
@@ -71,6 +71,13 @@ EOF
     FABRIC_NODE_MODULE_DST="$HOME/node_modules/Fabric"
     echo "Linking $FABRIC_NODE_MODULE_DST -> $FABRIC_NODE_MODULE_SRC"
     ln -snf "$FABRIC_NODE_MODULE_SRC" "$FABRIC_NODE_MODULE_DST"
+
+    FABRIC_PYTHON_MODULE_SRC="$FABRIC_DIST_PATH/FabricEngine/python_modules/fabric"
+    FABRIC_PYTHON_MODULE_DIR="$HOME/python_modules"
+    FABRIC_PYTHON_MODULE_DST="$FABRIC_PYTHON_MODULE_DIR/fabric"
+    echo "Linking $FABRIC_PYTHON_MODULE_DST -> $FABRIC_PYTHON_MODULE_SRC"
+    mkdir -p "$FABRIC_PYTHON_MODULE_DIR"
+    ln -snf "$FABRIC_PYTHON_MODULE_SRC" "$FABRIC_PYTHON_MODULE_DST"
 
     case "$FABRIC_BUILD_OS" in
       Darwin)
