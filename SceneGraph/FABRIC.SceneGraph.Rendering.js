@@ -5,6 +5,8 @@
 
 FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/FABRIC.SceneGraph.Cameras",
+               "SceneGraph/RT/Vec2",
+               "SceneGraph/RT/Vec3",
                "SceneGraph/RT/Color",
                "SceneGraph/RT/Ray"], function() {
 
