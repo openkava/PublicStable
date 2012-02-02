@@ -4,10 +4,543 @@
 //
 
 FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
-               "SceneGraph/FABRIC.SceneGraph.Geometry",
-               "SceneGraph/FABRIC.SceneGraph.Kinematics",
-               "SceneGraph/FABRIC.SceneGraph.Materials",
-               "SceneGraph/RT/OGLRenderTarget"], function() {
+               "SceneGraph/FABRIC.SceneGraph.Cameras",
+               "SceneGraph/RT/Color",
+               "SceneGraph/RT/Ray"], function() {
+
+
+FABRIC.SceneGraph.registerNodeType('Viewport', {
+  briefDesc: 'The Viewport node implements the basic OpenGL canvas.',
+  detailedDesc: 'Utilizing a redraw eventhandler, the ViewPort node offers a powerful OpenGL canvas, ' +
+                'which is connected to an embed element inside the DOM. The most important parameter of '+
+                'the ViewPort node\'s options is the windowElement, the ID of the HTML element to append '+
+                'the viewport to.',
+  parentNodeDesc: 'SceneGraphNode',
+  optionsDesc: {
+    windowElement: 'The HTML element to attach the viewport to.',
+    cameraNode: 'The cameraNode to use for this viewport',
+    enableMouseEvents: 'Set to true this ensures to create the mouse down, up and move events.',
+    enableRaycasting: 'Set to true this enables raycasting for selection of 3D objects.',
+    mouseUpEvents: 'Set to true this enables the mouse up event',
+    mouseMoveEvents: 'Set to true this enables the mouse move event',
+    backgroundColor: 'The background color of the viewport used for glClearColor',
+    postProcessEffect: 'An optional PostProcessEffect node to be used after drawing the viewport, undefined if None.',
+    rayIntersectionThreshold: 'The treshold of raycast intersections, typicall below 1.0'
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        windowElement: undefined,
+        cameraNode: undefined,
+        enableMouseEvents: true,
+        enableRaycasting: false,
+        mouseUpEvents: true,
+        mouseMoveEvents: true,
+        backgroundColor: FABRIC.RT.rgb(0.5, 0.5, 0.5),
+        postProcessEffect: undefined,
+        rayIntersectionThreshold: 0.1,
+        checkOpenGL2Support: true
+      });
+
+    if (!options.windowElement) {
+      throw ('Must provide a window to this constructor');
+    }
+
+    var cameraNode = undefined, fabricwindow;
+    var raycastingEnabled = false;
+    var loading = true;
+    var windowElement = options.windowElement;
+    var viewportNode = scene.constructNode('SceneGraphNode', options),
+      dgnode = viewportNode.constructDGNode('DGNode'),
+      redrawEventHandler = viewportNode.constructEventHandlerNode('Redraw');
+      
+    dgnode.addMember('backgroundColor', 'Color', options.backgroundColor);
+
+    redrawEventHandler.setScope('viewPort', dgnode);
+
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'viewPortBeginRender',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/viewPortBeginRender.kl',
+          entryFunctionName: 'viewPortBeginRender',
+          parameterLayout: [
+            'window.width',
+            'window.height',
+            'viewPort.backgroundColor'
+          ]
+        }));
+
+
+    var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
+    
+    var initialLoad = true;
+    var visible = false;
+    var startLoadMode = function() {
+      fabricwindow.hide();
+      FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
+        if(countRemaining===0){
+
+          if(initialLoad) {
+            initialLoad = false;
+            loading = false;
+            redrawEventHandler.setScope('window', fabricwindow.windowNode);
+            if(scene.getScenePreRedrawEventHandler()){
+              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
+            }
+            fabricwindow.redrawEvent.appendEventHandler(redrawEventHandler);
+            if(scene.getScenePostRedrawEventHandler()){
+              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
+            }
+            if(raycastingEnabled){
+              // the sceneRaycastEventHandler propogates the event throughtout the scene.
+              viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
+            }
+        
+            // These functions cannot be called during the initial construction of the
+            // graph because they rely on an OpenGL context being set up, and this occurs
+            // during the 1st redraw.
+            viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
+            viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
+            viewportNode.pub.show = function(){ fabricwindow.show(); visible = true; };
+            viewportNode.pub.hide = function(){ fabricwindow.hide(); visible = false; };
+
+            viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
+            viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
+            viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
+          }
+
+          viewportNode.pub.show();
+          return true;
+        }
+      });
+    };
+    startLoadMode();
+    
+    var propagationRedrawEventHandler = viewportNode.constructEventHandlerNode('DrawPropagation');
+    redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
+
+    // Texture Stub for loading Background textures.
+    var backgroundTextureNode, textureStub;
+    textureStub = viewportNode.constructEventHandlerNode('BackgroundTextureStub');
+    propagationRedrawEventHandler.appendChildEventHandler(textureStub);
+
+    var postProcessEffects = [];
+
+    ///////////////////////////////////////////////////////////////////
+    // Raycasting
+    var viewPortRaycastEvent, viewPortRaycastEventHandler, viewPortRayCastDgNode;
+    var raycastingConstructed = false;
+
+    viewportNode.pub.enableRaycasting = function() {
+      if( !raycastingEnabled && scene.getSceneRaycastEventHandler() ) {
+        raycastingEnabled = true;
+        if( !raycastingConstructed ) {
+          raycastingConstructed = true;
+          viewPortRayCastDgNode = viewportNode.constructDGNode('RayCastDgNodeDGNode');
+          viewPortRayCastDgNode.addMember('x', 'Integer');
+          viewPortRayCastDgNode.addMember('y', 'Integer');
+          viewPortRayCastDgNode.addMember('ray', 'Ray');
+          viewPortRayCastDgNode.addMember('threshold', 'Scalar', options.rayIntersectionThreshold);
+          viewPortRayCastDgNode.setDependency(fabricwindow.windowNode, 'window');
+
+          // this operator calculates the rayOri and rayDir from the scopes collected so far.
+          // The scopes should be the window, viewport, camera and projection.
+          viewPortRayCastDgNode.bindings.append(scene.constructOperator({
+            operatorName: 'ViewportRaycast',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/viewPortUpdateRayCast.kl',
+            entryFunctionName: 'viewPortUpdateRayCast',
+            parameterLayout: [
+              'camera.cameraMat44',
+              'camera.projectionMat44',
+              'window.width',
+              'window.height',
+              'self.x',
+              'self.y',
+              'self.ray'
+            ]
+          }));
+
+          viewPortRaycastEventHandler = viewportNode.constructEventHandlerNode('Raycast');
+          viewPortRaycastEventHandler.setScope('raycastData', viewPortRayCastDgNode);
+          viewPortRaycastEvent = viewportNode.constructEventNode('RaycastEvent');
+          viewPortRaycastEvent.setSelectType('RayIntersection');
+
+          // Raycast events are fired from the viewport. As the event
+          // propagates down the tree it collects scopes and fires operators.
+          // The operators us the collected scopes to calculate the ray.
+          viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
+          
+          // During load we do not connect up the event tree,
+          // the registered callback will make the connection
+          if( !loading )
+            viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
+        }
+      }
+    };
+
+    viewportNode.pub.disableRaycasting = function() {
+      if( raycastingEnabled ) {
+        raycastingEnabled = false;
+      }
+    };
+
+    var getElementCoords = function(evt) {
+      var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
+      if (evt.offsetX != undefined) {
+        // Webkit
+        return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
+      }
+      else if (evt.layerX != undefined) {
+        // Firefox
+        return new FABRIC.RT.Vec2(Math.floor(evt.layerX*browserZoom), Math.floor(evt.layerY*browserZoom));
+      }
+      throw("Unsupported Browser");
+    }
+    
+    viewportNode.getElementCoords = function(evt) {
+      return getElementCoords(evt);
+    };
+    
+    viewportNode.getWindowElement = function() {
+      return windowElement;
+    };
+    viewportNode.getFabricWindowObject = function() {
+      return fabricwindow;
+    };
+    
+    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
+    viewportNode.addReferenceInterface('Camera', 'Camera',
+      function(nodePrivate){
+      // remove the child event handler first
+        if(cameraNode != undefined) {
+          propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
+        }
+        cameraNode = nodePrivate;
+        propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
+        if (viewPortRayCastDgNode) {
+          viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
+        }
+      });
+    
+    
+    viewportNode.addReferenceInterface('BackgroundTexture', 'Image2D',
+      function(nodePrivate){
+        if (textureStub.postDescendBindings.getLength() == 0) {
+          textureStub.setScopeName('textureStub');
+          textureStub.addMember('textureUnit', 'Integer', 0);
+          textureStub.addMember('program', 'Integer', 0);
+          textureStub.postDescendBindings.append(
+            scene.constructOperator({
+                operatorName: 'drawTextureFullScreen',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
+                entryFunctionName: 'drawTextureFullScreen',
+                parameterLayout: [
+                  'self.textureUnit',
+                  'self.program'
+                ]
+              }
+           ));
+        }
+        if (backgroundTextureNode) {
+          textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+        }
+        backgroundTextureNode = nodePrivate;
+        textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+      });
+    viewportNode.addReferenceListInterface('PostProcessEffect', 'PostProcessEffect',
+      function(nodePrivate, index){
+        var parentEventHandler;
+        if (postProcessEffects.length > 0) {
+          parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
+        parentEventHandler.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
+  
+        nodePrivate.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
+        postProcessEffects.push(nodePrivate);
+      },
+      function(nodePrivate, index) {
+        var parentEventHandler, childEventHandler;
+        postProcessEffects.splice(index, 1);
+        if(filterIndex < postProcessEffects.length){
+          childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
+        }
+        else{
+          childEventHandler = propagationRedrawEventHandler;
+        }
+        nodePrivate.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
+        
+        if (filterIndex > 0) {
+          parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(nodePrivate.getRedrawEventHandler());
+        if (filterIndex < postProcessEffects.length) {
+          parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
+        }
+        else {
+          parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
+        }
+      });
+    
+    viewportNode.pub.rayCast = function(evt, options) {
+      var result = {
+        rayData: undefined
+      };
+      options = scene.assignDefaults(options, {
+          returnOnlyClosestNode: true
+        });
+      if( raycastingEnabled ) {
+        var elementCoords = getElementCoords(evt);
+        viewPortRayCastDgNode.setData('x', elementCoords.x);
+        viewPortRayCastDgNode.setData('y', elementCoords.y);
+        var nodes = viewPortRaycastEvent.select();
+        result.rayData = viewPortRayCastDgNode.getData('ray');
+
+        if (options.returnOnlyClosestNode) {
+          for (var i = 0; i < nodes.length; i++) {
+            if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
+              result.closestNode = nodes[i];
+            }
+          }
+        }else {
+          result.nodes = nodes;
+        }
+      }
+      return result;
+    };
+    
+    viewportNode.pub.calcRayFromMouseEvent = function(evt) {
+      var elementCoords = getElementCoords(evt);
+      viewPortRayCastDgNode.setData('x', elementCoords.x);
+      viewPortRayCastDgNode.setData('y', elementCoords.y);
+      viewPortRayCastDgNode.evaluate();
+      var ray = viewPortRayCastDgNode.getData('ray');
+      return ray;
+    };
+    
+    viewportNode.pub.redraw = function(force) {
+      if(!visible){
+        return;
+      }
+      if(scene.isPlaying()){
+        if(force){
+          fabricwindow.needsRedraw();
+        }
+      }else{
+        // If we give the browser a millisecond pause, then the redraw will
+        // occur. Otherwist this message gets lost, causing a blank screen when
+        // demos load. 
+        setTimeout(function(){
+          fabricwindow.needsRedraw();
+        }, 1);
+      }
+    };
+    
+    viewportNode.pub.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      nodeData.camera = cameraNode.getName();
+    };
+    
+    viewportNode.pub.readData = function(sceneDeserializer, nodeData) {
+      if (nodeData.camera) {
+        this.setCameraNode(sceneDeserializer.getNode(nodeData.camera));
+      }
+    };
+    
+    viewportNode.pub.getFPS = function() {
+      // TODO: once we have support for multiple viewports, we should
+      // re-write this function.
+      return scene.getContext().VP.viewPort.getFPS();
+    };
+    
+    if (options.enableRaycasting)
+      viewportNode.pub.enableRaycasting();
+
+    if (options.postProcessEffect) {
+      viewportNode.pub.addPostProcessEffectShader(options.postProcessEffect);
+    }
+
+    if (options.enableMouseEvents) {
+      ///////////////////////////////////////////////////////////////////
+      // Add Mouse Handling Events
+      var mouseOverNode;
+      var mouseOverNodeData;
+      var propagateEvent = true;
+      var bindEventProperties = function(evt) {
+        evt.mouseScreenPos  = getElementCoords(evt);
+        evt.scene = scene.pub;
+        evt.viewportNode = viewportNode.pub;
+        if (cameraNode) {
+          evt.cameraNode = cameraNode.pub;
+        }
+        propagateEvent = true;
+        var stopPropagation = evt.stopPropagation;
+        evt.stopPropagation = function() {
+          propagateEvent = false;
+          stopPropagation.call(evt);
+        }
+      }
+
+      var fireEvent = function(name, evt, targetNode) {
+        bindEventProperties(evt);
+        if (cameraNode) {
+          cameraNode.pub.fireEvent(name, evt);
+        }
+        if (propagateEvent) viewportNode.pub.fireEvent(name, evt);
+        if (propagateEvent) scene.pub.fireEvent(name, evt);
+      }
+
+      // The mouse has interacted in some way with a geometry.
+      // fire an event for objects to handle thier own interaction.
+      var fireGeomEvent = function(name, evt, targetNode) {
+        bindEventProperties(evt);
+        evt.targetNode = targetNode.pub;
+        evt.targetNode.fireEvent(name, evt);
+        evt.viewportNode = viewportNode;
+        if (propagateEvent) cameraNode.pub.fireEvent(name, evt);
+        if (propagateEvent) viewportNode.pub.fireEvent(name, evt);
+        if (propagateEvent) scene.pub.fireEvent(name, evt);
+      }
+
+      var mouseMoveTime;
+      var mouseMoveFn = function(evt) {
+        mouseMoveTime = (new Date).getTime();
+        propagateEvent = true;
+        if (cameraNode && viewPortRayCastDgNode && options.mouseMoveEvents) {
+          var raycastResult = viewportNode.pub.rayCast(evt);
+          if (raycastResult.closestNode) {
+            var hitNode = raycastResult.closestNode.node.sceneGraphNode;
+            evt.rayData = raycastResult.rayData;
+            evt.hitData = raycastResult.closestNode.value;
+            if (mouseOverNode == undefined ||
+                mouseOverNode.pub.getName() !== hitNode.pub.getName()) {
+              if (mouseOverNode) {
+                evt.toNode = hitNode;
+                evt.hitData = mouseOverNodeData;
+                fireGeomEvent('mouseout_geom', evt, mouseOverNode);
+              }
+              evt.fromElement = evt.relatedTarget = mouseOverNode;
+              fireGeomEvent('mouseover_geom', evt, hitNode);
+              mouseOverNode = hitNode;
+              mouseOverNodeData = evt.hitData;
+            }else {
+              fireGeomEvent('mousemove_geom', evt, hitNode);
+            }
+          }
+          else {
+            if (mouseOverNode) {
+              evt.hitData = mouseOverNodeData;
+              fireGeomEvent('mouseout_geom', evt, mouseOverNode);
+              mouseOverNode = undefined;
+            }
+          }
+        }
+        if(propagateEvent){
+          fireEvent('mousemove', evt);
+        }
+      };
+      var mouseDownTime;
+      var mouseDownFn = function(evt) {
+        if(((new Date).getTime() - mouseDownTime) < 200){
+          // generate a double-click if the mouse goes down 2x in less than 200ms.
+          mouseDblClickFn(evt);
+          return;
+        }
+        propagateEvent = true;
+        if (cameraNode && viewPortRayCastDgNode) {
+          var raycastResult = viewportNode.pub.rayCast(evt);
+          if (raycastResult.closestNode) {
+            var hitNode = raycastResult.closestNode.node.sceneGraphNode;
+            evt.rayData = raycastResult.rayData;
+            evt.hitData = raycastResult.closestNode.value;
+            fireGeomEvent('mousedown_geom', evt, hitNode);
+          }
+        }
+        if(propagateEvent){
+          fireEvent('mousedown', evt);
+        }
+        mouseDownTime = (new Date).getTime();
+      };
+
+      var mouseUpFn = function(evt) {
+        propagateEvent = true;
+        if (cameraNode && viewPortRayCastDgNode && options.mouseUpEvents) {
+          var raycastResult = viewportNode.pub.rayCast(evt);
+          if (raycastResult.closestNode) {
+            var hitNode = raycastResult.closestNode.node.sceneGraphNode;
+            evt.rayData = raycastResult.rayData;
+            evt.hitData = raycastResult;
+            fireGeomEvent('mouseup_geom', evt, hitNode);
+          }
+        }
+        if(propagateEvent){
+          fireEvent('mouseup', evt);
+        }
+      };
+      
+      var mouseDblClickFn = function(evt) {
+        propagateEvent = true;
+        if (cameraNode && viewPortRayCastDgNode) {
+          var raycastResult = viewportNode.pub.rayCast(evt);
+          if (raycastResult.closestNode) {
+            var hitNode = raycastResult.closestNode.node.sceneGraphNode;
+            evt.rayData = raycastResult.rayData;
+            evt.hitData = raycastResult.closestNode.value;
+            fireGeomEvent('mousedblclick_geom', evt, hitNode);
+          }
+        }
+      };
+
+
+      // In cases wehre mouse events cost a lot, we can restrict firing to mouse down and moue up.
+      windowElement.addEventListener('mousemove', mouseMoveFn, false);
+      windowElement.addEventListener('mousedown', mouseDownFn, false);
+      windowElement.addEventListener('mouseup', mouseUpFn, false);
+      
+      scene.pub.addEventListener('beginmanipulation', function(evt){
+        // During manipulation we disable raycasting
+        viewportNode.pub.disableRaycasting();
+      });
+      scene.pub.addEventListener('endmanipulation', function(evt){
+        viewportNode.pub.enableRaycasting();
+      });
+
+      // Mouse Wheel event trapping.
+      // Mouse wheel events are sent to the document, not the element,
+      // so here we catch mouse wheel events only when the mouse goes over the element.
+      // TODO: Fix Safari mouse wheel events..
+      var mouseWheelActivated = false;
+      var activateMousewheelFn = function(evt) {
+        if(mouseWheelActivated){
+          return;
+        }
+        var mousewheelFn = function(evt) {
+          if(evt.detail) evt.wheelDelta = evt.detail * -50;
+          fireEvent('mousewheel', evt);
+        }
+        document.addEventListener('mousewheel', mousewheelFn, false);
+        document.addEventListener('DOMMouseScroll', mousewheelFn, false);
+        var deactivateMousewheelFn = function(evt) {
+          windowElement.removeEventListener('mouseout', deactivateMousewheelFn, false);
+          document.removeEventListener('mousewheel', mousewheelFn, false);
+          mouseWheelActivated = false;
+        }
+        windowElement.addEventListener('mouseout', deactivateMousewheelFn, false);
+        mouseWheelActivated = true;
+      }
+      windowElement.addEventListener('mousemove', activateMousewheelFn, false);
+      scene.addEventHandlingFunctions(viewportNode);
+    }
+
+    if (options.cameraNode) {
+      viewportNode.pub.setCameraNode(options.cameraNode);
+    }
+
+    return viewportNode;
+  }});
 
   
 /**
@@ -166,375 +699,6 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
 
     return offscreenNode;
   }});
-
-
-
-
-
-FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
-  briefDesc: '',
-  detailedDesc: '',
-  parentNodeDesc: '',
-  optionsDesc: {
-    colorBuffers: "array of render targets specifying 'nbChannels' (1 to 4) and 'name' for each target, and optionally the internal OpenGL format (by default: 16F per channel). Note that for a target name N, it is expected that the deferred shader will have a " + 
-                  "texture parameter name NTexture. Ex: [{nbChannels: 4, name: 'diffuse'}, {nbChannels: 3, name: 'normal', internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F}], matching params diffuseTexture and normalTexture in deferred shader material." +
-                  "Note that your prePass shaders should then write to targets of the corresponding indices: glFragData[0]=diffuseColor; glFragData[1]=normal;",
-    addDepth: "if depth should be attached",
-    showDebug: "Display view of the render targets",
-    lightNode: "to be used by the Phong shading pass",
-    forwardRenderPass: "enables to mix with forward rendering"
-  },
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      showDebug: false,
-      addDepth: true,
-      forwardRenderPass: false,
-      colorBuffers: []
-      });
-
-    if(options.colorBuffers.length == 0)
-      throw ('Error: no render target provided');
-
-    var deferredRenderNode = scene.constructNode('SceneGraphNode');
-    var redrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredDraw');
-    redrawEventHandler.setScopeName('deferredDraw');
-
-    scene.getSceneRedrawOpaqueObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
-
-    var renderTargetRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredPrePass');
-    redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
-
-    var channelToInternalFormat = [0, FABRIC.SceneGraph.OpenGLConstants.GL_R16F, FABRIC.SceneGraph.OpenGLConstants.GL_RG16F, FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F, FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F];
-    var channelToFormat = [0, FABRIC.SceneGraph.OpenGLConstants.GL_RED, FABRIC.SceneGraph.OpenGLConstants.GL_RG, FABRIC.SceneGraph.OpenGLConstants.GL_RGB, FABRIC.SceneGraph.OpenGLConstants.GL_RGBA];
-
-    var oglRenderTargetTextureDescs = [];
-    var oglRenderTargetTextureNames = [];
-
-    var i;
-    for( i = 0; i < options.colorBuffers.length; ++i ) {
-      var nbChannels = options.colorBuffers[i].nbChannels;
-      if(nbChannels === undefined || nbChannels < 1 || nbChannels > 4)
-        throw ('Error: unsupported number of channels for render target ' + i);
-      if(options.colorBuffers[i].name === undefined)
-        throw ('Error: name not specified for render target ' + i);
-
-      var internalFormat = options.colorBuffers[i].internalFormat;
-      if(internalFormat === undefined)
-        internalFormat = channelToInternalFormat[nbChannels];
-
-      oglRenderTargetTextureDescs.push(
-          new FABRIC.RT.OGLRenderTargetTextureDesc (
-              2, // COLOR_BUFFER
-              new FABRIC.RT.OGLTexture2D (
-                internalFormat,
-                channelToFormat[nbChannels],
-                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-            ));
-      oglRenderTargetTextureNames.push(options.colorBuffers[i].name);
-    }
-
-    var forwardRenderBufferIndex = options.colorBuffers.length;
-    if(options.forwardRenderPass) {
-      oglRenderTargetTextureDescs.push(
-          new FABRIC.RT.OGLRenderTargetTextureDesc (
-              2, // COLOR_BUFFER
-              new FABRIC.RT.OGLTexture2D (
-                FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
-                channelToFormat[4],
-                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-            ));
-      oglRenderTargetTextureNames.push('forwardRender');
-    }
-
-    if(options.addDepth) {
-      oglRenderTargetTextureDescs.push(
-          new FABRIC.RT.OGLRenderTargetTextureDesc (
-              1, // DEPTH_BUFFER
-              new FABRIC.RT.OGLTexture2D (
-                FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-                FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-            ));
-      oglRenderTargetTextureNames.push('depth');
-    }
-
-    var nbRenderTargets = oglRenderTargetTextureNames.length;
-    var renderTarget = FABRIC.RT.oglRenderTarget(0,0,
-      oglRenderTargetTextureDescs,
-      {
-        clearColor: options.clearColor
-      }
-    );
-    redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', renderTarget);
-
-    ///////////////////////////////
-    //Pre pass
-
-    if(!options.forwardRenderPass) {
-      renderTargetRedrawEventHandler.preDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'bindScreenRenderTarget',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-            entryFunctionName: 'bindScreenRenderTarget',
-            parameterLayout: [
-              'window.width',
-              'window.height',
-              'deferredDraw.renderTarget'
-            ]
-          }));
-    } else {
-      renderTargetRedrawEventHandler.preDescendBindings.append(
-        scene.constructOperator({
-            preProcessorDefinitions: {
-              FORWARD_RENDER_BUFFER_INDEX: forwardRenderBufferIndex
-            },
-            operatorName: 'bindPrePassRenderTargets',
-            srcCode:  'use OGLRenderTarget;\n' +
-                      'operator bindPrePassRenderTargets( io Integer width, io Integer height, io OGLRenderTarget renderTarget ) {\n' +
-                      '  renderTarget.prebind(width, height);\n' +
-                      '  renderTarget.bindFbo(true);\n' +
-                      '  Integer drawBufferIDs[];\n' +
-                      '  for(Size i=0; i < FORWARD_RENDER_BUFFER_INDEX; i++){\n' +
-                      '      drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + drawBufferIDs.size()));\n' +
-                      '  }\n' +
-                      '  renderTarget.bindColorBuffers(drawBufferIDs);\n' +
-                      '}\n',
-            entryFunctionName: 'bindPrePassRenderTargets',
-            parameterLayout: [
-              'window.width',
-              'window.height',
-              'deferredDraw.renderTarget'
-            ]
-          }));
-    }
-
-    renderTargetRedrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'unbindRenderTarget',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-          entryFunctionName: 'unbindRenderTarget',
-          parameterLayout: [
-            'deferredDraw.renderTarget'
-          ]
-        }));
-
-    redrawEventHandler.addMember('debugDrawToggle', 'Boolean', options.showDebug);
-    redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
-    deferredRenderNode.addMemberInterface(redrawEventHandler, 'debugDrawToggle', true);
-
-    redrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'debugDrawRenderTargets',
-          srcCode:'use OGLTexture2D;\n' +
-                  'operator debugDrawRenderTargets(io OGLRenderTarget renderTarget, io Integer progId, io Boolean draw){ \n' +
-                  'if(!draw)return;\n' +
-                  'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
-                  'for(i = 0; i < 3; ++i){\n' +
-                  '  for(j = 0; j < 3; ++j){\n' +
-                  '    while(true) {\n' +
-                  '      if(curr == n)\n' +
-                  '        return;\n' +
-                  '      if(renderTarget.textures[curr].type == 2)\n' +
-                  '        break;\n' +
-                  '      curr++;\n' +
-                  '    }\n' +
-                  '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
-                  '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
-                  '    renderTarget.textures[curr++].texture.bind(0);\n' +
-                  '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
-                  '    if(curr == n)\n' +
-                  '      return;}}}\n',
-          entryFunctionName: 'debugDrawRenderTargets',
-          parameterLayout: [
-            'self.renderTarget',
-            'self.debugShaderProgID',
-            'self.debugDrawToggle'
-          ]
-    }));
-    
-    ///////////////////////////////
-    //Post (shading) pass
-    var shaderPassRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredPostPass');
-    redrawEventHandler.appendChildEventHandler(shaderPassRedrawEventHandler);
-
-    shaderPassRedrawEventHandler.preDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'preDeferredRenderShading',
-          srcCode: 'use FabricOGL; operator preDeferredRenderShading(){\n'+
-                      'glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);\n' +
-                      'glDepthMask(GL_FALSE);\n' +
-                      'glEnable(GL_BLEND);\n' +
-                      'glBlendFunc(GL_SRC_ALPHA, GL_ONE);\n' +
-                      '}',
-          entryFunctionName: 'preDeferredRenderShading',
-          parameterLayout: []
-        }));
-
-    shaderPassRedrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'postDeferredRenderShading',
-          srcCode: 'use FabricOGL; operator postDeferredRenderShading(){\n'+
-                      'glPopAttrib();}',
-          entryFunctionName: 'postDeferredRenderShading',
-          parameterLayout: []
-        }));
-
-    //Build event handlers for loading each render target
-    var renderTargetTextures = [];
-    for(i = 0; i < nbRenderTargets; ++i) {
-      var imageNode = scene.constructNode('RenderTargetBufferTexture', {
-        name: oglRenderTargetTextureNames[i],
-        bufferIndex: i
-      });
-      renderTargetTextures.push(imageNode);
-    }
-
-    var capitalizeFirstLetter = function(str) {
-      return str[0].toUpperCase() + str.substr(1);
-    };
-
-    deferredRenderNode.pub.addPostPassMaterial = function(materialName, options) {
-
-      options.parentEventHandler = shaderPassRedrawEventHandler;
-      var materialNodePub = scene.pub.constructNode(materialName, options);
-      var material = scene.getPrivateInterface(materialNodePub);
-
-      for(i = 0; i < nbRenderTargets; ++i) {
-        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'TextureNode';
-        if(material.pub[setTextureFuncName] !== undefined) {
-          material.pub[setTextureFuncName]( renderTargetTextures[i].pub );
-        }
-      }
-
-      var materialRedrawHandler = material.getRedrawEventHandler();
-
-      if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
-        materialRedrawHandler.postDescendBindings.insert(
-          scene.constructOperator({
-              operatorName: 'drawShaderQuad',
-              srcCode:'use OGLTexture2D, OGLShaderProgram;\n' +
-                      'operator drawShaderQuad(io OGLShaderProgram program){ \n' +
-                      '  drawScreenQuad(program.programId, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);}',
-              entryFunctionName: 'drawShaderQuad',
-              parameterLayout: [
-                'shader.shaderProgram'
-              ]
-        }),0);
-      }
-      return materialNodePub;
-    };
-   
-    deferredRenderNode.pub.addPrePassMaterial = function(materialName, options) {
-      options.parentEventHandler = renderTargetRedrawEventHandler;
-      return scene.pub.constructNode(materialName, options);
-    };
-
-    ///////////////////////////////
-    //Forward render mix pass
-
-    if(options.forwardRenderPass) {
-      var forwardRenderMixRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('ForwardRenderMixPass');
-      redrawEventHandler.appendChildEventHandler(forwardRenderMixRedrawEventHandler);
-      forwardRenderMixRedrawEventHandler.addMember('shaderProgID', 'Integer', 0);
-
-      forwardRenderMixRedrawEventHandler.preDescendBindings.append(
-        scene.constructOperator({
-            preProcessorDefinitions: {
-              FORWARD_RENDER_BUFFER_INDEX: forwardRenderBufferIndex
-            },
-            operatorName: 'bindForwardRenderMixRenderTarget',
-            srcCode:  'use OGLRenderTarget;\n' +
-                      'operator bindForwardRenderMixRenderTarget( io OGLRenderTarget renderTarget ) {\n' +
-                      '  renderTarget.bindFbo(false);\n' +
-                      '  Integer drawBufferIDs[];\n' +
-                      '  drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + FORWARD_RENDER_BUFFER_INDEX));\n' +
-                      '  glClearColor(0.0, 0.0, 0.0, 0.0);\n' +
-                      '  renderTarget.bindColorBuffers(drawBufferIDs);\n' +
-                      '}\n',
-            entryFunctionName: 'bindForwardRenderMixRenderTarget',
-            parameterLayout: [
-              'deferredDraw.renderTarget'
-            ]
-          }));
-
-      forwardRenderMixRedrawEventHandler.postDescendBindings.append(
-        scene.constructOperator({
-            preProcessorDefinitions: {
-              FORWARD_RENDER_BUFFER_INDEX: forwardRenderBufferIndex
-            },
-            operatorName: 'unbindAndDrawForwardRenderTarget',
-            srcCode:  'use OGLRenderTarget; use OGLTexture2D;\n' +
-                      'operator unbindAndDrawForwardRenderTarget( io OGLRenderTarget renderTarget, io Integer shaderProgramID ) {\n' +
-                      '  renderTarget.unbind();\n' +
-                      '  glPushAttrib(GL_ENABLE_BIT);\n' +
-                      '  glEnable(GL_BLEND);\n' +
-                      '  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);\n' +
-                      '  renderTarget.textures[FORWARD_RENDER_BUFFER_INDEX].texture.bind(0);\n' +
-                      '  drawTexture(0, shaderProgramID, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);\n' +
-                      '  glPopAttrib();}',
-            entryFunctionName: 'unbindAndDrawForwardRenderTarget',
-            parameterLayout: [
-              'deferredDraw.renderTarget',
-              'self.shaderProgID'
-              ]
-      }));
-
-      deferredRenderNode.pub.addForwardRenderMaterial = function(materialName, options) {
-        options.parentEventHandler = forwardRenderMixRedrawEventHandler;
-        return scene.pub.constructNode(materialName, options);
-      };
-    }
-
-    return deferredRenderNode;
-}});
-
-var definedDeferredPhongMaterials = false;
-
-FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
-  briefDesc: '',
-  detailedDesc: '',
-  parentNodeDesc: 'BaseDeferredRenderer',
-  optionsDesc: {
-    addPhongShadingLayer: "Adds a global Phong shading by default"
-  },
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      addPhongShadingLayer: true
-      });
-
-    if( definedDeferredPhongMaterials == false ) {
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongShader.xml');
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongInstancingExtShader.xml');
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostPhongShader.xml');
-      definedDeferredPhongMaterials = true;
-    }
-
-    options.colorBuffers = [{name: 'positions', nbChannels: 3}, {name: 'normals', nbChannels: 3}, {name: 'diffuseAndSpecularFactor', nbChannels: 4, internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8}];
-    options.addDepth = true;
-
-    var deferredRenderNode = scene.constructNode('BaseDeferredRenderer', options);
-   
-    deferredRenderNode.pub.addPhongShadingLayer = function(options) {
-      options.shadeFullScreen = true;
-      deferredRenderNode.pub.addPostPassMaterial('DeferredPostPhongMaterial', options);
-      options.shadeFullScreen = undefined;
-    };
-
-    deferredRenderNode.pub.addPrePassPhongMaterial = function(options) {
-      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongMaterial', options);
-    };
-
-    deferredRenderNode.pub.addPrePassPhongInstancingMaterial = function(options) {
-      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongInstancingExtMaterial', options);
-    };
-
-    if(options.addPhongShadingLayer) {
-      deferredRenderNode.pub.addPhongShadingLayer(options);
-    }
-
-    return deferredRenderNode;
-}});
-
 
 });
 
