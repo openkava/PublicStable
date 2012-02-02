@@ -30,6 +30,7 @@ namespace Fabric
       void setJSONNotifyCallback( void (*callback)(const char *) );
       void jsonExecAndAllocCStr( char const *data, const size_t length, const char **str );
       void freeJsonCStr( const char *str );
+      void runScheduledCallbacks();
 
     protected:
    
@@ -38,6 +39,7 @@ namespace Fabric
           void (*callbackFunc)(void *),
           void *callbackFuncUserData
           );
+      void runScheduledCallbacksNotify();
 
       void (*m_notifyCallback)(const char *);
 
@@ -48,6 +50,15 @@ namespace Fabric
       PassedStringMap m_passedStrings;
 
       RC::Handle<Client> m_client;
+
+      Util::TLSVar<bool> m_mainThreadTLS;
+      Util::Mutex m_mutex;
+      struct AsyncCallbackData
+      {
+        void (*m_callbackFunc)(void *);
+        void *m_callbackFuncUserData;
+      };
+      std::vector<AsyncCallbackData> m_bufferedAsyncUserCallbacks;
     };
   };
 };

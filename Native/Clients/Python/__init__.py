@@ -133,6 +133,9 @@ class _CLIENT( object ):
     self._route( n[ 'src' ], n[ 'cmd' ], arg )
     n = self.__notifications.task_done()
 
+  def __runScheduledCallbacks( self ):
+    self.__fabric.runScheduledCallbacks( self.__fabricClient )
+
   def __waitForClose( self ):
     if not _uncaughtException:
       while not self.__closed:
@@ -253,6 +256,11 @@ class _CLIENT( object ):
         self.vp._route( src, cmd, arg )
       elif firstSrc == 'GC':
         self.gc._route( src, cmd, arg )
+      elif firstSrc == 'ClientWrap':
+        if cmd == 'runScheduledCallbacks':
+          self.__runScheduledCallbacks()
+        else:
+          raise Exception( 'bad ClientWrap cmd: "' + cmd + '"' )
       else:
         raise Exception( 'unroutable src: ' + firstSrc )
 

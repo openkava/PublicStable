@@ -89,5 +89,15 @@ namespace Fabric
       ClientWrap *client( static_cast<ClientWrap *>( client_ ) );
       client->release();
     }
+
+    extern "C" FABRIC_CLI_EXPORT void runScheduledCallbacks( void *client_ )
+    {
+#ifdef FABRIC_PYTHON_DEBUG
+      FABRIC_LOG( "calling runScheduledCallbacks: %lx", client_ );
+#endif
+
+      ClientWrap *client( static_cast<ClientWrap *>( client_ ) );
+      client->runScheduledCallbacks();
+    }
   };
 };
