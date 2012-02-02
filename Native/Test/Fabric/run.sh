@@ -1,29 +1,8 @@
 #!/bin/sh
 . ../helpers.sh
 
-BUILD_OS=$(uname -s)
-BUILD_ARCH=$(uname -m)
-BUILD_TYPE=Debug
-
-if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
-  BUILD_OS=Windows
-  BUILD_ARCH=x86
-fi
-if [ "$BUILD_OS" = "Darwin" ]; then
-  BUILD_REAL_ARCH=$BUILD_ARCH
-  BUILD_ARCH=universal
-fi
-
-if [ "$BUILD_OS" = "Darwin" ]; then
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Library/Fabric/Exts"
-elif [ "$BUILD_OS" = "Windows" ]; then
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Exts"
-else
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts"
-fi
-
 if [ -n "$FABRIC_TEST_WITH_VALGRIND" ]; then
-  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$BUILD_OS --leak-check=full -q"
+  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$FABRIC_BUILD_OS --leak-check=full -q"
 else
   VALGRIND_CMD=
 fi
@@ -34,7 +13,7 @@ if [ "$1" = "-r" ]; then
   shift
 fi
 
-if [ "$BUILD_OS" = "Windows" ]; then
+if [ "$FABRIC_BUILD_OS" = "Windows" ]; then
   OUTPUT_FILTER="dos2unix --d2u"
 else
   OUTPUT_FILTER=cat
@@ -58,7 +37,7 @@ for f in "$@"; do
     mv $TMPFILE ${f%.js}.out
     echo "REPL $(basename $f)"
   else
-    EXPFILE=${f%.js}.$BUILD_OS.$BUILD_ARCH.out
+    EXPFILE=${f%.js}.$FABRIC_BUILD_OS.$FABRIC_BUILD_ARCH.out
     [ -f "$EXPFILE" ] || EXPFILE=${f%.js}.out
     if ! cmp $TMPFILE $EXPFILE; then
       echo "FAIL $(basename $f)"
