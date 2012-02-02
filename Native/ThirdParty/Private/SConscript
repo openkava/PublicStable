@@ -152,6 +152,14 @@ else:
   }
 Export( 'ffmpegFlags' )
 
+# opencv
+opencvFlags = {}
+opencvFlags = {
+    'CPPPATH': [os.path.join( osArchIncludeBaseDir, 'OpenCV' )],
+    'LIBS': [archLibs( 'OpenCV', ['opencv_core'] ), 'z'],
+}
+Export( 'opencvFlags' )
+
 # alembic
 alembicLibs = []
 if buildOS == 'Windows':
