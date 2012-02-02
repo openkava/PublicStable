@@ -14,31 +14,6 @@
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
 
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    
-
 <script type="text/javascript">
 
  var _gaq = _gaq || [];
@@ -58,7 +33,12 @@ s.parentNode.insertBefore(ga, s);
 
 <script type="text/javascript">
 
-$(document).ready(function() {
+
+FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
+                "SceneGraph/FABRIC.SceneGraph.Rendering",
+                "SceneGraph/FABRIC.SceneGraph.Materials",
+                "SceneGraph/FABRIC.SceneGraph.Primitives",
+                "SceneGraph/FABRIC.SceneGraph.Manipulation"], function() {
   
   // create a scene (this creates a context)
   var scene = FABRIC.SceneGraph.createScene();
@@ -114,29 +94,31 @@ $(document).ready(function() {
     }
   });
   
-  $('#frequency_slider')
-  .slider({
-    min: 0.0,
-    max: 5.0,
-    step: 0.01,
-    value: material.getFrequency()})
-  .bind('slide',
-    function(event, ui) {
-      material.setFrequency(ui.value);
-      scene.redrawAllViewports();
-  }); 
-  $('#amplitude_slider')
-  .slider({
-    min: 0.0,
-    max: 5.0,
-    step: 0.01,
-    value: material.getAmplitude()})
-  .bind('slide',
-    function(event, ui) {
-      material.setAmplitude(ui.value);
-      scene.redrawAllViewports();
-  }); 
-
+  $(document).ready(function() {
+    $('#frequency_slider')
+    .slider({
+      min: 0.0,
+      max: 5.0,
+      step: 0.01,
+      value: material.getFrequency()})
+    .bind('slide',
+      function(event, ui) {
+        material.setFrequency(ui.value);
+        scene.redrawAllViewports();
+    }); 
+    $('#amplitude_slider')
+    .slider({
+      min: 0.0,
+      max: 5.0,
+      step: 0.01,
+      value: material.getAmplitude()})
+    .bind('slide',
+      function(event, ui) {
+        material.setAmplitude(ui.value);
+        scene.redrawAllViewports();
+    }); 
+  
+  });
 });
 
 // jQuert UI Styling classes
