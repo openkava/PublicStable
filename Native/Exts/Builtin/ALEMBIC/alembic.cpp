@@ -702,8 +702,10 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePointsAttributes(
   AlembicHandle &handle,
   KL::String & identifier,
   KL::Scalar & time,
-  KL::SlicedArray<KL::Vec3>& vertices,
+  KL::SlicedArray<KL::Vec3>& positions,
+  KL::SlicedArray<KL::Quat>& orientations,
   KL::SlicedArray<KL::Scalar>& sizes,
+  KL::SlicedArray<KL::Vec3>& scales,
   KL::SlicedArray<KL::Color>& colors
   )
 {
@@ -729,24 +731,28 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePointsAttributes(
     Alembic::Abc::V3fArraySamplePtr velocitiesPtr = sample.getVelocities();
     
     // store all of the points, and do proper interpolation
-    if(positionsPtr->size() == vertices.size())
+    if(positionsPtr->size() == positions.size())
     {
-      if(sampleInfo.alpha != 0.0 && velocitiesPtr != NULL)
+      bool validVelocities = velocitiesPtr != NULL;
+      if(validVelocities)
+        validVelocities = velocitiesPtr->size() == positionsPtr->size();
+        
+      if(sampleInfo.alpha != 0.0 && validVelocities)
       {
-        for(KL::Size i=0;i<vertices.size();i++)
+        for(KL::Size i=0;i<positions.size();i++)
         {
-          vertices[i].x = positionsPtr->get()[i].x + velocitiesPtr->get()[i].x * sampleInfo.alpha;
-          vertices[i].y = positionsPtr->get()[i].y + velocitiesPtr->get()[i].y * sampleInfo.alpha;
-          vertices[i].z = positionsPtr->get()[i].z + velocitiesPtr->get()[i].z * sampleInfo.alpha;
+          positions[i].x = positionsPtr->get()[i].x + velocitiesPtr->get()[i].x * sampleInfo.alpha;
+          positions[i].y = positionsPtr->get()[i].y + velocitiesPtr->get()[i].y * sampleInfo.alpha;
+          positions[i].z = positionsPtr->get()[i].z + velocitiesPtr->get()[i].z * sampleInfo.alpha;
         }
       }
       else
       {
-        for(KL::Size i=0;i<vertices.size();i++)
+        for(KL::Size i=0;i<positions.size();i++)
         {
-          vertices[i].x = positionsPtr->get()[i].x;
-          vertices[i].y = positionsPtr->get()[i].y;
-          vertices[i].z = positionsPtr->get()[i].z;
+          positions[i].x = positionsPtr->get()[i].x;
+          positions[i].y = positionsPtr->get()[i].y;
+          positions[i].z = positionsPtr->get()[i].z;
         }
       }
     }
@@ -755,15 +761,16 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePointsAttributes(
     Alembic::AbcGeom::IFloatGeomParam widthParam = schema.getWidthsParam();
     if(widthParam)
     {
-      if(widthParam.getNumSamples() >= sampleInfo.floorIndex)
+      SampleInfo sampleInfo = getSampleInfo(time,widthParam.getTimeSampling(),widthParam.getNumSamples());
+      if(widthParam.getNumSamples() > sampleInfo.floorIndex)
       {
         Alembic::Abc::FloatArraySamplePtr ptr = widthParam.getExpandedValue(sampleInfo.floorIndex).getVals();
         if(ptr != NULL)
         {
-          if(ptr->size() == sizes.size())
+          for(KL::Size i=0;i<sizes.size();i++)
           {
-            for(KL::Size i=0;i<sizes.size();i++)
-              sizes[i] = ptr->get()[i];
+            size_t index = i >= ptr->size() ? 0 : i;
+            sizes[i] = ptr->get()[index];
           }
         }
       }
@@ -775,19 +782,69 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePointsAttributes(
       Alembic::Abc::IC4fArrayProperty prop = Alembic::Abc::IC4fArrayProperty( schema, ".color" );
       if(prop.valid())
       {
-        if(prop.getNumSamples() >= sampleInfo.floorIndex)
+        SampleInfo sampleInfo = getSampleInfo(time,prop.getTimeSampling(),prop.getNumSamples());
+        if(prop.getNumSamples() > sampleInfo.floorIndex)
         {
           Alembic::Abc::C4fArraySamplePtr ptr = prop.getValue(sampleInfo.floorIndex);
           if(ptr != NULL)
           {
-            if(ptr->size() == colors.size())
+            for(KL::Size i=0;i<colors.size();i++)
             {
-              for(KL::Size i=0;i<colors.size();i++)
+              size_t index = i >= ptr->size() ? 0 : i;
+              colors[i].r = ptr->get()[index].r;
+              colors[i].g = ptr->get()[index].g;
+              colors[i].b = ptr->get()[index].b;
+              colors[i].a = ptr->get()[index].a;
+            }
+          }
+        }
+      }
+    }
+    
+    // check if we can store the scales
+    if ( schema.getPropertyHeader( ".scale" ) != NULL )
+    {
+      Alembic::Abc::IV3fArrayProperty prop = Alembic::Abc::IV3fArrayProperty( schema, ".scale" );
+      if(prop.valid())
+      {
+        SampleInfo sampleInfo = getSampleInfo(time,prop.getTimeSampling(),prop.getNumSamples());
+        if(prop.getNumSamples() > sampleInfo.floorIndex)
+        {
+          Alembic::Abc::V3fArraySamplePtr ptr = prop.getValue(sampleInfo.floorIndex);
+          if(ptr != NULL)
+          {
+            for(KL::Size i=0;i<scales.size();i++)
+            {
+              size_t index = i >= ptr->size() ? 0 : i;
+              scales[i].x = ptr->get()[index].x;
+              scales[i].y = ptr->get()[index].y;
+              scales[i].z = ptr->get()[index].z;
+            }
+          }
+        }
+      }
+    }
+
+    // check if we can store the scales
+    if ( schema.getPropertyHeader( ".orientation" ) != NULL )
+    {
+      Alembic::Abc::IQuatfArrayProperty prop = Alembic::Abc::IQuatfArrayProperty( schema, ".orientation" );
+      if(prop.valid())
+      {
+        SampleInfo sampleInfo = getSampleInfo(time,prop.getTimeSampling(),prop.getNumSamples());
+        if(prop.getNumSamples() > sampleInfo.floorIndex)
+        {
+          Alembic::Abc::QuatfArraySamplePtr ptr = prop.getValue(sampleInfo.floorIndex);
+          if(ptr != NULL)
+          {
+            if(ptr->size() == orientations.size())
+            {
+              for(KL::Size i=0;i<orientations.size();i++)
               {
-                colors[i].r = ptr->get()[i].r;
-                colors[i].g = ptr->get()[i].g;
-                colors[i].b = ptr->get()[i].b;
-                colors[i].a = ptr->get()[i].a;
+                orientations[i].v.x = ptr->get()[i].v.x;
+                orientations[i].v.y = ptr->get()[i].v.y;
+                orientations[i].v.z = ptr->get()[i].v.z;
+                orientations[i].w = ptr->get()[i].r;
               }
             }
           }

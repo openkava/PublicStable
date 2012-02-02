@@ -88,6 +88,7 @@ public:
       av_register_all();
       sRegistered = true;
 
+#ifndef _WIN32
       printf("\n-----------------------------\n");
       printf("FabricVIDEO supported input formats: ");
       for(AVInputFormat * fmt = first_iformat; fmt != NULL; fmt = fmt->next)
@@ -98,6 +99,7 @@ public:
       for(AVOutputFormat * fmt = first_oformat; fmt != NULL; fmt = fmt->next)
         printf("%s, ",fmt->name);
       printf("\n-----------------------------\n\n");
+#endif
     }
     
     mFormatCtx = NULL;
