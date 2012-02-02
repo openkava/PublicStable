@@ -4,7 +4,7 @@
 
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Clients/Python/Client.h>
+#include <Fabric/Clients/Python/ClientWrap.h>
 #include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Build.h>
 
@@ -28,14 +28,14 @@ namespace Fabric
 
     extern "C" FABRIC_CLI_EXPORT void createClient( void **ptr )
     {
-      RC::Handle<Client> client = Client::Create();
+      ClientWrap *client = new ClientWrap();
 
 #ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling createClient: %lx", client.ptr());
+      FABRIC_LOG( "calling createClient: %lx", client);
 #endif
 
       client->retain();
-      *ptr = client.ptr();
+      *ptr = client;
     }
     
     extern "C" FABRIC_CLI_EXPORT void jsonExec( void *client_, char const *data, size_t length, const char **result )
@@ -44,7 +44,7 @@ namespace Fabric
       FABRIC_LOG( "calling jsonExec: %lx", client_ );
 #endif
 
-      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
+      ClientWrap *client( static_cast<ClientWrap *>( client_ ) );
 
 #ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "sending to jsonExec: %s", data );
@@ -63,7 +63,7 @@ namespace Fabric
       FABRIC_LOG( "calling freeString: %lx (%lx)", client_, string );
 #endif
 
-      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
+      ClientWrap *client( static_cast<ClientWrap *>( client_ ) );
       client->freeJsonCStr( (const char *)string );
     }
 
@@ -76,7 +76,7 @@ namespace Fabric
       FABRIC_LOG( "calling setJSONNotifyCallback: %lx", client_ );
 #endif
 
-      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
+      ClientWrap *client( static_cast<ClientWrap *>( client_ ) );
       client->setJSONNotifyCallback( callback );
     }
 
@@ -86,7 +86,7 @@ namespace Fabric
       FABRIC_LOG( "calling close: %lx", client_ );
 #endif
 
-      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
+      ClientWrap *client( static_cast<ClientWrap *>( client_ ) );
       client->release();
     }
   };
