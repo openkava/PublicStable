@@ -75,7 +75,6 @@ namespace Fabric
       : DG::Client( context )
       , m_closeMutex( "Python Client" )
       , m_closed( false )
-      , m_scheduleAsyncMutex( "PyClient Schedule Async" )
     {
     }
 
@@ -123,20 +122,6 @@ namespace Fabric
       FABRIC_ASSERT( i != m_passedStrings.end() );
       m_passedStrings.erase( i );
       delete i->second;
-    }
-
-    void Client::close()
-    {
-      Util::Mutex::Lock lock( m_closeMutex );
-      m_closed = true;
-      m_closeCond.broadcast();
-    }
-
-    void Client::waitForClose()
-    {
-      Util::Mutex::Lock lock( m_closeMutex );
-      if ( !m_closed )
-        m_closeCond.wait( m_closeMutex );
     }
 
     void Client::ScheduleAsyncUserCallback(
