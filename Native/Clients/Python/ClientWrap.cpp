@@ -26,6 +26,7 @@ namespace Fabric
   namespace Python
   {
     ClientWrap::ClientWrap()
+      : m_mutex( "Python ClientWrap" )
     {
       std::vector<std::string> pluginPaths;
 #if defined(FABRIC_OS_MACOSX)
@@ -56,7 +57,7 @@ namespace Fabric
       CG::CompileOptions compileOptions;
       compileOptions.setGuarded( false );
 
-      RC::Handle<IO::Manager> ioManager = IOManager::Create( &ClientWrap::ScheduleAsyncUserCallback, NULL );
+      RC::Handle<IO::Manager> ioManager = IOManager::Create( &ClientWrap::ScheduleAsyncUserCallback, this );
       RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, compileOptions, true, true );
 #if defined(FABRIC_MODULE_OPENCL)
       OCL::registerTypes( dgContext->getRTManager() );
@@ -65,6 +66,8 @@ namespace Fabric
       Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, dgContext->getCGManager(), DG::Context::GetCallbackStruct() );
 
       m_client = Client::Create( dgContext, this );
+
+      m_mainThreadTLS = true;
     }
 
     ClientWrap::~ClientWrap()
@@ -123,7 +126,35 @@ namespace Fabric
         void *callbackFuncUserData
         )
     {
-      (*callbackFunc)(callbackFuncUserData);
+      ClientWrap *clientWrap = static_cast<ClientWrap *>( scheduleUserData );
+      if ( clientWrap->m_mainThreadTLS )
+      {
+        // FIXME why does IO need to be run directly?
+        callbackFunc(callbackFuncUserData);
+      }
+      else
+      {
+        Util::Mutex::Lock lock( clientWrap->m_mutex );
+        AsyncCallbackData cbData;
+        cbData.m_callbackFunc = callbackFunc;
+        cbData.m_callbackFuncUserData = callbackFuncUserData;
+        clientWrap->m_bufferedAsyncUserCallbacks.push_back( cbData );
+        clientWrap->runScheduledCallbacksNotify();
+      }
+    }
+
+    void ClientWrap::runScheduledCallbacksNotify()
+    {
+      // FIXME do some more sensible
+      notify( Util::SimpleString("[{\"src\":[\"ClientWrap\"],\"cmd\":\"runScheduledCallbacks\"}]") );
+    }
+
+    void ClientWrap::runScheduledCallbacks()
+    {
+      Util::Mutex::Lock lock( m_mutex );
+      for ( std::vector<AsyncCallbackData>::const_iterator it=m_bufferedAsyncUserCallbacks.begin(); it!=m_bufferedAsyncUserCallbacks.end(); ++it )
+        (*(it->m_callbackFunc))( it->m_callbackFuncUserData );
+      m_bufferedAsyncUserCallbacks.clear();
     }
   }
 };
