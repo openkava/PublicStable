@@ -21,8 +21,8 @@ FABRIC.RT.RotationOrder = function(arg) {
     if (this.order < 0 || this.order > 5)
       throw'Invalid rotation order';
     }
-  else if (typeof order == 'string') {
-    var o = toLowerCase(arg);
+  else if (typeof arg == 'string') {
+    var o = arg.toLowerCase();
     if (o == 'xyz') this.order = 0;
       else if (o == 'yzx') this.order = 1;
       else if (o == 'zxy') this.order = 2;
@@ -230,17 +230,17 @@ FABRIC.RT.Euler.prototype = {
     var result;
 
     if (this.ro.isXYZ())
-      result = Rz.multiply(Ry.multiply(Rx));
-    else if (this.ro.isYZX())
-      result = Rx.multiply(Rz.multiply(Ry));
-    else if (this.ro.isZXY())
-      result = Ry.multiply(Rx.multiply(Rz));
-    else if (this.ro.isXZY())
-      result = Ry.multiply(Rz.multiply(Rx));
-    else if (this.ro.isZYX())
       result = Rx.multiply(Ry.multiply(Rz));
-    else if (this.ro.isYXZ())
+    else if (this.ro.isYZX())
+      result = Ry.multiply(Rz.multiply(Rx));
+    else if (this.ro.isZXY())
       result = Rz.multiply(Rx.multiply(Ry));
+    else if (this.ro.isXZY())
+      result = Rx.multiply(Rz.multiply(Ry));
+    else if (this.ro.isZYX())
+      result = Rz.multiply(Ry.multiply(Rx));
+    else if (this.ro.isYXZ())
+      result = Ry.multiply(Rx.multiply(Rz));
     return result;
   },
 
