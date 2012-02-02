@@ -24,7 +24,7 @@ FABRIC.RT.Quat = function() {
       FABRIC.RT.isScalar(arguments[1]) && 
       FABRIC.RT.isScalar(arguments[2]) && 
       FABRIC.RT.isScalar(arguments[3]) ) {
-    this.v = new Vec3(arguments[0], arguments[1], arguments[2]);
+    this.v = new FABRIC.RT.Vec3(arguments[0], arguments[1], arguments[2]);
     this.w = arguments[3];
   }
   else if (arguments.length == 2 &&
@@ -44,7 +44,7 @@ FABRIC.RT.Quat = function() {
     this.w = arguments[0].w;
   }
   else if (arguments.length == 0) {
-    this.v = new Vec3(0.0,0.0,0.0);
+    this.v = new FABRIC.RT.Vec3(0.0,0.0,0.0);
     this.w = 1.0;
   }
   else throw'Quat constructor: invalid arguments';
@@ -64,7 +64,7 @@ FABRIC.RT.Quat.prototype = {
   },
 
   setFromEuler: function(e) {
-    var ordered = new Vec3();
+    var ordered = new FABRIC.RT.Vec3();
     if (e.ro.isZYX()) {
       ordered.set(e.z,e.y,e.x);
     }
@@ -176,7 +176,7 @@ FABRIC.RT.Quat.prototype = {
         // the vectors pointed in opposite directions OR they are not unit vectors.
         // creating the quaterion is ambiguous (many answers)
         //Take any orthogonal vector as an intermediate step
-        var ortho = new Vec3(sourceDirVec.y, sourceDirVec.z, sourceDirVec.x).cross(sourceDirVec).unit();
+        var ortho = new FABRIC.RT.Vec3(sourceDirVec.y, sourceDirVec.z, sourceDirVec.x).cross(sourceDirVec).unit();
         //Important: arbitraryIfAmbiguous !== true, else it could recurse infinitely if sourceDirVec or destDirVec was (0,0,0)
         var q1 = new FABRIC.RT.Quat(), q2 = new FABRIC.RT.Quat();
         q1.setFrom2Vectors(sourceDirVec, ortho);
@@ -296,7 +296,7 @@ FABRIC.RT.Quat.prototype = {
   },
 
   getXaxis: function() {
-    var temp = new Vec3();
+    var temp = new FABRIC.RT.Vec3();
     var xy = this.v.x * this.v.y; var xz = this.v.x * this.v.z;
     var yy = this.v.y * this.v.y; var yw = this.v.y * this.w;
     var zz = this.v.z * this.v.z; var zw = this.v.z * this.w;
@@ -308,7 +308,7 @@ FABRIC.RT.Quat.prototype = {
   },
 
   getYaxis: function() {
-    var temp = new Vec3();
+    var temp = new FABRIC.RT.Vec3();
     var xx = this.v.x * this.v.x; var xy = this.v.x * this.v.y; var xw = this.v.x * this.w;
     var yz = this.v.y * this.v.z;
     var zz = this.v.z * this.v.z; var zw = this.v.z * this.w;
@@ -320,7 +320,7 @@ FABRIC.RT.Quat.prototype = {
   },
 
   getZaxis: function() {
-    var temp = new Vec3();
+    var temp = new FABRIC.RT.Vec3();
     var xx = this.v.x * this.v.x; var xz = this.v.x * this.v.z; var xw = this.v.x * this.w;
     var yy = this.v.y * this.v.y; var yz = this.v.y * this.v.z; var yw = this.v.y * this.w;
 
