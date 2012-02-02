@@ -16,11 +16,11 @@
 
     <script type="text/javascript">
 
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                "SceneGraph/FABRIC.SceneGraph.Geometry",
-                "SceneGraph/FABRIC.SceneGraph.Materials",
-                "SceneGraph/FABRIC.SceneGraph.Manipulation",
-                "SceneGraph/Parsers/parseCollada"], function() {
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Parsers/parseCollada"], function() {
  
 FABRIC.SceneGraph.registerNodeType('Hair', {
   factoryFn: function(options, scene) {
@@ -135,7 +135,7 @@ FABRIC.SceneGraph.registerNodeType('Hair', {
     hairUniformsDGNode.addMember('skinningXfos', 'Xfo[]');
     hairUniformsDGNode.bindings.append(scene.constructOperator({
         operatorName: 'calcSkinningXfos',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcSkinningXfos.kl',
+        srcFile: 'FABRIC_ROOT/SG/KL/calcSkinningXfos.kl',
         entryFunctionName: 'calcSkinningXfos',
         parameterLayout: ['rig.pose', 'skeleton.bones', 'self.skinningXfos']
       }));

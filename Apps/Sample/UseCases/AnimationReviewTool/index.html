@@ -39,12 +39,12 @@
     
     
     
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                "SceneGraph/FABRIC.SceneGraph.Geometry",
-                "SceneGraph/FABRIC.SceneGraph.Materials",
-                "SceneGraph/FABRIC.SceneGraph.Manipulation",
-                "SceneGraph/FABRIC.SceneGraph.Alembic",
-                "SceneGraph/FABRIC.SceneGraph.Rendering"], function() {
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Alembic",
+                "SG/Rendering"], function() {
     
 FABRIC.SceneGraph.registerNodeType('UVViewport', {
   factoryFn: function(options, scene) {
@@ -66,7 +66,7 @@ FABRIC.SceneGraph.registerNodeType('UVViewport', {
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'getRGBAPixelsFromRenderTarget',
       entryFunctionName: 'getRGBAPixelsFromRenderTarget',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/renderTarget.kl',
       parameterLayout: [
         'self.queryToggle',
         'self.renderTarget',
@@ -83,7 +83,7 @@ FABRIC.SceneGraph.registerNodeType('UVViewport', {
     redrawEventHandler.postDescendBindings.insert(scene.constructOperator({
       operatorName: 'getAllRGBAPixelsFromRenderTarget',
       entryFunctionName: 'getAllRGBAPixelsFromRenderTarget',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/renderTarget.kl',
       parameterLayout: [
         'data.renderTarget',
         'data.allPixels',
@@ -254,7 +254,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         ],
         preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         entryFunctionName: 'sliceImageRGBA',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
+        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
       }));
       texturepixelsdgnode.bindings.append(scene.constructOperator({
         operatorName: 'clearImageRGBA',
@@ -263,7 +263,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         ],
         preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         entryFunctionName: 'clearImageRGBA',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
+        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
       }));
     }
     
@@ -357,7 +357,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     // create an operator to load the uniform to the GPU    
     instanceNode.getRedrawEventHandler().preDescendBindings.append(scene.constructOperator({
       operatorName: 'loadColorBlend',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/loadUniforms.kl',
       preProcessorDefinitions: {
         ATTRIBUTE_NAME: 'u_colorBlend',
         ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('colorBlend'),
@@ -454,7 +454,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
 
     eventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'encodeImage',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/encodeImage.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/encodeImage.kl',
       entryFunctionName: 'encodeImageLDRSliced',
       parameterLayout: [
             'uniforms.width',

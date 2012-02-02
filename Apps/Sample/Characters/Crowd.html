@@ -15,22 +15,22 @@
     
 <script type="text/javascript">
 
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                "SceneGraph/FABRIC.SceneGraph.Geometry",
-                "SceneGraph/FABRIC.SceneGraph.Materials",
-                "SceneGraph/FABRIC.SceneGraph.Manipulation",
-                "SceneGraph/FABRIC.SceneGraph.Characters",
-                "SceneGraph/FABRIC.SceneGraph.CharacterLocomotion",
-                "SceneGraph/FABRIC.SceneGraph.Crowds",
-                "SceneGraph/FABRIC.SceneGraph.Bullet",
-                "SceneGraph/FABRIC.SceneGraph.Persistence",
-                "SceneGraph/RT/LinearKeyframe",
-                "SceneGraph/RT/BezierKeyframe"], function() {
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Characters",
+                "SG/CharacterLocomotion",
+                "SG/Crowds",
+                "SG/Bullet",
+                "SG/Persistence",
+                "RT/LinearKeyframe",
+                "RT/BezierKeyframe"], function() {
 
 FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
 
 
-FABRIC.SceneGraph.defineEffectFromFile('PhongTexturedSkinnedInstancesMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongTexturedSkinnedInstancesShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('PhongTexturedSkinnedInstancesMaterial', 'FABRIC_ROOT/SG/Shaders/PhongTexturedSkinnedInstancesShader.xml');
 
 
 $(document).ready(function() {

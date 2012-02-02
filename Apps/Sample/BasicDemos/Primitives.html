@@ -19,11 +19,11 @@
     <script type="text/javascript">
     
   
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                 "SceneGraph/FABRIC.SceneGraph.Lights",
-                 "SceneGraph/FABRIC.SceneGraph.Primitives",
-                 "SceneGraph/FABRIC.SceneGraph.Materials",
-                 "SceneGraph/FABRIC.SceneGraph.Manipulation"], function(Color, SceneGraph) {
+FABRIC.require(["SG/SceneGraph",
+                 "SG/Lights",
+                 "SG/Primitives",
+                 "SG/Materials",
+                 "SG/Manipulation"], function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,

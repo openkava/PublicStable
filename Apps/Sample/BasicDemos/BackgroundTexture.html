@@ -21,9 +21,9 @@
 
 $(document).ready(function() {
 
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-		"SceneGraph/FABRIC.SceneGraph.Rendering",
-		"SceneGraph/FABRIC.SceneGraph.Images"], function() {
+FABRIC.require(["SG/SceneGraph",
+		"SG/Rendering",
+		"SG/Images"], function() {
 
   var scene = FABRIC.SceneGraph.createScene({ preDraw:false, postDraw:false });
   var viewport = scene.constructNode('Viewport', {

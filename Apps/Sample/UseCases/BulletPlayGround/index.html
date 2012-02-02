@@ -17,17 +17,17 @@
 
   <script type="text/javascript">
 
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                "SceneGraph/FABRIC.SceneGraph.Geometry",
-                "SceneGraph/FABRIC.SceneGraph.Materials",
-                "SceneGraph/FABRIC.SceneGraph.Manipulation",
-                "SceneGraph/FABRIC.SceneGraph.Bullet",
-                "SceneGraph/FABRIC.SceneGraph.Undo",
-                "SceneGraph/FABRIC.SceneGraph.Selection",
-                "SceneGraph/FABRIC.SceneGraph.Persistence",
-                "SceneGraph/FABRIC.SceneGraph.WebSocket",
-                "SceneGraph/FABRIC.SceneGraph.DefferedRendering",
-                "SceneGraph/Parsers/parseOBJ"], function() {
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Bullet",
+                "SG/Undo",
+                "SG/Selection",
+                "SG/Persistence",
+                "SG/WebSocket",
+                "SG/DefferedRendering",
+                "SG/Parsers/parseOBJ"], function() {
     
   function getUrlVars() {
     var vars = {};
@@ -81,9 +81,9 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
     }});
 
   // load out custom shaders
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPreShadowCastingToonShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPreGroundPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostToonShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreShadowCastingToonShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreGroundPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostToonShader.xml');
 
 // register our custom renderer
 FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
