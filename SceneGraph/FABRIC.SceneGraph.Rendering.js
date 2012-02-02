@@ -6,7 +6,8 @@
 FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/FABRIC.SceneGraph.Geometry",
                "SceneGraph/FABRIC.SceneGraph.Kinematics",
-               "SceneGraph/FABRIC.SceneGraph.Materials"], function() {
+               "SceneGraph/FABRIC.SceneGraph.Materials",
+               "SceneGraph/RT/OGLRenderTarget"], function() {
 
   
 /**

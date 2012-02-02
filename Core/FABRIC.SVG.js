@@ -3,9 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-define(["FABRIC"], function(FABRIC) {
-
-  var SVG = {};
+FABRIC.SVG = {};
 
 /**
  * Constructor to create the root element for the
@@ -2308,5 +2306,3 @@ function clone_obj(obj, deepclone) {
   return svgRoot;
 };
 
-  return SVG;
-});

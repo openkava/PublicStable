@@ -8,6 +8,8 @@ FABRIC.define(["SceneGraph/FABRIC.SceneGraph.Geometry",
                "SceneGraph/FABRIC.SceneGraph.Materials",
                "SceneGraph/FABRIC.SceneGraph.Animation",
                "SceneGraph/FABRIC.SceneGraph.Characters",
+               "SceneGraph/RT/Vec4",
+               "SceneGraph/RT/Xfo",
                "SceneGraph/RT/Mat44",
                "SceneGraph/RT/LinearKeyframe"], function() {
 
@@ -1161,10 +1163,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     // The first is the JOINT, and then 2nd the WEIGHT
     var makeVec4 = function(data) {
       // The following is a bit of a hack. Not sure if we can combine new and apply.
-      if (data.length === 0) return new Vec4();
-      if (data.length === 1) return new Vec4(data[0], 0, 0, 0);
-      if (data.length === 2) return new Vec4(data[0], data[1], 0, 0);
-      if (data.length === 3) return new Vec4(data[0], data[1], data[2], 0);
+      if (data.length === 0) return new FABRIC.RT.Vec4();
+      if (data.length === 1) return new FABRIC.RT.Vec4(data[0], 0, 0, 0);
+      if (data.length === 2) return new FABRIC.RT.Vec4(data[0], data[1], 0, 0);
+      if (data.length === 3) return new FABRIC.RT.Vec4(data[0], data[1], data[2], 0);
       return new FABRIC.RT.Vec4(data[0], data[1], data[2], data[3]);
     };
     
