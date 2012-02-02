@@ -6,7 +6,9 @@
 FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/FABRIC.SceneGraph.Geometry",
                "SceneGraph/FABRIC.SceneGraph.Images",
-               "SceneGraph/FABRIC.SceneGraph.Lights"], function() {
+               "SceneGraph/FABRIC.SceneGraph.Lights",
+               "SceneGraph/RT/RGBA",
+               "SceneGraph/RT/Color"], function() {
 
  // Table storing all of the known shader attributes and their types.
   var getShaderParamID = ( function(){
