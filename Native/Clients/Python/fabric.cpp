@@ -80,24 +80,13 @@ namespace Fabric
       client->setJSONNotifyCallback( callback );
     }
 
-    extern "C" FABRIC_CLI_EXPORT void close( void *client_ )
+    extern "C" FABRIC_CLI_EXPORT void freeClient( void *client_ )
     {
 #ifdef FABRIC_PYTHON_DEBUG
       FABRIC_LOG( "calling close: %lx", client_ );
 #endif
 
       RC::Handle<Client> client( static_cast<Client*>( client_ ) );
-      client->close();
-    }
-
-    extern "C" FABRIC_CLI_EXPORT void waitForClose( void *client_ )
-    {
-#ifdef FABRIC_PYTHON_DEBUG
-      FABRIC_LOG( "calling waitForClose: %lx", client_ );
-#endif
-
-      RC::Handle<Client> client( static_cast<Client*>( client_ ) );
-      client->waitForClose();
       client->release();
     }
   };

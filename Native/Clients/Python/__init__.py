@@ -4,6 +4,7 @@ import json
 import ctypes
 import collections
 import atexit
+import Queue
 
 # FIXME Windows
 if os.name == 'posix':
@@ -91,6 +92,7 @@ class _CLIENT( object ):
   def __init__( self, fabric ):
     self.__fabric = fabric
     self.__fabricClient = self.__createClient()
+
     self.__queuedCommands = []
     self.__queuedUnwinds = []
     self.__queuedCallbacks = []
@@ -105,17 +107,36 @@ class _CLIENT( object ):
     self.io = _IO( self )
     self.build = _BUILD( self )
 
+    self.__closed = False
     self.__state = {}
 
+    self.__notifications = Queue.Queue()
+
+    # declare all class variables needed in the notifyCallback above
+    # here as the closure remembers the current class members immediately
     self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
+    self.__processAllNotifications()
 
     # prevent exit until all our threads complete
     atexit.register( self.__waitForClose )
 
+  def __processAllNotifications( self ):
+    while not self.__notifications.empty():
+      self.__processOneNotification()
+
+  def __processOneNotification( self ):
+    n = self.__notifications.get()
+    arg = None
+    if 'arg' in n:
+      arg = n[ 'arg' ]
+    self._route( n[ 'src' ], n[ 'cmd' ], arg )
+    n = self.__notifications.task_done()
+
   def __waitForClose( self ):
     if not _uncaughtException:
-      self.__fabric.waitForClose( self.__fabricClient )
+      while not self.__closed:
+        self.__processOneNotification()
 
   def __createClient( self ):
     result = ctypes.c_void_p()
@@ -135,7 +156,8 @@ class _CLIENT( object ):
     return result
 
   def close( self ):
-    self.__fabric.close( self.__fabricClient )
+    self.__closed = True
+    self.__fabric.freeClient( self.__fabricClient )
 
   def getLicenses( self ):
     return self.__state.licenses;
@@ -185,6 +207,7 @@ class _CLIENT( object ):
         callback( result[ 'result' ] )
 
     self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
+    self.__processAllNotifications()
 
   def _handleStateNotification( self, newState ):
     self.__state = {}
@@ -232,7 +255,7 @@ class _CLIENT( object ):
         self.gc._route( src, cmd, arg )
       else:
         raise Exception( 'unroutable src: ' + firstSrc )
-        
+
   def __notifyCallback( self, jsonEncodedNotifications ):
     try:
       notifications = json.loads( jsonEncodedNotifications )
@@ -240,13 +263,7 @@ class _CLIENT( object ):
       raise Exception( 'unable to parse JSON notifications' )
 
     for i in range( 0, len( notifications ) ):
-      n = notifications[ i ]
-
-      arg = None
-      if 'arg' in n:
-        arg = n[ 'arg' ]
-
-      self._route( n[ 'src' ], n[ 'cmd' ], arg )
+      self.__notifications.put( notifications[i] )
 
   def __getNotifyCallback( self ):
     # use a closure here so that 'self' is maintained without us

@@ -28,15 +28,12 @@ namespace Fabric
 
       void jsonExecAndAllocCStr( char const *data, const size_t length, const char **str );
       void freeJsonCStr( const char *str );
-      void close();
-      void waitForClose();
 
     protected:
    
       Client( RC::Handle<DG::Context> const &context );
       virtual ~Client();
 
-      Util::Mutex m_scheduleAsyncMutex;
       static void ScheduleAsyncUserCallback(
           void *scheduleUserData,
           void (*callbackFunc)(void *),
