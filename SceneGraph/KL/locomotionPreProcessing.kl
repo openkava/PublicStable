@@ -156,7 +156,6 @@ function Boolean detectFootSteps(
   timeRange.y = lastFootMidPlant;
   
   report("Clamped timerange:"+timeRange);
-  report("leadingFoot:"+leadingFoot);
   report("stationaryStart:"+stationaryStart);
   
   for(Integer i=0; i < footPrints.size; i++){
@@ -200,8 +199,6 @@ function Boolean detectFootSteps(
       footStepTracks[i].footSteps.push(step);
   //  }
   }
-  report("----");
-  report("footStepTracks:"+footStepTracks);
   
   
   return true;
@@ -299,7 +296,7 @@ function Boolean generateCOMTracks(
         poseVariables.scalarValues[com.parameterVarIds[1]] = acceleration;
         poseVariables.scalarValues[com.parameterVarIds[2]] = gradient;
         poseVariables.scalarValues[com.parameterVarIds[3]] = direction;
-        report(" t:"+keyT + " timestep:"+timestep + " smoothed speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
+      //  report(" t:"+keyT + " timestep:"+timestep + " smoothed speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
         comParamBindings.setTrackValues(keyT, poseVariables, trackSet);
         
         
@@ -310,15 +307,6 @@ function Boolean generateCOMTracks(
     prevtime = time;
   }
   
-  report("com.parameterVarIds:"+com.parameterVarIds);
-  for(Integer i=0; i < com.parameterVarIds.size; i++){
-    for(Integer j=0; j < bindings.scalarBindings.size; j++){
-      if(bindings.scalarBindings[j].varId == com.parameterVarIds[i]){
-        report("---------:"+i);
-        report(trackSet.tracks[bindings.scalarBindings[j].trackIds[0]]);
-      }
-    }
-  }
   
   return true;
 }
@@ -444,7 +432,6 @@ function Boolean modifyHubAndFootTracks(
       }
       
       Xfo footMotionDelta = footParentSpaceXfo.inverse() * footXfo;
-      
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
       poseVariables.xfoValues[leg.ikGoalXfoId] = footMotionDelta;
     }
@@ -488,7 +475,7 @@ function Boolean addLocomotionMarkers(
       FootStep step = footStepTracks[i].footSteps[markerStepId];
       Scalar t = step.prevStepMidPlantTime;
       marker.time = t;
-      report("time:"+t + " stepId:"+markerStepId);
+    //  report("time:"+t + " stepId:"+markerStepId);
       
       comParamBindings.evaluateTracks(step.liftTime, poseVariables, trackSet, currKeys);
     
@@ -506,7 +493,7 @@ function Boolean addLocomotionMarkers(
           marker.stepIds[k] = markerStepId;
         }
         else{
-          report("searching leg:"+k + " t:"+t + " steps:"+footStepTracks[k].footSteps.size);
+        //  report("searching leg:"+k + " t:"+t + " steps:"+footStepTracks[k].footSteps.size);
           // Plant times dictate stepId increments, we must find the step that
           // plants after the current foot lift. 
           for(Integer l=0; l<footStepTracks[k].footSteps.size; l++){
@@ -604,6 +591,7 @@ operator locomotionPreProcessing(
   Integer currKeys[];
   trackSet.calcTimeRange();
   Vec2 timeRange = trackSet.getTimeRange();
+  Vec2 clampedTimeRange = timeRange;
   report("timeRange:"+timeRange);
   Integer numSamples = Integer((timeRange.y - timeRange.x) / sampleFrequency);
   
@@ -649,7 +637,7 @@ operator locomotionPreProcessing(
   Integer leadingFoot = 0;
   if(detectFootSteps(
     legs,
-    timeRange,
+    clampedTimeRange,
     leadingFoot,
     numSamples,
     movementThreshold,
@@ -713,7 +701,7 @@ operator locomotionPreProcessing(
       debugGeometry
     );
     
-    trackSet.timeRange = timeRange;
+    trackSet.timeRange = clampedTimeRange;
   }
   else{
     report("Stationary Sequence");

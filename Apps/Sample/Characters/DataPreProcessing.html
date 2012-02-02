@@ -270,38 +270,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       }));
     
     break;
-  /*
-  case 'walker':
-    assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
-  
-    fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
-    rigInstances.rig = assetNodes.Walker_ncl1_1CharacterInstance;
-    
-    skeletonNode = fkrigNode.getSkeletonNode();
-    var ikrigNode = scene.constructNode('CharacterRig', {
-      name: 'IKRig',
-      skeletonNode: skeletonNode
-    });
-    
-    ikrigNode.addSolver('Hip', 'HubSolver', { hubs: [{ bone:['WalkerBody'] }] } );
-    ikrigNode.addSolver('Limbs', 'InsectLegSolver', {
-      limbs: [ { bones:['WalkerLFLeg1', 'WalkerLFLeg2', 'WalkerLFLeg3'] },
-               { bones:['WalkerRFLeg1', 'WalkerRFLeg2', 'WalkerRFLeg3'] },
-               { bones:['WalkerLRLeg1', 'WalkerLRLeg2', 'WalkerLRLeg3'] },
-               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ]
-    });
-    
-
-    fkrigNode.setName("FKRig");
-    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
-    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
-    
-    rigInstances.rig.setRigNode(ikrigNode);
-    
-    loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
-  
-    break;
-  */
   case 'centipede':
     assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
   
@@ -379,66 +347,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
     
     break;
-  /*
-  case 'marama':
-    assetNodes = scene.importAssetFile('Assets/Marama3.DAE', { scaleFactor: scaleFactor } );
-  
-    fkrigNode = assetNodes.MaramaMeshCharacterRig;
-    rigInstances.rig = assetNodes.MaramaMeshCharacterInstance;
-    
-    skeletonNode = fkrigNode.getSkeletonNode();
-    var ikrigNode = scene.constructNode('CharacterRig', {
-      name: 'IKRig',
-      skeletonNode: skeletonNode
-    });
-    
-    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['MaramaPelvis'] }] } );
-    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
-      limbs: [ { bones:['MaramaLThigh', 'MaramaLCalf'], ankle:'MaramaLAnkle' },
-               { bones:['MaramaRThigh', 'MaramaRCalf'], ankle:'MaramaRAnkle' }]
-    });
-    
-    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
-      bones: {
-        bones:['MaramaLToe', 'MaramaRToe' ]
-      }
-    });
-    
-    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
-      bones: {
-        bones:['MaramaSpine1', 'MaramaSpine2', 'MaramaSpine3', 'MaramaRibcage', 'MaramaNeck', 'MaramaHead',
-               'MaramaLCollarbone', 'MaramaLUpperArm', 'MaramaLForeArm2', 'MaramaLForeArm2_ncl1_1',
-               'MaramaRCollarbone', 'MaramaRUpperArm', 'MaramaRForeArm2', 'MaramaRForeArm2_ncl1_1',
-               'MaramaLPalm', 'MaramaLThumb1', 'MaramaLThumb2' , 'MaramaLIndex1', 'MaramaLIndex2', 'MaramaLFingers1' , 'MaramaLFingers2',
-               'MaramaRPalm', 'MaramaRThumb1', 'MaramaRThumb2' , 'MaramaRIndex1', 'MaramaRIndex2', 'MaramaRFingers1' , 'MaramaRFingers2' ]
-      }
-    });
-    ikrigNode.addSolver('COM', 'COMSolver', {
-      bone: 'MaramaCOM'
-    });
-
-    fkrigNode.setName("FKRig");
-    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
-    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
-    
-    rigInstances.rig.setRigNode(ikrigNode);
-    
-    loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama3_Run.DAE', fkrigNode);
-    
-    loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
-
-    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
-   
-    loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
-    
-    break;
-  */
   case 'CMan0005':
     scaleFactor = 0.05;
     assetNodes = scene.importAssetFile('Assets/CMan0005.DAE', { scaleFactor: scaleFactor } );
@@ -605,7 +513,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     loadAnimationFile('Assets/USWolf_Idle.DAE', fkrigNode);
     loadAnimationFile('Assets/USWolf_Walk.DAE', fkrigNode);
     loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode);
-
     break;
   }
   
@@ -730,7 +637,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var keyframeTrackNode = assetNodes.polymshAnimationTrack;
   $('#curveEditor').button()
     .click(function() {
-      libraryLocomotionAnimations.openCurveEditor( 0, false );
+      libraryLocomotionAnimations.openCurveEditor( {trackSetId:0, drawKeys:false } );
     });
     
 
@@ -810,12 +717,9 @@ $(document).ready(function() {
               <input type="text" id="timeValue" style="border:0; font-weight:bold;" />
               <div id='globalTime' style="margin-bottom:10px;"></div>
               
-              
               <button id="writeRigData" style="margin-top:3px;">Write Character Definition</button>
-                
-              <!--
               <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
-              -->
+              
             </div><!--content-->
           </div><!--box-->
 
@@ -828,6 +732,7 @@ $(document).ready(function() {
               </ol>
             </div>
           </div><!--box-->
+          
           
         </div><!--sidebar-->
       </div> <!--editor-->
