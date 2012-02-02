@@ -19,7 +19,7 @@ namespace Fabric
       {
         if ( result.length() > 1 )
           result += ",";
-        result += m_memberImpl->descData( getMemberData( data, i ) );
+        result += m_memberImpl->descData( getImmutableMemberData( data, i ) );
       }
       if ( numMembers > numMembersToDisplay )
         result += "...";
@@ -36,12 +36,12 @@ namespace Fabric
       else if( lhsSize )
       {
         if( m_memberIsShallow )
-          return memcmp( getMemberData( lhs, 0 ), getMemberData( rhs, 0 ), lhsSize * m_memberImpl->getAllocSize() ) == 0;
+          return memcmp( getImmutableMemberData( lhs, 0 ), getImmutableMemberData( rhs, 0 ), lhsSize * m_memberImpl->getAllocSize() ) == 0;
         else
         {
           for ( size_t i=0; i<lhsSize; ++i )
           {
-            if( !m_memberImpl->equalsData( getMemberData( lhs, i ), getMemberData( rhs, i ) ) )
+            if( !m_memberImpl->equalsData( getImmutableMemberData( lhs, i ), getImmutableMemberData( rhs, i ) ) )
               return false;
           }
           return true;

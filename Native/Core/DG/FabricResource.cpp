@@ -54,14 +54,14 @@ namespace Fabric
 
     size_t getFabricResourceDataSize( RC::ConstHandle<RT::StructDesc> const &desc, RC::ConstHandle<RT::VariableArrayDesc> const &dataMemberDesc, const void* resource )
     {
-      return dataMemberDesc->getImpl()->getNumMembers( desc->getMemberData( resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
+      return dataMemberDesc->getImpl()->getNumMembers( desc->getImmutableMemberData( resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
     }
 
     const void *getFabricResourceDataPtr( RC::ConstHandle<RT::StructDesc> const &desc, RC::ConstHandle<RT::VariableArrayDesc> const &dataMemberDesc, const void* resource )
     {
       // [JeromeCG 20110831] Question: is there a cleaner way to access the .data() like opaque adapters?
       size_t dataSize = getFabricResourceDataSize( desc, dataMemberDesc, resource );
-      return dataSize == 0 ? NULL : dataMemberDesc->getImpl()->getMemberData( desc->getMemberData( resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), 0 );
+      return dataSize == 0 ? NULL : dataMemberDesc->getImpl()->getImmutableMemberData( desc->getImmutableMemberData( resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), 0 );
     }
 
     FabricResourceWrapper::FabricResourceWrapper( RC::ConstHandle<RT::Manager> rtManager, void *resourceToAttach )
@@ -97,17 +97,17 @@ namespace Fabric
 
     bool FabricResourceWrapper::isDataEqualTo( const void *other ) const
     {
-      return m_dataMemberDesc->equalsData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX), m_desc->getMemberData( other, FABRIC_RESOURCE_DATA_MEMBER_INDEX) );
+      return m_dataMemberDesc->equalsData( m_desc->getImmutableMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX), m_desc->getImmutableMemberData( other, FABRIC_RESOURCE_DATA_MEMBER_INDEX) );
     }
 
     bool FabricResourceWrapper::isDataExternalLocationEqualTo( const void *other ) const
     {
-      return m_rtManager->getStringDesc()->equalsData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX), m_desc->getMemberData( other, FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX) );
+      return m_rtManager->getStringDesc()->equalsData( m_desc->getImmutableMemberData( m_resource, FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX), m_desc->getImmutableMemberData( other, FABRIC_RESOURCE_DATAEXTERNALLOCATION_MEMBER_INDEX) );
     }
 
     bool FabricResourceWrapper::isURLEqualTo( const void *otherStringData ) const
     {
-      return m_rtManager->getStringDesc()->equalsData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX), otherStringData );
+      return m_rtManager->getStringDesc()->equalsData( m_desc->getImmutableMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX), otherStringData );
     }
 
     void FabricResourceWrapper::setExtension( std::string const &value )
@@ -127,7 +127,7 @@ namespace Fabric
 
     void FabricResourceWrapper::setURL( void const *value )
     {
-      m_rtManager->getStringDesc()->setData( value, m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX ) );
+      m_rtManager->getStringDesc()->setData( value, m_desc->getMutableMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX ) );
     }
 
     std::string FabricResourceWrapper::getURL() const
@@ -157,12 +157,12 @@ namespace Fabric
 
     void FabricResourceWrapper::resizeData( size_t size )
     {
-      m_dataMemberDesc->setNumMembers( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), size, NULL );
+      m_dataMemberDesc->setNumMembers( m_desc->getMutableMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), size, NULL );
     }
 
     void FabricResourceWrapper::setData( size_t offset, size_t size, const void* data )
     {
-      m_dataMemberDesc->getImpl()->setMembers( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), offset, size, data );
+      m_dataMemberDesc->getImpl()->setMembers( m_desc->getMutableMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), offset, size, data );
     }
 
     size_t FabricResourceWrapper::getDataSize() const
@@ -178,13 +178,13 @@ namespace Fabric
     std::string FabricResourceWrapper::getStringMember( size_t index ) const
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = m_rtManager->getStringDesc();
-      const void* extension = m_desc->getMemberData( m_resource, index );
+      const void* extension = m_desc->getImmutableMemberData( m_resource, index );
       return std::string( stringDesc->getValueData( extension ), stringDesc->getValueLength( extension ) );
     }
 
     void FabricResourceWrapper::setStringMember( size_t index, std::string const &value )
     {
-      m_rtManager->getStringDesc()->setValue( value.data(), value.length(), m_desc->getMemberData( m_resource, index ) );
+      m_rtManager->getStringDesc()->setValue( value.data(), value.length(), m_desc->getMutableMemberData( m_resource, index ) );
     }
   };
 };

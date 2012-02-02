@@ -1,5 +1,4 @@
 #!/bin/sh
-
 . ../helpers.sh
 
 BUILD_OS=$(uname -s)
@@ -44,7 +43,11 @@ ERROR=0
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="$EXTS_DIR" $f 2>&1 \
+  CMD="node $f"
+  
+  NODE_PATH="$NODE_PATH" $VALGRIND_CMD $CMD 2>&1 \
+    | grep -v '^\[FABRIC\] Fabric Engine version' \
+    | grep -v '^\[FABRIC\] This build of Fabric' \
     | grep -v '^\[FABRIC\] .*Extension registered' \
     | grep -v '^\[FABRIC\] .*Searching extension directory' \
     | grep -v '^\[FABRIC\] .*unable to open extension directory' \
@@ -54,25 +57,28 @@ for f in "$@"; do
     mv $TMPFILE ${f%.js}.out
     echo "REPL $(basename $f)"
   else
-    if ! cmp $TMPFILE ${f%.js}.out; then
+    EXPFILE=${f%.js}.$BUILD_OS.$BUILD_ARCH.out
+    [ -f "$EXPFILE" ] || EXPFILE=${f%.js}.out
+    if ! cmp $TMPFILE $EXPFILE; then
       echo "FAIL $(basename $f)"
       echo "Expected output:"
-      cat ${f%.js}.out
+      if [ -f $EXPFILE ]; then
+        cat $EXPFILE
+      else
+        echo "(missing $EXPFILE)"
+      fi
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
       echo "To debug:"
-      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="'$EXTS_DIR'" $f
-			ERROR=1
-			break
+      echo NODE_PATH="$NODE_PATH" "gdb --args" $CMD
+      ERROR=1
+      break
     else
       echo "PASS $(basename $f)";
       rm $TMPFILE
     fi
   fi
 done
-if [ -d TMP ]; then
-	rm -r TMP
-fi
 if [ "$ERROR" -eq 1 ]; then
 	exit 1
 fi
