@@ -18,7 +18,7 @@ FABRIC.RT.isQuat = function(t) {
 //    w, Vec3
 //    Vec3, w
 //    Quat
-var Quat = function() {
+FABRIC.RT.Quat = function() {
   if (arguments.length == 4 &&
       FABRIC.RT.isScalar(arguments[0]) && 
       FABRIC.RT.isScalar(arguments[1]) && 
@@ -50,11 +50,11 @@ var Quat = function() {
   else throw'Quat constructor: invalid arguments';
 };
 
-Quat.prototype = {
+FABRIC.RT.Quat.prototype = {
 
   //set: see constructor for supported args
   set: function() {
-    Quat.apply(this, arguments);
+    FABRIC.RT.Quat.apply(this, arguments);
     return this;
   },
 
@@ -131,14 +131,14 @@ Quat.prototype = {
     if (trace > 0) {
       var s = 2.0 * Math.sqrt(trace + 1.0);
       this.w = 0.25 * s;
-      Math.checkDivisor(s, 'Quat.setFromMat33');
+      Math.checkDivisor(s, 'FABRIC.RT.Quat.setFromMat33');
       var invS = 1.0 / s;
       this.v.x = (mat.row2.y - mat.row1.z) * invS;
       this.v.y = (mat.row0.z - mat.row2.x) * invS;
       this.v.z = (mat.row1.x - mat.row0.y) * invS;
     }else if (mat.row0.x > mat.row1.y && mat.row0.x > mat.row2.z) {
       var s = 2.0 * Math.sqrt(1.0 + mat.row0.x - mat.row1.y - mat.row2.z);
-      Math.checkDivisor(s, 'Quat.setFromMat33');
+      Math.checkDivisor(s, 'FABRIC.RT.Quat.setFromMat33');
       var invS = 1.0 / s;
       this.w = (mat.row2.y - mat.row1.z) * invS;
       this.v.x = 0.25 * s;
@@ -146,7 +146,7 @@ Quat.prototype = {
       this.v.z = (mat.row0.z + mat.row2.x) * invS;
     }else if (mat.row1.y > mat.row2.z) {
       var s = 2.0 * Math.sqrt(1.0 + mat.row1.y - mat.row0.x - mat.row2.z);
-      Math.checkDivisor(s, 'Quat.setFromMat33');
+      Math.checkDivisor(s, 'FABRIC.RT.Quat.setFromMat33');
       var invS = 1.0 / s;
       this.w = (mat.row0.z - mat.row2.x) * invS;
       this.v.x = (mat.row0.y + mat.row1.x) * invS;
@@ -154,7 +154,7 @@ Quat.prototype = {
       this.v.z = (mat.row1.z + mat.row2.y) * invS;
     }else {
       var s = 2.0 * Math.sqrt(1.0 + mat.row2.z - mat.row0.x - mat.row1.y);
-      Math.checkDivisor(s, 'Quat.setFromMat33');
+      Math.checkDivisor(s, 'FABRIC.RT.Quat.setFromMat33');
       var invS = 1.0 / s;
       this.w = (mat.row1.x - mat.row0.y) * invS;
       this.v.x = (mat.row0.z + mat.row2.x) * invS;
@@ -178,13 +178,13 @@ Quat.prototype = {
         //Take any orthogonal vector as an intermediate step
         var ortho = new Vec3(sourceDirVec.y, sourceDirVec.z, sourceDirVec.x).cross(sourceDirVec).unit();
         //Important: arbitraryIfAmbiguous !== true, else it could recurse infinitely if sourceDirVec or destDirVec was (0,0,0)
-        var q1 = new Quat(), q2 = new Quat();
+        var q1 = new FABRIC.RT.Quat(), q2 = new FABRIC.RT.Quat();
         q1.setFrom2Vectors(sourceDirVec, ortho);
         q2.setFrom2Vectors(ortho, destDirVec);
         this.set(q1.multiply(q2));
         return;
       }
-      Math.reportWarning('Quat.setFrom2Vectors: bad divisor (ambiguous answer)');
+      Math.reportWarning('FABRIC.RT.Quat.setFrom2Vectors: bad divisor (ambiguous answer)');
     }
     this.v = sourceDirVec.cross(destDirVec).divideScalar(val);
     this.w = val / 2;
@@ -218,26 +218,26 @@ Quat.prototype = {
   },
 
   add: function(q) {
-    return new Quat(this.w + q.w, this.v.add(q.v));
+    return new FABRIC.RT.Quat(this.w + q.w, this.v.add(q.v));
   },
 
   subtract: function(q) {
-    return new Quat(this.w - q.w, this.v.subtract(q.v));
+    return new FABRIC.RT.Quat(this.w - q.w, this.v.subtract(q.v));
   },
 
   multiply: function(q) {
-    return new Quat(this.w * q.w - this.v.dot(q.v),
+    return new FABRIC.RT.Quat(this.w * q.w - this.v.dot(q.v),
       q.v.multiplyScalar(this.w)
       .add(this.v.multiplyScalar(q.w))
       .add(this.v.cross(q.v)));
   },
 
   multiplyScalar: function(s) {
-    return new Quat(this.w * s, this.v.multiplyScalar(s));
+    return new FABRIC.RT.Quat(this.w * s, this.v.multiplyScalar(s));
   },
 
   divide: function(b) {
-    return new Quat(this.w * b.w + this.v.dot(b.v), (this.v.multiplyScalar(b.w)).subtract(b.v.multiplyScalar(this.w)).subtract(this.v.cross(b.v)));
+    return new FABRIC.RT.Quat(this.w * b.w + this.v.dot(b.v), (this.v.multiplyScalar(b.w)).subtract(b.v.multiplyScalar(this.w)).subtract(this.v.cross(b.v)));
   },
 
   divideScalar: function(s) {
@@ -247,7 +247,7 @@ Quat.prototype = {
 
   // NB. Don't forget to normalise the quaternion unless you want axial translation as well as rotation.
   rotateVector: function(gv) {
-    var temp = new Quat(0, gv);
+    var temp = new FABRIC.RT.Quat(0, gv);
     temp = this.multiply(temp).multiply(this.conjugate());
     return temp.v;
   },
@@ -257,7 +257,7 @@ Quat.prototype = {
   },
 
   conjugate: function() {
-    return new Quat(this.w, this.v.negate());
+    return new FABRIC.RT.Quat(this.w, this.v.negate());
   },
 
   lengthSquared: function() {
@@ -270,14 +270,14 @@ Quat.prototype = {
 
   unit: function() {
     var len = this.length();
-    Math.checkDivisor(len, 'Quat.unit');
+    Math.checkDivisor(len, 'FABRIC.RT.Quat.unit');
     return this.divideScalar(len);
   },
 
   //Note: setUnit returns the previous length
   setUnit: function() {
     var len = this.length();
-    Math.checkDivisor(len, 'Quat.setUnit');
+    Math.checkDivisor(len, 'FABRIC.RT.Quat.setUnit');
     var invLen = 1.0 / len;
     this.w *= invLen;
     this.v = this.v.multiplyScalar(invLen);
@@ -442,18 +442,18 @@ Quat.prototype = {
       var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
 
       if (Math.abs(sinHalfTheta) < Math.DIVIDEPRECISION) {
-        r = new Quat((this.w + q2.w) * 0.5, this.v.add(q2.v).multiplyScalar(0.5));
+        r = new FABRIC.RT.Quat((this.w + q2.w) * 0.5, this.v.add(q2.v).multiplyScalar(0.5));
       }
       else {
         var rA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
         var rB = Math.sin(t * halfTheta) / sinHalfTheta;
 
-        r = new Quat(this.w * rA + q2.w * rB, this.v.multiplyScalar(rA).add(q2.v.multiplyScalar(rB)));
+        r = new FABRIC.RT.Quat(this.w * rA + q2.w * rB, this.v.multiplyScalar(rA).add(q2.v.multiplyScalar(rB)));
       }
     }
     else {
       // They're the same
-      r = new Quat(this);
+      r = new FABRIC.RT.Quat(this);
     }
     return r.unit();
   },
@@ -466,7 +466,7 @@ Quat.prototype = {
       other.w *= - 1.0;
     }
 
-    var q = new Quat(this.v.linearInterpolate(other.v, t), this.w + ((other.w - this.w) * t));
+    var q = new FABRIC.RT.Quat(this.v.linearInterpolate(other.v, t), this.w + ((other.w - this.w) * t));
     return q.unit();
   },
   
@@ -478,15 +478,15 @@ Quat.prototype = {
   },
 
   clone: function() {
-    return new Quat(this.w, this.v.clone());
+    return new FABRIC.RT.Quat(this.w, this.v.clone());
   },
 
   toString: function() {
-    return 'Quat({' + this.v.x + ',' + this.v.y + ',' + this.v.z + '},' + this.w + ')';
+    return 'FABRIC.RT.Quat({' + this.v.x + ',' + this.v.y + ',' + this.v.z + '},' + this.w + ')';
   },
 
   getType: function() {
-    return 'Quat';
+    return 'FABRIC.RT.Quat';
   }
 };
 
@@ -495,7 +495,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       v: 'Vec3', w: 'Scalar'
     },
-    constructor: Quat,
+    constructor: FABRIC.RT.Quat,
     klBindings: {
       filename: 'Quat.kl',
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Quat.kl')
@@ -503,6 +503,5 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
-  FABRIC.RT.Quat = Quat;
-  return Quat;
+  return FABRIC.RT.Quat;
 });
