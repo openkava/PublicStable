@@ -5,7 +5,7 @@
 .PHONY: default xcode test
 
 default:
-	scons -kj8
+	scons -k
 
 xcode:
 	PYTHONUNBUFFERED=1 scons

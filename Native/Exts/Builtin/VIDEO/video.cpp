@@ -183,7 +183,7 @@ public:
     return mHandle->time;
   }
   
-  bool init(KL::String & filename, bool in_readOnly, KL::Size width = 0, KL::Size height = 0)
+  bool init(const KL::String & filename, bool in_readOnly, KL::Size width = 0, KL::Size height = 0)
   {
     mReadOnly = in_readOnly;
     if(mReadOnly)
@@ -477,13 +477,14 @@ public:
       
       av_interleaved_write_frame(mFormatCtx, &pkt);
     }
+    return true;
   }
   
 };
 bool videoStream::sRegistered = false;
 
 FABRIC_EXT_EXPORT void FabricVIDEOOpenFileName(
-  KL::String filename,
+  const KL::String & filename,
   videoHandle &handle
 )
 {
@@ -536,7 +537,7 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOOpenFileHandle(
-  KL::String file,
+  const KL::String & file,
   videoHandle &handle
 )
 {
@@ -559,7 +560,7 @@ FABRIC_EXT_EXPORT void FabricVIDEOSeekTime(
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOCreateFromFileHandle(
-  KL::String file,
+  const KL::String & file,
   KL::Size width,
   KL::Size height,
   videoHandle &handle
@@ -568,12 +569,17 @@ FABRIC_EXT_EXPORT void FabricVIDEOCreateFromFileHandle(
   if(handle.pointer == NULL)
   {
     KL::FileHandleWrapper wrapper(file);
-    wrapper.ensureIsValidFile();
+    if(wrapper.isFolder())
+    {
+      Fabric::EDK::throwException("Video extension: Cannot write to a folder.");
+      return;
+    }
     if(wrapper.isReadOnly())
     {
       Fabric::EDK::throwException("Video Extension: Provided fileHandle is readOnly, invalid for output video!");
       return;
     }
+    wrapper.ensureTargetExists();
 
     // init the stream
     handle.pointer = new videoStream(&handle);

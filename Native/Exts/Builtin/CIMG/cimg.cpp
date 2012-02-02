@@ -16,7 +16,7 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 using namespace cimg_library;
 
 void readImageFromFile(
-  KL::String fileName,
+  const KL::String & fileName,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::VariableArray<KL::RGBA> &imagePixels
@@ -105,7 +105,7 @@ FABRIC_EXT_EXPORT void FabricCIMGDecode(
 }
 
 FABRIC_EXT_EXPORT void FabricCIMGOpenFileHandle(
-  KL::String fileHandle,
+  const KL::String & fileHandle,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::VariableArray<KL::RGBA> &imagePixels
@@ -117,7 +117,7 @@ FABRIC_EXT_EXPORT void FabricCIMGOpenFileHandle(
 }
 
 FABRIC_EXT_EXPORT void FabricCIMGCreateFromText(
-  KL::String text,
+  const KL::String & text,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::VariableArray<KL::RGBA> &imagePixels
@@ -147,19 +147,25 @@ FABRIC_EXT_EXPORT void FabricCIMGCreateFromText(
 }
 
 FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
-  KL::String fileHandle,
-  KL::Size &imageWidth,
-  KL::Size &imageHeight,
+  const KL::String & fileHandle,
+  KL::Size imageWidth,
+  KL::Size imageHeight,
+  KL::Boolean mirrorVertically,
   KL::VariableArray<KL::RGBA> &imagePixels
-  )
+)
 {
   KL::FileHandleWrapper wrapper(fileHandle);
-  wrapper.ensureIsValidFile();
+  if(wrapper.isFolder())
+  {
+    Fabric::EDK::throwException("CIMG extension: Cannot write to a folder.");
+    return;
+  }
   if(wrapper.isReadOnly())
   {
     Fabric::EDK::throwException("CIMG extension: Cannot write to a readOnly FileHandle.");
     return;
   }
+  wrapper.ensureTargetExists();
   
   CImg<unsigned char> image(imageWidth,imageHeight,1,4);
   KL::Size offsetR = 0;
@@ -174,6 +180,9 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
     image.data()[offsetB++] = imagePixels[i].b;
     image.data()[offsetA++] = imagePixels[i].a;
   }
+  
+  if(mirrorVertically)
+    image.mirror('y');
   
   try{
     image.save(wrapper.getPath().data());
