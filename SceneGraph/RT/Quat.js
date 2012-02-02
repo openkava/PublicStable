@@ -8,7 +8,7 @@ FABRIC.define(["SceneGraph/RT/Math", "SceneGraph/RT/Vec3", "SceneGraph/RT/Euler"
 //determine if an object is a valid RotationOrder.
 FABRIC.RT.isQuat = function(t) {
   return t && t.getType &&
-         t.getType() === 'Quat';
+         t.getType() === 'FABRIC.RT.Quat';
 };
 
 //Constructor:

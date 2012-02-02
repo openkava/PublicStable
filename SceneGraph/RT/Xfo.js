@@ -18,7 +18,7 @@ FABRIC.RT.isXfoOrder = function(t) {
 //    Vec3(tr), Quat
 //    Vec3(tr), Quat, Vec3(sc)
 //    Xfo
-var Xfo = function() {
+FABRIC.RT.Xfo = function() {
   var good = true;
   //First, check if we have ([ori], [tr], [sc])
   if (arguments[0]) {
@@ -87,14 +87,14 @@ var Xfo = function() {
     }
   }
   if( !good )
-    throw'Xfo: invalid arguments';
+    throw'FABRIC.RT.Xfo: invalid arguments';
 };
 
-Xfo.prototype = {
+FABRIC.RT.Xfo.prototype = {
 
   //set: see constructor for supported args
   set: function() {
-    Xfo.apply(this, arguments);
+    FABRIC.RT.Xfo.apply(this, arguments);
     return this;
   },
 
@@ -129,7 +129,7 @@ Xfo.prototype = {
 
     // Grab the X scale and normalize the first row
     this.sc.x = col0.length();
-    Math.checkDivisor(this.sc.x, 'Xfo.setFromMat44: Matrix is singular');
+    Math.checkDivisor(this.sc.x, 'FABRIC.RT.Xfo.setFromMat44: Matrix is singular');
     col0 = col0.divideScalar(this.sc.x);
 
     // Make the 2nd row orthogonal to the 1st
@@ -137,7 +137,7 @@ Xfo.prototype = {
 
     // Grab the Y scale and normalize the 2nd row
     this.sc.y = col1.length();
-    Math.checkDivisor(this.sc.y, 'Xfo.setFromMat44: Matrix is singular');
+    Math.checkDivisor(this.sc.y, 'FABRIC.RT.Xfo.setFromMat44: Matrix is singular');
     col1 = col1.divideScalar(this.sc.y);
 
     // Make the 3rd row orthogonal to the 1st and 2nd
@@ -146,7 +146,7 @@ Xfo.prototype = {
 
     // Grab the Y scale and normalize the 2nd row
     this.sc.z = col2.length();
-    Math.checkDivisor(this.sc.z, 'Xfo.setFromMat44: Matrix is singular');
+    Math.checkDivisor(this.sc.z, 'FABRIC.RT.Xfo.setFromMat44: Matrix is singular');
     col2 = col2.divideScalar(this.sc.z);
 
     var mat33 = new FABRIC.RT.Mat33(col0.x, col1.x, col2.x,
@@ -211,7 +211,7 @@ Xfo.prototype = {
       }
     }
 
-    var result = new Xfo();
+    var result = new FABRIC.RT.Xfo();
     result.tr = this.tr.add(this_ori.rotateVector(this.sc.multiply(xf.tr)));
     result.ori = this_ori.multiply(xf_ori);
     result.ori.setUnit();
@@ -229,7 +229,7 @@ Xfo.prototype = {
   },
 
   inverse: function() {
-    var result = new Xfo();
+    var result = new FABRIC.RT.Xfo();
     if(this.sc.x != this.sc.y || this.sc.x != this.sc.z) {
       var relativePrecision = Math.abs(this.sc.x)*Math.PRECISION*10.0;
       if( Math.abs(this.sc.x - this.sc.y) > relativePrecision || Math.abs(this.sc.x - this.sc.z) > relativePrecision ) {
@@ -243,7 +243,7 @@ Xfo.prototype = {
   },
 
   clone: function() {
-    var newXfo = new Xfo;
+    var newXfo = new FABRIC.RT.Xfo;
     newXfo.ori = this.ori.clone();
     newXfo.tr = this.tr.clone();
     newXfo.sc = this.sc.clone();
@@ -251,11 +251,11 @@ Xfo.prototype = {
   },
 
   toString: function() {
-    return 'Xfo(' + this.ori.toString() + ',' + this.tr.toString() + ',' + this.sc.toString() + ')';
+    return 'FABRIC.RT.Xfo(' + this.ori.toString() + ',' + this.tr.toString() + ',' + this.sc.toString() + ')';
   },
 
   getType: function() {
-    return 'Xfo';
+    return 'FABRIC.RT.Xfo';
   }
 };
 
@@ -265,10 +265,10 @@ Xfo.prototype = {
  */
 FABRIC.RT.xfo = function() {
   // The following is a bit of a hack. Not sure if we can combine new and apply.
-  if (arguments.length === 0) return new Xfo();
-  if (arguments.length === 1) return new Xfo(arguments[0]);
-  if (arguments.length === 2) return new Xfo(arguments[0], arguments[1]);
-  if (arguments.length === 3) return new Xfo(arguments[0], arguments[1], arguments[2]);
+  if (arguments.length === 0) return new FABRIC.RT.Xfo();
+  if (arguments.length === 1) return new FABRIC.RT.Xfo(arguments[0]);
+  if (arguments.length === 2) return new FABRIC.RT.Xfo(arguments[0], arguments[1]);
+  if (arguments.length === 3) return new FABRIC.RT.Xfo(arguments[0], arguments[1], arguments[2]);
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -276,7 +276,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       ori: 'Quat', tr: 'Vec3', sc: 'Vec3'
     },
-    constructor: Xfo,
+    constructor: FABRIC.RT.Xfo,
     klBindings: {
       filename: 'Xfo.kl',
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/Xfo.kl')
@@ -284,6 +284,5 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
-  FABRIC.RT.Xfo = Xfo;
-  return Xfo;
+  return FABRIC.RT.Xfo;
 });
