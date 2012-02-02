@@ -105,6 +105,11 @@ namespace Fabric
       return result;
     }
 
+    RC::ConstHandle<Context> ExecutionEngine::GetCurrentContext()
+    {
+      return s_currentContext;
+    }
+
     ExecutionEngine::ContextSetter::ContextSetter( RC::ConstHandle<Context> const &context )
     {
       m_oldContext = s_currentContext;
