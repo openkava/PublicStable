@@ -8,7 +8,8 @@ FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/RT/Vec2",
                "SceneGraph/RT/Vec3",
                "SceneGraph/RT/Color",
-               "SceneGraph/RT/Ray"], function() {
+               "SceneGraph/RT/Ray",
+               "SceneGraph/RT/OGLRenderTarget"], function() {
 
 
 FABRIC.SceneGraph.registerNodeType('Viewport', {

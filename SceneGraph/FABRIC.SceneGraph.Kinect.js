@@ -2,6 +2,11 @@
 //
 // Copyright 2010-2011Fabric Technologies Inc. All rights reserved.
 //
+
+
+FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
+               "SceneGraph/FABRIC.SceneGraph.Geometry"], function() {
+  
 FABRIC.RT.KinectCamera = function(options) {
   if(!options)
     options = {};
@@ -244,3 +249,5 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
     
     return kinectNode;
   }});
+
+});
