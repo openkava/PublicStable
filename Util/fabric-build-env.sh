@@ -15,6 +15,7 @@ else
   fi
   FABRIC_BUILD_TYPE=
 
+  OPTIND=0
   while getopts ":n" opt; do
     case $opt in
       n)
