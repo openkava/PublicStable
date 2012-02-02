@@ -183,7 +183,7 @@ public:
     return mHandle->time;
   }
   
-  bool init(KL::String & filename, bool in_readOnly, KL::Size width = 0, KL::Size height = 0)
+  bool init(const KL::String & filename, bool in_readOnly, KL::Size width = 0, KL::Size height = 0)
   {
     mReadOnly = in_readOnly;
     if(mReadOnly)
@@ -477,6 +477,7 @@ public:
       
       av_interleaved_write_frame(mFormatCtx, &pkt);
     }
+    return true;
   }
   
 };
