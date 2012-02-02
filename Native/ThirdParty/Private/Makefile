@@ -795,12 +795,19 @@ install_opencv_headers:
 	for ARCH in $(ARCHS); do \
           mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
           cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/include/open* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					#for DIR in `find Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules -name include`; do\
-					INCLUDEDIRS = "OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/*/include" \
-					for INCLUDEDIR in $INCLUDEDIRS; do \
-						ls $(INCLUDEDIR); \
-	          #cp -r $(DIR)/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					done \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/calib3d/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/contrib/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/core/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/features2d/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/flann/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/gpu/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/highgui/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/imgproc/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/legacy/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/ml/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/objdetect/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/ts/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/video/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
         done
 
 install_opencv_libraries:
