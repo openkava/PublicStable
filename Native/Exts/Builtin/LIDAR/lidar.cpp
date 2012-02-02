@@ -130,7 +130,7 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Decode(
 }
 
 FABRIC_EXT_EXPORT void FabricLIDAR_Reader_OpenFileHandle(
-  KL::String handle,
+  const KL::String & handle,
   LidarReader & lidar
 )
 {

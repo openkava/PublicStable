@@ -247,7 +247,7 @@ FABRIC_EXT_EXPORT void FabricTGADecode(
 }
 
 FABRIC_EXT_EXPORT void FabricTGAOpenFileHandle(
-  KL::String handle,
+  const KL::String & handle,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::VariableArray<KL::RGBA> &imagePixels

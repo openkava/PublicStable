@@ -55,7 +55,7 @@ FABRIC_EXT_EXPORT void FabricOBJDecode(
 }
 
 FABRIC_EXT_EXPORT void FabricOBJOpenFileHandle(
-  KL::String fileHandle,
+  const KL::String & fileHandle,
   KL::Boolean splitByObjects,
   KL::Boolean splitByGroups,
   KL::Boolean splitByMaterials,
