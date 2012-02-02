@@ -609,7 +609,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         }, function() {
         }, function(data) {
           // pull off the last [] since we're looking at an element
-          type = result.members[memberName].type
+          var type = result.members[memberName].type
           dataElement = RT.assignPrototypes(data, type.substring(0, type.length - 2));
         });
         executeQueuedCommands();
