@@ -126,10 +126,12 @@ namespace Fabric
         void *callbackFuncUserData
         )
     {
+      // FIXME this needs re-verification
+      callbackFunc(callbackFuncUserData);
+      /*
       ClientWrap *clientWrap = static_cast<ClientWrap *>( scheduleUserData );
       if ( clientWrap->m_mainThreadTLS )
       {
-        // FIXME why does IO need to be run directly?
         callbackFunc(callbackFuncUserData);
       }
       else
@@ -141,6 +143,7 @@ namespace Fabric
         clientWrap->m_bufferedAsyncUserCallbacks.push_back( cbData );
         clientWrap->runScheduledCallbacksNotify();
       }
+      */
     }
 
     void ClientWrap::runScheduledCallbacksNotify()
