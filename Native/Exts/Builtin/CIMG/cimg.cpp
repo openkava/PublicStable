@@ -148,12 +148,12 @@ FABRIC_EXT_EXPORT void FabricCIMGCreateFromText(
 
 FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
   const KL::String & fileHandle,
-  KL::Size &imageWidth,
-  KL::Size &imageHeight,
+  KL::Size imageWidth,
+  KL::Size imageHeight,
+  KL::Boolean mirrorVertically,
   KL::VariableArray<KL::RGBA> &imagePixels
-  )
+)
 {
-  printf("FileHandle used: %s\n",fileHandle.data());
   KL::FileHandleWrapper wrapper(fileHandle);
   if(wrapper.isFolder())
   {
@@ -165,6 +165,7 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
     Fabric::EDK::throwException("CIMG extension: Cannot write to a readOnly FileHandle.");
     return;
   }
+  wrapper.ensureTargetExists();
   
   CImg<unsigned char> image(imageWidth,imageHeight,1,4);
   KL::Size offsetR = 0;
@@ -179,6 +180,9 @@ FABRIC_EXT_EXPORT void FabricCIMGSaveToFileHandle(
     image.data()[offsetB++] = imagePixels[i].b;
     image.data()[offsetA++] = imagePixels[i].a;
   }
+  
+  if(mirrorVertically)
+    image.mirror('y');
   
   try{
     image.save(wrapper.getPath().data());
