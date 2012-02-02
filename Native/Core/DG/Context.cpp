@@ -30,6 +30,7 @@
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/EDK/Common.h>
+#include <Fabric/Core/DG/ExecutionEngine.h>
 #include <FabricThirdPartyLicenses/llvm/license.h>
 #include <FabricThirdPartyLicenses/llvm/autoconf/license.h>
 #include <FabricThirdPartyLicenses/llvm/lib/Support/license.h>
@@ -46,20 +47,6 @@ namespace Fabric
     Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
     static bool s_checkExpiry = true;
-    Context *s_activeContext = NULL;
-    
-    Context::ActiveContextBracket::ActiveContextBracket( Context* currContext )
-      : m_prevContext( s_activeContext )
-      , m_currContext( currContext )
-    {
-      s_activeContext = m_currContext;
-    }
-
-    Context::ActiveContextBracket::~ActiveContextBracket()
-    {
-      FABRIC_ASSERT( s_activeContext == m_currContext );
-      s_activeContext = m_prevContext;
-    }
 
     RC::Handle<Context> Context::Create(
       RC::Handle<IO::Manager> const &ioManager,
@@ -123,7 +110,6 @@ namespace Fabric
       FABRIC_ASSERT( !m_pendingNotificationsJSON );
       
       FABRIC_ASSERT( m_clients.empty() );
-      FABRIC_ASSERT( s_activeContext != this );//Should always use ActiveContextBracket
 
       {
         Util::Mutex::Lock contextMapLock( s_contextMapMutex );
@@ -211,8 +197,6 @@ namespace Fabric
     
     void Context::closeNotificationBracket()
     {
-      ActiveContextBracket activeContextBracket( this );
-
       if ( m_notificationBracketCount.decrementAndGetValue() == 0
         && m_pendingNotificationsJSON )
       {
@@ -394,8 +378,6 @@ namespace Fabric
       }
       
       Util::Mutex::Lock mutexLock( m_mutex );
-      ActiveContextBracket activeContextBracket( this );
-
       if ( dst.size() - dstOffset == 0 )
       {
         jsonExec( cmd, arg, resultArrayEncoder );
@@ -705,63 +687,69 @@ namespace Fabric
       throw Exception( length, data );
     }
 
-    Context* GetActiveContext()
+    RC::ConstHandle<Context> GetAndValidateCurrentContext()
     {
-      FABRIC_ASSERT( s_activeContext != NULL );
-      if( s_activeContext == NULL )
-        throw Exception( "Unexpected error: no active Fabric context" );
-
-      return s_activeContext;
+      RC::ConstHandle<Context> context = ExecutionEngine::GetCurrentContext();
+      if( !context )
+        throw Exception( "Unexpected: undefined context" );
+      return context;
     }
 
     void FileHandleCreateFromPath( void *stringData, char const *filePathCString, bool folder, bool readOnly )
     {
-      std::string handle = GetActiveContext()->getIOManager()->getFileHandleManager()->createHandle( filePathCString, folder, readOnly );
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      std::string handle = context->getIOManager()->getFileHandleManager()->createHandle( filePathCString, folder, readOnly );
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       stringDesc->setValue( handle.data(), handle.length(), stringData );
     }
 
     void FileGetPath( void const *stringData, void *pathStringData )
     {
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
-      std::string path = GetActiveContext()->getIOManager()->getFileHandleManager()->getPath( handle );
+      std::string path = context->getIOManager()->getFileHandleManager()->getPath( handle );
       stringDesc->setValue( path.data(), path.length(), pathStringData );
     }
 
     bool FileHandleIsValid( void const *stringData )
     {
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
-      return GetActiveContext()->getIOManager()->getFileHandleManager()->isValid( handle );
+      return context->getIOManager()->getFileHandleManager()->isValid( handle );
     }
 
     bool FileHandleIsReadOnly( void const *stringData )
     {
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
-      return GetActiveContext()->getIOManager()->getFileHandleManager()->isReadOnly( handle );
+      return context->getIOManager()->getFileHandleManager()->isReadOnly( handle );
     }
 
     bool FileHandleIsFolder( void const *stringData )
     {
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
-      return GetActiveContext()->getIOManager()->getFileHandleManager()->isFolder( handle );
+      return context->getIOManager()->getFileHandleManager()->isFolder( handle );
     }
 
     bool FileHandleTargetExists( void const *stringData )
     {
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
-      return GetActiveContext()->getIOManager()->getFileHandleManager()->targetExists( handle );
+      return context->getIOManager()->getFileHandleManager()->targetExists( handle );
     }
 
     void FileHandleEnsureTargetExists( void const *stringData )
     {
-      RC::ConstHandle<RT::StringDesc> stringDesc = GetActiveContext()->getRTManager()->getStringDesc();
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
-      GetActiveContext()->getIOManager()->getFileHandleManager()->ensureTargetExists( handle );
+      context->getIOManager()->getFileHandleManager()->ensureTargetExists( handle );
     }
 
     EDK::Callbacks Context::GetCallbackStruct()

@@ -92,19 +92,6 @@ namespace Fabric
       
         RC::Handle<Context> m_context;
       };
-
-      class ActiveContextBracket
-      {
-      public:
-
-        ActiveContextBracket( Context* currContext );
-        ~ActiveContextBracket();
-
-      private:
-      
-        Context* m_prevContext;
-        Context* m_currContext;
-      };
     
       typedef Util::UnorderedMap< std::string, RC::Handle<NamedObject> > NamedObjectMap;
     
