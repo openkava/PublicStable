@@ -2,14 +2,12 @@
 
 
 
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
+require( "./include/unitTestUtils.js" );
+require( "../../../Web/SceneGraph/RT/Math.js" );
+Math.verboseLogFunction = console.log;
 
-load( "unitTestUtils.js.inc" );
-load( "../../../Web/SceneGraph/RT/Math.js" );
-Math.verboseLogFunction = print;
-
-var testCode = loadTestFile( 'Mat' );
+var testCode = FABRIC.UnitTestUtils.loadTestFile( 'Mat' );
 
 var dimSpecificCodePrefix = [];
 dimSpecificCodePrefix[2] =
@@ -46,21 +44,20 @@ dimSpecificCodeTests[4] =
 for( var dim = 2; dim <= 4; ++dim ) {
   var type = ('Mat' + dim) + dim;
   var vecType = 'Vec' + dim;
-  loadType(vecType);
-  print( '****** ' + type + ' Tests ******' );
-  appendKLOpAdaptors(type, [ '+', '+=', '-', '-=', '*', '*=', ['*','Scalar'], ['*=','Scalar'], ['/','Scalar'], ['/=','Scalar'] ] );
+  FABRIC.UnitTestUtils.loadType(vecType);
+  console.log( '****** ' + type + ' Tests ******' );
+  FABRIC.UnitTestUtils.appendKLOpAdaptors(type, [ '+', '+=', '-', '-=', '*', '*=', ['*','Scalar'], ['*=','Scalar'], ['/','Scalar'], ['/=','Scalar'] ] );
   //Add special adaptor for function VecX MatX.multiplyVecX( in VecX other)
-  appendToKLCode(type, "\nfunction " + vecType + ' ' + type + ".multiplyVector( in " + vecType + " other ) {\n  return this * other;\n}\n\n");
+  FABRIC.UnitTestUtils.appendToKLCode(type, "\nfunction " + vecType + ' ' + type + ".multiplyVector( in " + vecType + " other ) {\n  return this * other;\n}\n\n");
   var vecType2 = vecType;
   if(dim == 4) {
     vecType2 = 'Vec3';
-    appendToKLCode(type, "\nfunction " + vecType2 + ' ' + type + ".multiplyVector( in " + vecType2 + " other ) {\n  return this * other;\n}\n\n");
+    FABRIC.UnitTestUtils.appendToKLCode(type, "\nfunction " + vecType2 + ' ' + type + ".multiplyVector( in " + vecType2 + " other ) {\n  return this * other;\n}\n\n");
   }
-  loadType( type );
-  defineInPlaceOpAdaptors(type, [ '+=', '-=', '*=', [ '*=', 'Scalar' ], [ '/=', 'Scalar' ] ] );
+  FABRIC.UnitTestUtils.loadType( type );
+  FABRIC.UnitTestUtils.defineInPlaceOpAdaptors(type, [ '+=', '-=', '*=', [ '*=', 'Scalar' ], [ '/=', 'Scalar' ] ] );
 
-  runTests( type, [[type,'m1'], [type,'XtoY'], [type,'YtoMinusY'], [type,'res'], ['Scalar','s1'], [vecType,'v1'], [vecType2,'v2'], [vecType,'xAxis'], [vecType,'yAxis']], dimSpecificCodePrefix[dim] + testCode + dimSpecificCodeTests[dim] );
+  FABRIC.UnitTestUtils.runTests( type, [[type,'m1'], [type,'XtoY'], [type,'YtoMinusY'], [type,'res'], ['Scalar','s1'], [vecType,'v1'], [vecType2,'v2'], [vecType,'xAxis'], [vecType,'yAxis']], dimSpecificCodePrefix[dim] + testCode + dimSpecificCodeTests[dim] );
 }
 
-F.flush();
-FC.dispose();
+FABRIC.close();

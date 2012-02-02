@@ -54,18 +54,18 @@ namespace Fabric
         return m_memberInfos[index];
       }
       
-      void const *getMemberData( void const *data, size_t index ) const
+      void const *getImmutableMemberData( void const *data, size_t index ) const
       {
         if ( index < 0 || index >= m_numMembers )
           throw Exception( "index out of range" );
-        return getMemberData_NoCheck( data, index );
+        return getImmutableMemberData_NoCheck( data, index );
       }
       
-      void *getMemberData( void *data, size_t index ) const
+      void *getMutableMemberData( void *data, size_t index ) const
       {
         if ( index < 0 || index >= m_numMembers )
           throw Exception( "index out of range" );
-        return getMemberData_NoCheck( data, index );
+        return getMutableMemberData_NoCheck( data, index );
       }  
      
       bool hasMember( std::string const &name ) const
@@ -86,12 +86,12 @@ namespace Fabric
       StructImpl( std::string const &codeName, StructMemberInfoVector const &memberInfos );
       ~StructImpl();
       
-      void const *getMemberData_NoCheck( void const *data, size_t index ) const
+      void const *getImmutableMemberData_NoCheck( void const *data, size_t index ) const
       {
         return static_cast<uint8_t const *>(data) + m_memberOffsets[index];
       }
       
-      void *getMemberData_NoCheck( void *data, size_t index ) const
+      void *getMutableMemberData_NoCheck( void *data, size_t index ) const
       {
         return static_cast<uint8_t *>(data) + m_memberOffsets[index];
       }  

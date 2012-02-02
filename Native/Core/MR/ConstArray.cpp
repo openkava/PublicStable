@@ -57,7 +57,7 @@ namespace Fabric
       m_fixedArrayDesc = rtManager->getFixedArrayOf( elementDesc, count );
       m_data.resize( m_fixedArrayDesc->getAllocSize(), 0 );
       for ( size_t i=0; i<count; ++i )
-        elementDesc->setData( arrayDesc->getMemberData( data, i ), m_fixedArrayDesc->getMemberData( &m_data[0], i ) );
+        elementDesc->setData( arrayDesc->getImmutableMemberData( data, i ), m_fixedArrayDesc->getMutableMemberData( &m_data[0], i ) );
     }
 
     ConstArray::~ConstArray()
@@ -89,12 +89,12 @@ namespace Fabric
     
     void ConstArray::ComputeState::produce( size_t index, void *data ) const
     {
-      return m_constArray->getElementDesc()->setData( m_constArray->m_fixedArrayDesc->getMemberData( &m_constArray->m_data[0], index ), data );
+      return m_constArray->getElementDesc()->setData( m_constArray->m_fixedArrayDesc->getImmutableMemberData( &m_constArray->m_data[0], index ), data );
     }
     
     void ConstArray::ComputeState::produceJSON( size_t index, JSON::Encoder &jg ) const
     {
-      return m_constArray->getElementDesc()->encodeJSON( m_constArray->m_fixedArrayDesc->getMemberData( &m_constArray->m_data[0], index ), jg );
+      return m_constArray->getElementDesc()->encodeJSON( m_constArray->m_fixedArrayDesc->getImmutableMemberData( &m_constArray->m_data[0], index ), jg );
     }
 
     RC::ConstHandle<RT::ArrayDesc> ConstArray::getArrayDesc() const

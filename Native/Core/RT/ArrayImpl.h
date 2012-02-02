@@ -30,8 +30,8 @@ namespace Fabric
       }
       
       virtual size_t getNumMembers( void const *data ) const = 0;     
-      virtual void const *getMemberData( void const *data, size_t index ) const = 0;
-      virtual void *getMemberData( void *data, size_t index ) const = 0;
+      virtual void const *getImmutableMemberData( void const *data, size_t index ) const = 0;
+      virtual void *getMutableMemberData( void *data, size_t index ) const = 0;
             
     protected:
     

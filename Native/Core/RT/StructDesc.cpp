@@ -26,14 +26,14 @@ namespace Fabric
       return m_structImpl->getMemberInfo( index );
     }
     
-    void const *StructDesc::getMemberData( void const *data, size_t index ) const
+    void const *StructDesc::getImmutableMemberData( void const *data, size_t index ) const
     {
-      return m_structImpl->getMemberData( data, index );
+      return m_structImpl->getImmutableMemberData( data, index );
     }
     
-    void *StructDesc::getMemberData( void *data, size_t index ) const
+    void *StructDesc::getMutableMemberData( void *data, size_t index ) const
     {
-      return m_structImpl->getMemberData( data, index );
+      return m_structImpl->getMutableMemberData( data, index );
     }
    
     bool StructDesc::hasMember( std::string const &name ) const

@@ -366,7 +366,7 @@ namespace Fabric
                           errors.push_back( memberErrorPrefix + "element parmeters must bind to operator io parameters" );
                         void *baseAddress;
                         if ( slicedArrayDesc->getNumMembers( slicedArrayData ) > 0 )
-                          baseAddress = slicedArrayImpl->getMemberData( slicedArrayData, 0 );
+                          baseAddress = slicedArrayImpl->getMutableMemberData( slicedArrayData, 0 );
                         else baseAddress = 0;
                         result->setBaseAddress( prefixCount+param->index(), baseAddress );
                         if ( container->getCount() != 1 )
