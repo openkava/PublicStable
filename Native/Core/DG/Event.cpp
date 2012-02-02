@@ -111,7 +111,6 @@ namespace Fabric
       
     void Event::fire() const
     {
-      Context::ActiveContextBracket activeContextBracket( m_context );
       PrepareForExecution();
       fire( 0, 0 );
     }
