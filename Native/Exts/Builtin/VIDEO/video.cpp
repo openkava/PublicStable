@@ -483,7 +483,7 @@ public:
 bool videoStream::sRegistered = false;
 
 FABRIC_EXT_EXPORT void FabricVIDEOOpenFileName(
-  KL::String filename,
+  const KL::String & filename,
   videoHandle &handle
 )
 {
@@ -536,7 +536,7 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOOpenFileHandle(
-  KL::String file,
+  const KL::String & file,
   videoHandle &handle
 )
 {
@@ -559,7 +559,7 @@ FABRIC_EXT_EXPORT void FabricVIDEOSeekTime(
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOCreateFromFileHandle(
-  KL::String file,
+  const KL::String & file,
   KL::Size width,
   KL::Size height,
   videoHandle &handle

@@ -60,7 +60,7 @@ class FileIStream : public Imf::IStream
 {
 public:
 
-  FileIStream( KL::String filename )
+  FileIStream( const KL::String & filename )
     : IStream( "<file stream>" )
     , m_pos( 0 )
     , m_size( 0 )
@@ -158,7 +158,7 @@ FABRIC_EXT_EXPORT void FabricEXRDecode(
 }
 
 FABRIC_EXT_EXPORT void FabricEXROpenFileHandle(
-  KL::String handle,
+  const KL::String & handle,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::VariableArray<KL::Color> &imagePixels
