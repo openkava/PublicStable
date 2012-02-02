@@ -13,4 +13,7 @@ if buildOS != 'Windows':
   SConscript( dirs=['CLI'] )
   aliases += ['cli']
 
+SConscript( dirs=['Python'] )
+aliases += ['python']
+
 Alias( 'clients', aliases )
