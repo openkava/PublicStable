@@ -138,7 +138,7 @@ class _CLIENT( object ):
 
   def __waitForClose( self ):
     if not _uncaughtException:
-      while not self.__closed:
+      while not self.__closed or not self.__notifications.empty():
         self.__processOneNotification()
 
   def __createClient( self ):
