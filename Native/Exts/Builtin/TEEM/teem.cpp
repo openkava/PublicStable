@@ -10,7 +10,7 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 //#include <teem/gage.h>
 
 void FabricTeemNRRDLoadUShortFromFile(
-  KL::String fileName,
+  const KL::String & fileName,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::Size &imageDepth,
@@ -126,7 +126,7 @@ void FabricTeemNRRDLoadUShortFromFile(
 }
 
 FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShortFromFileHandle(
-  KL::String handle,
+  const KL::String & handle,
   KL::Size &imageWidth,
   KL::Size &imageHeight,
   KL::Size &imageDepth,

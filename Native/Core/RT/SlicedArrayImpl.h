@@ -63,8 +63,8 @@ namespace Fabric
       // ArrayImpl
       
       virtual size_t getNumMembers( void const *data ) const;
-      virtual void const *getMemberData( void const *data, size_t index ) const;
-      virtual void *getMemberData( void *data, size_t index ) const;
+      virtual void const *getImmutableMemberData( void const *data, size_t index ) const;
+      virtual void *getMutableMemberData( void *data, size_t index ) const;
       
       // SlicedArrayImpl
       

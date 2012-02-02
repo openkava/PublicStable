@@ -197,7 +197,7 @@ namespace Fabric
         for ( size_t i=0; i<m_numMembers; ++i )
         {
           StructMemberInfo const &memberInfo = m_memberInfos[i];
-          if( !memberInfo.desc->equalsData( getMemberData_NoCheck( lhs, i ), getMemberData_NoCheck( rhs, i ) ) )
+          if( !memberInfo.desc->equalsData( getImmutableMemberData_NoCheck( lhs, i ), getImmutableMemberData_NoCheck( rhs, i ) ) )
             return false;
         }
         return true;
@@ -208,7 +208,7 @@ namespace Fabric
     {
       size_t total = 0;
       for ( size_t i=0; i<m_numMembers; ++i )
-        total += m_memberInfos[i].desc->getIndirectMemoryUsage( getMemberData_NoCheck( data, i ) );
+        total += m_memberInfos[i].desc->getIndirectMemoryUsage( getImmutableMemberData_NoCheck( data, i ) );
       return total;
     }
     

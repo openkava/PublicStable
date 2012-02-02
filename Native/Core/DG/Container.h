@@ -132,10 +132,10 @@ namespace Fabric
       class Member;
       typedef std::map< std::string, RC::Handle<Member> > Members;
       
-      RC::ConstHandle<Member> getMember( std::string const &name ) const;
-      RC::Handle<Member> getMember( std::string const &name );
+      RC::ConstHandle<Member> getImmutableMember( std::string const &name ) const;
+      RC::Handle<Member> getMutableMember( std::string const &name );
 
-      void jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder );
+      void jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder ) const;
 
     private:
     
