@@ -28,8 +28,8 @@
 
 <script type="text/javascript">
 
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph"
-                "SceneGraph/Parsers/parseOBJ"], function() {
+FABRIC.require(["SG/SceneGraph"
+                "SG/Parsers/parseOBJ"], function() {
  
 FABRIC.SceneGraph.registerNodeType('FileSystemNode', {
   factoryFn: function(options, scene) {
@@ -47,7 +47,7 @@ FABRIC.SceneGraph.registerNodeType('FileSystemNode', {
     
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'getFolderSubFolders',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/fileSystem.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/fileSystem.kl',
       parameterLayout: [
         "self.baseFolder",
         "self.childFolders"
@@ -57,7 +57,7 @@ FABRIC.SceneGraph.registerNodeType('FileSystemNode', {
     }));
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'getFolderFiles',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/fileSystem.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/fileSystem.kl',
       parameterLayout: [
         "self.baseFolder",
         "self.childFiles"

@@ -16,12 +16,12 @@
 
     <script type="text/javascript">
 
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                "SceneGraph/FABRIC.SceneGraph.Geometry",
-                "SceneGraph/FABRIC.SceneGraph.Materials",
-                "SceneGraph/FABRIC.SceneGraph.Manipulation",
-                "SceneGraph/FABRIC.SceneGraph.DefferedRendering",
-                "SceneGraph/Parsers/parseOBJ"], function() {
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/DefferedRendering",
+                "SG/Parsers/parseOBJ"], function() {
 
 FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
   briefDesc: '',
@@ -71,8 +71,8 @@ FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
   return moveCarsNode;
 }});
 
-FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostPhongSpotLightInstancingExtShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('FlatInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/FlatInstancingExtShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostPhongSpotLightInstancingExtShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FlatInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/FlatInstancingExtShader.xml');
     
 $(document).ready(function() {
   

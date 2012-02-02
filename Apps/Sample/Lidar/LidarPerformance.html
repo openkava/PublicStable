@@ -16,10 +16,10 @@
 
     <script type="text/javascript">
     
-FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
-                "SceneGraph/FABRIC.SceneGraph.Materials",
-                "SceneGraph/FABRIC.SceneGraph.Manipulation",
-                "SceneGraph/FABRIC.SceneGraph.Lidar"], function() {
+FABRIC.require(["SG/SceneGraph",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Lidar"], function() {
 
 FABRIC.SceneGraph.registerNodeType('LidarInstance', {
   factoryFn: function(options, scene) {
@@ -33,7 +33,7 @@ FABRIC.SceneGraph.registerNodeType('LidarInstance', {
     redrawEventHandler.addMember('color', 'Color', options.color);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'loadColor',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/loadUniforms.kl',
       preProcessorDefinitions: {
         ATTRIBUTE_NAME: 'color',
         ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('color'),
