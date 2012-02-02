@@ -103,7 +103,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     dependentNode: viewport
   });
   
-  assets[resourceName].addOnLoadSuccessCallback(function(){
+  assets[resourceName].addEventListener('loadSuccess', function(){
     // loop over all assets and create an instance
     for(var name in assets[resourceName].getParsedNodes()) {
       if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
