@@ -126,12 +126,12 @@ namespace Fabric
         void *callbackFuncUserData
         )
     {
-      // FIXME this needs re-verification
-      callbackFunc(callbackFuncUserData);
-      /*
       ClientWrap *clientWrap = static_cast<ClientWrap *>( scheduleUserData );
       if ( clientWrap->m_mainThreadTLS )
       {
+        // andrew 2012-02-02
+        // this is the same as Node.js for now, this may need to be
+        // re-evaluated later (running directly on main thread)
         callbackFunc(callbackFuncUserData);
       }
       else
@@ -143,12 +143,11 @@ namespace Fabric
         clientWrap->m_bufferedAsyncUserCallbacks.push_back( cbData );
         clientWrap->runScheduledCallbacksNotify();
       }
-      */
     }
 
     void ClientWrap::runScheduledCallbacksNotify()
     {
-      // FIXME do some more sensible
+      // FIXME do something more sensible
       notify( Util::SimpleString("[{\"src\":[\"ClientWrap\"],\"cmd\":\"runScheduledCallbacks\"}]") );
     }
 
@@ -156,7 +155,9 @@ namespace Fabric
     {
       Util::Mutex::Lock lock( m_mutex );
       for ( std::vector<AsyncCallbackData>::const_iterator it=m_bufferedAsyncUserCallbacks.begin(); it!=m_bufferedAsyncUserCallbacks.end(); ++it )
+      {
         (*(it->m_callbackFunc))( it->m_callbackFuncUserData );
+      }
       m_bufferedAsyncUserCallbacks.clear();
     }
   }
