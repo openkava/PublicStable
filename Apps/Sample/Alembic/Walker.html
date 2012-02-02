@@ -25,6 +25,20 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
                 "SceneGraph/FABRIC.SceneGraph.Manipulation",
                 "SceneGraph/FABRIC.SceneGraph.Alembic"], function() { 
 
+$(document).ready(function() {
+
+  $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+  $('#step').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-step'
+    }
+  }); 
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
@@ -45,13 +59,13 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
   viewport.setCameraNode(camera);
 
   scene.constructNode('Instance', {
-          geometryNode: scene.constructNode('Grid', {
-              size_x: 120.0,
-              size_z: 120.0,
-              sections_x: 32,
-              sections_z: 32 }),
-          materialNode: scene.constructNode('FlatMaterial')
-      });
+      geometryNode: scene.constructNode('Grid', {
+        size_x: 120.0,
+        size_z: 120.0,
+        sections_x: 32,
+        sections_z: 32 }),
+      materialNode: scene.constructNode('FlatMaterial')
+    });
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(10, 10, 4).multiplyScalar(30) });
 
@@ -93,20 +107,6 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
   materialLookup["/l_legA_GEOXfo/l_legA_GEO"] = greyMaterial
   materialLookup["/l_foot_GEOXfo/l_foot_GEO"] = blackMaterial;
   
-  $(document).ready(function() {
-
-  $('#play').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-play'
-      }
-    });
-  $('#step').button({
-    text: true,
-    icons: {
-      primary: 'ui-icon-step'
-    }
-  });
   
   $('#loadingDialog').dialog({
     modal: true
@@ -115,25 +115,26 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
 
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'walker';
-  var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/'+resourceName+'.abc',
     dependentNode: viewport
   });
 
-  assets[resourceName].addEventListener('loadSuccess', function(){
+  alembicLoadNode.addEventListener('loadSuccess', function(){
     // init the camera's html      
     var cameraListHtml = "<option value='userCamera'>Free Camera</option>";
       
     // loop over all assets and create an instance
-    for(var name in assets[resourceName].getParsedNodes()) {
-      if(assets[resourceName].getParsedNodes()[name].isTypeOf('Triangles'))
+    for(var name in alembicLoadNode.getParsedNodes()) {
+      if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Triangles'))
       {
         var inst = scene.constructNode('Instance', {
-          transformNode: assets[resourceName].getCorrespondingTransform(name),
-          geometryNode: assets[resourceName].getParsedNodes()[name],
+          transformNode: alembicLoadNode.getCorrespondingTransform(name),
+          geometryNode: alembicLoadNode.getParsedNodes()[name],
           materialNode: materialLookup[name]
         });
       }
-      else if(assets[resourceName].getParsedNodes()[name].isTypeOf('Camera')) {
+      else if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Camera')) {
           
         // add the camera as an option to the list
         cameraListHtml += "<option value='"+name+"'>"+name.substring(name.lastIndexOf('/')+1,1000)+"</option>"
@@ -144,7 +145,7 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
         if(cameraName == 'userCamera')
           viewport.setCameraNode(camera);
         else
-          viewport.setCameraNode(assets[resourceName].getParsedNodes()[$('#cameralist').attr('value')]);
+          viewport.setCameraNode(alembicLoadNode.getParsedNodes()[$('#cameralist').attr('value')]);
         viewport.redraw();
       });
         

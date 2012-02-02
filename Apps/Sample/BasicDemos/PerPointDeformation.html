@@ -54,6 +54,7 @@ factoryFn: function(options, scene) {
     return twistedMesh;
   }});
 
+$(document).ready(function() {
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
@@ -79,9 +80,7 @@ factoryFn: function(options, scene) {
 
   viewport.setCameraNode(camera);
 
-  var resourceLoadNode = scene.importAssetFile('Models/cow.obj');
   
-$(document).ready(function() {
  
   var $twistAmount = $('#twistAmount').slider({
       min: -3,
@@ -89,9 +88,8 @@ $(document).ready(function() {
       step: 0.1
     });
  
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    var objectName = evt.objectNames[0];
-    var triangles = evt.loadedGeometries[objectName];
+  scene.importAssetFile('Models/cow.obj', {}, function(assetNodes){
+    var triangles = assetNodes.cow;
      
     var twistedMesh = scene.constructNode('TwistedMesh', {
       baseGeometryNode: triangles
@@ -114,7 +112,6 @@ $(document).ready(function() {
       viewport.redraw();
       return true;
     });
-  
    });
 
   

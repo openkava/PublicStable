@@ -74,23 +74,23 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   slicedTransform.setGlobalXfo(instanceTransforms);
   
   
-  var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/cow.obj', {
-   splitMaterials: false
-  });
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-     var geometry = evt.loadedGeometries[evt.objectNames[0]];
-     scene.constructNode('Instance', {
-       geometryNode: geometry,
-       materialNode: scene.constructNode('PhongInstancingExtMaterial', {
-         diffuseColor: FABRIC.RT.rgb255(139,69,19),
-         lightNode: light,
-         transformTextureNode: scene.constructNode('TransformTexture', {
-           transformNode: slicedTransform
-         })
-       }),
-       constructDefaultTransformNode: false
-     });
-   });
+  scene.importAssetFile('../BasicDemos/Models/cow.obj', {
+     splitMaterials: false
+    },
+    function(assetNodes){
+      var geometry = assetNodes.cow;
+      scene.constructNode('Instance', {
+        geometryNode: geometry,
+        materialNode: scene.constructNode('PhongInstancingExtMaterial', {
+          diffuseColor: FABRIC.RT.rgb255(139,69,19),
+          lightNode: light,
+          transformTextureNode: scene.constructNode('TransformTexture', {
+            transformNode: slicedTransform
+          })
+        }),
+        constructDefaultTransformNode: false
+      });
+    });
 
 
   /*
