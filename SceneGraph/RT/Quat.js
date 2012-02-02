@@ -73,18 +73,18 @@ FABRIC.RT.Quat.prototype = {
       ordered.set(e.y,e.x,e.z);
     }
     else if (e.ro.isYZX()) {
-      ordered.set(e.y,e.z,e.x);
+      ordered.set(e.y,-e.z,e.x);
     }
     else if (e.ro.isXYZ()) {
-      ordered.set(e.x,e.y,e.z);
+      ordered.set(e.x,-e.y,e.z);
     }
     else if (e.ro.isZXY()) {
-      ordered.set(e.z,e.x,e.y);
+      ordered.set(e.z,-e.x,e.y);
     }
 
     var ti, tj, tk;
     ti = (ordered.x * 0.5);
-    tj = (e.ro.isReversed() ? - ordered.y * 0.5 : ordered.y * 0.5);
+    tj = (ordered.y * 0.5);
     tk = (ordered.z * 0.5);
     var ci = Math.cos(ti), cj = Math.cos(tj), ck = Math.cos(tk);
     var si = Math.sin(ti), sj = Math.sin(tj), sk = Math.sin(tk);
@@ -93,8 +93,6 @@ FABRIC.RT.Quat.prototype = {
     ai = cj * sc - sj * cs;
     aj = cj * ss + sj * cc;
     ak = cj * cs - sj * sc;
-    if (e.ro.isReversed())
-      aj = - aj;
     this.w = cj * cc + sj * ss;
 
     if (e.ro.isZYX()) {
@@ -107,13 +105,13 @@ FABRIC.RT.Quat.prototype = {
       this.v.x = aj; this.v.y = ai; this.v.z = ak;
     }
     else if (e.ro.isYZX()) {
-      this.v.x = ak; this.v.y = ai; this.v.z = aj;
+      this.v.x = ak; this.v.y = ai; this.v.z = -aj;
     }
     else if (e.ro.isXYZ()) {
-      this.v.x = ai; this.v.y = aj; this.v.z = ak;
+      this.v.x = ai; this.v.y = -aj; this.v.z = ak;
     }
     else if (e.ro.isZXY()) {
-      this.v.x = aj; this.v.y = ak; this.v.z = ai;
+      this.v.x = -aj; this.v.y = ak; this.v.z = ai;
     }
     return this;
   },
@@ -360,6 +358,70 @@ FABRIC.RT.Quat.prototype = {
 
     return temp;
   },
+
+  toEuler: function( rotationOrder ) {
+    this.setUnit();
+    var ordered = new FABRIC.RT.Vec3();
+    if (rotationOrder.isZYX()) {
+      ordered.set(this.v.x,-this.v.z,this.v.y);
+    }
+    else if (rotationOrder.isXZY()) {
+      ordered.set(this.v.y,-this.v.x,this.v.z);
+    }
+    else if (rotationOrder.isYXZ()) {
+      ordered.set(this.v.z,-this.v.y,this.v.x);
+    }
+    else if (rotationOrder.isYZX()) {
+      ordered.set(this.v.x,this.v.y,this.v.z);
+    }
+    else if (rotationOrder.isXYZ()) {
+      ordered.set(this.v.z,this.v.x,this.v.y);
+    }
+    else if (rotationOrder.isZXY()) {
+      ordered.set(this.v.y,this.v.z,this.v.x);
+    }
+
+    var euler = new FABRIC.RT.Vec3();
+    var test = ordered.x*ordered.y + ordered.z*this.w;
+	  if (test > 0.49999) { // singularity at north pole
+		  euler.y = 2 * Math.atan2(ordered.x, this.w);
+		  euler.z = Math.PI/2;
+		  euler.x = 0;
+	  }
+    else if (test < -0.49999) { // singularity at south pole
+		  euler.y = -2 * Math.atan2(ordered.x,this.w);
+		  euler.z = - Math.PI/2;
+		  euler.x = 0;
+	  }
+    else {
+      var sqx = ordered.x*ordered.x;
+      var sqy = ordered.y*ordered.y;
+      var sqz = ordered.z*ordered.z;
+      euler.y = Math.atan2(2*ordered.y*this.w-2*ordered.x*ordered.z , 1 - 2*sqy - 2*sqz);
+	    euler.z = Math.asin(2*test);
+	    euler.x = Math.atan2(2*ordered.x*this.w-2*ordered.y*ordered.z , 1 - 2*sqx - 2*sqz);
+    }
+
+    if (rotationOrder.isZYX()) {
+      return new FABRIC.RT.Euler(euler.x,euler.z,-euler.y,rotationOrder);
+    }
+    else if (rotationOrder.isXZY()) {
+      return new FABRIC.RT.Euler(-euler.y,euler.x,euler.z,rotationOrder);
+    }
+    else if (rotationOrder.isYXZ()) {
+      return new FABRIC.RT.Euler(euler.z,-euler.y,euler.x,rotationOrder);
+    }
+    else if (rotationOrder.isYZX()) {
+      return new FABRIC.RT.Euler(euler.x,euler.y,euler.z,rotationOrder);
+    }
+    else if (rotationOrder.isXYZ()) {
+      return new FABRIC.RT.Euler(euler.y,euler.z,euler.x,rotationOrder);
+    }
+    else if (rotationOrder.isZXY()) {
+      return new FABRIC.RT.Euler(euler.z,euler.x,euler.y,rotationOrder);
+    }
+  },
+
 
   // Note: this and q2 should be unit Quaternions
   sphericalLinearInterpolate: function(q2, t) {
