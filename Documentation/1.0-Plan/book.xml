@@ -234,8 +234,104 @@
     
     <section>
       <title>Scene Graph</title>
-      
-      <para>TBD</para>
+
+      <section>
+        <title>Overview</title>
+        <itemizedlist>
+
+          <listitem>
+            <para>A <emphasis>General Overview</emphasis> describing what the SceneGraph is, abstraction layers and project specific SceneGraph forks.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Features</title>
+        <itemizedlist>
+
+          <listitem>
+            <para>A <emphasis>SceneGraph Types</emphasis> guide explaining the types that come with the scenegraph and how to add new types.</para>
+            <para>A <emphasis>SceneGraph Kinematics</emphasis> guide explaining the kinematic framework and transforms.</para>
+            <para>A <emphasis>SceneGraph Animation</emphasis> guide explaining how to create and control animation within the SceneGraph.</para>
+            <para>A <emphasis>SceneGraph Geometry</emphasis> guide explaining the geometry types.</para>
+            <para>A <emphasis>SceneGraph Parsers</emphasis> guide explaining how you can parse data into Fabric engine, OBJ, ALEMBIC etc.</para>
+            <para>A <emphasis>SceneGraph Characters</emphasis> guide explaining how to create characters and drive them with animation.</para>
+            <para>A <emphasis>SceneGraph Images and Video</emphasis> guide explaining how to use images in 2D or 3D, KL usage etc</para>
+            <para>A <emphasis>SceneGraph Drawing</emphasis> guide explaining the drawing pipeline.</para>
+            <para>A <emphasis>SceneGraph Deferred Rendering</emphasis> guide explaining the deferred renderer and its features.</para>
+            <para>A <emphasis>SceneGraph IO</emphasis> guide explaining all of the IO possibilities, security and their use.</para>
+            <para>A <emphasis>SceneGraph Persistence</emphasis> guide explaining the persistence framework.</para>
+            <para>A <emphasis>SceneGraph Events</emphasis> guide explaining how the event listeners work.</para>
+            <para>A <emphasis>SceneGraph Selection</emphasis> guide explaining the notion of a manager and the selection manager.</para>
+            <para>A <emphasis>SceneGraph Manipulation</emphasis> guide explaining how manipulation works inside the SceneGraph.</para>
+            <para>A <emphasis>SceneGraph Undo Redo</emphasis> guide explaining how to use the undo framework.</para>
+            <para>A <emphasis>SceneGraph WebSockets</emphasis> guide explaining how to use websockets within fabric engine.</para>
+            <para>A <emphasis>SceneGraph Bullet Integration</emphasis> guide explaining how to use Bullet Physics inside the SceneGraph.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Reference</title>
+        <itemizedlist>
+
+          <listitem>
+            <para>A <emphasis>SceneGraph Node Reference</emphasis> listing all of the available SceneGraph nodes, their use and options.</para>
+            <para>A <emphasis>SceneGraph Shader Reference</emphasis> listing all of the available shaders and their options.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Tutorials</title>
+        <itemizedlist>
+
+          <listitem>
+            <para>A <emphasis>Tutorial</emphasis> how to implement a custom SceneGraph node.</para>
+            <para>A <emphasis>Tutorial</emphasis> how to implement a custom GLSL shader xml file.</para>
+            <para>A <emphasis>Tutorial</emphasis> how to implement a custom UI element and connect it using event listeners.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+    </section>
+    
+    <section>
+      <title>Builtin Extensions</title>
+
+      <section>
+        <title>Safe Extensions</title>
+        <itemizedlist>
+  
+          <listitem>
+            <para>A reference for the <emphasis>ALEMBIC</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>BULLET</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>CIMG</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>EXR</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>FILESTREAM</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>HDR</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>LIDAR</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>Math</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>OBJ</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>OGL</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>OPENCV</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>PNG</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>TEEM</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>TGA</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>VIDEO</emphasis> extension and its KL features.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Optional Extensions</title>
+        <itemizedlist>
+  
+          <listitem>
+            <para>A reference for the <emphasis>FILESYSTEM</emphasis> extension and its KL features.</para>
+            <para>A reference for the <emphasis>KINECT</emphasis> extension and its KL features.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
     </section>
   </section> 
 </article>
