@@ -1,0 +1,43 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os.path
+
+Import( 'coreEnv', 'buildOS', 'buildType', 'buildObject', 'archDistDir', 'packageName' )
+
+pythonEnv = coreEnv.Clone()
+if buildOS == 'Darwin':
+  pythonEnv.Append( LINKFLAGS = ["-undefined", "dynamic_lookup"] )
+
+extraObjects = []
+
+if buildOS == 'Windows':
+    Import( 'getoptFlags' )
+    pythonEnv.MergeFlags( getoptFlags )
+    pythonEnv.Append( LINKFLAGS = [
+        '/IMPLIB:${TARGET.dir}/fabric_cmd.lib',
+        '/STACK:4194304'
+    ] )
+
+pythonLoadableModule = pythonEnv.LoadableModule( 'FabricPython.so', [Glob('*.cpp'), buildObject, extraObjects] )
+
+pythonModulesDistDir = archDistDir.Dir(packageName).Dir('python_modules')
+fabricPythonModuleDistDir = pythonModulesDistDir.Dir('fabric')
+
+fabricPythonLibrary = pythonEnv.Command(
+  fabricPythonModuleDistDir.File('libFabricPython.so'),
+  pythonLoadableModule,
+  [
+    Copy( "$TARGET", "$SOURCE" )
+  ])
+Export('fabricPythonLibrary')
+
+fabricPythonModule = pythonEnv.Command(
+  fabricPythonModuleDistDir.File('__init__.py'),
+  '__init__.py',
+  [
+    Copy( "$TARGET", "$SOURCE" )
+  ])
+Export('fabricPythonModule')
+
