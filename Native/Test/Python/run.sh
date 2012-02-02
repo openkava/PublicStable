@@ -1,27 +1,5 @@
 #!/bin/sh
-
 . ../helpers.sh
-
-BUILD_OS=$(uname -s)
-BUILD_ARCH=$(uname -m)
-BUILD_TYPE=Debug
-
-if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
-  BUILD_OS=Windows
-  BUILD_ARCH=x86
-fi
-if [ "$BUILD_OS" = "Darwin" ]; then
-  BUILD_REAL_ARCH=$BUILD_ARCH
-  BUILD_ARCH=universal
-fi
-
-if [ "$BUILD_OS" = "Darwin" ]; then
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Library/Fabric/Exts"
-elif [ "$BUILD_OS" = "Windows" ]; then
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Exts"
-else
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts"
-fi
 
 if [ -n "$FABRIC_TEST_WITH_VALGRIND" ]; then
   VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$BUILD_OS --leak-check=full -q"
@@ -48,7 +26,7 @@ for f in "$@"; do
   # -u unbuffered IO so print() and FABRIC_LOG() line up
   CMD="python -u $f"
   
-  PYTHONPATH="$PYTHONPATH" $VALGRIND_CMD $CMD 2>&1 \
+  $VALGRIND_CMD $CMD 2>&1 \
     | grep -v '^\[FABRIC\] Fabric Engine version' \
     | grep -v '^\[FABRIC\] This build of Fabric' \
     | grep -v '^\[FABRIC\] .*Extension registered' \
@@ -73,7 +51,7 @@ for f in "$@"; do
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
       echo "To debug:"
-      echo PYTHONPATH="$PYTHONPATH" "gdb --args" $CMD
+      echo "gdb --args" $CMD
       ERROR=1
       break
     else
