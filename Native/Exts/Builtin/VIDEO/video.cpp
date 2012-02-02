@@ -569,12 +569,17 @@ FABRIC_EXT_EXPORT void FabricVIDEOCreateFromFileHandle(
   if(handle.pointer == NULL)
   {
     KL::FileHandleWrapper wrapper(file);
-    wrapper.ensureIsValidFile();
+    if(wrapper.isFolder())
+    {
+      Fabric::EDK::throwException("Video extension: Cannot write to a folder.");
+      return;
+    }
     if(wrapper.isReadOnly())
     {
       Fabric::EDK::throwException("Video Extension: Provided fileHandle is readOnly, invalid for output video!");
       return;
     }
+    wrapper.ensureTargetExists();
 
     // init the stream
     handle.pointer = new videoStream(&handle);

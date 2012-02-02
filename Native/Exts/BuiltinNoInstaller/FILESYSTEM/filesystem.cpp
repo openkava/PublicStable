@@ -67,47 +67,48 @@ FABRIC_EXT_EXPORT void FabricFolderHandle_GetBaseName(
   }
 }
 
-FABRIC_EXT_EXPORT KL::Boolean FabricFolderHandle_IsValid(
-  FabricFolderHandle & folder
+FABRIC_EXT_EXPORT void FabricFolderHandle_IsValid(
+  FabricFolderHandle & folder,
+  KL::Boolean & result
 )
 {
-  KL::Boolean result = false;
+  result = false;
   if(folder.m_data != NULL)
   {
     std::string str = folder.m_data->mPath.string();
     result = !str.empty() && str.length() > 0;
   }
-  return result;
 }
 
-FABRIC_EXT_EXPORT KL::Boolean FabricFolderHandle_Exists(
-  FabricFolderHandle & folder
+FABRIC_EXT_EXPORT void FabricFolderHandle_Exists(
+  FabricFolderHandle & folder,
+  KL::Boolean & result
 )
 {
-  KL::Boolean result = false;
+  result = false;
   if(folder.m_data != NULL)
     result = boost::filesystem::exists(folder.m_data->mPath);
-  return result;
 }
 
-FABRIC_EXT_EXPORT FabricFolderHandle FabricFolderHandle_GetParentFolder(
-  const FabricFolderHandle & folder
+FABRIC_EXT_EXPORT void FabricFolderHandle_GetParentFolder(
+  FabricFolderHandle & folder,
+  FabricFolderHandle & result
 )
 {
-  FabricFolderHandle result;
-  result.m_data = NULL;
   if(folder.m_data != NULL)
   {
     boost::filesystem::path path = folder.m_data->mPath.parent_path();
     std::string str = path.string();
     if(!str.empty())
     {
-      result.m_data = new FabricFolderHandle::LocalData();
-      result.m_data->retain();
+      if(result.m_data == NULL)
+      {
+        result.m_data = new FabricFolderHandle::LocalData();
+        result.m_data->retain();
+      }
       result.m_data->mPath = path;
     }
   }
-  return result;
 }
 
 FABRIC_EXT_EXPORT void FabricFolderHandle_GetSubFolders(
@@ -158,6 +159,25 @@ FABRIC_EXT_EXPORT void FabricFolderHandle_GetFiles(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricFolderHandle_CreateFolder(
+  FabricFolderHandle & folder
+)
+{
+  if(folder.m_data != NULL)
+  {
+    if(!boost::filesystem::exists(folder.m_data->mPath))
+    {
+      try{
+        boost::filesystem::create_directories(folder.m_data->mPath);
+      }
+      catch(boost::filesystem::filesystem_error e)
+      {
+        Fabric::EDK::throwException("FileSystem Extension: %s!",e.what());
+      }
+    }
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricFileHandle_SetAbsolutePath(
   KL::FileHandleWrapper & handle,
   KL::String & path
@@ -174,19 +194,22 @@ FABRIC_EXT_EXPORT void FabricFileHandle_GetAbsolutePath(
   result = handle.getPath();
 }
 
-FABRIC_EXT_EXPORT FabricFolderHandle FabricFileHandle_GetParentFolder(
-  KL::FileHandleWrapper & handle
+FABRIC_EXT_EXPORT void FabricFileHandle_GetParentFolder(
+  KL::FileHandleWrapper & handle,
+  FabricFolderHandle & result
 )
 {
-  FabricFolderHandle result;
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
-    result.m_data = new FabricFolderHandle::LocalData();
-    result.m_data->retain();
+    if(result.m_data == NULL)
+    {
+      result.m_data = new FabricFolderHandle::LocalData();
+      result.m_data->retain();
+    }
     result.m_data->mPath = str;
+    result.m_data->mPath = result.m_data->mPath.parent_path();
   }
-  return result;
 }
 
 FABRIC_EXT_EXPORT void FabricFileHandle_GetName(
@@ -254,47 +277,54 @@ FABRIC_EXT_EXPORT void FabricFileHandle_GetExtensionLower(
   }
 }
 
-FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_IsValid(
-  const KL::FileHandleWrapper & handle
+FABRIC_EXT_EXPORT void FabricFileHandle_IsValid(
+  KL::FileHandleWrapper & handle,
+  KL::Boolean & result
 )
 {
   if( !handle.isValid() || handle.isFolder() )
-    return false;
-  std::string str( handle.getPath().data() );
-  return !str.empty();
+  {
+    result = false;
+  }
+  else
+  {
+    std::string str( handle.getPath().data() );
+    result = !str.empty();
+  }
 }
 
-FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_Exists(
-  const KL::FileHandleWrapper & handle
+FABRIC_EXT_EXPORT void FabricFileHandle_Exists(
+  KL::FileHandleWrapper & handle,
+  KL::Boolean & result
 )
 {
-  KL::Boolean result = false;
+  result = false;
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
     boost::filesystem::path path = str;
     result = boost::filesystem::exists(path);
   }
-  return result;
 }
 
-FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_IsReadOnly(
-  const KL::FileHandleWrapper & handle
+FABRIC_EXT_EXPORT void FabricFileHandle_IsReadOnly(
+  KL::FileHandleWrapper & handle,
+  KL::Boolean & result
 )
 {
-  return handle.isReadOnly();
+  result = handle.isReadOnly();
 }
 
-FABRIC_EXT_EXPORT KL::Size FabricFileHandle_GetSize(
-  const KL::FileHandleWrapper & handle
+FABRIC_EXT_EXPORT void FabricFileHandle_GetSize(
+  KL::FileHandleWrapper & handle,
+  KL::Size & result
 )
 {
-  KL::Size result = 0;
+  result = 0;
   std::string str( handle.getPath().data() );
   if(!str.empty())
   {
     boost::filesystem::path path = str;
     result = boost::filesystem::file_size(path);
   }
-  return result;
 }
