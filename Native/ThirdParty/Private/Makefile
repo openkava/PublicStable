@@ -794,8 +794,13 @@ install_opencv: install_opencv_headers install_opencv_libraries
 install_opencv_headers:
 	for ARCH in $(ARCHS); do \
           mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-          cp Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/include/opencv/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV/; \
-          cp Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/include/opencv2/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV/; \
+          cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/include/open* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					#for DIR in `find Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules -name include`; do\
+					INCLUDEDIRS = "OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/*/include" \
+					for INCLUDEDIR in $INCLUDEDIRS; do \
+						ls $(INCLUDEDIR); \
+	          #cp -r $(DIR)/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
+					done \
         done
 
 install_opencv_libraries:
