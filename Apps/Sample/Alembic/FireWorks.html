@@ -25,6 +25,8 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
                 "SceneGraph/FABRIC.SceneGraph.Manipulation",
                 "SceneGraph/FABRIC.SceneGraph.Alembic"], function() {
   
+$(document).ready(function() {
+    
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
@@ -51,46 +53,32 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
       color: FABRIC.RT.rgb(0.75, 0.0, 0.0)
     });
   
-  $(document).ready(function() {
-  
-    $('#play').button({
-        text: true,
-        icons: {
-          primary: 'ui-icon-play'
-        }
-      });
-    $('#step').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-step'
+  // create the alembic content, and fire the load once it is loaded
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/fireworks.abc',
+    dependentNode: viewport
+  });
+
+  alembicLoadNode.addEventListener('loadSuccess', function(){
+    // loop over all assets and create an instance
+    for(var name in alembicLoadNode.getParsedNodes()) {
+      if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Points'))
+      {
+        var inst = scene.constructNode('Instance', {
+          transformNode: alembicLoadNode.getCorrespondingTransform(name),
+          geometryNode: alembicLoadNode.getParsedNodes()[name],
+          materialNode: pointMaterial
+        });
       }
-    }); 
-    // create the alembic content, and fire the load once it is loaded
-    $('#loadingDialog').dialog({
-      modal: true
-    });
-  
-    var resourceName = 'fireworks';
-    var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
-      dependentNode: viewport
-    });
-  
-    assets[resourceName].addEventListener('loadSuccess', function(){
-      // loop over all assets and create an instance
-      for(var name in assets[resourceName].getParsedNodes()) {
-        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
-        {
-          var inst = scene.constructNode('Instance', {
-            transformNode: assets[resourceName].getCorrespondingTransform(name),
-            geometryNode: assets[resourceName].getParsedNodes()[name],
-            materialNode: pointMaterial
-          });
-        }
-      }
-        
-      $('#loadingDialog').dialog('close');
-      viewport.redraw();
-    });
+    }
+      
+    $('#loadingDialog').dialog('close');
+    viewport.redraw();
+  });
   
     $('#play').button()
       .click(function() {

@@ -24,6 +24,20 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
                 "SceneGraph/FABRIC.SceneGraph.Manipulation",
                 "SceneGraph/FABRIC.SceneGraph.Alembic"], function() {
 
+$(document).ready(function() {
+
+  $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+  $('#step').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-step'
+    }
+  });
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
@@ -55,48 +69,35 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
       color: FABRIC.RT.rgb(0.1, 0.1, 0.1, 1)
     });
   
-  $(document).ready(function() {
-  
-    $('#play').button({
-        text: true,
-        icons: {
-          primary: 'ui-icon-play'
-        }
-      });
-    $('#step').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-step'
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+
+  // create the alembic content, and fire the load once it is loaded
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/face.abc',
+    dependentNode: viewport
+  });
+
+  alembicLoadNode.addEventListener('loadSuccess', function(){
+    // loop over all assets and create an instance
+    for(var name in alembicLoadNode.getParsedNodes()) {
+      if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Triangles'))
+      {
+        var inst = scene.constructNode('Instance', {
+          transformNode: alembicLoadNode.getCorrespondingTransform(name),
+          geometryNode: alembicLoadNode.getParsedNodes()[name],
+          materialNode: phongMaterial
+        });
+        inst.addMaterialNode(wireMaterial);
       }
-    });  
-    $('#loadingDialog').dialog({
-      modal: true
-    });
-  
-    // create the alembic content, and fire the load once it is loaded
-    var resourceName = 'face';
-    var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
-      dependentNode: viewport
-    });
-  
-    assets[resourceName].addEventListener('loadSuccess', function(){
-      // loop over all assets and create an instance
-      for(var name in assets[resourceName].getParsedNodes()) {
-        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Triangles'))
-        {
-          var inst = scene.constructNode('Instance', {
-            transformNode: assets[resourceName].getCorrespondingTransform(name),
-            geometryNode: assets[resourceName].getParsedNodes()[name],
-            materialNode: phongMaterial
-          });
-          inst.addMaterialNode(wireMaterial);
-        }
-      }
-        
-      $('#loadingDialog').dialog('close');
-      viewport.redraw();
-    });
-  
+    }
+      
+    $('#loadingDialog').dialog('close');
+    viewport.redraw();
+  });
+
     $('#play').button()
       .click(function() {
         var options;
@@ -160,7 +161,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
@@ -170,14 +170,13 @@ $(document).ready(function() {
               point positions out of the Alembic file.
             </div><!--content-->
           </div><!--box-->
-
-                  <div class="box">
-                    <h2>CONTROLS</h2>
-                    <div class="content">
-                        <button id="play">Play</button>
-                        <button id="step">Step</button>
-                    </div><!--content-->
-                </div><!--box-->
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+                <button id="play">Play</button>
+                <button id="step">Step</button>
+            </div><!--content-->
+          </div><!--box-->
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->

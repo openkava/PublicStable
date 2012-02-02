@@ -63,18 +63,17 @@ function getUrlVars() {
       lightNode: light
     });
   
-  scene.importAssetFile('Models/cow.obj').addEventListener('objparsesuccess', function(evt){
-    for(var i=0; i< evt.objectNames.length; i++){
-      var objectName = evt.objectNames[i];
+  scene.importAssetFile('Models/cow.obj', {}, function(assetNodes){
+    for(var i in assetNodes){
       var instance = scene.constructNode('Instance', {
-        geometryNode: evt.loadedGeometries[objectName],
+        geometryNode: evt.objectNames[i],
         materialNode: phongMaterial,
         transformNode: scene.constructNode('Transform', {
             hierarchical: false,
             globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
           }),
       });
-     }
+    }
   });
   
 

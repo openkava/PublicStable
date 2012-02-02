@@ -35,7 +35,7 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
     windowElement: document.getElementById('FabricContainer')
   });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -46,22 +46,22 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     target: new FABRIC.RT.Vec3(-10, 5, 10)
   });
 
-  var assetNodes = scene.importAssetFile('Models/mocap_01.dae', {
+  var animationLibrary, rig;
+  scene.importAssetFile('Models/mocap_01.dae', {
     constructRigFromHierarchy: true,
     rigHierarchyRootNodeName: 'Biped_Nulls_UpperBody'
-  });
-
-  var animationLibrary = assetNodes.LinearKeyAnimationLibrary;
-
-  
-  // Get the rig from the list of returned assets.
-  var rig = assetNodes.Biped_Nulls_UpperBodyCharacterRig;
-
-  var geometryNode = scene.constructNode('CharacterSkeletonDebug', {
-      characterRigNode: rig,
-      boneradius: 0.3
+    },
+    function(assetNodes){
+      animationLibrary = assetNodes.LinearKeyAnimationLibrary;
+      rig = assetNodes.Biped_Nulls_UpperBodyCharacterRig;
+      assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 2.5));
+      
+      var geometryNode = scene.constructNode('CharacterSkeletonDebug', {
+        characterRigNode: rig,
+        boneradius: 0.3
+      });
     });
-
+  
   if (!haveCameraManipulator)
   {
     scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -81,7 +81,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     } )
   });
   
-  assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 2.5));
   
   $(document).ready(function() {
   

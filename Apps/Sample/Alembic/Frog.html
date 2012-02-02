@@ -25,25 +25,7 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
                 "SceneGraph/FABRIC.SceneGraph.Manipulation",
                 "SceneGraph/FABRIC.SceneGraph.Alembic"], function() {
  
-
-
-  var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
-
-  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
-    url: '../BasicDemos/Resources/fabric-demo-gradient.png'
-  }));
-
-  scene.constructNode('Instance', {
-          geometryNode: scene.constructNode('Grid', {
-              size_x: 120.0,
-              size_z: 120.0,
-              sections_x: 32,
-              sections_z: 32 }),
-          materialNode: scene.constructNode('FlatMaterial')
-      });
-  
-  $(document).ready(function() {
+$(document).ready(function() {
 
   $('#play').button({
       text: true,
@@ -56,6 +38,23 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
     icons: {
       primary: 'ui-icon-step'
     }
+  });  
+
+
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
+
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+    url: '../BasicDemos/Resources/fabric-demo-gradient.png'
+  }));
+
+  scene.constructNode('Instance', {
+    geometryNode: scene.constructNode('Grid', {
+        size_x: 120.0,
+        size_z: 120.0,
+        sections_x: 32,
+        sections_z: 32 }),
+    materialNode: scene.constructNode('FlatMaterial')
   });
   
   $('#loadingDialog').dialog({
@@ -63,14 +62,15 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
   });
 
   // create the alembic content, and fire the load once it is loaded
-  var assets = scene.importAssetFile('Models/frog.abc', {
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/frog.abc',
     dependentNode: viewport
   });
 
-  assets['frog'].addEventListener('loadSuccess', function(){
+  alembicLoadNode.addEventListener('loadSuccess', function(){
     // create the camera
-    var nodes = assets.frog.getParsedNodes();
-    viewport.setCameraNode(assets.frog.getParsedNodes()['/CameraXfo/Camera']);
+    var nodes = alembicLoadNode.getParsedNodes();
+    viewport.setCameraNode(alembicLoadNode.getParsedNodes()['/CameraXfo/Camera']);
 
     var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
       diffuseTextureNode: scene.constructNode('Image2D', { url: 'Models/frog_diffuse.png' }),
@@ -81,8 +81,8 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
     });
 
     scene.constructNode('Instance', {
-      transformNode: assets.frog.getParsedNodes()['/lowXfo'],
-      geometryNode: assets.frog.getParsedNodes()['/lowXfo/low'],
+      transformNode: alembicLoadNode.getParsedNodes()['/lowXfo'],
+      geometryNode: alembicLoadNode.getParsedNodes()['/lowXfo/low'],
       materialNode: materialNode
     });
       

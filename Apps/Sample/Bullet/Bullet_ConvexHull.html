@@ -80,11 +80,12 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // import the cow
   var cowGeometry;
   scene.importAssetFile('../BasicDemos/Models/cow.obj', {
-   splitMaterials: false
-  }).addEventListener('objparsesuccess', function(evt){
-    cowGeometry = evt.loadedGeometries.cow;
-    bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createConvexHull(cowGeometry));
-  });
+     splitMaterials: false
+    },
+    function(assetNodes){
+      cowGeometry = assetNodes.cow;
+      bulletWorldNode.addShape('Cow',new FABRIC.RT.BulletShape.createConvexHull(cowGeometry));
+    });
 
   // create a force manipulator
   var manipulatorNode = scene.constructNode('BulletForceManipulator', {
@@ -93,8 +94,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     radius: 10.0,
     useFalloff: false
   });
-
-  
   
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     

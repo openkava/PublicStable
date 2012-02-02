@@ -26,6 +26,8 @@ FABRIC.require(["SceneGraph/RT/Color",
                 "SceneGraph/FABRIC.SceneGraph.Manipulation",
                 "SceneGraph/FABRIC.SceneGraph.Alembic"], function() {
 
+$(document).ready(function() {
+ 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
@@ -59,48 +61,31 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     lightNode: light,
   });
   
-  // create the alembic content, and fire the load once it is loaded
-  var resourceName = 'samplehold_elephant_proxy';
-  var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
-    dependentNode: viewport
+  $('#loadingDialog').dialog({
+    modal: true
   });
-    
-  $(document).ready(function() {
   
-    $('#play').button({
-        text: true,
-        icons: {
-          primary: 'ui-icon-play'
-        }
-      });
-    $('#step').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-step'
+  // create the alembic content, and fire the load once it is loaded
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url:'Models/samplehold_elephant_proxy.abc',
+    dependentNode: viewport
+  } );
+  
+  alembicLoadNode.addEventListener('loadSuccess', function(){
+    // loop over all assets and create an instance
+    var nodes = alembicLoadNode.getParsedNodes();
+    for(var name in nodes) {
+      if(nodes[name].isTypeOf('Triangles'))   {
+        var inst = scene.constructNode('Instance', {
+          transformNode: alembicLoadNode.getCorrespondingTransform(name),
+          geometryNode: nodes[name],
+          materialNode: elephantMaterial
+        });
       }
-    });  
-    $('#loadingDialog').dialog({
-      modal: true
-    });
-    
-    assets[resourceName].addEventListener('loadSuccess', function(){
-        
-      // loop over all assets and create an instance
-      for(var name in assets[resourceName].getParsedNodes()) {
-        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Triangles'))
-        {
-          assets[resourceName].getParsedNodes()[name]
-          var inst = scene.constructNode('Instance', {
-            transformNode: assets[resourceName].getCorrespondingTransform(name),
-            geometryNode: assets[resourceName].getParsedNodes()[name],
-            materialNode: elephantMaterial
-          });
-        }
-      }
-        
-      $('#loadingDialog').dialog('close');
-      viewport.redraw();
-    });
+    }
+    $('#loadingDialog').dialog('close');
+    viewport.redraw();
+  });
   
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
       $('#loadingProgressBar').progressbar({

@@ -62,21 +62,26 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
     } )
   });
 
-  var assetNodes = scene.importAssetFile('Models/envelope.dae');
+  var animationLibraryNode;
+  scene.importAssetFile('Models/envelope.dae', {}, function(assetNodes){
+     
+    var rigNode = assetNodes.polymshCharacterRig;
+    var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
   
-  var rigNode = assetNodes.polymshCharacterRig;
-  var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
-
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
-      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
+    var materialNode = scene.constructNode('PhongSkinningMaterial', {
+        lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+        diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
+      });
+    rigInstanceNode.addMaterialNode(materialNode);
+    
+    var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
+      characterRigNode:rigNode,
+      boneradius: 0.2
     });
-  rigInstanceNode.addMaterialNode(materialNode);
-  
-  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
-    characterRigNode:rigNode,
-    boneradius: 0.2
+   
+    animationLibraryNode = assetNodes.AnimationLibrary;
   });
+  
 
   if (!haveCameraManipulator){
     scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -101,7 +106,6 @@ FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
       scene.redrawAllViewports();
     });
 
-  var animationLibraryNode = assetNodes.AnimationLibrary;
   $('#curveEditor').button()
     .click(function() {
       animationLibraryNode.openCurveEditor(0, false);

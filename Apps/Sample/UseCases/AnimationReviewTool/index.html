@@ -535,7 +535,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
 
   // hook for the alembic content
-  var resourceLoadNode = undefined;
+  var alembicLoadNode = undefined;
   var parsedCameras = {};
   var parsedInstances = {};
 
@@ -553,8 +553,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         parsedCameras[name].setDrawToggle(true);
       }
     } else {
-      viewport.setCameraNode(resourceLoadNode.getParsedNodes()[cameraName]);
-      uvViewport.setCameraNode(resourceLoadNode.getParsedNodes()[cameraName]);
+      viewport.setCameraNode(alembicLoadNode.getParsedNodes()[cameraName]);
+      uvViewport.setCameraNode(alembicLoadNode.getParsedNodes()[cameraName]);
       for(var name in parsedCameras) {
         parsedCameras[name].setDrawToggle(false);
       }
@@ -565,25 +565,20 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // load the alembic content based on user interaction
   var timeRange = undefined;
   var loadAlembicAsset = function(url) {
-    var assets = scene.importAssetFile(url, {
+    
+    alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+      url: url,
       dependentNode: viewport
     });
-    assets['frog'].addEventListener('loadSuccess', function(){
-      // get the first asset name
-      var assetName = undefined;
-      for(var name in assets) {
-        assetName = name;
-        break;
-      }
-        
-      resourceLoadNode = assets[assetName];
-      var parsedNodes = resourceLoadNode.getParsedNodes();
+  
+    alembicLoadNode.addEventListener('loadSuccess', function(){
+      var parsedNodes = alembicLoadNode.getParsedNodes();
 
       // setup html for the object and camera list        
       var cameraListHtml = "<option value='userCamera'>Free Camera</option>";
         
       // setup the animation time
-      timeRange = resourceLoadNode.getAnimationController().getTimeRange();
+      timeRange = alembicLoadNode.getAnimationController().getTimeRange();
       $('#localtime').slider({
           min: timeRange.x,
           max: timeRange.y,
@@ -595,7 +590,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         var parsedNode = parsedNodes[name];
         if(parsedNode.isTypeOf('Triangles')) {
           parsedInstances[name] = scene.constructNode('Instance', {
-            transformNode: resourceLoadNode.getCorrespondingTransform(name),
+            transformNode: alembicLoadNode.getCorrespondingTransform(name),
             geometryNode: parsedNode,
             materialNode: materialNode
           });
@@ -696,7 +691,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     }
 
     // create a key to identify the plane
-    var timeKey = resourceLoadNode.getAnimationController().getLocalTime();
+    var timeKey = alembicLoadNode.getAnimationController().getLocalTime();
     timeKey = ''+parseInt(timeKey * 30 + 0.5);
     if(currentKey == timeKey)
       return;
@@ -707,8 +702,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         viewportNode: viewport,
         uvViewportNode: uvViewport,
         planeNode: planeGeometry,
-        animationControllerNode: resourceLoadNode.getAnimationController(),
-        planeTime: resourceLoadNode.getAnimationController().getLocalTime(),
+        animationControllerNode: alembicLoadNode.getAnimationController(),
+        planeTime: alembicLoadNode.getAnimationController().getLocalTime(),
         planeBlend: options.blend ? options.blend : 5.0 / 30.0,
         resolutionFactor: 0.2,
         paintColor: brushColor,
@@ -720,7 +715,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       planes[timeKey] = {
         camera: usedCamera,
         instance: newPlane,
-        time: resourceLoadNode.getAnimationController().getLocalTime()
+        time: alembicLoadNode.getAnimationController().getLocalTime()
       };
   
       // re-create the list html
@@ -770,7 +765,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       });
       var localTime = $('#localtime').slider();
       scene.animation.play( function() {
-        localTime.slider('value', resourceLoadNode.getAnimationController().getLocalTime());
+        localTime.slider('value', alembicLoadNode.getAnimationController().getLocalTime());
       });
     } else if(evt.keyCode == 40) { // down arrow
       $('#play').button('option', {
@@ -865,7 +860,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       text: true
     })
     .click(function() {
-      if(!resourceLoadNode)
+      if(!alembicLoadNode)
         return;
       
       if($(this).text() == 'Save') {
@@ -920,7 +915,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         for(var key in jsonData.planes) {
           switchCamera(jsonData.planes[key].camera);
           scene.animation.setTime(parseFloat(jsonData.planes[key].time));
-          resourceLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
+          alembicLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
           var planeFileHandle = scene.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
           $('#planeblend').slider("option", "value", jsonData.planes[key].blend);
           paintPlane({resourceFileHandle: planeFileHandle, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
@@ -937,7 +932,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         switchCamera(jsonData.currentCamera);
 
         scene.animation.setTime(parseFloat(jsonData.currentTime));
-        resourceLoadNode.getAnimationController().setLocalTime(jsonData.currentTime);
+        alembicLoadNode.getAnimationController().setLocalTime(jsonData.currentTime);
         $('#localtime').slider('value', parseFloat(jsonData.currentTime));
 
         viewport.redraw();

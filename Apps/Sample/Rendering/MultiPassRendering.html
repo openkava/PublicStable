@@ -175,18 +175,16 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       sigma: 0.6
     });
   
-  var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/beethovan.obj');
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+  scene.importAssetFile('../BasicDemos/Models/beethovan.obj', {}, function(assetNodes){
     scene.constructNode('Instance', {
         transformNode: scene.constructNode('Transform', {
             hierarchical: false,
             globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
           }),
-        geometryNode: evt.loadedGeometries['beethovan'],
+        geometryNode: assetNodes['beethovan'],
         materialNode: thickGlassMaterial
       });
    });
-  
   
   
   $('#loadingDialog').dialog({

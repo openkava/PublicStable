@@ -228,10 +228,8 @@ $(document).ready(function() {
   /////////////////////////////////////////////////
   var loadObjFile = function(file, callback) {
     var fileName = file.split('/').pop().split('.')[0];
-    var resourceLoadNode = scene.importAssetFile(file);
-    
-    resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-      trianglesNode = evt.loadedGeometries[fileName];
+    scene.importAssetFile(file, {}, function(assetNodes){
+      trianglesNode = assetNodes[fileName];
       callback(trianglesNode);
     });
   };
