@@ -5,6 +5,7 @@
 
 FABRIC.define(["SceneGraph/FABRIC.SceneGraph",
                "SceneGraph/FABRIC.SceneGraph.Geometry",
+               "SceneGraph/FABRIC.SceneGraph.Rendering",
                "SceneGraph/FABRIC.SceneGraph.Images",
                "SceneGraph/FABRIC.SceneGraph.Lights",
                "SceneGraph/RT/RGBA",

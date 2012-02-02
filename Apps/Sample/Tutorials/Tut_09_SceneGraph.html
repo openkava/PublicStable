@@ -13,22 +13,6 @@
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     
 
 <script type="text/javascript">
@@ -51,6 +35,10 @@ s.parentNode.insertBefore(ga, s);
 <script type="text/javascript">
 
 $(document).ready(function() {
+ 
+ 
+FABRIC.require(["SceneGraph/FABRIC.SceneGraph",
+                "SceneGraph/FABRIC.SceneGraph.Rendering"], function() {
 
   // create a scene (this creates a context)
   var scene = FABRIC.SceneGraph.createScene();
@@ -73,6 +61,7 @@ $(document).ready(function() {
     }
   });
 
+});
 });
 
 </script>
