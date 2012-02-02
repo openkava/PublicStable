@@ -309,6 +309,15 @@ class _GCOBJECT( object ):
       raise Exception( "GC object has already been disposed" )
     self._nsobj._objQueueCommand( [ self.__id ], cmd, arg, unwind, callback )
 
+  def _synchronousGetOnly( self, cmd ):
+    # dictionary hack to simulate Python 3.x nonlocal
+    data = { '_': None }
+    def __callback( result ):
+      data[ '_' ] = result
+    self._gcObjQueueCommand( cmd, None, None, __callback )
+    self._nsobj._executeQueuedCommands()
+    return data[ '_' ]
+
   def _registerCallback( self, callback ):
     self.__nextCallbackID = self.__nextCallbackID + 1
     callbackID = self.__nextCallbackID
@@ -1429,12 +1438,27 @@ class _KLC( _NAMESPACE ):
     super( _KLC, self ).__init__( client, 'KLC' )
 
   def createCompilation( self, sourceName, sourceCode ):
-    raise Exception( 'KLC.createCompilation(): not implemented yet' )
-    return self._COMPILATION( self )
+    obj = self._COMPILATION( self )
+    arg = { 'id': obj.getID() }
+    if sourceName is not None:
+      arg[ 'sourceName' ] = sourceName
+    if sourceCode is not None:
+      arg[ 'sourceCode' ] = sourceCode
+    self._queueCommand( 'createCompilation', arg, obj.unwind )
+    return obj
+
+  def _createExecutable( self ):
+    return self._EXECUTABLE( self )
 
   def createExecutable( self, sourceName, sourceCode ):
-    raise Exception( 'KLC.createExecutable(): not implemented yet' )
-    return self._EXECUTABLE( self )
+    obj = self._createExecutable()
+    arg = {
+      'id': obj.getID(),
+      'sourceName': sourceName,
+      'sourceCode': sourceCode
+    }
+    self._queueCommand( 'createExecutable', arg, obj.unwind )
+    return obj
 
   def __createOperator( self, sourceName, sourceCode, operatorName, cmd ):
     operator = self._OPERATOR( self )
@@ -1474,26 +1498,50 @@ class _KLC( _NAMESPACE ):
       super( _KLC._OPERATOR, self ).__init__( klc )
 
     def toJSON( self ):
-      # dictionary hack to simulate Python 3.x nonlocal
-      json = { '_': None }
-      def __toJSON( result ):
-        json[ '_' ] = result
-  
-      self._gcObjQueueCommand( 'toJSON', None, None, __toJSON )
-      return json[ '_' ]
+      return self._synchronousGetOnly( 'toJSON' )
  
     def getDiagnostics( self ):
-      # dictionary hack to simulate Python 3.x nonlocal
-      diagnostics = { '_': None }
-      def __getDiagnostics( result ):
-        diagnostics[ '_' ] = result
-  
-      self._gcObjQueueCommand( 'getDiagnostics', None, None, __getDiagnostics )
-      return diagnostics[ '_' ]
+      return self._synchronousGetOnly( 'getDiagnostics' )
 
   class _EXECUTABLE( _GCOBJECT ):
     def __init__( self, klc ):
-      super( _KLC._COMPILATION, self ).__init__( klc )
+      super( _KLC._EXECUTABLE, self ).__init__( klc )
+
+    def __resolveOperator( self, operatorName, cmd ):
+      operator = self._OPERATOR( self )
+      arg = {
+        'id': operator.getID(),
+        'operatorName': operatorName
+      }
+      self._queueCommand( cmd, arg, operator.unwind )
+      return operator
+
+    def getAST( self ):
+      return self._synchronousGetOnly( 'getAST' )
+
+    def getDiagnostics( self ):
+      return self._synchronousGetOnly( 'getDiagnostics' )
+ 
+    def resolveReduceOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveReduceOperator' )
+  
+    def resolveValueGeneratorOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveValueGeneratorOperator' )
+  
+    def resolveValueMapOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveValueMapOperator' )
+  
+    def resolveValueTransformOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveValueTransformOperator' )
+  
+    def resolveArrayGeneratorOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveArrayGeneratorOperator' )
+  
+    def resolveArrayMapOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveArrayMapOperator' )
+
+    def resolveArrayTransformOperator( self, operatorName ):
+      return self.__resolveOperator( operatorName, 'resolveArrayTransformOperator' )
 
   class _COMPILATION( _GCOBJECT ):
     def __init__( self, klc ):
@@ -1506,6 +1554,44 @@ class _KLC( _NAMESPACE ):
         oldSourceCode = self.__sourceCodes[ sourceName ]
 
       self.__sourceCodes[ sourceName ] = sourceCode
+
+      def __unwind():
+        if oldSourceCode is not None:
+          self.__sourceCodes[ sourceName ] = oldSourceCode
+        else:
+          del self.__sourceCodes[ sourceName ]
+
+      args = { 'sourceName': sourceName, 'sourceCode': sourceCode }
+      self._gcObjQueueCommand( 'addSource', args, __unwind )
+
+    def removeSource( self, sourceName ):
+      oldSourceCode = None
+      if sourceName in self.__sourceCodes:
+        oldSourceCode = self.__sourceCodes[ sourceName ]
+        del self.__sourceCodes[ sourceName ]
+
+      def __unwind():
+        if oldSourceCode is not None:
+          self.__sourceCodes[ sourceName ] = oldSourceCode
+
+      args = { 'sourceName': sourceName }
+      self._gcObjQueueCommand( 'removeSource', args, __unwind )
+     
+    def getSources( self ):
+      # dictionary hack to simulate Python 3.x nonlocal
+      data = { '_': None }
+      def __callback( result ):
+        data[ '_' ] = result
+  
+      self._gcObjQueueCommand( 'getSources', None, None, __callback )
+      self._nsobj._executeQueuedCommands()
+      return data[ '_' ]
+
+    def run( self ):
+      executable = self._nsobj._createExecutable()
+      args = { 'id': executable.getID() }
+      self._gcObjQueueCommand( 'run', args, executable.unwind )
+      return executable
 
 class _RT( _NAMESPACE ):
   def __init__( self, client ):

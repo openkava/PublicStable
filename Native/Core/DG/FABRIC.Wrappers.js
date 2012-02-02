@@ -1586,7 +1586,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       
       executable.pub.resolveArrayMapOperator = function (operatorName) {
         var operator = GC.createObject('KLC');
-        populateMapOperator(operator);
+        populateArrayMapOperator(operator);
         executable.queueCommand('resolveArrayMapOperator', {
           id: operator.id,
           operatorName: operatorName
@@ -1697,7 +1697,7 @@ function (fabricClient, logCallback, debugLogCallback) {
           });
         };
         
-        compilation.pub.getSources = function (sourceName, sourceCode) {
+        compilation.pub.getSources = function () {
           var sources;
           compilation.queueCommand('getSources', null, null, function (result) {
             sources = result;
