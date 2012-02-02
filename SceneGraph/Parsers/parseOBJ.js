@@ -110,9 +110,9 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
     
     resourceLoadNode.disposeData = function(){
       // this frees up the memory used by the resource.
-    //  resourceloaddgnode.removeMember('resource');
-    //  resourceloaddgnode.removeMember('handle');
-    //  resourceloaddgnode.bindings.remove(0);
+      resourceloaddgnode.removeMember('resource');
+      resourceloaddgnode.removeMember('handle');
+      resourceloaddgnode.bindings.remove(0);
     }
     
     var parentWriteData = resourceLoadNode.writeData;
@@ -188,7 +188,6 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
       if(options.removeParsersOnLoad){
         var numOperators = attributesdgnode.bindings.getLength();
         resourceLoadNode.pub.addEventListener('objparsesuccess', function(){
-          /*
           attributesdgnode.evaluate();
           
           // TODO: Log an issue to enable removal of operators by object or name.
@@ -198,7 +197,6 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
           
           trianglesNode.getAttributesDGNode().removeDependency('resource');
           resourceLoadNode.decrementRef();
-          */
         });
       }
     }

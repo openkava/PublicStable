@@ -758,7 +758,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
       }
       
       writeBinaryDataNodeEvent.fire();
-      binarydatadgnode.putResourceToFile(resource, path);
+      binarydatadgnode.putResourceToFile(path,resource);
     }
     
     binarydatadgnode.addMember('container', 'SecureContainer');
