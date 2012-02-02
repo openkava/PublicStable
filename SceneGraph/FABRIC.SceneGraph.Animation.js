@@ -579,9 +579,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
       curveEditorWindow.animationLibraryNode = animationLibraryNode.pub;
-      curveEditorWindow.trackSetId = options.trackSetId ? options.trackSetId : 0;
-      curveEditorWindow.drawKeys = options.drawKeys ? options.drawKeys : true;
-      curveEditorWindow.trackFilters = options.trackFilters ? options.trackFilters : [];
+      curveEditorWindow.trackSetId = options.trackSetId!=undefined ? options.trackSetId : 0;
+      curveEditorWindow.drawKeys = options.drawKeys!=undefined ? options.drawKeys : true;
+      curveEditorWindow.trackFilters = options.trackFilters!=undefined ? options.trackFilters : [];
       curveEditorWindow.scene = scene.pub;
       return curveEditorWindow;
     }
