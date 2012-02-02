@@ -87,17 +87,17 @@ function Mat33 Euler.toMat33() {
   Mat33 result;
 
   if (this.ro.isXYZ())
-    result = Rz * Ry * Rx;
-  else if (this.ro.isYZX())
-    result = Rx * Rz * Ry;
-  else if (this.ro.isZXY())
-    result = Ry * Rx * Rz;
-  else if (this.ro.isXZY())
-    result = Ry * Rz * Rx;
-  else if (this.ro.isZYX())
     result = Rx * Ry * Rz;
-  else if (this.ro.isYXZ())
+  else if (this.ro.isYZX())
+    result = Ry * Rz * Rx;
+  else if (this.ro.isZXY())
     result = Rz * Rx * Ry;
+  else if (this.ro.isXZY())
+    result = Rx * Rz * Ry;
+  else if (this.ro.isZYX())
+    result = Rz * Ry * Rx;
+  else if (this.ro.isYXZ())
+    result = Ry * Rx * Rz;
 
   return result;
 }
