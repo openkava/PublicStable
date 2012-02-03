@@ -14,65 +14,19 @@
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
 
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Alembic.js" charset="utf-8"></script>
-
-<script type="text/javascript">
-
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
+    <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
     <script type="text/javascript">
+ 
+
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Alembic"], function() {
+  
 $(document).ready(function() {
-
-  $('#play').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-play'
-      }
-    });
-  $('#step').button({
-    text: true,
-    icons: {
-      primary: 'ui-icon-step'
-    }
-  });  
-
+    
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
@@ -104,9 +58,8 @@ $(document).ready(function() {
     modal: true
   });
 
-  var resourceName = 'fireworks';
   var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
-    url: 'Models/'+resourceName+'.abc',
+    url: 'Models/fireworks.abc',
     dependentNode: viewport
   });
 
@@ -126,48 +79,48 @@ $(document).ready(function() {
     $('#loadingDialog').dialog('close');
     viewport.redraw();
   });
-
-  $('#play').button()
-    .click(function() {
-      var options;
-      if ($(this).text() == 'Play') {
-        $(this).button('option', {
-          label: 'Pause',
-          icons: {
-            primary: 'ui-icon-pause'
-          }
-        });
+  
+    $('#play').button()
+      .click(function() {
+        var options;
+        if ($(this).text() == 'Play') {
+          $(this).button('option', {
+            label: 'Pause',
+            icons: {
+              primary: 'ui-icon-pause'
+            }
+          });
+          scene.animation.play();
+        } else {
+          $(this).button('option', {
+            label: 'Play',
+            icons: {
+              primary: 'ui-icon-play'
+            }
+          });
+          scene.animation.pause();
+        }
+      });
+    $('#step').button()
+      .click(function() {
+        scene.animation.step();
+      });
+    
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      $('#loadingProgressBar').progressbar({
+        value: (1.0-(doneWeight/totalWeight))*100
+      });
+      if (nbRemaining===0) {
+        viewport.redraw();
+        var errors = scene.getErrors();
+        if (errors.length > 0) {
+          throw (errors.toString());
+        }
         scene.animation.play();
-      } else {
-        $(this).button('option', {
-          label: 'Play',
-          icons: {
-            primary: 'ui-icon-play'
-          }
-        });
-        scene.animation.pause();
+        return true;
       }
     });
-  $('#step').button()
-    .click(function() {
-      scene.animation.step();
-    });
-  
-  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-    $('#loadingProgressBar').progressbar({
-      value: (1.0-(doneWeight/totalWeight))*100
-    });
-    if (nbRemaining===0) {
-      viewport.redraw();
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
-      scene.animation.play();
-      return true;
-    }
   });
-  
 });
 
 // jQuert UI Styling classes
