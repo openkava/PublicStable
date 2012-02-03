@@ -143,12 +143,18 @@ else:
 Export( 'ffmpegFlags' )
 
 # opencv
-opencvFlags = {}
 opencvFlags = {
     'CPPPATH': [os.path.join( osArchIncludeBaseDir, 'OpenCV' )],
-    'LIBS': [archLibs( 'OpenCV', ['opencv_core'] ), 'z'],
+    'LIBS': [archLibs( 'OpenCV', ['opencv_core'] )],
 }
 Export( 'opencvFlags' )
+
+# face
+faceFlags = {
+    'CPPPATH': [os.path.join( osArchIncludeBaseDir, 'libface' )],
+    'LIBS': [archLibs( 'libface', ['face'] )],
+}
+Export( 'faceFlags' )
 
 # alembic
 alembicLibs = []
