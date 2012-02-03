@@ -132,11 +132,15 @@ $(document).ready(function() {
     });
   }
 
-  var sandAlembicNode = scene.importAssetFile('../BasicDemos/Models/sand.abc').sand;
-  sandAlembicNode.addEventListener('loadSuccess', function(){
-      
-    // loop over all assets and create an instance
-    var gridTriangles = sandAlembicNode.getParsedNodes()['/gridXfo/grid'];
+
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: '../BasicDemos/Models/sand.abc',
+    dependentNode: viewport
+  });
+
+  alembicLoadNode.addEventListener('loadSuccess', function(){
+    var nodes = alembicLoadNode.getParsedNodes();
+    var gridTriangles = nodes['/gridXfo/grid'];
     scene.constructNode('Instance', {
       geometryNode: gridTriangles,
       materialNode: flatTextureMaterial
@@ -215,7 +219,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
               <div class="content">

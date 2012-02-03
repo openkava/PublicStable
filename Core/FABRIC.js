@@ -2432,6 +2432,8 @@ var requirejs, require, define;
           context.VP.viewPort.addPopUpMenuItem(name, desc, callback);
         }
       };
+      
+      FABRIC.IO = context.IO;
 
   
       var queryDGNode;

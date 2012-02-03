@@ -24,6 +24,8 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Materials",
                 "SG/Animation",
                 "SG/Manipulation",
+                "SG/Persistence",
+                "SG/WebSocket",
                 "SG/Images",
                 "SG/Parsers/parseOBJ"], function() {
     
@@ -66,7 +68,7 @@ function getUrlVars() {
   scene.importAssetFile('Models/cow.obj', {}, function(assetNodes){
     for(var i in assetNodes){
       var instance = scene.constructNode('Instance', {
-        geometryNode: evt.objectNames[i],
+        geometryNode: assetNodes[i],
         materialNode: phongMaterial,
         transformNode: scene.constructNode('Transform', {
             hierarchical: false,
@@ -313,7 +315,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
