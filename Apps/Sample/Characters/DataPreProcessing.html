@@ -205,7 +205,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   //////////////////////////////////////////////
   //
-  var rigName = 'USWolf';
+  var rigName = 'Spiedel';
   
   var assetNodes, bindPoseRig, fkrigNode, rigInstances = {}, skeletonNode, materialNode;
   switch(rigName){
@@ -555,18 +555,19 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       scene.animation.setTime(parseFloat($(this).val()));
       viewport.redraw();
     });
-    
+  var selectedTrack = 0;
+  var selectedTrackTimeRange = 0;
   $( "#animationTracksList" ).selectable({
     stop: function(event, ui) {
       var selectedChildren = $("#animationTracksList").children('.ui-selected');
-      var id = parseInt($(selectedChildren[0]).attr('id'));
+      selectedTrack = parseInt($(selectedChildren[0]).attr('id'));
       // Set the animation that the FK rig is using.
-      fkRigVariablesNode.setBoundTrack(id);
+      fkRigVariablesNode.setBoundTrack(selectedTrack);
         
-      var timeRange = libraryFKAnimations.getTimeRange(id);
+      selectedTrackTimeRange = libraryFKAnimations.getTimeRange(selectedTrack);
       $('#globalTime').slider({
-          min: timeRange.x,
-          max: timeRange.y,
+          min: selectedTrackTimeRange.x,
+          max: selectedTrackTimeRange.y,
           step: 0.01
         });
       viewport.redraw();
@@ -637,7 +638,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var keyframeTrackNode = assetNodes.polymshAnimationTrack;
   $('#curveEditor').button()
     .click(function() {
-      libraryLocomotionAnimations.openCurveEditor( {trackSetId:0, drawKeys:false } );
+      libraryLocomotionAnimations.openCurveEditor( {trackSetId:selectedTrack, drawKeys:false, timeRange:selectedTrackTimeRange } );
     });
     
 
@@ -698,11 +699,6 @@ $(document).ready(function() {
         </div><!--viewer-->
         <div id="sidebar">
           
-          <div class="box">
-            <h2>INFO</h2>
-            <div class="content">
-            </div><!--content-->
-          </div><!--box-->
 
           <div class="box">
             <h2>CONTROLS</h2>
@@ -718,7 +714,6 @@ $(document).ready(function() {
               <div id='globalTime' style="margin-bottom:10px;"></div>
               
               <button id="writeRigData" style="margin-top:3px;">Write Character Definition</button>
-              <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
               
             </div><!--content-->
           </div><!--box-->
@@ -727,9 +722,10 @@ $(document).ready(function() {
             <h2>ANIMATIONS</h2>
             <div class="content">
               <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
-              <button id="writeAnimationData" style="margin-top:3px;">Write Animation Library</button>
               <ol id="animationTracksList">
               </ol>
+              <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
+              <button id="writeAnimationData" style="margin-top:3px;">Write Animation Library</button>
             </div>
           </div><!--box-->
           
