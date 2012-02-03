@@ -1,0 +1,16 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'faceFlags', 'opencvFlags', 'ExtSLName', 'buildOS', 'buildArch', 'buildType')
+import os.path
+
+facePluginEnv = extsEnv.Clone()
+facePluginEnv.MergeFlags( opencvFlags )
+facePluginEnv.MergeFlags( faceFlags )
+facePlugin = facePluginEnv.SharedLibrary( ExtSLName('FabricFACE'), Glob('*.cpp') ),
+faceManifest = facePluginEnv.File('FabricFACE.fpm.json'),
+faceKL = facePluginEnv.File('FabricFACE.kl'),
+faceFiles = [faceManifest, facePlugin, faceKL]
+
+Return( 'faceFiles' )
