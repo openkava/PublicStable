@@ -74,9 +74,10 @@ function KEYFRAMETYPETrackSetBindings.evaluateTracks(
     // If the this 3 or 4, we assume an fk rotation animation is bound.
     // trackSet isn't the safest assumption, and probably should be made explicit.
     if(binding.trackIds.size == 3){
-      Euler euler(Vec3( trackSet.tracks[binding.trackIds[0]].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[binding.trackIds[1]].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[binding.trackIds[2]].evaluate(time, currKeys[trackId++])));
+      Euler euler(trackSet.tracks[binding.trackIds[0]].evaluate(time, currKeys[trackId++]),
+                  trackSet.tracks[binding.trackIds[1]].evaluate(time, currKeys[trackId++]),
+                  trackSet.tracks[binding.trackIds[2]].evaluate(time, currKeys[trackId++]),
+                  RotationOrder(binding.param));
       poseVariables.xfoValues[binding.varId].ori.setFromEuler(euler);
     }
     else if(binding.trackIds.size == 4){
@@ -94,9 +95,10 @@ function KEYFRAMETYPETrackSetBindings.evaluateTracks(
         trackSet.tracks[binding.trackIds[2]].evaluate(time, currKeys[trackId++])
       );
       if(binding.trackIds.size == 6){
-        Euler euler(Vec3( trackSet.tracks[binding.trackIds[3]].evaluate(time, currKeys[trackId++]),
-                          trackSet.tracks[binding.trackIds[4]].evaluate(time, currKeys[trackId++]),
-                          trackSet.tracks[binding.trackIds[5]].evaluate(time, currKeys[trackId++])));
+        Euler euler(trackSet.tracks[binding.trackIds[3]].evaluate(time, currKeys[trackId++]),
+                    trackSet.tracks[binding.trackIds[4]].evaluate(time, currKeys[trackId++]),
+                    trackSet.tracks[binding.trackIds[5]].evaluate(time, currKeys[trackId++]),
+                    RotationOrder(binding.param));
         poseVariables.xfoValues[binding.varId].ori.setFromEuler(euler);
       }
       else if(binding.trackIds.size == 7){

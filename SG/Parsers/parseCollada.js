@@ -509,6 +509,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       type:  node.getAttribute('type'),
       instance_geometry: undefined,
       xfo: new FABRIC.RT.Xfo(),
+      rotationOrder: '',
       children:[]
     };
     if(parentId){
@@ -528,6 +529,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         }
         case 'rotate': {
           var sid = child.getAttribute('sid');
+          nodeData.rotationOrder += sid.substr(9);
           var str = child.textContent.split(new RegExp("\\s+"));
           var q = new FABRIC.RT.Quat().setFromAxisAndAngle(
                     new FABRIC.RT.Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2])),
@@ -811,7 +813,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   }
 
   
-  var loadRigAnimation = function(rigNode){
+  var loadRigAnimation = function(sceneData, rigNode){
     if(colladaData.libraryAnimations){
       if(!animationLibrary){
         animationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
@@ -836,10 +838,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       for (var i = 0; i < bones.length; i++) {
         var boneName = bones[i].name;
         var channels = colladaData.libraryAnimations.channelMap[boneName];
-        
+        var nodeData = sceneData.nodeLibrary[boneName];
         if (!channels)
           continue;
-        
         var trackIds = [];
         for (var channelName in channels) {
           var animation = channels[channelName];
@@ -968,7 +969,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
           
           generateKeyframeTrack(channelName, inputSource.data, outputSource.data, scaleFactor);
         }
-        trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
+        var rotationOrder;
+        if(nodeData.rotationOrder !== ''){
+          rotationOrder = new FABRIC.RT.RotationOrder(nodeData.rotationOrder);
+        }
+        trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds, rotationOrder != undefined ? rotationOrder.order : undefined);
       }
       
       var trackSetID = animationLibrary.addTrackSet(trackSet, trackBindings);
@@ -1055,7 +1060,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       skeletonNode: skeletonNode
     });
     
-    loadRigAnimation(rigNode);
+    loadRigAnimation(sceneData, rigNode);
     
     // Store the created scene graph nodes in the returned asset map.
     assetNodes[skeletonNode.getName()] = skeletonNode;
@@ -1372,7 +1377,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       else{
         
         if (options.loadAnimationUsingRig) {
-          loadRigAnimation(options.rigNode);
+          loadRigAnimation(sceneData, options.rigNode);
         }
         if (options.loadPoseOntoRig) {
           loadPoseOntoRig(sceneData, options.rigNode, options.rigHierarchyRootNodeName);

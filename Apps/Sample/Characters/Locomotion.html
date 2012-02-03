@@ -258,9 +258,9 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 20,
-        maxLinearAcceleration: 15,
-        maxAngularVelocity: 1.6,
-        maxAngularAcceleration: 1.6,
+        maxLinearAcceleration: 40,
+        maxAngularVelocity: 2.6,
+        maxAngularAcceleration: 3.6,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: 0,
@@ -299,14 +299,14 @@ $(document).ready(function() {
         cameraNode: camera,
         maxLinearVelocity: 15,
         maxLinearAcceleration: 40,
-        maxAngularVelocity:  2.5,
-        maxAngularAcceleration: 2.5,
+        maxAngularVelocity:  5.5,
+        maxAngularAcceleration: 7.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -60,
         comHeight: 2.3,
         circleSize: 0.6,
-        translationControls: new FABRIC.RT.Vec2(0,0.3)
+        translationControls: new FABRIC.RT.Vec2(0,0)
       });
     rigFile = 'Assets/USWolf.json';
     animationLibraryFile = 'Assets/USWolfAnimation.json';
@@ -328,11 +328,12 @@ $(document).ready(function() {
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
   }
-  var locomotionVariables;
+  var rig, locomotionVariables;
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
   rigLoader.load(storage, function(nodeMap){
-    var ikrig = nodeMap.IKRig;
+    rig = nodeMap.IKRig;
+    $("#displayRigDebugging").attr('checked', rig.getDebuggingEnabled());
   //  var characterMesh =  nodeMap.characterMesh;
   
     var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
@@ -340,15 +341,15 @@ $(document).ready(function() {
     animationLoader.load(storage, function(animationLoaderNodeMap){
       var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
       
-      ikrig.setControllerNode(locomotionControllerNode);
+      rig.setControllerNode(locomotionControllerNode);
       
       locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-        characterRigNode: ikrig,
+        characterRigNode: rig,
         bulletWorldNode: bulletWorldNode,
         minFrequency: minFrequency
       });
       locomotionVariables.setAnimationLibraryNode(libraryAnimations);
-      ikrig.setVariablesNode(locomotionVariables);
+      rig.setVariablesNode(locomotionVariables);
     });
   });
   
@@ -371,6 +372,11 @@ $(document).ready(function() {
   
   $("#displayControllerDebugging").change(function() {
     locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  
+  $("#displayRigDebugging").change(function() {
+    rig.setDebuggingEnabled($("#displayRigDebugging").is(":checked"));
     viewport.redraw();
   });
   $("#displayFootMotionDebugging").change(function() {
@@ -556,11 +562,13 @@ $(document).ready(function() {
                 
               </select>
               </br>
-              <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
+              <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Debug Controller</label>
               </br>
-              <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
+              <input type="checkbox" id="displayRigDebugging" style="margin-top:10px;"/><label for="displayRigDebugging">Debug Rig</label>
               </br>
-              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Display Foot Raycasting Debugging:</label>
+              <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Debug Foot Motion</label>
+              </br>
+              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Debug Foot Raycasting</label>
               </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
