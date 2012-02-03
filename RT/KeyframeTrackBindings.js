@@ -3,16 +3,18 @@
 FABRIC.define(["RT/KeyframeTrack"], function() {
 
 
-FABRIC.RT.KeyframeTrackBinding = function(varId, trackIds) {
+FABRIC.RT.KeyframeTrackBinding = function(varId, trackIds, param) {
   this.varId = varId != undefined ? varId : -1;
   this.trackIds = trackIds != undefined ? trackIds : [];
+  this.param = param != undefined ? param : -1;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('KeyframeTrackBinding', {
     members: {
       varId: 'Integer',
-      trackIds: 'Integer[]'
+      trackIds: 'Integer[]',
+      param: 'Integer'
     },
     constructor: FABRIC.RT.KeyframeTrackBinding
   });
@@ -31,8 +33,8 @@ FABRIC.RT.KeyframeTrackBindings.prototype = {
   addScalarBinding: function(varId, trackId){
     this.scalarBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackId));
   },
-  addXfoBinding: function(varId, trackIds){
-    this.xfoBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackIds));
+  addXfoBinding: function(varId, trackIds, rotationOrder){
+    this.xfoBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackIds, rotationOrder));
   },
   setValue: function(trackSetId, time, value, index, animationLibraryNode){
     var type = (typeof value == 'number') ? 'Number' : value.getType();
