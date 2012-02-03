@@ -38,6 +38,7 @@ namespace Fabric
       typedef void (*GenericFunctionPtr)( ... );
     
       static RC::ConstHandle<ExecutionEngine> Create( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule );
+      static RC::ConstHandle<Context> GetCurrentContext();
       
       GenericFunctionPtr getFunctionByName( std::string const &functionName ) const;
       

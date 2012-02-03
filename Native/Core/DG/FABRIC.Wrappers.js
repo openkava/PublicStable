@@ -93,7 +93,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       if ('registeredTypes' in diff) {
         RT.registeredTypes = {};
         for (var typeName in diff.registeredTypes) {
-          RT.registeredTypes[typeName] = RT.assignPrototypes(diff.registeredTypes[typeName], typeName);
+          RT.registeredTypes[typeName] = diff.registeredTypes[typeName];
         }
       }
     };
@@ -608,7 +608,9 @@ function (fabricClient, logCallback, debugLogCallback) {
           'elementIndex': elementIndex
         }, function() {
         }, function(data) {
-          dataElement = RT.assignPrototypes(data, result.members[memberName].type);
+          // pull off the last [] since we're looking at an element
+          var type = result.members[memberName].type
+          dataElement = RT.assignPrototypes(data, type.substring(0, type.length - 2));
         });
         executeQueuedCommands();
         return dataElement;
@@ -1584,7 +1586,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       
       executable.pub.resolveArrayMapOperator = function (operatorName) {
         var operator = GC.createObject('KLC');
-        populateMapOperator(operator);
+        populateArrayMapOperator(operator);
         executable.queueCommand('resolveArrayMapOperator', {
           id: operator.id,
           operatorName: operatorName
@@ -1695,7 +1697,7 @@ function (fabricClient, logCallback, debugLogCallback) {
           });
         };
         
-        compilation.pub.getSources = function (sourceName, sourceCode) {
+        compilation.pub.getSources = function () {
           var sources;
           compilation.queueCommand('getSources', null, null, function (result) {
             sources = result;
@@ -2423,9 +2425,6 @@ function (fabricClient, logCallback, debugLogCallback) {
           break;
         case 'EX':
           EX.route(src, cmd, arg);
-          break;
-        case 'IO':
-          IO.route(src, cmd, arg);
           break;
         case 'VP':
           VP.route(src, cmd, arg);
