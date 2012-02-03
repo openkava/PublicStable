@@ -885,14 +885,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         jsonData.currentColor = brushColor;
 
         // get a path handle
-        var handles = scene.IO.queryUserFileAndFolderHandle(scene.IO.forSave, "Animation Review Data", "json", "review");
-        var jsonFileInfo = scene.IO.getFileHandleInfo( handles.file );
+        var handles = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, "Animation Review Data", "json", "review");
+        var jsonFileInfo = FABRIC.IO.getFileHandleInfo( handles.file );
         var basename = jsonFileInfo.fileName;
         
         // store all planes
         jsonData.planes = {};
         for(var name in planes) {
-          var planeFileHandle = scene.IO.buildFileHandleFromRelativePath(handles.folder+'/'+basename+'.'+name+'.png');
+          var planeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(handles.folder+'/'+basename+'.'+name+'.png');
           planes[name].instance.savePNG(planeFileHandle);
           jsonData.planes[name] = {};
           jsonData.planes[name].camera = planes[name].camera;
@@ -903,20 +903,20 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         }
         
         // save the json file
-        scene.IO.putTextFileContent(handles.file, JSON.stringify(jsonData));
+        FABRIC.IO.putTextFileContent(handles.file, JSON.stringify(jsonData));
         
       } else {
         
         // get a path handle
-        var handles = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Animation Review Data", "json", "review");
-        var jsonData = JSON.parse(scene.IO.getTextFileContent(handles.file));
+        var handles = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpenWithWriteAccess, "Animation Review Data", "json", "review");
+        var jsonData = JSON.parse(FABRIC.IO.getTextFileContent(handles.file));
         
         // first create all planes
         for(var key in jsonData.planes) {
           switchCamera(jsonData.planes[key].camera);
           scene.animation.setTime(parseFloat(jsonData.planes[key].time));
           alembicLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
-          var planeFileHandle = scene.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
+          var planeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
           $('#planeblend').slider("option", "value", jsonData.planes[key].blend);
           paintPlane({resourceFileHandle: planeFileHandle, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
         }

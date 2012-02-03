@@ -22,7 +22,7 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Primitives",
-                "SG/Rendering"], function() {
+                "SG/DeferredRendering"], function() {
  
 // load our custom shaders
 FABRIC.SceneGraph.defineEffectFromFile('DeferredPreToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreToonShader.xml');
@@ -165,7 +165,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
