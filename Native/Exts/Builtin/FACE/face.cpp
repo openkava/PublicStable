@@ -25,7 +25,43 @@ FABRIC_EXT_KL_STRUCT( FaceLocation, {
   KL::Size bottom;
 } );
 
-FABRIC_EXT_EXPORT void FabricFACE_Detection(
+FABRIC_EXT_KL_STRUCT( FaceDetector, {
+  struct LocalData {
+    CvHaarClassifierCascade * cascade;
+    CvMemStorage * storage;
+  };
+  LocalData * pointer;
+} );
+
+FABRIC_EXT_EXPORT void FabricFACE_DeleteDetector(
+  FaceDetector & detector
+)
+{
+  if(detector.pointer)
+  {
+    cvReleaseHaarClassifierCascade( &detector.pointer->cascade );
+    cvReleaseMemStorage( &detector.pointer->storage);
+    delete(detector.pointer);
+    detector.pointer = NULL;
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricFACE_CreateDetector(
+  FaceDetector & detector,
+  KL::String & fileHandle
+)
+{
+  KL::FileHandleWrapper wrapper(fileHandle);
+  wrapper.ensureIsValidFile();
+
+  FabricFACE_DeleteDetector(detector);
+  detector.pointer = new FaceDetector::LocalData();
+  detector.pointer->cascade = ( CvHaarClassifierCascade* )cvLoad( wrapper.getPath().data(), 0, 0, 0 );
+  detector.pointer->storage = cvCreateMemStorage( 0 );
+}
+
+FABRIC_EXT_EXPORT void FabricFACE_Detect(
+  FaceDetector & detector,
   KL::Data pixels,
   KL::Size width,
   KL::Size height,
@@ -33,8 +69,35 @@ FABRIC_EXT_EXPORT void FabricFACE_Detection(
   KL::VariableArray<FaceLocation> & faces
 )
 {
+  if(!detector.pointer)
+  {
+    Fabric::EDK::throwException("FACE extension: Detector is not initiated.");
+    return;
+  }
+  
   // convert our image to an opencv image
   cv::Mat img(height,width,CV_8UC1+channels-1,pixels);
-  //LibFace* libFace = new LibFace(libface::DETECT, std::string("."));
+  IplImage imgHeader = img;
+  
+  /* detect faces */
+  CvSeq * results = cvHaarDetectObjects(
+    &imgHeader,
+    detector.pointer->cascade,
+    detector.pointer->storage,
+    1.1,
+    3,
+    0 /*CV_HAAR_DO_CANNY_PRUNNING*/,
+    cvSize( 40, 40 )
+  );
+  
+  faces.resize(results ? results->total : 0);
+  for( int i = 0 ; i < ( results ? results->total : 0 ) ; i++ ) {
+    CvRect *r = ( CvRect* )cvGetSeqElem( results, i );
+    faces[i].left = r->x;
+    faces[i].bottom = r->y;
+    faces[i].right = r->x + r->width;
+    faces[i].top = r->y + r->height;
+  }  
+
   return;
 }

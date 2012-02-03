@@ -1,9 +1,42 @@
-struct FaceLocation {
-  KL::Size left;
-  KL::Size right;
-  KL::Size top;
-  KL::Size bottom;
+struct RGB {
+  Byte r;
+  Byte g;
+  Byte b;
 };
 
-function FabricFACE_Detection(Data pixels, Size width, Size height, Size channels, io FaceLocations faces[]);
+struct RGBA {
+  Byte r;
+  Byte g;
+  Byte b;
+  Byte a;
+};
+
+struct FaceLocation {
+  Size left;
+  Size right;
+  Size top;
+  Size bottom;
+};
+
+struct FaceDetector{
+  Data pointer;
+};
+
+function FabricFACE_DeleteDetector(io FaceDetector detector);
+function FabricFACE_CreateDetector(io FaceDetector detector, io String fileHandle);
+function FabricFACE_Detect(io FaceDetector detector, Data pixels, Size width, Size height, Size channels, io FaceLocations faces[]);
+
+function ~FaceDetector() = "FabricFACE_DeleteDetector";
+
+function FaceDetector.init(io String fileHandle) {
+  FabricFACE_CreateDetector(this,handle);
+}
+
+function FaceDetector.detectRGB(io RGB pixels[], Size width, Size height, Size channels, io FaceLocations faces[]) {
+  FabricFACE_Detect(this,pixels.data(),width,height,3,faces);
+}
+
+function FaceDetector.detectRGBA(io RGBA pixels[], Size width, Size height, Size channels, io FaceLocations faces[]) {
+  FabricFACE_Detect(this,pixels.data(),width,height,4,faces);
+}
 
