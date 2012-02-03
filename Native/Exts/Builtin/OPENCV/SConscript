@@ -1,0 +1,15 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'opencvFlags', 'ExtSLName', 'buildOS', 'buildArch', 'buildType')
+import os.path
+
+opencvPluginEnv = extsEnv.Clone()
+opencvPluginEnv.MergeFlags( opencvFlags )
+opencvPlugin = opencvPluginEnv.SharedLibrary( ExtSLName('FabricOPENCV'), Glob('*.cpp') ),
+opencvManifest = opencvPluginEnv.File('FabricOPENCV.fpm.json'),
+opencvKL = opencvPluginEnv.File('FabricOPENCV.kl'),
+opencvFiles = [opencvManifest, opencvPlugin, opencvKL]
+
+Return( 'opencvFiles' )

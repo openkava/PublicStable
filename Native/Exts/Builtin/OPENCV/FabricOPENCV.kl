@@ -1,0 +1,6 @@
+struct RGB {
+  Byte r; Byte g; Byte b;
+};
+
+function FabricOPENCVTest();
+
