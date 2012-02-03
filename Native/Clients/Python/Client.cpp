@@ -2,12 +2,12 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
+#include <Fabric/EDK/EDK.h>
 #include <Fabric/Clients/Python/Client.h>
 #include <Fabric/Clients/Python/ClientWrap.h>
 #include <Fabric/Clients/Python/IOManager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Base/JSON/Encoder.h>
-#include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/ResourceManager.h>
