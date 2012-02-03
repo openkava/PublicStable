@@ -297,37 +297,21 @@ $(document).ready(function() {
   case 'USWolf':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 8,
-        maxLinearAcceleration: 16,
+        maxLinearVelocity: 15,
+        maxLinearAcceleration: 40,
         maxAngularVelocity:  2.5,
         maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -40,
-        comHeight: 2.0,
-        circleSize: 0.6
+        gravity: -60,
+        comHeight: 2.3,
+        circleSize: 0.6,
+        translationControls: new FABRIC.RT.Vec2(0,0.3)
       });
     rigFile = 'Assets/USWolf.json';
     animationLibraryFile = 'Assets/USWolfAnimation.json';
     minFrequency = 0.75;
     break;
-  /*
-  case 'walker':
-    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
-        cameraNode: camera,
-        maxLinearVelocity: 15,
-        maxLinearAcceleration: 30,
-        maxAngularVelocity: 2,
-        maxAngularAcceleration: 2,
-        bulletWorldNode: bulletWorldNode,
-        numTrailSegments: 0,
-        gravity: 0,
-        comHeight: 1.8,
-        circleSize: 1.6
-      });
-    diffuseColor = FABRIC.RT.rgba(0.6, 0.0, 0.3, 1.0);
-    break;
-  */
   case 'centipede':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -343,26 +327,6 @@ $(document).ready(function() {
     minFrequency = 0.0;
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
-  /*
-  case 'marama':
-    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
-        cameraNode: camera,
-        maxLinearVelocity: 8,
-        maxLinearAcceleration: 16,
-        maxAngularVelocity:  2.5,
-        maxAngularAcceleration: 2.5,
-        bulletWorldNode: bulletWorldNode,
-        numTrailSegments: 0,
-        gravity: -98,
-        comHeight: 1.8,
-        circleSize: 0.6
-      });
-    rigFile = 'Assets/marama.json';
-    animationLibraryFile = 'Assets/marama.json';
-    minFrequency = 0.5;
-    diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
-    break;
-  */
   }
   var locomotionVariables;
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
@@ -440,7 +404,6 @@ $(document).ready(function() {
   }
   
 //  locomotionControllerNode.setTranslationControls(new FABRIC.RT.Vec2(0, 1.0));
-  
   var translationControls = new FABRIC.RT.Vec2();
   var downKeys = [];
   var arrowKeys = {
