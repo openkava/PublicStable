@@ -261,6 +261,7 @@ namespace Fabric
     {
       if ( m_dirty )
       {
+        ExecutionEngine::ContextSetter contextSetter( m_context );
         size_t numBindings = m_bindingList->size();
         for ( size_t i=0; i<numBindings; ++i )
         {
