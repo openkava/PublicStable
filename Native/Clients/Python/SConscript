@@ -12,21 +12,24 @@ if buildOS == 'Darwin':
 
 extraObjects = []
 
+pythonModuleName = 'libFabricPython.so';
 if buildOS == 'Windows':
-    Import( 'getoptFlags' )
-    pythonEnv.MergeFlags( getoptFlags )
-    pythonEnv.Append( LINKFLAGS = [
-        '/IMPLIB:${TARGET.dir}/fabric_cmd.lib',
-        '/STACK:4194304'
-    ] )
+  Import( 'getoptFlags' )
+  pythonEnv.MergeFlags( getoptFlags )
+  pythonEnv.Append( LINKFLAGS = [
+      '/IMPLIB:${TARGET.dir}/fabric_cmd.lib',
+      '/STACK:4194304'
+  ] )
+  pythonEnv.Append( LIBS = [ 'User32', 'advapi32' ] )
+  pythonModuleName = 'FabricPython.dll';
 
-pythonLoadableModule = pythonEnv.LoadableModule( 'FabricPython.so', [Glob('*.cpp'), buildObject, extraObjects] )
+pythonLoadableModule = pythonEnv.LoadableModule( 'FabricPython', [Glob('*.cpp'), buildObject, extraObjects] )
 
 pythonModulesDistDir = archDistDir.Dir(packageName).Dir('python_modules')
 fabricPythonModuleDistDir = pythonModulesDistDir.Dir('fabric')
 
 fabricPythonLibrary = pythonEnv.Command(
-  fabricPythonModuleDistDir.File('libFabricPython.so'),
+  fabricPythonModuleDistDir.File(pythonModuleName),
   pythonLoadableModule,
   [
     Copy( "$TARGET", "$SOURCE" )
