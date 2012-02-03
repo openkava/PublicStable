@@ -70,8 +70,8 @@ varying vec3 reflectDir;
 
 ]]>
     </source>
-    <include file="FABRIC_ROOT/SceneGraph/Shaders/matrices.txt"/>
-    <include file="FABRIC_ROOT/SceneGraph/Shaders/skinning.txt"/>
+    <include file="FABRIC_ROOT/SG/Shaders/matrices.txt"/>
+    <include file="FABRIC_ROOT/SG/Shaders/skinning.txt"/>
     <source>
 <![CDATA[
 
@@ -122,7 +122,7 @@ varying vec3 reflectDir;
 
 ]]>
       </source>
-      <include file="FABRIC_ROOT/SceneGraph/Shaders/lighting.txt"/>
+      <include file="FABRIC_ROOT/SG/Shaders/lighting.txt"/>
       <source>
 <![CDATA[
 
