@@ -7,11 +7,11 @@
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
 
-#include <LibFace.h>
+#include <opencv/cv.h>
 
 FABRIC_EXT_EXPORT void FabricFACETest(
 )
 {
-  libface::Face testFace;
+  //LibFace* libFace = new LibFace(libface::DETECT, std::string("."));
   return;
 }
