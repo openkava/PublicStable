@@ -6,7 +6,6 @@
   <uniforms>
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
     
-    <!--
     <uniform name="u_lightType" constant="lightType" type="Integer" owner="light"/>
     <uniform name="u_lightDir" constant="lightDir" type="Vec3" owner="light"/>
     <uniform name="u_lightColor" constant="lightColor" type="Color" owner="light"/>
@@ -15,7 +14,6 @@
     <uniform name="u_materialAmbientColor" constant="ambientColor" type="Color" defaultValue="FABRIC.RT.rgba(0.0,0.0,0.0,1)"/>
     <uniform name="u_materialSpecularColor" constant="specularColor" type="Color" defaultValue="FABRIC.RT.rgba(0.5,0.5,0.5,1)"/>
     <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
-    -->
     
     <uniform name="u_materialDiffuseColor" constant="diffuseColor" type="Color" defaultValue="FABRIC.RT.rgba(0.8,0,0,1)"/>
     
@@ -94,7 +92,6 @@
   <fragmentshader>
     <source>
       <![CDATA[
-      /*
       uniform int u_lightType;
       uniform vec3 u_lightDir;
       uniform vec4 u_lightColor;
@@ -103,7 +100,6 @@
       uniform float u_materialShininess;
       uniform vec4 u_materialAmbientColor;
       uniform vec4 u_materialSpecularColor;
-      */
       uniform vec4 u_materialDiffuseColor;
 
       uniform samplerCube u_samplerCube;
@@ -128,15 +124,25 @@
         
         
         float reflectFactor = mix(dot( Vn, Rn ), 1.0, 0.8);
-        /*
         // Perform a cube map look up.
         vec4 cube_color = textureCube(u_samplerCube, Rn);
         cube_color.a = 1.0;
-        vec4 base_color = u_materialDiffuseColor;
+      //  vec4 base_color = u_materialDiffuseColor;
         float lightFactor = 1.0;
+        vec4 base_color = phong_shading(Nn, 
+                                        Ln, 
+                                        Vn, 
+                                        u_lightType,
+                                        u_lightDir,
+                                        lightFactor,
+                                        u_lightCosCutoff,
+                                        u_lightColor,
+                                        u_materialDiffuseColor, 
+                                        u_materialSpecularColor,
+                                        u_materialShininess,
+                                        u_materialAmbientColor );
+        base_color.a = 1.0 - reflectFactor;
         gl_FragColor = mix(base_color, cube_color, reflectFactor);
-        */
-        gl_FragColor = mix(vec4(1.0, 0.0, 0.0, 1.0), vec4(0.0, 0.0, 1.0, 1.0), reflectFactor);
       }
 
       ]]>
