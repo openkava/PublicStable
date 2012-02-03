@@ -1,6 +1,9 @@
-struct RGB {
-  Byte r; Byte g; Byte b;
+struct FaceLocation {
+  KL::Size left;
+  KL::Size right;
+  KL::Size top;
+  KL::Size bottom;
 };
 
-function FabricFACETest();
+function FabricFACE_Detection(Data pixels, Size width, Size height, Size channels, io FaceLocations faces[]);
 
