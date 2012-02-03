@@ -56,12 +56,249 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     
   //////////////////////////////////////////////////////////////////////////////
   // Collada File Parsing Functions
-
+  
+  
+  var parseImage = function(node){
+    var image = {
+      'name': node.getAttribute('name'),
+      'path': ''
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'init_from':
+          image.path = child.textContent;
+          break;
+        default:
+          warn("Warning in parseImage: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return image;
+  }
+  
+  var parseLibaryImages = function(node) {
+    var libraryImages = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'image':
+          libraryImages[child.getAttribute('id')] = parseImage(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return libraryImages;
+  }
+  
+  var parseScalar = function(node){
+    var child = node.firstElementChild;
+    return parseFloat(child.textContent.split(new RegExp("\\s+")));
+  }
+  
+  var parseColor = function(node){
+    var color_values = [];
+    var text_array = node.textContent.split(new RegExp("\\s+"));
+    for(var i=0; i<text_array.length; i++){
+      if(text_array[i] != ""){
+        color_values.push(parseFloat(text_array[i]));
+      }
+    }
+    return makeRT(FABRIC.RT.Color, color_values);
+  }
+  
+  
+  var parseTextureParam = function(node){
+    var textureParam = {
+      'texture': node.getAttribute('texture'),
+      'texcoord': node.getAttribute('texcoord')
+    };
+    var materialParam = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'extra':
+          var extra_technique = child.firstElementChild;
+          textureParam.extra = {
+            'profile': extra_technique.getAttribute('profile'),
+            'wrapU': extra_technique.getElementsByTagName("wrapU")[0].textContent == 'TRUE',
+            'wrapV': extra_technique.getElementsByTagName("wrapV")[0].textContent == 'TRUE',
+            'blend_mode': extra_technique.getElementsByTagName("blend_mode")[0].textContent 
+          }
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return textureParam;
+  }
+  
+  
+  var parseMaterialParam = function(node){
+    var materialParam = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'color':
+          materialParam.color = parseColor(child);
+          break;
+        case 'texture':
+          materialParam.texture = parseTextureParam(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return materialParam;
+  }
+  
+  var parseEffectTechniquePhong = function(node){
+    var phong = { };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'emission':
+          phong.emission = parseColor(child.firstElementChild);
+          break;
+        case 'ambient':
+          phong.ambient = parseColor(child.firstElementChild);
+          break;
+        case 'diffuse':
+          phong.diffuse = parseMaterialParam(child);
+          break;
+        case 'specular':
+          phong.specular = parseMaterialParam(child);
+          break;
+        case 'shininess':
+          phong.shininess = parseScalar(child);
+          break;
+        case 'reflective':
+          phong.reflective = parseColor(child.firstElementChild);
+          break;
+        case 'reflectivity':
+          phong.reflectivity = parseScalar(child);
+          break;
+        case 'transparent':
+          phong.transparent = parseColor(child.firstElementChild);
+          break;
+        case 'transparency':
+          phong.transparency = parseScalar(child);
+          break;
+        default:
+          warn("Warning in parseEffectTechniquePhong: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return phong;
+  }
+  
+  var parseEffectTechnique = function(node){
+    var technique = {
+      'name': node.getAttribute('name'),
+      'lightingmodel': undefined
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'phong':
+          technique.lightingmodelname = 'phong';
+          technique.lightingmodel = parseEffectTechniquePhong(child);
+          break;
+        default:
+          warn("Warning in parseEffectTechnique: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return technique;
+  }
+  
+  var parseEffectProfile = function(node){
+    var effect = {
+      'name': node.getAttribute('name'),
+      'techniques': {}
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'technique':
+          effect.techniques[child.getAttribute('id')] = parseEffectTechnique(child);
+          break;
+        default:
+          warn("Warning in parseEffectProfile: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return effect;
+  }
+  
+  var parseEffect = function(node){
+    var effect = {
+      'name': node.getAttribute('name'),
+      'profiles': {}
+    };
+    var child = node.firstElementChild;
+    while(child){
+      effect.profiles[child.getAttribute('id')] = parseEffectProfile(child);
+      child = child.nextElementSibling;
+    }
+    return effect;
+  }
+  
   var parseLibaryEffects = function(node) {
+    var libraryEffects = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'effect':
+          libraryEffects[child.getAttribute('id')] = parseEffect(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return libraryEffects;
+  }
+  
+  var parseMaterial = function(node){
+    var material = {
+      'name': node.getAttribute('name'),
+      'instance_effect': ''
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'instance_effect':
+          material.instance_effect = child.getAttribute('url');
+          break;
+        default:
+          warn("Warning in parseImage: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return material;
   }
   
   var parseLibaryMaterials = function(node) {
+    var libraryMaterials = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'material':
+          libraryMaterials[child.getAttribute('id')] = parseMaterial(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return libraryMaterials;
   }
+  
   
   var parseAccessor = function(node){
     var accessor = {
@@ -623,6 +860,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       switch (child.nodeName) {
         case 'asset': 
           break;
+        case 'library_images': 
+          colladaData.libraryImages = parseLibaryImages(child);
+          break;
         case 'library_effects':
           colladaData.libraryEffects = parseLibaryEffects(child);
           break;
@@ -659,6 +899,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   
   //////////////////////////////////////////////////////////////////////////////
   // SceneGraph Construction
+  
   // This method returns an array of values from the given source data. 
   var getSourceData = function(source, id){
     var accessor = source.technique.accessor;
