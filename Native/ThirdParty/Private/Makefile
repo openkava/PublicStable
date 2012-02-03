@@ -14,7 +14,6 @@ TEEM_VERSION := 1.10.0
 TIFF_VERSION := 3.9.5
 OPENCV_SOURCE_VERSION := 2.3.1a
 OPENCV_VERSION := 2.3.1
-FACE_VERSION := 0.1
 
 RSYNC := rsync
 
@@ -52,7 +51,6 @@ endif
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
   unpack_tiff patch_tiff configure_tiff build_tiff install_tiff clean_tiff \
   unpack_opencv patch_opencv configure_opencv build_opencv install_opencv clean_opencv \
-  unpack_face patch_face configure_face build_face install_face clean_face \
   unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
   unpack_boost patch_boost configure_boost build_boost install_boost clean_boost \
   unpack_hdf5 patch_hdf5 configure_hdf5 build_hdf5 install_hdf5 clean_hdf5 \
@@ -62,9 +60,9 @@ endif
 
 all: build
 
-build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff build_opencv build_face
+build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff build_opencv
 
-unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff unpack_opencv unpack_face
+unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff unpack_opencv
 
 check_env_vars: 
 ifeq ($(BUILD_PLATFORM),Darwin)
@@ -363,7 +361,7 @@ Build/.opencv.build: Build/.opencv.configure
 
 Build/.opencv.configure: Build/.opencv.patch
 	for ARCH in $(ARCHS); do \
-		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
+		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_JPEG=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_GTK=OFF -DWITH_GSTREAMER=OFF -DWITH_V4L=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
 	done
 	touch $@
 
@@ -374,43 +372,6 @@ Build/.opencv.unpack:
 	mkdir -p Build
 	for ARCH in $(ARCHS); do \
 		( cd Build && tar jxf ../SourcePackages/OpenCV-$(OPENCV_SOURCE_VERSION).tar.bz2 && mv OpenCV-$(OPENCV_VERSION) OpenCV-$(OPENCV_VERSION)-$$ARCH ); \
-	done
-	touch $@
-
-#####
-
-build_face: Build/.face.build
-
-configure_face: Build/.face.configure
-
-patch_face: Build/.face.patch
-
-unpack_face: Build/.face.unpack
-
-Build/.face.build: Build/.face.configure
-	for ARCH in $(ARCHS); do \
-		( cd Build/libface-$(FACE_VERSION)-$$ARCH && make -j2 ); \
-	done
-	touch $@
-
-Build/.face.configure: Build/.face.patch
-	for ARCH in $(ARCHS); do \
-		( cd Build/libface-$(FACE_VERSION)-$$ARCH && CPPFLAGS=-fPIC && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_PNG=OFF -DOpenCV_DIR=../OpenCV-$(OPENCV_VERSION)-$$ARCH  ); \
-	done
-	touch $@
-
-Build/.face.patch: Build/.face.unpack
-ifeq ($(BUILD_PLATFORM),Linux)
-	for ARCH in $(ARCHS); do \
-		( cd Build/libface-$(FACE_VERSION)-$$ARCH && patch -p1 <../../Patches/libface_linux64.diff ); \
-	done
-endif
-	touch $@
-
-Build/.face.unpack:
-	mkdir -p Build
-	for ARCH in $(ARCHS); do \
-		( cd Build && tar xf ../SourcePackages/libface-$(FACE_VERSION).tar.gz && mv libface-$(FACE_VERSION) libface-$(FACE_VERSION)-$$ARCH ); \
 	done
 	touch $@
 
@@ -821,21 +782,6 @@ install_opencv_libraries:
           cp Build/OpenCV-$(OPENCV_VERSION)-$$ARCH/lib/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/OpenCV/; \
         done
 
-install_face: install_face_headers install_face_libraries
-
-install_face_headers:
-	for ARCH in $(ARCHS); do \
-          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/libface; \
-          cp Build/libface-$(FACE_VERSION)-$(FIRST_ARCH)/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/libface/; \
-          cp Build/libface-$(FACE_VERSION)-$(FIRST_ARCH)/src/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/libface/; \
-        done
-
-install_face_libraries:
-	for ARCH in $(ARCHS); do \
-          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/libface/; \
-          cp Build/libface-$(FACE_VERSION)-$$ARCH/src/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/libface/; \
-        done
-
 install_ilmbase: install_ilmbase_headers install_ilmbase_libraries
 
 install_ilmbase_headers:
@@ -1046,7 +992,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_tiff clean_opencv clean_face
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_tiff clean_opencv
 	rm -rf Build
 
 clean_ilmbase:
@@ -1102,12 +1048,6 @@ clean_opencv:
 		rm -rf Build/OpenCV-$(OPENCV_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.opencv.*
-
-clean_face:
-	for ARCH in $(ARCHS); do \
-		rm -rf Build/libface-$(FACE_VERSION)-$$ARCH; \
-	done
-	rm -rf Build/.face.*
 
 clean_libedit:
 	for ARCH in $(ARCHS); do \
