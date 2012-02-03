@@ -59,7 +59,7 @@ namespace Fabric
     protected:
     
       Client( RC::Handle<Context> const &context );
-      ~Client();
+      virtual ~Client();
       
       void notifyInitialState() const;
       
