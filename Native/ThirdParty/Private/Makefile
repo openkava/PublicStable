@@ -363,7 +363,7 @@ Build/.opencv.build: Build/.opencv.configure
 
 Build/.opencv.configure: Build/.opencv.patch
 	for ARCH in $(ARCHS); do \
-		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
+		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
 	done
 	touch $@
 
@@ -395,11 +395,16 @@ Build/.face.build: Build/.face.configure
 
 Build/.face.configure: Build/.face.patch
 	for ARCH in $(ARCHS); do \
-		( cd Build/libface-$(FACE_VERSION)-$$ARCH && cmake . -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_PNG=OFF -DOpenCV_DIR=../OpenCV-$(OPENCV_VERSION)-$$ARCH  ); \
+		( cd Build/libface-$(FACE_VERSION)-$$ARCH && CPPFLAGS=-fPIC && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_PNG=OFF -DOpenCV_DIR=../OpenCV-$(OPENCV_VERSION)-$$ARCH  ); \
 	done
 	touch $@
 
 Build/.face.patch: Build/.face.unpack
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		( cd Build/libface-$(FACE_VERSION)-$$ARCH && patch -p1 <../../Patches/libface_linux64.diff ); \
+	done
+endif
 	touch $@
 
 Build/.face.unpack:
