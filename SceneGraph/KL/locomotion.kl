@@ -362,7 +362,7 @@ operator evaluateLocomotionPoseVariables(
     }
   //  report("currSpeed:"+currSpeed + " clipSpeed:"+clipSpeed + " clipFrequencyMultiplier:"+clipFrequencyMultiplier + " strideLengthMultiplier:"+strideLengthMultiplier);
     // When turning, speed up the playback a little to stop the legs getting tangled. 
-    clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 10.0;
+    clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
     clipFrequencyMultiplier += controllerparams.balanceXfo.tr.length() * 1.0;
     
     Scalar maxFrequency = 2.0;
