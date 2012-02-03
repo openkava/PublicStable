@@ -12,5 +12,6 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 FABRIC_EXT_EXPORT void FabricFACETest(
 )
 {
+  libface::Face testFace;
   return;
 }
