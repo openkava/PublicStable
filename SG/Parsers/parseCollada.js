@@ -49,6 +49,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   if(options.flipUVs == undefined) options.flipUVs = true;
   var animationLibrary = options.animationLibrary;
   var controllerNode = options.controllerNode;
+  var imageLibrary = options.imageLibrary || {};
   
   
 
@@ -951,13 +952,23 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       for (i in options.materialOptions) {
         materialOptions[i] = options.materialOptions[i];
       }
+      for(i in options.materialProperties){
+        if(lightingmodel[i].color || typeof lightingmodel[i] == 'Number'){
+          materialOptions[options.materialProperties[i]] = lightingmodel[i];
+        }
+      }
       for (i in options.materialMaps) {
         if(lightingmodel[i].texture){
           var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
-          materialOptions[options.materialMaps[i]] = scene.constructNode('Image2D', { url: remapPath(textureData.path) });
+          var imageUrl = remapPath(textureData.path);
+          if(!imageLibrary[imageUrl]){
+            imageLibrary[imageUrl] = scene.constructNode('Image2D', { url: imageUrl });
+          }
+          materialOptions[options.materialMaps[i]] = imageLibrary[imageUrl];
         }
       }
       materialNode = scene.constructNode(options.materialType, materialOptions);
+      assetNodes[materialNode.getName()] = materialNode;
     }else{
       // construct a default material and return it instead.
     }
