@@ -38,7 +38,7 @@ FABRIC.require(["SG/SceneGraph",
  camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 300,
-      target: new FABRIC.RT.Vec3(-10, -1.2, -0.15),
+      target: new FABRIC.RT.Vec3(0, 0, 0),
       position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
     });
 
@@ -48,12 +48,23 @@ FABRIC.require(["SG/SceneGraph",
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  assetNodes = scene.importAssetFile('Models/USWolf.DAE', {
+  scene.importAssetFile('Models/USWolf.DAE', {
+    scaleFactor: 0.01,
+    materialType: 'PhongBumpReflectSkinningMaterial',
+    materialOptions: {
+     lightNode: light,
+      shininess: 5.0,
+      bumpiness: 0.5
+    },
+    materialMaps: {
+      diffuse: 'diffuseTextureNode',
+      specular: 'specularTextureNode'
+    },
     pathRemapping: {
      'file://C:\\Users\\Phil\\Dropbox\\FabricPhils\\LocomotionSystem\\scenes\\': 'Textures\\'
     }
   }, function(assetNodes){
-   
+    // Here are all the constructed geometries and materials.
   });
   
   $(document).ready(function() {
