@@ -26,6 +26,24 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   if(options.loadPoseOntoRig == undefined) options.loadPoseOntoRig = false;
   if(options.constructRigFromHierarchy == undefined) options.constructRigFromHierarchy = false;
   
+  
+  if(!options.materialType){
+    options.materialType = "FlatTextureMaterial";
+  }
+  if(!options.materialProperties){
+    // TODO: provide a mapping from collada values to the given shader parameters. 
+    options.materialProperties = {
+    }
+  }
+  if(!options.materialMaps){
+    // If a texture is to be used in a material, a mapping needs to be provided
+    // to specify the material parameters to use. Here diffuse textures are used
+    // as simply the 'textureNode' on the FlatTexturedMaterial.
+    options.materialMaps = {
+      diffuse: 'textureNode'
+    }
+  }
+  
   // options.rigNode;
   // options.rigHierarchyRootNodeName;
   if(options.flipUVs == undefined) options.flipUVs = true;
@@ -217,23 +235,28 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   }
   
   var parseEffectProfile = function(node){
-    var effect = {
+    var effectprofile = {
       'name': node.getAttribute('name'),
-      'techniques': {}
+      'technique': {}
     };
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
         case 'technique':
-          effect.techniques[child.getAttribute('id')] = parseEffectTechnique(child);
+          effectprofile.technique = {
+            sid: child.getAttribute('id'),
+            techniquedata: parseEffectTechnique(child)
+          }
           break;
         default:
           warn("Warning in parseEffectProfile: Unhandled node '" +child.nodeName + "'");
       }
       child = child.nextElementSibling;
     }
-    return effect;
+    return effectprofile;
   }
+  
+  
   
   var parseEffect = function(node){
     var effect = {
@@ -242,7 +265,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     };
     var child = node.firstElementChild;
     while(child){
-      effect.profiles[child.getAttribute('id')] = parseEffectProfile(child);
+      effect.profiles[child.nodeName] = parseEffectProfile(child);
       child = child.nextElementSibling;
     }
     return effect;
@@ -899,6 +922,49 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   
   //////////////////////////////////////////////////////////////////////////////
   // SceneGraph Construction
+  var remapPath = function(path){
+    if(options.pathRemapping){
+      for(var j in options.pathRemapping){
+        if(path.substring(0, j.length) === j){
+          path = options.pathRemapping[j] + path.substring(j.length);
+          return path;
+        }
+      }
+    }
+    return path;
+  }
+  
+  // TODO: Finish off the construction and assigment of materials.
+  var constructMaterial = function(materialData){
+    var materialNode;
+    var effectData = colladaData.libraryEffects[materialData.instance_effect.slice(1)];
+    if(effectData){
+      // Not sure what shouldhappen here if multiple profiles are supported.
+      var profile = effectData.profiles.profile_COMMON;
+      if(!profile){
+        throw "Unsupported Material Description";
+      }
+      var technique = profile.technique.techniquedata;
+      var lightingmodel = technique.lightingmodel;
+      var materialOptions = { name: effectData.name };
+      var i;
+      for (i in options.materialOptions) {
+        materialOptions[i] = options.materialOptions[i];
+      }
+      for (i in options.materialMaps) {
+        if(lightingmodel[i].texture){
+          var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
+          materialOptions[options.materialMaps[i]] = scene.constructNode('Image2D', { url: remapPath(textureData.path) });
+        }
+      }
+      materialNode = scene.constructNode(options.materialType, materialOptions);
+    }else{
+      // construct a default material and return it instead.
+    }
+    
+    return materialNode;
+  }
+
   
   // This method returns an array of values from the given source data. 
   var getSourceData = function(source, id){
@@ -1499,8 +1565,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       geometries.push(constructSkinnedGeometry(sourceMeshArray[i]));
     }
     
+    var materials = [];
+    for(var i=0; i<sourceMeshArray.length; i++){
+      var materialData = colladaData.libraryMaterials[sourceMeshArray[i].material];
+      materials.push(constructMaterial(materialData));
+    }
+    
     var controllerNodes = {
       geometries: geometries,
+      materials: materials,
       skeletonData: skeletonData,
       controllerData: controllerData
     }
@@ -1524,14 +1597,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   var constructScene = function(sceneData){
     
     var constructInstance = function(instanceData, parentTransformNode){
+      var materialNode;
       if(instanceData.instance_geometry){
         var url = instanceData.instance_geometry.url.slice(1);
         var geometries = getGeometryNodes(url);
         for(var i=0; i<geometries.length; i++){
           var geometryNode = geometries[i];
-          var materialNode;
           if(instanceData.instance_geometry.instance_material){
             // TODO:
+            materialNode = constructMaterial();
           }
           
           var transformNodeOptions = { name: instanceData.name +"Transform" };
@@ -1567,6 +1641,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         
         for(var i=0; i<controllerNodes.geometries.length; i++){
           geometryNode = controllerNodes.geometries[i];
+          materialNode = controllerNodes.materials[i];
           if(instanceData.instance_controller.instance_material){
             // TODO: materialNode =
           }

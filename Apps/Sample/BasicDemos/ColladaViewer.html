@@ -48,12 +48,11 @@ FABRIC.require(["SG/SceneGraph",
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  assetNodes = scene.importAssetFile('Assets/CMan0005.DAE', {
-    pathRemapping: scaleFactor
+  assetNodes = scene.importAssetFile('Models/USWolf.DAE', {
+    pathRemapping: {
+     'file://C:\\Users\\Phil\\Dropbox\\FabricPhils\\LocomotionSystem\\scenes\\': 'Textures\\'
+    }
   }, function(assetNodes){
-   
-   
-   
    
   });
   
