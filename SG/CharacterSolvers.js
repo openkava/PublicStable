@@ -4,7 +4,8 @@
 //
 
 FABRIC.define(["SG/SceneGraph",
-               "SG/Characters"], function() {
+               "SG/Characters",
+                "RT/BezierKeyframe"], function() {
   
 FABRIC.RT.SolverHelperFunctions = function() {
 };
