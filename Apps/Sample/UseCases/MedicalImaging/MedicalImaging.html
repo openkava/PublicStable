@@ -718,6 +718,7 @@ $(document).ready(function() {
     savedCropMax = undefined;
 
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
+      volumeNode.setResolutionFactor(1.0);//Else there's a rendertarget error (to investigate)
       viewport.hide();
       displayProgressBar();
     }
