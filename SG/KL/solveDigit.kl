@@ -35,9 +35,9 @@ operator solveDigits(
     if(digitTip.y < 0.0){
       Vec3 ground = digitTip;
       ground.y = 0.0;
-      Vec3 yaxis = pose[lastDigitId].ori.getYaxis();
-      yaxis.y = 0.0;
-      ground += yaxis * (digitTipOffsets[i].length() * 0.5);
+    //  Vec3 yaxis = pose[lastDigitId].ori.getYaxis();
+    //  yaxis.y = 0.0;
+    //  ground += yaxis * (digitTipOffsets[i].length() * 0.5);
       
       Xfo digitBaseReference = pose[digitBinding.boneIds[0]];
       Xfo digitBase = pose[digitBinding.boneIds[0]];

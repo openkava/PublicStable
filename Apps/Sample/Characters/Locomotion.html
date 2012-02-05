@@ -98,8 +98,8 @@ $(document).ready(function() {
 
   var constructBulletScene = true;
   
-  var rigName = 'Spiedel';
-  
+  var rigName = 'USWolf';
+  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -113,7 +113,7 @@ $(document).ready(function() {
   }else if(rigName =='walker' || rigName =='walker'){
     rigName = 'CMan0005';
   }
-  
+  */
   if(constructBulletScene){
     
     // create a simulation world
@@ -337,8 +337,8 @@ $(document).ready(function() {
         cameraNode: camera,
         maxLinearVelocity: 15,
         maxLinearAcceleration: 30,
-        maxAngularVelocity:  5.5,
-        maxAngularAcceleration: 5.5,
+        maxAngularVelocity:  3,
+        maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -60,
@@ -371,14 +371,17 @@ $(document).ready(function() {
   var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
   rigLoader.load(storage, function(nodeMap){
     rig = nodeMap.IKRig;
+    
+    rig.addSolver('Head', 'HeadLookAtSolver', { bones:{ bone:['USWolfHead'], neckBones:['USWolfNeck'] } } );
+    
     $("#displayRigDebugging").attr('checked', rig.getDebuggingEnabled());
+    
   //  var characterMesh =  nodeMap.characterMesh;
     for(var i in nodeMap){
       if(nodeMap[i].isTypeOf('Instance')){
         nodeMap[i].addMaterialNode(shadowMapMaterial);
       }
     }
-  
   
     var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
     var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
@@ -595,16 +598,15 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="Spiedel">Quadruped
-              <!--
                 <option value="centipede">Centipede
-            -->
                 <option value="CMan0005">Human
                 <option value="USWolf">SpaceMan
-                
               </select>
+            -->
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Debug Controller</label>
               </br>
