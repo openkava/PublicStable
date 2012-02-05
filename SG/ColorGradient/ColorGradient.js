@@ -24,6 +24,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
 
   var trackData = colorKeyTrackLibraryNode.getTrack(trackId);
   var selectedKeyIndex = -1;
+  var gradientKeys = [];
   var addKey = function(index, param, color){
     var gradientKey = gradient.addKey(param, color);
     var keyGroupNode = keysHolderGroup.createGroup()
@@ -69,12 +70,14 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
       
       gradientWidget.fireEvent('gradientchanged');
     }
+    gradientKeys.push(gradientKey);
   }
   
   
   var displayGradient = function(){
     keysHolderGroup.removeAllChildren();
     gradient.clearKeys();
+    gradientKeys = [];
     for(var i=0; i<trackData.keys.length; i++){
       addKey(i, trackData.keys[i].time, trackData.keys[i].value);
     }
@@ -104,10 +107,10 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
       trackData.keys.push(newKey);
     }
     colorKeyTrackLibraryNode.setTrack(trackData);
-    displayGradient();
     
+    displayGradient();
     gradientWidget.fireEvent('keyclicked', {
-      key: newKey,
+      key: gradientKeys[selectedKeyIndex],
       keycolor: newKey.value
     });
   });

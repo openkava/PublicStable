@@ -26,7 +26,7 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Selection",
                 "SG/Persistence",
                 "SG/WebSocket",
-                "SG/DefferedRendering",
+                "SG/DeferredRendering",
                 "SG/Parsers/parseOBJ"], function() {
     
   function getUrlVars() {
@@ -721,8 +721,8 @@ $(document).ready(function() {
       }
 
       if(evt.altKey) {
-        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
-        scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
+        var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
+        FABRIC.IO.putTextFile(JSON.stringify(bodiesToSave), path);
       } else {
         $('#localStorageDescr').html('Save Preset');
         $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
@@ -758,8 +758,8 @@ $(document).ready(function() {
       if(isPlaying)
         return;
       if(evt.altKey) {
-        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
-        var jsonData = JSON.parse(scene.IO.getTextFile(path));
+        var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
+        var jsonData = JSON.parse(FABRIC.IO.getTextFile(path));
         var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
         selectionManager.clearSelection();
         var selection = [];

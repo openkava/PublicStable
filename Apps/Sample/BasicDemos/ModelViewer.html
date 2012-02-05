@@ -48,8 +48,7 @@ FABRIC.require(["SG/SceneGraph",
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  var modelName = 'cow';
-  scene.importAssetFile('Models/' + modelName + '.obj', {
+  scene.importAssetFile('Models/cow.obj', {
      splitMaterials: true
     },
     function(assetNodes){
@@ -113,7 +112,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
