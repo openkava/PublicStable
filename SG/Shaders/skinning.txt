@@ -2,6 +2,7 @@
 #ifdef SKIN_POSITIONS
 
 void skinPositions(
+  in mat4 modelViewProjectionMatrix,
   in sampler2D samplerSkinningMatrices,
   in float textureHeight
 ){
@@ -23,7 +24,7 @@ void skinPositions(
     }
   }
   
-  gl_Position = u_modelViewProjectionMatrix * transformedPosition;    
+  gl_Position = modelViewProjectionMatrix * transformedPosition;    
   
 }
 
