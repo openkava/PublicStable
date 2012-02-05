@@ -139,7 +139,7 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       resourceLoadNode: undefined,
-      removeParsersOnLoad: true,
+      removeParsersOnLoad: false,
       entityIndex: -1
     });
     
@@ -244,7 +244,6 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options, callb
   var objLoadNode = scene.constructNode('ObjResource', options );
   
   objLoadNode.addEventListener('objloadsuccess', function(evt){
-    
     var loadedGeometries = {};
     if(evt.objectNames.length > 0){
       for(var i=0; i<evt.objectNames.length; i++){
@@ -272,6 +271,7 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options, callb
       objectNames: evt.objectNames,
       materialNames: evt.materialNames
     })
+    return 'remove';
   });
   return objLoadNode;
 });
