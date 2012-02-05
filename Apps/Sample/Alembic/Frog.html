@@ -70,7 +70,7 @@ $(document).ready(function() {
   alembicLoadNode.addEventListener('loadSuccess', function(){
     // create the camera
     var nodes = alembicLoadNode.getParsedNodes();
-    viewport.setCameraNode(alembicLoadNode.getParsedNodes()['/CameraXfo/Camera']);
+    viewport.setCameraNode(nodes['/CameraXfo/Camera']);
 
     var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
       diffuseTextureNode: scene.constructNode('Image2D', { url: 'Models/frog_diffuse.png' }),
@@ -81,8 +81,8 @@ $(document).ready(function() {
     });
 
     scene.constructNode('Instance', {
-      transformNode: alembicLoadNode.getParsedNodes()['/lowXfo'],
-      geometryNode: alembicLoadNode.getParsedNodes()['/lowXfo/low'],
+      transformNode: nodes['/lowXfo'],
+      geometryNode: nodes['/lowXfo/low'],
       materialNode: materialNode
     });
       
@@ -153,7 +153,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">

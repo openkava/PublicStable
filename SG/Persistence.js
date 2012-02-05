@@ -392,11 +392,11 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   var path;
   var str = "";
 //  this.querySavePath = function(instr) {
-    path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forSave, title, "json", suggestedFileName);
+    path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
 //  }
   this.write = function(instr) {
     str = instr;
-    scene.IO.putTextFile(str, path);
+    FABRIC.IO.putTextFileContent(path.file, str);
   }
   this.log = function() {
     console.log(str);
@@ -405,9 +405,9 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
 
 FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName, options) {
   
-  var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forSave, title, "json", suggestedFileName);
+  var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
   var jsonFilename = path.fileName.split('.')[0];
-  var binarydatapath = scene.IO.queryUserFileAndFolderHandle(scene.IO.forSave, "Secure ", "fez", jsonFilename);
+  var binarydatapath = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, "Secure ", "fez", jsonFilename);
   
   var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', options);
       
@@ -422,13 +422,13 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
   
   this.write = function(instr) {
     str = instr;
-    scene.IO.putTextFile(str, path);
+    FABRIC.IO.putTextFile(str, path);
     FABRIC.flush();
     writeBinaryDataNode.write('resource', binarydatapath);
   }
   this.writeJSON = function(instr) {
     str = instr;
-    scene.IO.putTextFile(str, path);
+    FABRIC.IO.putTextFile(str, path);
   }
   
   this.writeBinary = function() {
@@ -446,10 +446,10 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
  * @param {string} filepath The path to the file to read from.
  */
 FABRIC.SceneGraph.FileReader = function(scene, title, suggestedFileName) {
-  var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, title, "json", suggestedFileName);
+  var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpen, title, "json", suggestedFileName);
 
   this.read = function(callback) {
-    callback(JSON.parse(scene.IO.getTextFile(path)));
+    callback(JSON.parse(FABRIC.IO.getTextFile(path)));
   }
 };
 

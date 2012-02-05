@@ -92,7 +92,7 @@ operator evaluateCharacterController(
   Scalar accel = acceleration.length();
   if(accel > 0.001){
     Scalar acceleationCosAngle = acceleration.unit().dot(facingDir);
-    Scalar modulator = acceleationCosAngle > 0.0 ? (0.5 + (0.5*acceleationCosAngle)) : 0.5;
+    Scalar modulator = Math_linearInterpolate(0.5, 1.0, acceleationCosAngle > 0.0 ? (0.5 + (0.5*acceleationCosAngle)) : 0.5);
     if(accel > maxLinearAcceleration * modulator){
       acceleration *= (maxLinearAcceleration * modulator)/accel;
       accel = maxLinearAcceleration * modulator;

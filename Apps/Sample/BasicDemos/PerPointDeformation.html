@@ -114,23 +114,6 @@ $(document).ready(function() {
     });
    });
 
-  
-
-  $('#importModel').button().change(function(e) {
-      // TODO: Enable file importing
-        console.log($(this).val());
-      var assets = scene.importAssetFile($(this).val());
-      for (i in assets) {
-        assets[i].addMaterialNode(redMaterial);
-        drawNode.setGeometryNode(assets[i]);
-      }
-
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
-    });
-
   $('#openDebugger').button();
   
     
@@ -181,8 +164,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
-          
           <div class="box">
             <h2>INFO</h2>
             <div class="content">

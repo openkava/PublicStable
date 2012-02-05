@@ -341,7 +341,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     animationTrackNode.pub.openCurveEditor = function(options) {
       options = options ? options : {};
       var curveEditorWindow = window.open(
-        FABRIC.processURL('FABRIC_ROOT/SceneGraph/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
+        FABRIC.processURL('FABRIC_ROOT/SG/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
         'Fabric Curve Editor:' + (options.name ? options.name : animationTrackNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
@@ -576,7 +576,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.openCurveEditor = function(options) {
       options = options ? options : {};
       var curveEditorWindow = window.open(
-        FABRIC.processURL('FABRIC_ROOT/SceneGraph/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
+        FABRIC.processURL('FABRIC_ROOT/SG/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
         'Fabric Curve Editor:' + (options.name ? options.name : animationLibraryNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );

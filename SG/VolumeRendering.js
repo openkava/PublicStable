@@ -5,6 +5,7 @@
 
 
 FABRIC.define(["SG/SceneGraph",
+               "SG/Materials",
                "SG/Rendering"], function() {
 
 FABRIC.SceneGraph.defineEffectFromFile('VolumeMaterial', 'FABRIC_ROOT/SG/Shaders/VolumeShader.xml');

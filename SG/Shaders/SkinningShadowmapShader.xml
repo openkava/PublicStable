@@ -1,67 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shader>
-	<name>SkinningShadowmapMaterial</name>
+  <name>SkinningShadowmapMaterial</name>
+  <prototypeMaterialType>ShadowMapMaterial</prototypeMaterialType>
 
-	<uniforms>
-		<uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
-		<uniform name="u_skinningMatrices" constant="skinningMatrices" type="Mat44" owner="characterInstance"/>
-	</uniforms>
+  <uniforms>
+    <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
+    
+    <uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
+    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar" owner="geometry"/>
+  </uniforms>
 
-	<attributes>
-		<attribute name="a_position" binding="positions"/>
-		<attribute name="a_weight" binding="boneWeights"/>
-		<attribute name="a_index" binding="boneIds"/>
-	</attributes>
+  <attributes>
+    <attribute name="a_position" binding="positions"/>
+    <attribute name="a_weight" binding="boneWeights"/>
+    <attribute name="a_index" binding="boneIds"/>
+  </attributes>
+  
+  <openglstateparams>
+    <enableOptions>
+      <option>GL_CULL_FACE</option>
+    </enableOptions>
+    <cullFace>GL_FRONT</cullFace>
+  </openglstateparams>
+  
+  <vertexshader>
+    <source>
 
-	<preprocessordirectives>
-		<preprocessordirective name="NUM_BONES" binding="numBones"/>
-	</preprocessordirectives>
-	
-	<vertexshader>
-		<source>
+<![CDATA[
 
-			<![CDATA[
-			
-			uniform mat4 u_modelViewProjectionMatrix;
-			
-			// This is an array of all the bones in a skeleton.
-			uniform mat4 u_skinningMatrices[NUM_BONES];
+uniform mat4 u_modelViewProjectionMatrix;
 
-			attribute vec4 a_position;
-			
-			attribute vec4 a_weight;
-			attribute vec4 a_index;
-			
-			#define SKIN_POSITIONS
-			
-			]]>
-		</source>
-		<include file="skinning.txt"/>
-		<source>
-			<![CDATA[
+// This is an array of all the bones in a skeleton.
+uniform sampler2D u_samplerSkinningMatrices;
+uniform float u_transformTextureHeight;
 
-			void main()
-			{
-			//	gl_Position = u_modelViewProjectionMatrix * a_position;
-			//	normal = u_normalMatrix * a_normal;
-				skinPositions();
-			}
+attribute vec4 a_position;
 
+attribute vec4 a_weight;
+attribute vec4 a_index;
 
-			]]>
-		</source>
-		</vertexshader>
+#define SKIN_POSITIONS
 
-		<fragmentshader>
-		<source>
-			<![CDATA[
+]]>
+    </source>
+      <include file="matrices.txt"/>
+      <include file="skinning.txt"/>
+    <source>
+<![CDATA[
+void main()
+{
+  skinPositions(u_modelViewProjectionMatrix, u_samplerSkinningMatrices, u_transformTextureHeight);
+}
+]]>
+    </source>
+    </vertexshader>
 
-			void main()
-			{
-				gl_FragColor.xyz = vec3(1,1,1);
-			}
-			
-			]]>
-		</source>
-	</fragmentshader>
+    <fragmentshader>
+    <source>
+      <![CDATA[
+
+      void main()
+      {
+      	gl_FragColor.xyz = vec3(1,1,1);
+      }
+      
+      ]]>
+    </source>
+  </fragmentshader>
 </shader>

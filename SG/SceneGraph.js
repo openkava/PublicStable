@@ -566,7 +566,6 @@ FABRIC.SceneGraph = {
         throw ('Missing Resource Loader for :' + ext);
       }
     };
-    scene.pub.IO = context.IO;
     scene.pub.redrawAllViewports = function(force) {
       for (var i=0; i<viewports.length; i++) {
         viewports[i].pub.redraw(force);
