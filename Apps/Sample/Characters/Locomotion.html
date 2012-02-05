@@ -298,13 +298,13 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 15,
-        maxLinearAcceleration: 40,
+        maxLinearAcceleration: 30,
         maxAngularVelocity:  5.5,
-        maxAngularAcceleration: 7.5,
+        maxAngularAcceleration: 5.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -60,
-        comHeight: 2.3,
+        comHeight: 2.1,
         circleSize: 0.6,
         translationControls: new FABRIC.RT.Vec2(0,0)
       });

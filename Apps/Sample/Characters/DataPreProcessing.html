@@ -125,24 +125,6 @@ $(document).ready(function() {
   libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
     name: 'LibraryLocomotionAnimations'
   });
-  var trackCount = 0;
-  var loadAnimationFile = function(file, fkrigNode, callback){
-    scene.importAssetFile(file, {
-      scaleFactor: scaleFactor,
-      constructScene: false,
-      loadAnimationUsingRig: true,
-      rigNode: fkrigNode,
-      animationLibrary: libraryFKAnimations,
-      animationController: animationController
-    }, function(assetNodes){
-      $("#animationTracksList").children().each(function(){
-        $(this).removeClass('ui-selected');
-      });
-      $("#animationTracksList").append('<li class="ui-widget-content ui-selected" id="'+trackCount+'">'+file+'</li>');
-      trackCount++;
-      callback();
-    });
-  }
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var sphere = scene.constructNode('Sphere', { radius: 2, detail: 10, needUVs: true, tangentsFromUV: 0 });
@@ -285,14 +267,43 @@ $(document).ready(function() {
     
   }
   
-  var loadedAnimationFiles = 3;
-  var onLoadedAnimation = function(){
-    loadedAnimationFiles--;
-    if(loadedAnimationFiles==0){
-      characterLoaded();
+  var queuedAnimationFiles = [];
+  var trackCount = 0;
+  var loadAnimationFile = function(file, fkrigNode){
+    
+    var fileImported = function(){
+      queuedAnimationFiles = queuedAnimationFiles.slice(1);
+      if(queuedAnimationFiles.length > 0){
+        importFile(queuedAnimationFiles[0]);
+      }else{
+        characterLoaded();
+      }
     }
+    
+    var importFile = function(file){
+      scene.importAssetFile(file, {
+        scaleFactor: scaleFactor,
+        constructScene: false,
+        loadAnimationUsingRig: true,
+        rigNode: fkrigNode,
+        animationLibrary: libraryFKAnimations,
+        animationController: animationController
+      }, function(assetNodes){
+        $("#animationTracksList").children().each(function(){
+          $(this).removeClass('ui-selected');
+        });
+        $("#animationTracksList").append('<li class="ui-widget-content ui-selected" id="'+trackCount+'">'+file+'</li>');
+        trackCount++;
+        fileImported();
+      });
+    }
+    
+    if(queuedAnimationFiles.length==0){
+      importFile(file);
+    }
+    queuedAnimationFiles.push(file);
   }
-
+  
   //////////////////////////////////////////////
   //
   var rigName = 'USWolf';
@@ -348,9 +359,9 @@ $(document).ready(function() {
         rigInstances.rig.setRigNode(ikrigNode);
         
         loadedAnimationFiles = 3;
-        loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode, onLoadedAnimation);
-        loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode, onLoadedAnimation);
-        loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode, onLoadedAnimation);
+        loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
+        loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
+        loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
         
         rigInstances.rig.addMaterialNode(
           scene.constructNode('SpiedelShader', {
@@ -601,9 +612,9 @@ $(document).ready(function() {
       rigInstances.rig.setRigNode(ikrigNode);
       
       loadedAnimationFiles = 3;
-      loadAnimationFile('Assets/USWolf_Idle.DAE', fkrigNode, onLoadedAnimation);
-      loadAnimationFile('Assets/USWolf_Walk.DAE', fkrigNode, onLoadedAnimation);
-      loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode, onLoadedAnimation);
+      loadAnimationFile('Assets/USWolf_Idle.DAE', fkrigNode);
+      loadAnimationFile('Assets/USWolf_Walk.DAE', fkrigNode);
+      loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode);
     });
     break;
   }
