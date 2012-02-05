@@ -23,10 +23,13 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/CharacterLocomotion",
                 "SG/Bullet",
                 "SG/Persistence",
+                "SG/Alembic",
+                "SG/Parsers/parseCollada",
                 "RT/LinearKeyframe",
                 "RT/BezierKeyframe"], function() {
 
 FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('SkinningShadowmapMaterial', 'FABRIC_ROOT/SG/Shaders/SkinningShadowmapShader.xml');
 
 $(document).ready(function() {
 
@@ -70,10 +73,27 @@ $(document).ready(function() {
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var phongMaterial = scene.constructNode('PhongMaterial', {
+//  var lightNode = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var lightNode = scene.constructNode('DirectionalLight', {
+    position: new FABRIC.RT.Vec3(10, 20, 5),
+    target: new FABRIC.RT.Vec3(0, 0, 0),
+    direction: (new FABRIC.RT.Vec3(0, 0, 0)).subtract(new FABRIC.RT.Vec3(10, 20, 5)).unit(),
+    farDistance: 60,
+    resolution: 2048,
+    castShadows: true,
+    display: true,
+    size: 80
+  });
+  var shadowMapMaterial = scene.constructNode('SkinningShadowmapMaterial');
+  
+  
+//  var greenPhongMaterial = scene.constructNode('ShadowReceivingPhongMaterial', {
+//    diffuseColor: FABRIC.RT.rgb(0.3, 0.9, 0.3),
+ //   lightNode: lightNode
+//  });
+  var phongMaterial = scene.constructNode('ShadowReceivingPhongMaterial', {
       diffuseColor: FABRIC.RT.rgb(0.4, 0.45, 0.4, 1),
-      lightNode: light
+      lightNode: lightNode
     });
 
   var constructBulletScene = true;
@@ -230,23 +250,41 @@ $(document).ready(function() {
       });
     }
     else{
+      /*
       var scaleFactor = 0.1;
-      var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
-      var floorInstance = assetNodes.Plane001;
-      var floorMesh = assetNodes.Plane001Mesh;
+      scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor }, function(assetNodes){
+        var floorInstance = assetNodes.Plane001;
+        var floorMesh = assetNodes.Plane001Mesh;
+        
+        floorInstance.addMaterialNode(phongMaterial);
+  
+        bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
+        
+        var body = new FABRIC.RT.BulletRigidBody();
+        bulletWorldNode.addRigidBody('Floor', body, 'Floor');
+      });
+      */
       
-      floorInstance.addMaterialNode(phongMaterial);
-
-      bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
-      
-      floorInstance.setTransformNode(scene.constructNode('BulletRigidBodyTransform', {
-        bulletWorldNode: bulletWorldNode,
-        shapeName: 'Floor',
-        rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: floorInstance.getTransformNode().getGlobalXfo(),
-          mass: 0.0
-        })
-      }));
+      var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+        url: '../BasicDemos/Models/sand.abc',
+        dependentNode: viewport
+      });
+    
+      alembicLoadNode.addEventListener('loadSuccess', function(){
+        var nodes = alembicLoadNode.getParsedNodes();
+        var gridTriangles = nodes['/gridXfo/grid'];
+        scene.constructNode('Instance', {
+          geometryNode: gridTriangles,
+          materialNode: scene.constructNode('FlatTextureMaterial', {
+            textureNode: scene.constructNode('Image2D', {url: '../BasicDemos/Resources/sand.png'})
+          })
+        });
+        
+        bulletWorldNode.addShape('sand',FABRIC.RT.BulletShape.createTriangleMesh(gridTriangles));
+        
+        var body = new FABRIC.RT.BulletRigidBody();
+        bulletWorldNode.addRigidBody('sand', body, 'sand');
+      });
     }
   }
 
@@ -335,6 +373,12 @@ $(document).ready(function() {
     rig = nodeMap.IKRig;
     $("#displayRigDebugging").attr('checked', rig.getDebuggingEnabled());
   //  var characterMesh =  nodeMap.characterMesh;
+    for(var i in nodeMap){
+      if(nodeMap[i].isTypeOf('Instance')){
+        nodeMap[i].addMaterialNode(shadowMapMaterial);
+      }
+    }
+  
   
     var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
     var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
