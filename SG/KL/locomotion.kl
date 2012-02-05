@@ -176,12 +176,13 @@ operator evaluateLocomotionPoseVariables(
     }
   }
   
-  Scalar rayLength = 3.5;
+  Scalar rayLength = 2.0;
   Vec3 up(0.0, 1.0, 0.0);
   Xfo rot90;
   rot90.setIdentity();
   rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
-  Vec3 upvector = up;//controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+  Vec3 upvector = controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+  Vec3 fwvector = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
   Quat alignment;
   
   Scalar legLiftWeight = 0.0;
@@ -209,6 +210,8 @@ operator evaluateLocomotionPoseVariables(
   
   Scalar currSpeed = comParams[0];
   Scalar clipSpeed = trackcontroller.comParams[0];
+  Scalar gradient = 0.0;
+  Scalar gradientWeight = 0.0;
   
   if(state == 0){
   
@@ -351,7 +354,6 @@ operator evaluateLocomotionPoseVariables(
     Scalar clipFrequencyMultiplier = 1.0;
     Scalar strideLengthMultiplier = 1.0;
     Scalar strideLength = 0.0;
-    Scalar gradient = 0.0;
     
     if(clipSpeed > 0.1){
       clipFrequencyMultiplier = (currSpeed / clipSpeed);
@@ -412,7 +414,10 @@ operator evaluateLocomotionPoseVariables(
       
       hubXfo.tr = invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.ori.rotateVector(controllerXfo.ori.rotateVector(hubXfo.tr))) -
                   invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
-      hubXfo.tr.y -= controllerparams.balanceXfo.tr.length() * 0.01;
+      // This causes te hub to sink down during acceleration,
+      // making the character look more grounded. 
+      hubXfo.tr += controllerparams.balanceXfo.tr * 0.2;
+      hubXfo.tr.y -= controllerparams.balanceXfo.tr.length() * 0.3;
       hubXfo.ori =  invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
       
       if(controllerparams.trail.size > 0){
@@ -567,6 +572,15 @@ operator evaluateLocomotionPoseVariables(
               plantLift = lift;
               hitPositionsPrevStep[j].tr = nextStepPos.tr + (upvector*dist);
               hitPositionsPrevStep[j].ori = alignment;
+              
+              Vec3 footForward = (nextStepPos.tr - controllerXfo.tr);
+              footForward -= upvector * footForward.dot(upvector);
+              footForward -= fwvector * footForward.dot(fwvector);
+              gradient +=  lift / footForward.length();
+              gradientWeight += 1.0;
+            }else{
+              gradient +=  90.0;
+              gradientWeight += 1.0;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
@@ -682,24 +696,31 @@ operator evaluateLocomotionPoseVariables(
       
     }
   }
-  if(performRaycasting && legLiftWeight > 0.0){
-  
-    if(legs.size != 2){
-      controllerparams.lift /= legLiftWeight;
+  if(performRaycasting){
+    if(legLiftWeight > 0.0){
+      if(legs.size != 2){
+        controllerparams.lift /= legLiftWeight;
+      }
+      
+      if(displayRaycastingDebugging){
+        debugRaycasting.drawLine(controllerXfo.tr, controllerXfo.tr + (upvector * controllerparams.lift), Color(0.0, 1.0, 1.0, 1.0));
+      }
+              
+      // Smooth out the com motion by scalaing the lift parameter.
+      // Slightly hackey. The applied lift could be calculated better instead of this.
+      controllerparams.lift *= 0.4;
+    }else{
+      controllerparams.lift = 0.0;
+    }
+    if(gradientWeight > 0.0){
+      gradient /= gradientWeight;
+      controllerparams.gradient = Math_linearInterpolate(controllerparams.gradient, gradient, 0.4);
     }
     
-    if(displayRaycastingDebugging){
-      debugRaycasting.drawLine(controllerXfo.tr, controllerXfo.tr + (upvector * controllerparams.lift), Color(0.0, 1.0, 1.0, 1.0));
-    }
-            
-    // Smooth out the com motion by scalaing the lift parameter.
-    // Slightly hackey. The applied lift could be calculated better instead of this.
-    controllerparams.lift *= 0.4;
     // Note: this is highly illegal. We are copying data back to one of our dependencies.
     // This will be eliminated with nested sub-graphs.
     controllerparamsSet[index] = controllerparams;
   }
-  
     
   // Store the final model space transforms of the feet.
   for(Integer j=0; j < locomotionFeet.size; j++){

@@ -317,6 +317,7 @@ FABRIC.RT.CharacterControllerParams = function() {
   this.trailCircularArrayIndex = 0;
   this.balanceXfo = new FABRIC.RT.Xfo();
   this.lift = 0;
+  this.gradient = 0;
   this.state = 0;
 };
 
@@ -330,6 +331,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       trailCircularArrayIndex: 'Integer',
       balanceXfo: 'Xfo',
       lift: 'Scalar',
+      gradient: 'Scalar',
       state: 'Integer'
     },
     constructor: FABRIC.RT.CharacterControllerParams

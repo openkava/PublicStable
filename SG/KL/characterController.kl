@@ -86,9 +86,16 @@ operator evaluateCharacterController(
   controllerparams.lift = 0.0;
   Vec3 facingDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
   
+  
+  ////////////////////////////
+  // Gradient Modulation
+  // As the chracter wals up and down steep terrain,
+  // the gradient is tken into account to modulate the velocity of the character.
+  Vec3 goalVel = goalLinearVelocity * cos(atan(controllerparams.gradient));
+  
   ////////////////////////////
   // Movement
-  Vec3 acceleration = (goalLinearVelocity - linearVelocity)/timestep;
+  Vec3 acceleration = (goalVel - linearVelocity)/timestep;
   Scalar accel = acceleration.length();
   if(accel > 0.001){
     Scalar acceleationCosAngle = acceleration.unit().dot(facingDir);
@@ -100,7 +107,7 @@ operator evaluateCharacterController(
       
     linearVelocity += acceleration * timestep;
   }
-  if(goalLinearVelocity.length() < linearVelocity.length()){
+  if(goalVel.length() < linearVelocity.length()){
     accel = -accel;
   }
   controllerparams.displacement.tr = linearVelocity * timestep;
