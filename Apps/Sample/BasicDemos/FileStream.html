@@ -56,10 +56,11 @@ FABRIC.SceneGraph.registerNodeType('TrianglesIONode', {
         "self.path",
         "self.stream",
         "self.objectNames",
-        "self.seekOffsets",
+        "self.seekOffsets"
       ],
       entryFunctionName: 'initFileStreamFromString',
-      async: false
+      async: false,
+      mainThreadOnly: true
     }));
     
     sgnode.pub.addTrianglesNode = function(trianglesNodePublic) {
@@ -89,7 +90,7 @@ FABRIC.SceneGraph.registerNodeType('TrianglesIONode', {
         ],
         entryFunctionName: 'saveTrianglesToStream',
         mainThreadOnly: true,
-        async: false
+        async: false,
       }));
       
       // create a triangles node to load from this
@@ -100,6 +101,7 @@ FABRIC.SceneGraph.registerNodeType('TrianglesIONode', {
       newUniformsdgnode.addMember("path","String",options.filepath);
       newUniformsdgnode.addMember("objectName","String",name);
       newUniformsdgnode.setDependency(attributesdgnode,'savedAttributes');
+      newUniformsdgnode.setDependency(uniformsdgnode,'savedUniforms');
       newAttributesdgnode.bindings.append(scene.constructOperator({
         operatorName: 'resizeTrianglesFromStream',
         srcFile: 'KL/fileStream.kl',
@@ -188,6 +190,7 @@ $(document).ready(function() {
         }),
       });
     }
+    return "remove";
   });
     
   $('#loadingDialog').dialog({
