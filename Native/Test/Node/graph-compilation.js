@@ -1,85 +1,89 @@
 FABRIC = require('Fabric').createClient();
-require( "./include/UnitTest.js" );
-ut = new FABRIC.UnitTest;
-ut.test( "Graph Compilation", function() {
-  var event;
-  ut.expectSuccess( "create event", function() {
-    event = FABRIC.DependencyGraph.createEvent("bar");
-  } );
-  ut.expectSuccess( "fire event", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  
-  var eventHandler;
-  ut.expectSuccess( "create and add event handler", function() {
-    eventHandler = FABRIC.DependencyGraph.createEventHandler("baz");
-    event.appendEventHandler( eventHandler );
-  } );
-  ut.expectSuccess( "fire event", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  
-  var node;
-  ut.expectSuccess( "create node and set event handler", function() {
-    node = FABRIC.DependencyGraph.createNode("foo");
-    eventHandler.setScope( "self", node );
-  } );
-  ut.expectSuccess( "fire event", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  ut.expect( "node has no errors", node.getErrors().length, 0 );
-  
-  var op, binding;
-  ut.expectSuccess( "create and push operator", function() {
-    op = FABRIC.DependencyGraph.createOperator("fooTwo");
-    binding = FABRIC.DependencyGraph.createBinding();
-    binding.setOperator( op );
-    binding.setParameterLayout( [ "self.foo" ] );
-    node.bindings.append( binding );
-  } );
-  ut.expectException( "fire event fails", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  ut.expect( "node has three errors", node.getErrors().length, 3 );
+
+var reportErrors = function( obj, expected ) {
+  var numErrors = obj.getErrors().length;
+  if ( numErrors != expected ) {
+    console.log( obj.getName() + " errors = " + numErrors +
+      ", expected " + expected );
+  }
+};
+
+var event;
+event = FABRIC.DependencyGraph.createEvent("bar");
+event.fire();
+
+reportErrors( event, 0 );
+
+var eventHandler;
+eventHandler = FABRIC.DependencyGraph.createEventHandler("baz");
+event.appendEventHandler( eventHandler );
+event.fire();
+
+reportErrors( event, 0 );
+reportErrors( eventHandler, 0 );
+
+var node;
+node = FABRIC.DependencyGraph.createNode("foo");
+eventHandler.setScope( "self", node );
+event.fire();
+
+reportErrors( event, 0 );
+reportErrors( eventHandler, 0 );
+reportErrors( node, 0 );
+
+var op, binding;
+op = FABRIC.DependencyGraph.createOperator("fooTwo");
+binding = FABRIC.DependencyGraph.createBinding();
+binding.setOperator( op );
+binding.setParameterLayout( [ "self.foo" ] );
+node.bindings.append( binding );
+
+try {
+  event.fire();
+}
+catch (e) {
+  console.log( "create and push operator: fire event successfully fails" );
+}
+
+reportErrors( event, 0 );
+reportErrors( eventHandler, 0 );
+reportErrors( node, 3 );
  
-  ut.expectSuccess( "load operator bytecode", function() {
-    op.setEntryFunctionName("foo");
-    op.setSourceCode("operator foo( io Integer bar ) { bar = 7; }");
-  } );
-  ut.expectException( "fire event fails", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  ut.expect( "node has one error", node.getErrors().length, 1 );
-  
-  ut.expectSuccess( "add node member", function() {
-    node.addMember( "foo", "Integer" );
-  } );
-  ut.expectSuccess( "fire event", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  ut.expect( "node has no errors", node.getErrors().length, 0 );
-  
-  ut.expect( "node.getData('foo') == 7", node.getData('foo'), 7 );
-  
-  ut.expectSuccess( "remove node member", function() {
-    node.removeMember( "foo" );
-  } );
-  ut.expectException( "fire event fails", function() {
-    event.fire();
-  } );
-  ut.expect( "event has no errors", event.getErrors().length, 0 );
-  ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  ut.expect( "node has one error", node.getErrors().length, 1 );
-} );
+op.setEntryFunctionName("foo");
+op.setSourceCode("operator foo( io Integer bar ) { bar = 7; }");
+
+try {
+  event.fire();
+}
+catch (e) {
+  console.log( "load operator bytecode: fire event successfully fails" );
+}
+
+reportErrors( event, 0 );
+reportErrors( eventHandler, 0 );
+reportErrors( node, 1 );
+
+node.addMember( "foo", "Integer" );
+event.fire();
+
+reportErrors( event, 0 );
+reportErrors( eventHandler, 0 );
+reportErrors( node, 0 );
+
+if ( node.getData('foo') != 7 ) {
+  console.log( "node.getData('foo') != 7" );
+}
+
+node.removeMember( "foo" );
+try {
+  event.fire();
+}
+catch (e) {
+  console.log( "remove node member: fire event successfully fails" );
+}
+
+reportErrors( event, 0 );
+reportErrors( eventHandler, 0 );
+reportErrors( node, 1 );
+
 FABRIC.close();

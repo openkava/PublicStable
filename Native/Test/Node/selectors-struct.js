@@ -1,7 +1,5 @@
 FABRIC = require('Fabric').createClient();
 
-require( "./include/UnitTest.js" );
-
 var Vec3 = function( x, y, z ) {
   if ( typeof x === "number" && typeof y === "number" && typeof z === "number" ) {
     this.x = x;
@@ -31,56 +29,50 @@ function Vec3( Scalar x, Scalar y, Scalar z )\n\
 
 FABRIC.RegisteredTypesManager.registerType( 'Vec3', desc );
 
-ut = new FABRIC.UnitTest;
-ut.test("Selectors (Vec3)", function() {
-	var event, eventHandler, node;
-	ut.test("Create event, eventHandler, node", function() {
-		event = FABRIC.DependencyGraph.createEvent("UnitTests.Node.selectors.event");
-		eventHandler = FABRIC.DependencyGraph.createEventHandler("UnitTests.Node.selectors.eventHandler");
-		event.appendEventHandler( eventHandler );
-		node = FABRIC.DependencyGraph.createNode( "UnitTests.Node.selectors.node" );
-		eventHandler.setScope( 'self', node );
-	});
+var event, eventHandler, node;
+event = FABRIC.DependencyGraph.createEvent("event");
+eventHandler = FABRIC.DependencyGraph.createEventHandler("eventHandler");
+event.appendEventHandler( eventHandler );
+node = FABRIC.DependencyGraph.createNode( "node" );
+eventHandler.setScope( 'self', node );
 
-	var nodeOne, operatorOne, bindingOne, eventHandlerOne;
-	ut.test("Create nodeOne, operatorOne, bindingOne, eventHandlerOne", function() {
-		ut.test("Create nodeOne", function() {
-			nodeOne = FABRIC.DependencyGraph.createNode( "UnitTests.Node.selectors.nodeOne" );
-		});
-		ut.test("Create operatorOne", function() {
-			operatorOne = FABRIC.DependencyGraph.createOperator( "UnitTests.Node.selectors.operatorOne" );
-			operatorOne.setEntryFunctionName('test');
-			operatorOne.setSourceCode("operator test( io Boolean select, io Vec3 value ) { select = true; value.x = 7; }");
-		});
-		ut.test("Create bindingOne", function() {
-			bindingOne = FABRIC.DependencyGraph.createBinding();
-			bindingOne.setOperator( operatorOne );
-			bindingOne.setParameterLayout( [] );
-		});
-		ut.test("Create eventHandlerOne", function() {
-			eventHandlerOne = FABRIC.DependencyGraph.createEventHandler("UnitTests.Node.selectors.eventHandlerOne");
-			eventHandlerOne.setScope( 'self', nodeOne );
-			eventHandlerOne.setSelector( 'self', bindingOne );
-			eventHandler.appendChildEventHandler( eventHandlerOne );
-		});
-	});
-	
-	var nodeTwo = FABRIC.DependencyGraph.createNode( "UnitTests.Node.selectors.nodeTwo" );
-	var operatorTwo = FABRIC.DependencyGraph.createOperator( "UnitTests.Node.selectors.operatorTwo" );
-	operatorTwo.setEntryFunctionName('test');
-	operatorTwo.setSourceCode("operator test( io Boolean select, io Vec3 value ) { value.x = 4; }");
-	var bindingTwo = FABRIC.DependencyGraph.createBinding();
-	bindingTwo.setOperator( operatorTwo );
-	bindingTwo.setParameterLayout( [] );
-	var eventHandlerTwo = FABRIC.DependencyGraph.createEventHandler("UnitTests.Node.selectors.eventHandlerTwo");
-	eventHandlerTwo.setScope( 'self', nodeTwo );
-	eventHandlerTwo.setSelector( 'self', bindingTwo );
-	eventHandler.appendChildEventHandler( eventHandlerTwo );
+var nodeOne, operatorOne, bindingOne, eventHandlerOne;
+nodeOne = FABRIC.DependencyGraph.createNode( "nodeOne" );
 
-	event.setSelectType( 'Vec3' );
-	var result = event.select();
-	ut.expect( "Correct number of results", result.length, 1 );
-	ut.expect( "Correct result value", result[0].value.x, 7 );
-});
+operatorOne = FABRIC.DependencyGraph.createOperator( "operatorOne" );
+operatorOne.setEntryFunctionName('test');
+operatorOne.setSourceCode("operator test( io Boolean select, io Vec3 value ) { select = true; value.x = 7; }");
+
+bindingOne = FABRIC.DependencyGraph.createBinding();
+bindingOne.setOperator( operatorOne );
+bindingOne.setParameterLayout( [] );
+
+eventHandlerOne = FABRIC.DependencyGraph.createEventHandler("eventHandlerOne");
+eventHandlerOne.setScope( 'self', nodeOne );
+eventHandlerOne.setSelector( 'self', bindingOne );
+eventHandler.appendChildEventHandler( eventHandlerOne );
+
+var nodeTwo = FABRIC.DependencyGraph.createNode( "nodeTwo" );
+var operatorTwo = FABRIC.DependencyGraph.createOperator( "operatorTwo" );
+operatorTwo.setEntryFunctionName('test');
+operatorTwo.setSourceCode("operator test( io Boolean select, io Vec3 value ) { value.x = 4; }");
+var bindingTwo = FABRIC.DependencyGraph.createBinding();
+bindingTwo.setOperator( operatorTwo );
+bindingTwo.setParameterLayout( [] );
+var eventHandlerTwo = FABRIC.DependencyGraph.createEventHandler("eventHandlerTwo");
+eventHandlerTwo.setScope( 'self', nodeTwo );
+eventHandlerTwo.setSelector( 'self', bindingTwo );
+eventHandler.appendChildEventHandler( eventHandlerTwo );
+
+event.setSelectType( 'Vec3' );
+var result = event.select();
+
+if ( result.length != 1 ) {
+  console.log( "incorrect number of results" );
+}
+
+if ( result[0].value.x != 7 ) {
+  console.log( "incorrect value of results" );
+}
 
 FABRIC.close();
