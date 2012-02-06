@@ -113,5 +113,6 @@ operator loadTrianglesFromStream
     stream.readSize(nbIndices);
     indices.resize(nbIndices);
     stream.readData(indices.data(),indices.dataSize());
+    stream.close();
   }
 }
