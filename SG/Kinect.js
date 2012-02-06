@@ -5,7 +5,8 @@
 
 
 FABRIC.define(["SG/SceneGraph",
-               "SG/Geometry"], function() {
+               "SG/Geometry",
+               "SG/Images"], function() {
   
 FABRIC.RT.KinectCamera = function(options) {
   if(!options)
@@ -93,11 +94,13 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
       
       kinectNode.pub.constructColorTextureNode = function() {
         var textureNode = scene.constructNode('Image2D', {
+          format: 'RGBA',
           createResourceLoadNode: false,
           createDgNodes: true,
           width: 640,
           height: 480,
-          forceRefresh: true
+          forceRefresh: true,
+          initImage: false
         });
         var texturePixelsDGNode = textureNode.getPixelsDGNode();
         texturePixelsDGNode.setDependency(dgnode,'kinect');
@@ -133,11 +136,13 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
       
       kinectNode.pub.constructDepthTextureNode = function() {
         var textureNode = scene.constructNode('Image2D', {
+          format: 'RGBA',
           createResourceLoadNode: false,
           createDgNodes: true,
           width: 320,
           height: 240,
-          forceRefresh: true
+          forceRefresh: true,
+          initImage: false
         });
         
         var texturePixelsDGNode = textureNode.getPixelsDGNode();
@@ -160,6 +165,8 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
           parameterLayout: [
             'kinect.camera',
             'self.pixels<>',
+            'uniforms.width',
+            'uniforms.height',
             'kinect.depthMin',
             'kinect.depthMax'
           ],
