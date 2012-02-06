@@ -112,10 +112,6 @@ namespace Fabric
       
       if ( id_.empty() )
         throw Exception( "missing 'id'" );
-      if ( sourceName.empty() )
-        throw Exception( "missing 'sourceName'" );
-      if ( sourceCode.empty() )
-        throw Exception( "missing 'sourceCode'" );
       
       RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
       if ( sourceName.length() > 0 || sourceCode.length() > 0 )
