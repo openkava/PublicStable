@@ -35,6 +35,7 @@ else
 Usage: souce fabric-build-env.sh [-n] (Debug|Release)
 EOF
   else
+    FABRIC_BUILD_PATH="$FABRIC_CORE_ROOT/Native/build/$FABRIC_BUILD_OS/$FABRIC_BUILD_ARCH/$FABRIC_BUILD_TYPE"
     FABRIC_DIST_PATH="$FABRIC_CORE_ROOT/Native/dist/$FABRIC_BUILD_OS/$FABRIC_BUILD_ARCH/$FABRIC_BUILD_TYPE"
 
     echo "Exporting FABRIC_BUILD_OS=$FABRIC_BUILD_OS"
@@ -66,6 +67,11 @@ EOF
     FABRIC_EXTS_DST="$FABRIC_LIBRARY_DST_DIR/Exts"
     echo "Setting up $FABRIC_EXTS_DST -> $FABRIC_EXTS_SRC"
     ln -snf "$FABRIC_EXTS_SRC" "$FABRIC_EXTS_DST"
+
+    FABRIC_KL_SRC="$FABRIC_BUILD_PATH/Fabric/Tools/KL/kl"
+    FABRIC_KL_DST="$HOME/bin/kl"
+    echo "Linking $FABRIC_KL_DST -> $FABRIC_KL_SRC"
+    ln -snf "$FABRIC_KL_SRC" "$FABRIC_KL_DST"
 
     FABRIC_NODE_MODULE_SRC="$FABRIC_DIST_PATH/FabricEngine/node_modules/Fabric"
     FABRIC_NODE_MODULE_DST="$HOME/node_modules/Fabric"
