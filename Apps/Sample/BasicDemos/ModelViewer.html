@@ -48,26 +48,44 @@ FABRIC.require(["SG/SceneGraph",
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  scene.importAssetFile('Models/cow.obj', {
-     splitMaterials: true
-    },
-    function(assetNodes){
-      for(var i in assetNodes){
-        var objectName = i;
-        var material = scene.constructNode('PhongMaterial', {
-          diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-          lightNode: light
-        });
-        var instance = scene.constructNode('Instance', {
-          geometryNode: assetNodes[objectName],
-          materialNode: material,
-          transformNode: scene.constructNode('Transform', {
-              hierarchical: false,
-              globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
-            }),
-        });
+  var importObj = function(url) {
+    if(!url)
+      return;
+    $('#importModel').button('disable');
+    $('#importCow').button('disable');
+
+    scene.importAssetFile(url,{
+        splitMaterials: true
+      },
+      function(assetNodes){
+        for(var i in assetNodes){
+          var objectName = i;
+          var material = scene.constructNode('PhongMaterial', {
+            diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+            lightNode: light
+          });
+          var instance = scene.constructNode('Instance', {
+            geometryNode: assetNodes[objectName],
+            materialNode: material,
+            transformNode: scene.constructNode('Transform', {
+                hierarchical: false,
+                globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+              }),
+          });
+        }
+        viewport.redraw();
       }
-    });
+    );
+  }
+
+  $('#importModel').button().click(function() {
+    importObj(FABRIC.IO.queryUserFileHandle(FABRIC.IO.forOpen,"Choose local OBJ file", "obj", "model.obj"));
+  });
+
+  $('#importCow').button().click(function() {
+    importObj('Models/cow.obj');
+  });
+
   
   $(document).ready(function() {
     $('#loadingDialog').dialog({
@@ -122,15 +140,13 @@ $(document).ready(function() {
             </div><!--content-->
           </div><!--box-->
 
-<!--
-// TODO: Figure out how to load files from HTML
           <div class="box">
-                    <h2>MODEL</h2>
-                    <div class="content">
-                      <input type="file" id="importModel">
-                    </div><!--content- ->
-                </div><!--box- ->
--->
+            <h2>MODEL</h2>
+            <div class="content">
+      	      <button id="importModel" style="margin-top:10px;">Import local OBJ File</button><br>
+      	      <button id="importCow" style="margin-top:10px;">Import Standard Cow</button>
+            </div>
+          </div>
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
