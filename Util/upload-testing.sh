@@ -9,21 +9,24 @@ error()
   exit 1
 }
 
+run()
+{
+  echo "$@"
+  "$@"
+}
+
 rexec()
 {
-  echo ssh fabric-engine.com "$@"
-  ssh fabric-engine.com "$@"
+  run ssh fabric-engine.com "$@"
 }
 
 rcp()
 {
   if [ "$1" = "-r" ]; then
     shift
-    echo rsync -re ssh --progress "$1" fabric-engine.com:"$2"
-    rsync -re ssh --exclude=.git --progress "$1" fabric-engine.com:"$2"
+    run rsync -rze ssh --exclude=.git --exclude=.gitignore --exclude=.DS_Store --exclude=Apps/Private --delete --delete-excluded --progress "$1" fabric-engine.com:"$2"
   else
-    echo rsync -e ssh --progress "$1" fabric-engine.com:"$2"
-    rsync -e ssh --progress "$1" fabric-engine.com:"$2"
+    run rsync -e ssh --progress "$1" fabric-engine.com:"$2"
   fi
 }
 
