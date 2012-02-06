@@ -107,7 +107,7 @@ $(document).ready(function() {
   layerManager.addLayer('rig');
 	
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  /*
+  
   bodyMaterial = scene.constructNode('MonsterMaterial', {
     wireColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
     lightNode: light,
@@ -117,7 +117,7 @@ $(document).ready(function() {
     displacementMin: -0.35,
     displacementMax: 0.35
   });
-  */
+  
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
@@ -135,11 +135,11 @@ $(document).ready(function() {
     rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
     
     for(var i in rigInstances){
-    //  if(i=='body'){
-//	rigInstances[i].addMaterialNode(bodyMaterial);
-    //  }else{
+      if(i=='body'){
+	rigInstances[i].addMaterialNode(bodyMaterial);
+      }else{
 	rigInstances[i].addMaterialNode(materialNode);
-   //   }
+      }
     }
     
     skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
@@ -494,7 +494,7 @@ $(document).ready(function() {
     bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
     viewport.redraw();
   });
-  /*
+  
   var tesslationSlider = $('#tesslation').slider({
       min: 1,
       max: 12.0,
@@ -506,7 +506,7 @@ $(document).ready(function() {
       bodyMaterial.setTesselationOuter(ui.value);
       viewport.redraw();
     });
-  */
+  
   var setPlayButtonToPlay = function(){
     $('#play').button('option', {
       label: 'Play',
@@ -615,12 +615,11 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
-      /*
+      
       if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
         alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
         throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
       }
-      */
       
       setInterval(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
