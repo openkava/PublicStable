@@ -147,3 +147,6 @@ if 'installer' in COMMAND_LINE_TARGETS:
 if 'nodeInstaller' in COMMAND_LINE_TARGETS:
   SConscript( dirs=["Node"] )
 
+if 'pythonInstaller' in COMMAND_LINE_TARGETS:
+  SConscript( dirs=["Python"] )
+
