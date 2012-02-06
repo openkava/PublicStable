@@ -17,21 +17,18 @@
 
     <style type="text/css">
     
+
 #sidebar {
   width:240px;
 }  
 #viewer {
   right:240px;
-  bottom:105px;
+  bottom:115px;
 }
 #timeControls {
   right:240px;
-  height:105px;
 }
 
-#timeControls .ui-slider { margin-left: 5em; margin-right: 5em; }
-#timeControls .ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
-#timeControls .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
 
 
   #feedback { font-size: 1.4em; }
@@ -497,6 +494,7 @@ $(document).ready(function() {
     bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
     viewport.redraw();
   });
+  
   var tesslationSlider = $('#tesslation').slider({
       min: 1,
       max: 12.0,
@@ -617,6 +615,7 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      
       if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
         alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
         throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");

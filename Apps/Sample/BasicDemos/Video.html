@@ -16,6 +16,14 @@
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
     <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
 
+    <style type="text/css">
+    
+#viewer {
+  bottom:115px;
+}
+
+  </style>
+
     <script type="text/javascript">
     
 FABRIC.require(["SG/SceneGraph",
@@ -113,6 +121,11 @@ $(document).ready(function() {
     scene.animation.setTime(ui.value);
     viewport.redraw();
   });
+  
+  // append icon to the slider handle
+  var handleHelper = $('#globalTime').find( ".ui-slider-handle" )
+  .append( "<span class='ui-icon ui-icon-grip-dotted-vertical'></span>" )
+  .wrap( "<div class='ui-handle-helper-parent'></div>" ).parent();
   
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
@@ -222,10 +235,8 @@ $(document).ready(function() {
             </div><!--content-->
           </div><!--box-->
           <div class="box">
-            <h2>CONTROLS</h2>
+            <h2>EFFECTS</h2>
             <div class="content">
-              <button id="play">Play</button>
-              <div id="globalTime"></div><br>
               <input type="checkbox" id="enableBloom"/><label for="enableBloom" style="margin-top:10px;" >Enable Bloom</label><br>
               <input type="checkbox" id="enableNegative"/><label for="enableNegative" style="margin-top:10px;" >Enable Negative</label><br>
               <div>Horizontal Blur Size:</div>
@@ -234,6 +245,16 @@ $(document).ready(function() {
           </div><!--box-->
             
         </div><!--sidebar-->
+        
+        <div id="timeControls">
+          <div class="box">
+            <div class="content">
+              <button id="play">Play</button>
+              <div id='globalTime' style="margin-top:15px;"></div>
+            </div><!--content-->
+          </div><!--box-->
+        </div><!--timeControls-->
+        
       </div> <!--editor-->
     </div><!--wrapper-->
   </body> 
