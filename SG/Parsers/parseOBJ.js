@@ -128,6 +128,8 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
         groupNames: resourceloaddgnode.getData('groupNames'),
         materialNames: resourceloaddgnode.getData('materialNames')
       });
+      
+      return "remove";
     });
     var refCnt = 0;
     resourceLoadNode.incrementRef = function(){

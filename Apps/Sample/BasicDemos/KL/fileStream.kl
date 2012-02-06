@@ -14,7 +14,7 @@ operator initFileStreamFromString
   io Size seekOffsets[]
 )
 {
-  if(!stream.isWritable()) {
+  if(!stream.isWritable() && path.length() > 0) {
     FabricFileHandleWrapper wrapper;
     wrapper.setAbsolutePath(path);
     stream.open(wrapper.getHandle(),"w");
@@ -44,10 +44,11 @@ operator saveTrianglesToStream
   io Integer indices[]
 )
 {
-  if(!stream.isWritable()) {
+  if(!stream.isWritable() && path.length() > 0) {
     FabricFileHandleWrapper wrapper;
     wrapper.setAbsolutePath(path);
     stream.open(wrapper.getHandle(),"a");
+    path = "";
   }
   if(stream.isWritable()) {
     stream.setSeekEnd();
@@ -75,10 +76,11 @@ operator resizeTrianglesFromStream
   io Size newCount
 )
 {
-  if(!stream.isValid()) {
+  if(!stream.isValid() && path.length() > 0) {
     FabricFileHandleWrapper wrapper;
     wrapper.setAbsolutePath(path);
     stream.open(wrapper.getHandle(),"r");
+    path = "";
   }
   if(stream.isValid()) {
     stream.setSeekStart();
@@ -93,8 +95,6 @@ operator resizeTrianglesFromStream
     }
     stream.setSeek(offset);
     stream.readSize(newCount);
-  } else {
-    report("Cannot open file: "+path);
   }
 }
 
@@ -113,6 +113,5 @@ operator loadTrianglesFromStream
     stream.readSize(nbIndices);
     indices.resize(nbIndices);
     stream.readData(indices.data(),indices.dataSize());
-    stream.close();
   }
 }
