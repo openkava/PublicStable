@@ -3,7 +3,6 @@
 //
 
 use FabricFILESYSTEM;
-use FabricFileHandle;
 use FabricFILESTREAM;
 use FabricFileStream;
 
@@ -16,9 +15,9 @@ operator initFileStreamFromString
 )
 {
   if(!stream.isWritable()) {
-    FabricFileHandle handle;
-    handle.setAbsolutePath(path);
-    stream.open(handle,"w");
+    FabricFileHandleWrapper wrapper;
+    wrapper.setAbsolutePath(path);
+    stream.open(wrapper.getHandle(),"w");
   }
   if(stream.isWritable() && names.size() > 0) {
     seekOffsets.resize(names.size());
@@ -46,9 +45,9 @@ operator saveTrianglesToStream
 )
 {
   if(!stream.isWritable()) {
-    FabricFileHandle handle;
-    handle.setAbsolutePath(path);
-    stream.open(handle,"a");
+    FabricFileHandleWrapper wrapper;
+    wrapper.setAbsolutePath(path);
+    stream.open(wrapper.getHandle(),"a");
   }
   if(stream.isWritable()) {
     stream.setSeekEnd();
@@ -77,11 +76,12 @@ operator resizeTrianglesFromStream
 )
 {
   if(!stream.isValid()) {
-    FabricFileHandle handle;
-    handle.setAbsolutePath(path);
-    stream.open(handle,"r");
+    FabricFileHandleWrapper wrapper;
+    wrapper.setAbsolutePath(path);
+    stream.open(wrapper.getHandle(),"r");
   }
   if(stream.isValid()) {
+    stream.setSeekStart();
     String names[];
     stream.readStringArray(names);
     Size offset = 0;
