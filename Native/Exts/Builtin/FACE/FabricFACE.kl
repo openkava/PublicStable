@@ -23,20 +23,19 @@ struct FaceDetector{
 };
 
 function FabricFACE_DeleteDetector(io FaceDetector detector);
-function FabricFACE_CreateDetector(io FaceDetector detector, io String fileHandle);
-function FabricFACE_Detect(io FaceDetector detector, Data pixels, Size width, Size height, Size channels, io FaceLocations faces[]);
+function FabricFACE_CreateDetector(io FaceDetector detector, in String fileHandle);
+function FabricFACE_Detect(io FaceDetector detector, Data pixels, Size width, Size height, Size channels, io FaceLocation faces[]);
 
 function ~FaceDetector() = "FabricFACE_DeleteDetector";
 
-function FaceDetector.init(io String fileHandle) {
-  FabricFACE_CreateDetector(this,handle);
+function FaceDetector.init(in String fileHandle) {
+  FabricFACE_CreateDetector(this,fileHandle);
 }
 
-function FaceDetector.detectRGB(io RGB pixels[], Size width, Size height, Size channels, io FaceLocations faces[]) {
+function FaceDetector.detectRGB(io RGB pixels[], Size width, Size height, io FaceLocation faces[]) {
   FabricFACE_Detect(this,pixels.data(),width,height,3,faces);
 }
 
-function FaceDetector.detectRGBA(io RGBA pixels[], Size width, Size height, Size channels, io FaceLocations faces[]) {
+function FaceDetector.detectRGBA(io RGBA pixels[], Size width, Size height, io FaceLocation faces[]) {
   FabricFACE_Detect(this,pixels.data(),width,height,4,faces);
 }
-
