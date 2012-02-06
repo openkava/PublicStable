@@ -249,7 +249,12 @@ $(document).ready(function() {
     
     $('#curveEditor').button()
       .click(function() {
-        libraryLocomotionAnimations.openCurveEditor( {trackSetId:selectedTrack, drawKeys:false, timeRange:selectedTrackTimeRange } );
+        libraryLocomotionAnimations.openCurveEditor( {
+          trackSetId:selectedTrack,
+          drawKeys:false,
+          timeRange:selectedTrackTimeRange,
+          trackFilters: ['com']
+        });
       });
       
   
@@ -614,7 +619,9 @@ $(document).ready(function() {
       loadedAnimationFiles = 3;
       loadAnimationFile('Assets/USWolf_Idle.DAE', fkrigNode);
       loadAnimationFile('Assets/USWolf_Walk.DAE', fkrigNode);
-      loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode);
+      loadAnimationFile('Assets/USWolf_StartWalking.DAE', fkrigNode);
+    //  loadAnimationFile('Assets/USWolf_StopWalking.DAE', fkrigNode);
+      loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode);  
     });
     break;
   }

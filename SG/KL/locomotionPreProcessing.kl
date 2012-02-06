@@ -86,10 +86,16 @@ function Boolean detectFootSteps(
   Scalar numFootPlants = 0.0;
   Scalar numFootLifts = 0.0;
   Boolean stationaryStart = true;
+  Scalar firstFootLift = timeRange.y;
   for(Integer j=0; j < footSteps.size; j++){
   
+    // If the first foot plant is after the start time, then
+    // the foot was in motion at the beginning of the clip.
     if(footSteps[j][0].x > timeRange.x){
       stationaryStart = false;
+    }
+    if(footSteps[j][0].z < firstFootLift){
+      firstFootLift = footSteps[j][0].z;
     }
     for(Integer i=0; i < footSteps[j].size; i++){
       Vec3 step = footSteps[j][i];
@@ -105,6 +111,7 @@ function Boolean detectFootSteps(
       }
     }
   }
+  
   if(averageFootLiftedTime == 0.0){
     return false;
   }
@@ -117,7 +124,8 @@ function Boolean detectFootSteps(
   report("averageFootLiftedTime:"+averageFootLiftedTime);
   report("averageStrideLength:"+averageStrideLength);
   
-  // If a foot was planted at the end of the clip, then set the plant time as
+  // Extrapollate the step times before the beginning of the clip,
+  // and after then end of the clip
   for(Integer i=0; i < legs.size; i++){
     Limb leg = legs[i];
     if(footSteps[i][0].x == timeRange.x){
@@ -154,6 +162,10 @@ function Boolean detectFootSteps(
   }
   timeRange.x = firstFootMidPlant;
   timeRange.y = lastFootMidPlant;
+  
+  if(stationaryStart){
+    timeRange.x = firstFootLift;
+  }
   
   report("Clamped timerange:"+timeRange);
   report("stationaryStart:"+stationaryStart);
@@ -229,6 +241,7 @@ function Boolean generateCOMTracks(
   Integer currKeys[];
   Xfo prevComXfo;
   Scalar prevStepSpeed, prevtime;
+  Vec3 horizontalVelocity, prevStepVelocity;
   Scalar speed = 0.0;
   Scalar acceleration = 0.0;
   Scalar gradient = 0.0;
@@ -249,20 +262,26 @@ function Boolean generateCOMTracks(
       Scalar timestep = time - prevtime;
       Vec3 velocity = displacement/timestep;
       speed = velocity.length();
+      horizontalVelocity = velocity;
       
       Scalar climb = velocity.y;
-      velocity.y = 0.0;
-      gradient = climb / velocity.length();
+      horizontalVelocity.y = 0.0;
+      if(horizontalVelocity.length() > 0.001){
+        gradient = climb / horizontalVelocity.length();
+      }
+      else{
+        gradient = 0.0;
+      }
       
+      Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
+      facingVec.y = 0.0;
+      facingVec.setUnit();
       
       if(speed > 0.001){
-        Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
-        facingVec.y = 0.0;
-        facingVec.setUnit();
-        velocity.setUnit();
+      //  velocity.setUnit();
       //  report("velocity:"+velocity + " facingVec:"+facingVec);
-        direction = facingVec.angleTo(velocity);
-        if(facingVec.cross(velocity).y > 0.0){
+        direction = facingVec.angleTo(horizontalVelocity.unit());
+        if(facingVec.cross(horizontalVelocity).y > 0.0){
           direction = -direction;
         }
       }
@@ -291,6 +310,9 @@ function Boolean generateCOMTracks(
         
         if(t > 5){
           acceleration = (speed - prevStepSpeed)/timestep;
+          if((horizontalVelocity - prevStepVelocity).dot(facingVec) < 0.0){
+            acceleration = -acceleration;
+          }
         }
         poseVariables.scalarValues[com.parameterVarIds[0]] = speed;
         poseVariables.scalarValues[com.parameterVarIds[1]] = acceleration;
@@ -299,12 +321,12 @@ function Boolean generateCOMTracks(
       //  report(" t:"+keyT + " timestep:"+timestep + " smoothed speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
         comParamBindings.setTrackValues(keyT, poseVariables, trackSet);
         
-        
         prevStepSpeed = speed;
       }
     }
     prevComXfo = comXfo;
     prevtime = time;
+    prevStepVelocity = horizontalVelocity;
   }
   
   
@@ -691,7 +713,7 @@ operator locomotionPreProcessing(
     );
     
     addLocomotionMarkers(
-      timeRange,
+      clampedTimeRange,
       poseVariables,
       bindings,
       trackSet,

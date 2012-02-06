@@ -65,12 +65,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     
     solver.generateTracks = function(trackSet, trackBindings){
       var storeEulerAngles = false;
-      trackSet.addXfoTrack('comXfo', new FABRIC.RT.rgb(1, 0, 0), storeEulerAngles, trackBindings, comXfoId);
+      trackSet.addXfoTrack('com.xfo', new FABRIC.RT.rgb(1, 0, 0), storeEulerAngles, trackBindings, comXfoId);
       var color = FABRIC.RT.rgb(0, 1, 1);
-      trackSet.addScalarTrack('speed', color, trackBindings, comParam0VarId);
-      trackSet.addScalarTrack('acceleration', color, trackBindings, comParam1VarId);
-      trackSet.addScalarTrack('gradient', color, trackBindings, comParam2VarId);
-      trackSet.addScalarTrack('direction', color, trackBindings, comParam3VarId);
+      trackSet.addScalarTrack('com.speed', color, trackBindings, comParam0VarId);
+      trackSet.addScalarTrack('com.acceleration', color, trackBindings, comParam1VarId);
+      trackSet.addScalarTrack('com.gradient', color, trackBindings, comParam2VarId);
+      trackSet.addScalarTrack('com.direction', color, trackBindings, comParam3VarId);
     }
     
     solver.invert = function(variablesNode){

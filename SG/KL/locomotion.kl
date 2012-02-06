@@ -33,7 +33,9 @@ function Scalar calcClipParamsDelta(
   in Scalar clip2[]
 ){
   Scalar delta = abs(clip1[0] - clip2[0]); // velocity
-  delta += abs(clip1[1] - clip2[1]) / 5.0;       // acceleration
+  // Using acceleration to detect clip changes seems to mess everything up.
+  // TODO: thoroughly debug. 
+//  delta += abs(clip1[1] - clip2[1]) * 0.05;   // acceleration
   return delta;
 }
 
@@ -644,7 +646,7 @@ operator evaluateLocomotionPoseVariables(
             else{
               Integer activeTrackSet = trackcontroller.activeTrackSet;
               Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
-          //  report("comParams:"+ comParams  + " curr clip Params:"+ trackcontroller.comParams + " currClipDelta:"+ currClipDelta);
+           // report("comParams:"+ comParams  + " curr clip Params:"+ trackcontroller.comParams + " currClipDelta:"+ currClipDelta);
          
               for(Integer clipId=1; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
                 // Note: here we block blending from a clip onto its self, but soon we will enable this.
