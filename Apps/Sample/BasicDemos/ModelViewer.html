@@ -79,9 +79,7 @@ FABRIC.require(["SG/SceneGraph",
   }
 
   $('#importModel').button().click(function() {
-    var handle = FABRIC.IO.queryUserFileHandle(FABRIC.IO.forOpen,"Choose local OBJ file", "obj", "model.obj");
-    if(handle)
-      importObj(handle+'.obj');
+    importObj(FABRIC.IO.queryUserFileHandle(FABRIC.IO.forOpen,"Choose local OBJ file", "obj", "model.obj"));
   });
 
   $('#importCow').button().click(function() {
