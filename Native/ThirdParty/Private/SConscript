@@ -107,13 +107,23 @@ else:
 Export( 'openexrFlags' )
 
 # libpng
-libpngFlags = {}
-libpngFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'libpng' )]
-if buildOS == 'Windows':
-  libpngFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
-  libpngFlags['LIBS'] = archLibs( 'libpng', ['libpng14','zlib'] )
-else:  
-  libpngFlags['LIBS'] = [archLibs( 'libpng', ['png14'] ), 'z']
+if buildOS == 'Linux':
+    pngEnv = env.Clone()
+    pngEnv.ParseConfig( 'pkg-config --cflags --libs libpng' )
+    libpngFlags = {
+        'CPPPATH': pngEnv['CPPPATH'],
+        'CCFLAGS': pngEnv['CCFLAGS'],
+        'CXXFLAGS': pngEnv['CXXFLAGS'],
+        'LIBS': pngEnv['LIBS'],
+    }
+else:
+    libpngFlags = {}
+    libpngFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'libpng' )]
+    if buildOS == 'Windows':
+        libpngFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
+        libpngFlags['LIBS'] = archLibs( 'libpng', ['libpng14','zlib'] )
+    else:  
+        libpngFlags['LIBS'] = [archLibs( 'libpng', ['png14'] ), 'z']
 Export( 'libpngFlags' )
 
 tiffFlags = {}
