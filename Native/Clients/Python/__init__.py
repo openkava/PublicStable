@@ -220,6 +220,7 @@ class _CLIENT( object ):
       results = json.loads( jsonEncodedResults.value )
     except Exception:
       raise Exception( 'unable to parse JSON results: ' + jsonEncodedResults )
+    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
     for i in range(len(results)):
       result = results[i]
@@ -230,11 +231,11 @@ class _CLIENT( object ):
           unwind = unwinds[ j ]
           if ( unwind is not None ):
             unwind()
+        self.__processAllNotifications()
         raise Exception( 'Fabric core exception: ' + result[ 'exception' ] )
       elif ( callback is not None ):
         callback( result[ 'result' ] )
 
-    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
     self.__processAllNotifications()
 
   def _handleStateNotification( self, newState ):
@@ -1091,6 +1092,7 @@ class _DG( _NAMESPACE ):
       self.__didFireCallback = None
       self.__eventHandlers = None
       self.__typeName = None
+      self.__rt = dg._getClient().rt
 
     def _patch( self, diff ):
       super( _DG._EVENT, self )._patch( diff )
@@ -1130,19 +1132,18 @@ class _DG( _NAMESPACE ):
       self.__typeName = tn
 
     def select( self ):
-      # dictionary hack to simulate Python 3.x nonlocal
-      data = { '_': None }
+      data = []
       def __callback( results ):
         for i in range( 0, len( results ) ):
           result = results[ i ]
-          data[ '_' ].append( {
-            'node': self._dg._namedObjects[ result ],
-            'value': self.__rt._assignPrototypes( result.data, self.__typeName )
+          data.append( {
+            'node': self._dg._namedObjects[ result[ 'node' ] ],
+            'value': self.__rt._assignPrototypes( result[ 'data' ], self.__typeName )
           })
 
       self._nObjQueueCommand( 'select', self.__typeName, None, __callback )
       self._dg._executeQueuedCommands()
-      return data[ '_' ]
+      return data
 
     def getDidFireCallback( self ):
       return self.__didFireCallback
