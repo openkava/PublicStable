@@ -30,17 +30,6 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-  // Create a camera to draw the scene from
-  var camera = scene.constructNode('TargetCamera', {
-      nearDistance: 1,
-      farDistance: 2000,
-      position: new FABRIC.RT.Vec3(10,10,10),
-      target: new FABRIC.RT.Vec3(0, 0, 0),
-    });
-
-  scene.constructNode('CameraManipulator', { targetNode: camera });
-  viewport.setCameraNode(camera);
-
   $('#loadingDialog').dialog({
     modal: true
   });

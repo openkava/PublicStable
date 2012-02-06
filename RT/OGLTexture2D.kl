@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricOGL, FabricTGA, FabricHDR, FabricCIMG;
+use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricCIMG;
 use Vec2, Vec3, OGLShaderProgram;
 
 function OGLTexture2D.configure(
@@ -29,7 +29,7 @@ function OGLTexture2D.configure(
       glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
       glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
     }
-      
+    
     if(nbPixels == (width * height)){
       glTexImage2D(GL_TEXTURE_2D, 0, this.glInternalFormat, width, height, 0, this.glFormat, this.glType, pixels);
     }
@@ -197,9 +197,12 @@ function Boolean decodeRGBAImageData(
     case 'tif':
     case 'tiff':
     case 'image/tif':
+      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+      resource.data.resize(0);
+      break;
     case 'png':
     case 'image/png':
-      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
     case 'tga':
