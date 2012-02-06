@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if [ -z "$FABRIC_CORE_PATH" ]; then
+if [ -z "$FABRIC_CORE_ROOT" ]; then
   cat >&2 <<EOF
-The FABRIC_CORE_PATH environment variable must be set
+The FABRIC_CORE_ROOT environment variable must be set
 to the path to the Fabric NativeCore checkout
 EOF
 else
@@ -35,7 +35,7 @@ else
 Usage: souce fabric-build-env.sh [-n] (Debug|Release)
 EOF
   else
-    FABRIC_DIST_PATH="$FABRIC_CORE_PATH/Native/dist/$FABRIC_BUILD_OS/$FABRIC_BUILD_ARCH/$FABRIC_BUILD_TYPE"
+    FABRIC_DIST_PATH="$FABRIC_CORE_ROOT/Native/dist/$FABRIC_BUILD_OS/$FABRIC_BUILD_ARCH/$FABRIC_BUILD_TYPE"
 
     echo "Exporting FABRIC_BUILD_OS=$FABRIC_BUILD_OS"
     export FABRIC_BUILD_OS="$FABRIC_BUILD_OS"
