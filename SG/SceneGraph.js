@@ -558,6 +558,8 @@ FABRIC.SceneGraph = {
     };
     scene.pub.importAssetFile = function(file, options, callback) {
       var ext = file.split('.').pop().toLocaleLowerCase();
+      if(file.substr(0,11).toLocaleLowerCase() == "fabricio://")
+        file = file.substr(0,file.length-1-ext.length);
       if (FABRIC.SceneGraph.assetLoaders[ext]) {
         var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
         return assets;
