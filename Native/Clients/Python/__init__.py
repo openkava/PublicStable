@@ -70,12 +70,16 @@ class _INTERFACE( object ):
     self.VP = self.__client.vp
     self.EX = self.__client.ex
     self.IO = self.__client.io
+    self.build = self.__client.build
 
   def flush( self ):
     self.__client.executeQueuedCommands()
 
   def close( self ):
     self.__client.close()
+
+  def running( self ):
+    return self.__client.running()
 
   def getMemoryUsage( self ):
     # dictionary hack to simulate Python 3.x nonlocal
@@ -120,6 +124,10 @@ class _CLIENT( object ):
 
     # prevent exit until all our threads complete
     atexit.register( self.__waitForClose )
+
+  def running( self ):
+    self.__processAllNotifications()
+    return not self.__closed
 
   def __processAllNotifications( self ):
     while not self.__notifications.empty():
@@ -174,8 +182,8 @@ class _CLIENT( object ):
       command[ 'arg' ] = arg
 
     self.__queuedCommands.append( command )
-    self.__queuedUnwinds.append( unwind )    
-    self.__queuedCallbacks.append( callback )    
+    self.__queuedUnwinds.append( unwind )
+    self.__queuedCallbacks.append( callback )
 
   def executeQueuedCommands( self ):
     commands = self.__queuedCommands
@@ -1437,7 +1445,7 @@ class _KLC( _NAMESPACE ):
   def __init__( self, client ):
     super( _KLC, self ).__init__( client, 'KLC' )
 
-  def createCompilation( self, sourceName, sourceCode ):
+  def createCompilation( self, sourceName = None, sourceCode = None ):
     obj = self._COMPILATION( self )
     arg = { 'id': obj.getID() }
     if sourceName is not None:
@@ -1460,38 +1468,41 @@ class _KLC( _NAMESPACE ):
     self._queueCommand( 'createExecutable', arg, obj.unwind )
     return obj
 
-  def __createOperator( self, sourceName, sourceCode, operatorName, cmd ):
+  def _createOperatorOnly( self ):
     operator = self._OPERATOR( self )
+    return operator
+
+  def _createOperator( self, operatorName, cmd, sourceName = None, sourceCode = None ):
+    operator = self._createOperatorOnly()
     arg = {
       'id': operator.getID(),
+      'operatorName': operatorName,
       'sourceName': sourceName,
-      'sourceCode': sourceCode,
-      'operatorName': operatorName
+      'sourceCode': sourceCode
     }
-
     self._queueCommand( cmd, arg, operator.unwind )
     return operator
 
   def createReduceOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createReduceOperator' )
+    return self._createOperator( operatorName, 'createReduceOperator', sourceName, sourceCode )
 
   def createValueGeneratorOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createValueGeneratorOperator' )
+    return self._createOperator( operatorName, 'createValueGeneratorOperator', sourceName, sourceCode )
 
   def createValueMapOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createValueMapOperator' )
+    return self._createOperator( operatorName, 'createValueMapOperator', sourceName, sourceCode )
 
   def createValueTransformOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createValueTransformOperator' )
+    return self._createOperator( operatorName, 'createValueTransformOperator', sourceName, sourceCode )
 
   def createArrayGeneratorOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createArrayGeneratorOperator' )
+    return self._createOperator( operatorName, 'createArrayGeneratorOperator', sourceName, sourceCode )
 
   def createArrayMapOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createArrayMapOperator' )
+    return self._createOperator( operatorName, 'createArrayMapOperator', sourceName, sourceCode )
 
   def createArrayTransformOperator( self, sourceName, sourceCode, operatorName ):
-    return self.__createOperator( sourceName, sourceCode, operatorName, 'createArrayTransformOperator' )
+    return self._createOperator( operatorName, 'createArrayTransformOperator', sourceName, sourceCode )
 
   class _OPERATOR( _GCOBJECT ):
     def __init__( self, klc ):
@@ -1508,12 +1519,12 @@ class _KLC( _NAMESPACE ):
       super( _KLC._EXECUTABLE, self ).__init__( klc )
 
     def __resolveOperator( self, operatorName, cmd ):
-      operator = self._OPERATOR( self )
+      operator = self._nsobj._createOperatorOnly()
       arg = {
         'id': operator.getID(),
         'operatorName': operatorName
       }
-      self._queueCommand( cmd, arg, operator.unwind )
+      self._gcObjQueueCommand( cmd, arg, operator.unwind )
       return operator
 
     def getAST( self ):
@@ -1847,7 +1858,7 @@ class _BUILD( _NAMESPACE ):
     return self.__build[ 'isExpired' ]
 
   def getName( self ):
-    return self.__build[ 'getName' ]
+    return self.__build[ 'name' ]
 
   def getPureVersion( self ):
     return self.__build[ 'pureVersion' ]
