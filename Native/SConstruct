@@ -19,6 +19,9 @@ except:
 
 thirdPartyDir = os.path.join(os.getcwd(), 'ThirdParty' )
 
+SetOption('num_jobs', int(os.environ.get('FABRIC_BUILD_JOBS', 1)))
+print "Running with -j" + str(GetOption('num_jobs'))
+
 # [pzion 20110726] !!!!!!!!!!!!!!!!!!!!
 # When you change the version number,
 # don't forget to consider the expiry
