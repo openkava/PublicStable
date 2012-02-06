@@ -8,7 +8,7 @@ Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricP
 pythonPackageName = "FabricEnginePythonModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 
 pythonPackageDir = distDir.Dir(pythonPackageName)
-pythonModuleDir = pythonPackageDir.Dir('python_modules').Dir('Fabric')
+pythonModuleDir = pythonPackageDir.Dir('python_modules').Dir('fabric')
 
 installerFiles = []
 
