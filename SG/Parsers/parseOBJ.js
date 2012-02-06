@@ -91,6 +91,38 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
       }catch(e){
         console.warn(e);
       }
+
+      resourceLoadNode.pub.addEventListener('objloadsuccess', function(evt){
+        var loadedGeometries = {};
+        if(evt.objectNames.length > 0){
+          for(var i=0; i<evt.objectNames.length; i++){
+            var objectName = evt.objectNames[i].length > 0 ? evt.objectNames[i] : (evt.groupNames[i].length > 0 ? evt.groupNames[i] : options.baseName);
+            loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
+              resourceLoadNode: resourceLoadNode.pub,
+              entityIndex: i,
+              name: objectName
+            }).pub;
+            evt.objectNames[i] = objectName;
+          }
+        }else{
+          evt.objectNames = [options.baseName];
+          loadedGeometries[options.baseName] = scene.constructNode('ObjTriangles', {
+            resourceLoadNode: resourceLoadNode.pub,
+            entityIndex: -1,
+            name: options.baseName
+          }).pub;
+        }
+        if(options.callback){
+          options.callback(loadedGeometries);
+        }
+        resourceLoadNode.pub.fireEvent('objparsesuccess', {
+          loadedGeometries: loadedGeometries,
+          objectNames: evt.objectNames,
+          materialNames: evt.materialNames
+        })
+        return 'remove';
+      });
+
       resourceLoadNode.pub.fireEvent('objloadsuccess', {
         objectNames: resourceloaddgnode.getData('objectNames'),
         groupNames: resourceloaddgnode.getData('groupNames'),
@@ -241,39 +273,8 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
 
 FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options, callback) {
   options.url = assetUrl;
-  var objLoadNode = scene.constructNode('ObjResource', options );
-  
-  objLoadNode.addEventListener('objloadsuccess', function(evt){
-    var loadedGeometries = {};
-    if(evt.objectNames.length > 0){
-      for(var i=0; i<evt.objectNames.length; i++){
-        var objectName = evt.objectNames[i].length > 0 ? evt.objectNames[i] : (evt.groupNames[i].length > 0 ? evt.groupNames[i] : options.baseName);
-        loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
-          resourceLoadNode: objLoadNode,
-          entityIndex: i,
-          name: objectName
-        });
-        evt.objectNames[i] = objectName;
-      }
-    }else{
-      evt.objectNames = [options.baseName];
-      loadedGeometries[options.baseName] = scene.constructNode('ObjTriangles', {
-        resourceLoadNode: objLoadNode,
-        entityIndex: -1,
-        name: options.baseName
-      })
-    }
-    if(callback){
-      callback(loadedGeometries);
-    }
-    objLoadNode.fireEvent('objparsesuccess', {
-      loadedGeometries: loadedGeometries,
-      objectNames: evt.objectNames,
-      materialNames: evt.materialNames
-    })
-    return 'remove';
-  });
-  return objLoadNode;
+  options.callback = callback;
+  return scene.constructNode('ObjResource', options );
 });
 
 });
