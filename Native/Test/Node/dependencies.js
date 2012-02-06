@@ -1,40 +1,64 @@
 FABRIC = require('Fabric').createClient();
-require( "./include/UnitTest.js" );
-ut = new FABRIC.UnitTest;
-          ut.test( "setDependency/getDependencies/getDependents", function() {
-            var parent = FABRIC.DependencyGraph.createNode( "UnitTests.Node.Dependencies.Parent" );
-            
-            var child = FABRIC.DependencyGraph.createNode( "UnitTests.Node.Dependencies.Child" );
-            
-            ut.expectException( "parentName must be non-empty", function() {
-              child.setDependency( parent, "" );
-            } );
-            ut.expectException( "parentName must not be 'self'", function() {
-              child.setDependency( parent, "self" );
-            } );
-            ut.expectSuccess( "setDependency works", function() {
-              child.setDependency( parent, "parent" );
-            } );
-            ut.expectSuccess( "setDependency works the second time with same name", function() {
-              child.setDependency( parent, "parent" );
-            } );
-            ut.expectSuccess( "setDependency works with same node but different name", function() {
-              child.setDependency( parent, "parentAgain" );
-            } );
-            
-            ut.expect( "child.getDependency('parent').eq(parent)", child.getDependency('parent') === parent );
-            ut.expect( "child.getDependency('parentAgain').eq(parent)", child.getDependency('parentAgain') === parent );
-            ut.expectException( "child.getDependency('children') fails", function() {
-              child.getDependency("children");
-            } );
-            ut.expectException( "parent.getDependency('parent') fails", function() {
-              parent.getDependency("parent");
-            } );
-            ut.expectException( "parent.getDependency('children') fails", function() {
-              parent.getDependency("children");
-            } );
-            
-            ut.expect( "child.getDependencies().parent.eq(parent)", child.getDependencies().parent === parent );
-            ut.expect( "child.getDependencies().parentAgain.eq(parent)", child.getDependencies().parentAgain === parent );
-          } );
+
+var parent = FABRIC.DependencyGraph.createNode( "Parent" );
+var child = FABRIC.DependencyGraph.createNode( "Child" );
+
+try {
+  child.setDependency( parent, "" );
+}
+catch (e) {
+  console.log( "parentName must be non-empty" );
+}
+
+try {
+  child.setDependency( parent, "self" );
+}
+catch (e) {
+  console.log( "parentName must not be 'self'" );
+}
+
+// works
+child.setDependency( parent, "parent" );
+// works again with same name
+child.setDependency( parent, "parent" );
+// works same node different name
+child.setDependency( parent, "parentAgain" );
+
+if ( child.getDependency('parent') === parent ) {
+  console.log( "child.getDependency('parent').eq(parent)" );
+}
+
+if ( child.getDependency('parentAgain') === parent ) {
+  console.log( "child.getDependency('parentAgain').eq(parent)" );
+}
+
+try {
+  child.getDependency("children");
+}
+catch (e) {
+  console.log( "child.getDependency('children') fails" );
+}
+
+try {
+  parent.getDependency("parent");
+}
+catch (e) {
+  console.log( "parent.getDependency('parent') fails" );
+}
+
+try {
+  parent.getDependency("children");
+}
+catch (e) {
+  console.log( "parent.getDependency('children') fails" );
+}
+
+if ( child.getDependencies().parent === parent ) {
+  console.log( "child.getDependencies().parent.eq(parent)" );
+}
+
+if ( child.getDependencies().parentAgain === parent ) {
+  console.log( "child.getDependencies().parentAgain.eq(parent)" );
+}
+
 FABRIC.close();
