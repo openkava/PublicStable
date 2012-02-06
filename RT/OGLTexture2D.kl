@@ -29,7 +29,7 @@ function OGLTexture2D.configure(
       glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
       glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
     }
-      
+    
     if(nbPixels == (width * height)){
       glTexImage2D(GL_TEXTURE_2D, 0, this.glInternalFormat, width, height, 0, this.glFormat, this.glType, pixels);
     }

@@ -25,14 +25,14 @@ operator tiltKinectCamera(
 
 operator resizeImage(
   io Size width,
-  io Size height
+  io Size height,
   io Size newCount
 ) {
   newCount = width*height;
 }
 
 operator getKinectCameraAllPixels(
-  io KinectCamera camera,kinect
+  io KinectCamera camera,
   io Scalar time
 ){
   if(camera.initiated){
@@ -47,7 +47,11 @@ operator getKinectCameraColorPixels(
   io RGBA pixels<>
 ){
   if(pixels.size() == camera.colorData.size() && camera.initiated && camera.supportsColor){
-    pixels = camera.colorData;
+    for(Size i=0;i<pixels.size();i++)
+    {
+      pixels[i] = camera.colorData[i];
+      pixels[i].a = 255;
+    }
   }
 }
 
@@ -56,7 +60,8 @@ operator getKinectCameraDepthPixels(
   io Integer pixels<>
 ){
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    pixels = camera.depthData;
+    for(Size i=0;i<pixels.size();i++)
+      pixels[i] = camera.depthData[i];
   }
 }
 
@@ -64,8 +69,9 @@ operator getKinectCameraPlayerPixels(
   io KinectCamera camera,
   io Integer pixels<>
 ){  
-  if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    pixels = camera.playerData;
+  if(pixels.size() == camera.playerData.size() && camera.initiated && camera.supportsDepth){
+    for(Size i=0;i<pixels.size();i++)
+      pixels[i] = camera.playerData[i];
   }
 }
 

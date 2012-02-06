@@ -28,7 +28,11 @@
 
 <script type="text/javascript">
 
-FABRIC.require(["SG/SceneGraph"
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Primitives",
                 "SG/Parsers/parseOBJ"], function() {
  
 FABRIC.SceneGraph.registerNodeType('FileSystemNode', {
@@ -91,7 +95,7 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
   });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -146,6 +150,7 @@ $(document).ready(function() {
   }
   $('#rootPath').change(onChange);
   onChange();
+  document.onChange = onChange;
   
   $('#loadingDialog').dialog({
     modal: true
