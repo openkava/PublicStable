@@ -182,8 +182,8 @@ class _CLIENT( object ):
       command[ 'arg' ] = arg
 
     self.__queuedCommands.append( command )
-    self.__queuedUnwinds.append( unwind )    
-    self.__queuedCallbacks.append( callback )    
+    self.__queuedUnwinds.append( unwind )
+    self.__queuedCallbacks.append( callback )
 
   def executeQueuedCommands( self ):
     commands = self.__queuedCommands
@@ -1468,17 +1468,18 @@ class _KLC( _NAMESPACE ):
     self._queueCommand( 'createExecutable', arg, obj.unwind )
     return obj
 
-  def _createOperator( self, operatorName, cmd, sourceName = None, sourceCode = None ):
+  def _createOperatorOnly( self ):
     operator = self._OPERATOR( self )
+    return operator
+
+  def _createOperator( self, operatorName, cmd, sourceName = None, sourceCode = None ):
+    operator = self._createOperatorOnly()
     arg = {
       'id': operator.getID(),
-      'operatorName': operatorName
+      'operatorName': operatorName,
+      'sourceName': sourceName,
+      'sourceCode': sourceCode
     }
-    if sourceName is not None:
-      arg[ 'sourceName' ] = sourceName
-    if sourceCode is not None:
-      arg[ 'sourceCode' ] = sourceCode
-
     self._queueCommand( cmd, arg, operator.unwind )
     return operator
 
@@ -1518,7 +1519,13 @@ class _KLC( _NAMESPACE ):
       super( _KLC._EXECUTABLE, self ).__init__( klc )
 
     def __resolveOperator( self, operatorName, cmd ):
-      return self._nsobj._createOperator( None, None, operatorName, cmd )
+      operator = self._nsobj._createOperatorOnly()
+      arg = {
+        'id': operator.getID(),
+        'operatorName': operatorName
+      }
+      self._gcObjQueueCommand( cmd, arg, operator.unwind )
+      return operator
 
     def getAST( self ):
       return self._synchronousGetOnly( 'getAST' )
