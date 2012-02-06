@@ -5,12 +5,20 @@ import ctypes
 import collections
 import atexit
 import Queue
+import signal
 
 # FIXME Windows
 if os.name == 'posix':
   _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
 else:
   raise Exception('not implemented for Windows yet!')
+
+# FIXME Windows
+_caughtSIGINT = False
+def _handleSIGINT( signum, frame ):
+  global _caughtSIGINT
+  _caughtSIGINT = True
+signal.signal( signal.SIGINT, _handleSIGINT )
 
 # catch uncaught exceptions so that we don't wait on threads 
 _uncaughtException = False
@@ -133,8 +141,13 @@ class _CLIENT( object ):
     while not self.__notifications.empty():
       self.__processOneNotification()
 
-  def __processOneNotification( self ):
-    n = self.__notifications.get()
+  def __processOneNotification( self, timeout = None ):
+    n = None
+    try:
+      n = self.__notifications.get( True, timeout )
+    except Queue.Empty:
+      return
+
     arg = None
     if 'arg' in n:
       arg = n[ 'arg' ]
@@ -146,8 +159,12 @@ class _CLIENT( object ):
 
   def __waitForClose( self ):
     if not _uncaughtException:
-      while not self.__closed or not self.__notifications.empty():
-        self.__processOneNotification()
+      while not _caughtSIGINT and (
+          not self.__closed or not self.__notifications.empty()
+        ):
+        # FIXME only using timeout so we can allow a Ctrl-C after
+        # trying to exit without correctly using client.close()
+        self.__processOneNotification( 0.1 )
 
   def __createClient( self ):
     result = ctypes.c_void_p()
