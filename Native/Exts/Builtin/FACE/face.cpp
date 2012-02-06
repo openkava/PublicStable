@@ -48,7 +48,7 @@ FABRIC_EXT_EXPORT void FabricFACE_DeleteDetector(
 
 FABRIC_EXT_EXPORT void FabricFACE_CreateDetector(
   FaceDetector & detector,
-  KL::String & fileHandle
+  const KL::String & fileHandle
 )
 {
   KL::FileHandleWrapper wrapper(fileHandle);
@@ -76,7 +76,19 @@ FABRIC_EXT_EXPORT void FabricFACE_Detect(
   }
   
   // convert our image to an opencv image
-  cv::Mat img(height,width,CV_8UC1+channels-1,pixels);
+  int mode = CV_8UC1;
+  if(channels == 2)
+    mode = CV_8UC2;
+  else if(channels == 3)
+    mode = CV_8UC3;
+  else if(channels == 4)
+    mode = CV_8UC4;
+  else
+  {
+    Fabric::EDK::throwException("FACE extension: Max 4 channels for images supported.");
+    return;
+  }
+  cv::Mat img(height,width,mode,pixels);
   IplImage imgHeader = img;
   
   /* detect faces */
@@ -84,7 +96,7 @@ FABRIC_EXT_EXPORT void FabricFACE_Detect(
     &imgHeader,
     detector.pointer->cascade,
     detector.pointer->storage,
-    1.1,
+    1.5,
     3,
     0 /*CV_HAAR_DO_CANNY_PRUNNING*/,
     cvSize( 40, 40 )
