@@ -66,6 +66,9 @@ FABRIC_EXT_EXPORT void FabricFACE_Detect(
   KL::Size width,
   KL::Size height,
   KL::Size channels,
+  KL::Scalar ratio,
+  KL::Size searchWidth,
+  KL::Size searchHeight,
   KL::VariableArray<FaceLocation> & faces
 )
 {
@@ -96,10 +99,10 @@ FABRIC_EXT_EXPORT void FabricFACE_Detect(
     &imgHeader,
     detector.pointer->cascade,
     detector.pointer->storage,
-    1.5,
+    ratio,
     3,
     0 /*CV_HAAR_DO_CANNY_PRUNNING*/,
-    cvSize( 40, 40 )
+    cvSize( searchWidth, searchHeight )
   );
   
   faces.resize(results ? results->total : 0);
