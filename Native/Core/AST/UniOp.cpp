@@ -34,11 +34,11 @@ namespace Fabric
     
     RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> childType = m_child->getType( basicBlockBuilder );
-      std::string functionName = CG::uniOpOverloadName( m_uniOpType, childType );
+      CG::ExprType childExprType = m_child->getExprType( basicBlockBuilder );
+      std::string functionName = CG::uniOpOverloadName( m_uniOpType, childExprType.getAdapter() );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
       if ( !functionSymbol )
-        throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childType->getUserName()) );
+        throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childExprType.getUserName()) );
       return functionSymbol;
     }
     
@@ -47,11 +47,11 @@ namespace Fabric
       m_child->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType UniOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      return CG::ExprType( adapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue UniOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

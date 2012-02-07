@@ -64,7 +64,7 @@ namespace Fabric
       CG::BinOpType m_binOpType;
       RC::ConstHandle<ParamVector> m_params;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_AST_BIN_OP_IMPL_H

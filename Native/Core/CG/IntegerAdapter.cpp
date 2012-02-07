@@ -62,7 +62,7 @@ namespace Fabric
       static const bool buildFunctions = true;
       
       {
-        std::string name = constructOverloadName( booleanAdapter, this );
+        std::string name = constructorOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
@@ -80,7 +80,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( byteAdapter, this );
+        std::string name = constructorOverloadName( byteAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "byteLValue", byteAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
@@ -98,7 +98,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( sizeAdapter, this );
+        std::string name = constructorOverloadName( sizeAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "sizeLValue", sizeAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
@@ -116,7 +116,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( fp32Adapter, this );
+        std::string name = constructorOverloadName( fp32Adapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "scalarLValue", fp32Adapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
@@ -134,7 +134,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( fp64Adapter, this );
+        std::string name = constructorOverloadName( fp64Adapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "scalarLValue", fp64Adapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
@@ -152,7 +152,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( stringAdapter, this );
+        std::string name = constructorOverloadName( stringAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
@@ -590,7 +590,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "dataSize", this );
+        std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -604,7 +604,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "data", this );
+        std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
@@ -618,7 +618,7 @@ namespace Fabric
       }
      
       {
-        std::string name = methodOverloadName( "hash", this );
+        std::string name = methodOverloadName( "hash", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -637,7 +637,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "compare", this, this );
+        std::string name = methodOverloadName( "compare", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );

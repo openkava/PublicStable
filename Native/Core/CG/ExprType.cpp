@@ -18,18 +18,6 @@ namespace Fabric
     {
     }
   
-    ExprType::ExprType( RC::ConstHandle<Adapter> const &desc )
-      : m_adapter( desc )
-      , m_usage( USAGE_UNSPECIFIED )
-    {
-    }
-  
-    ExprType::ExprType( Usage usage )
-      : m_adapter( 0 )
-      , m_usage( usage )
-    {
-    }
-  
     ExprType::ExprType( RC::ConstHandle<Adapter> const &desc, Usage usage )
       : m_adapter( desc )
       , m_usage( usage )

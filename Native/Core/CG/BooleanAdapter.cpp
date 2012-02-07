@@ -51,7 +51,7 @@ namespace Fabric
       static const bool buildFunctions = true;
       
       {
-        std::string name = constructOverloadName( stringAdapter, this );
+        std::string name = constructorOverloadName( stringAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "booleanRValue", this, USAGE_RVALUE ) );
@@ -224,7 +224,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "hash", this );
+        std::string name = methodOverloadName( "hash", CG::ExprType( this, USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -243,7 +243,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "compare", this, this );
+        std::string name = methodOverloadName( "compare", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );

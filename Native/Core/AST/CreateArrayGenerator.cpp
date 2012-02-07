@@ -61,7 +61,7 @@ namespace Fabric
         m_shared->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> CreateArrayGenerator::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType CreateArrayGenerator::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Symbol> operatorSymbol = basicBlockBuilder.getScope().get( m_operatorName );
       if ( !operatorSymbol )
@@ -74,7 +74,7 @@ namespace Fabric
         throw MR::ArrayGeneratorOperator::GetPrototypeException();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[0].getAdapter();
       RC::ConstHandle<CG::ArrayProducerAdapter> outputArrayProducerAdapter = basicBlockBuilder.getManager()->getArrayProducerOf( outputAdapter );
-      return outputArrayProducerAdapter;
+      return CG::ExprType( outputArrayProducerAdapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue CreateArrayGenerator::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -96,10 +96,10 @@ namespace Fabric
       if ( operatorParams.size() < 1 )
         throw MR::ArrayGeneratorOperator::GetPrototypeException();
 
-      RC::ConstHandle<CG::Adapter> countValueProducerAdapter_ = m_count->getType( basicBlockBuilder );
-      if ( !RT::isValueProducer( countValueProducerAdapter_->getType() ) )
+      CG::ExprType countExprType = m_count->getExprType( basicBlockBuilder );
+      if ( !RT::isValueProducer( countExprType.getAdapter()->getType() ) )
         throw CG::Error( getLocation(), "count must be a value producer" );
-      RC::ConstHandle<CG::ValueProducerAdapter> countValueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( countValueProducerAdapter_ );
+      RC::ConstHandle<CG::ValueProducerAdapter> countValueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( countExprType.getAdapter() );
       RC::ConstHandle<CG::Adapter> countAdapter = countValueProducerAdapter->getValueAdapter();
       if ( countAdapter != sizeAdapter )
         throw CG::Error( getLocation(), "count value type must be 'Size'" );
@@ -145,10 +145,10 @@ namespace Fabric
             if ( !m_shared )
               throw CG::Error( getLocation(), "operator takes a shared value but no shared value is provided" );
               
-            RC::ConstHandle<CG::Adapter> sharedAdapter_ = m_shared->getType( basicBlockBuilder );
-            if ( !RT::isValueProducer( sharedAdapter_->getType() ) )
+            CG::ExprType sharedExprType = m_shared->getExprType( basicBlockBuilder );
+            if ( !RT::isValueProducer( sharedExprType.getAdapter()->getType() ) )
               throw CG::Error( getLocation(), "shared value must be a value producer" );
-            RC::ConstHandle<CG::ValueProducerAdapter> sharedValueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( sharedAdapter_ );
+            RC::ConstHandle<CG::ValueProducerAdapter> sharedValueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( sharedExprType.getAdapter() );
             RC::ConstHandle<CG::Adapter> sharedAdapter = sharedValueProducerAdapter->getValueAdapter();
 
             if ( operatorParams[3].getAdapter() != sharedAdapter )

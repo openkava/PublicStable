@@ -45,25 +45,27 @@ namespace Fabric
     
     RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> thisType = m_expr->getType( basicBlockBuilder );
+      CG::ExprType thisExprType = m_expr->getExprType( basicBlockBuilder );
       
-      std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
-      m_args->appendTypes( basicBlockBuilder, argTypes );
+      std::vector<CG::ExprType> argExprTypes;
+      m_args->appendExprTypes( basicBlockBuilder, argExprTypes );
       
-      std::string functionName = CG::methodOverloadName( m_name, thisType, argTypes );
+      std::string functionName = CG::methodOverloadName( m_name, thisExprType, argExprTypes );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
       if ( !functionSymbol )
       {
         std::string functionDesc = m_name + "(";
-        for ( size_t i=0; i<argTypes.size(); ++i )
+        for ( size_t i=0; i<argExprTypes.size(); ++i )
         {
           if ( i > 0 )
-            functionDesc += ",";
-          functionDesc += argTypes[i]->getUserName();
+            functionDesc += ", ";
+          if ( argExprTypes[i].getUsage() == CG::USAGE_LVALUE )
+            functionDesc += "io ";
+          functionDesc += argExprTypes[i].getUserName();
         }
         functionDesc += ")";
         
-        throw CG::Error( getLocation(), "type " + thisType->getUserName() + " has no method " + _(functionDesc) );
+        throw CG::Error( getLocation(), "type " + thisExprType.getUserName() + " has no method " + _(functionDesc) );
       }
       return functionSymbol;
     }
@@ -74,11 +76,15 @@ namespace Fabric
       m_args->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType MethodOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
-      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      if ( adapter )
+      {
+        adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+        return CG::ExprType( adapter, CG::USAGE_RVALUE );
+      }
+      else return CG::ExprType();
     }
     
     CG::ExprValue MethodOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
