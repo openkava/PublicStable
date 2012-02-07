@@ -479,13 +479,13 @@ namespace Fabric
 
   namespace KL
   {
-    typedef std::map<std::string, void *> SymbolNameToAddressMap;
-
-    void *LookupExternalSymbol( std::string const &functionName )
+    class SymbolNameToAddressMap : public std::map<std::string, void *>
     {
-      static SymbolNameToAddressMap symbolNameToAddressMap;
-      if ( symbolNameToAddressMap.empty() )
+    public:
+    
+      SymbolNameToAddressMap()
       {
+        SymbolNameToAddressMap &symbolNameToAddressMap = *this;
         symbolNameToAddressMap["malloc"] = (void *)&malloc;
         symbolNameToAddressMap["realloc"] = (void *)&realloc;
         symbolNameToAddressMap["free"] = (void *)&free;
@@ -568,6 +568,11 @@ namespace Fabric
         symbolNameToAddressMap["__MR_CreateReduce_4"] = (void *)&MRCreateReduce4;
         symbolNameToAddressMap["__MR_CreateReduce_5"] = (void *)&MRCreateReduce5;
       }
+    };
+
+    void *LookupExternalSymbol( std::string const &functionName )
+    {
+      static SymbolNameToAddressMap symbolNameToAddressMap;
       SymbolNameToAddressMap::const_iterator it = symbolNameToAddressMap.find( functionName );
       if ( it != symbolNameToAddressMap.end() )
         return it->second;
