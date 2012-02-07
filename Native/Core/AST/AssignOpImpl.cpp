@@ -37,22 +37,42 @@ namespace Fabric
       RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : MethodOpImpl(
+      : FunctionBase(
         location,
         "",
-        thisType,
-        CG::assignOpMethodName( assignOpType ),
-        ParamVector::Create( rhs ),
         body
         )
       , m_assignOpType( assignOpType )
+      , m_params(
+        ParamVector::Create(
+          Param::Create(
+            location,
+            "this",
+            thisType,
+            CG::USAGE_LVALUE
+            ),
+          rhs
+          )
+        )
     {
     }
     
     void AssignOpImpl::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      MethodOpImpl::appendJSONMembers( jsonObjectEncoder, includeLocation );
-      jsonObjectEncoder.makeMember( "op" ).makeString( CG::assignOpTypeDesc( m_assignOpType ) );
+      FunctionBase::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "op" ).makeString( CG::assignOpUserName( m_assignOpType ) );
+      m_params->appendJSON( jsonObjectEncoder.makeMember( "params" ), includeLocation );
     }
-  };
-};
+    
+    std::string AssignOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<ParamVector> params = getParams( cgManager );
+      return CG::assignOpOverloadName( m_assignOpType, params->get(0)->getAdapter( cgManager ), params->get(1)->getAdapter( cgManager ) );
+    }
+
+    RC::ConstHandle<ParamVector> AssignOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return m_params;
+    }
+  }
+}

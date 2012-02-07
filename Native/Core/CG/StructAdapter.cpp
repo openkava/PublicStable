@@ -136,7 +136,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( stringAdapter, this );
+        std::string name = constructorOverloadName( stringAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "structRValue", this, USAGE_RVALUE ) );
@@ -156,7 +156,7 @@ namespace Fabric
       if ( getDesc()->isShallow() )
       {
         {
-          std::string name = methodOverloadName( "dataSize", this );
+          std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
           std::vector< FunctionParam > params;
           params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
           FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -170,7 +170,7 @@ namespace Fabric
         }
         
         {
-          std::string name = methodOverloadName( "data", this );
+          std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
           std::vector< FunctionParam > params;
           params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
           FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );

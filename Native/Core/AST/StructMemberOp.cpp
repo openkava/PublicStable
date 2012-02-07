@@ -38,28 +38,28 @@ namespace Fabric
       m_structExpr->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType StructMemberOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> structType = m_structExpr->getType( basicBlockBuilder );
-      RC::ConstHandle<CG::Adapter> adapter;
-      if ( RT::isStruct( structType->getType() ) )
+      CG::ExprType structExprType = m_structExpr->getExprType( basicBlockBuilder );
+      if ( RT::isStruct( structExprType.getAdapter()->getType() ) )
       {
-        RC::ConstHandle<CG::StructAdapter> structAdapter = RC::ConstHandle<CG::StructAdapter>::StaticCast( structType );
-        if ( !structAdapter->hasMember( m_memberName ) )
-          throw CG::Error( getLocation(), "structure has no member named " + _(m_memberName) );
-        size_t memberIndex = structAdapter->getMemberIndex( m_memberName );
-        adapter = structAdapter->getMemberAdapter( memberIndex );
+        RC::ConstHandle<CG::StructAdapter> structAdapter = RC::ConstHandle<CG::StructAdapter>::StaticCast( structExprType.getAdapter() );
+        if ( structAdapter->hasMember( m_memberName ) )
+        {
+          size_t memberIndex = structAdapter->getMemberIndex( m_memberName );
+          RC::ConstHandle<CG::Adapter> memberAdapter = structAdapter->getMemberAdapter( memberIndex );
+          memberAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+          return CG::ExprType( memberAdapter, structExprType.getUsage() );
+        }
       }
-      else
-      {
-        std::string functionName = methodOverloadName( m_memberName, structType );
-        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
-        if ( !functionSymbol )
-          throw CG::Error( getLocation(), "type " + structType->getUserName() + " has no member or method named " + _(m_memberName) );
-        adapter = functionSymbol->getReturnInfo().getAdapter();
-      }
-      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      
+      std::string functionName = methodOverloadName( m_memberName, structExprType );
+      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+      if ( !functionSymbol )
+        throw CG::Error( getLocation(), "type " + structExprType.getUserName() + " has no member or method named " + _(m_memberName) );
+      RC::ConstHandle<CG::Adapter> returnAdapter = functionSymbol->getReturnInfo().getAdapter();
+      returnAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return CG::ExprType( returnAdapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue StructMemberOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -69,7 +69,8 @@ namespace Fabric
         if ( usage == CG::USAGE_UNSPECIFIED )
           usage = CG::USAGE_RVALUE;
           
-        RC::ConstHandle<CG::Adapter> adapter = m_structExpr->getType( basicBlockBuilder );
+        CG::ExprType exprType = m_structExpr->getExprType( basicBlockBuilder );
+        RC::ConstHandle<CG::Adapter> adapter = exprType.getAdapter();
         
         if ( RT::isStruct( adapter->getType() ) )
         {
@@ -103,7 +104,7 @@ namespace Fabric
           }
         }
 
-        std::string functionName = methodOverloadName( m_memberName, adapter );
+        std::string functionName = methodOverloadName( m_memberName, CG::ExprType( adapter, CG::USAGE_RVALUE ) );
         RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
         if ( functionSymbol )
         {

@@ -36,7 +36,7 @@ namespace Fabric
     void AssignOp::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
       Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
-      jsonObjectEncoder.makeMember( "initialValue" ).makeString( assignOpTypeDesc( m_assignOpType ) );
+      jsonObjectEncoder.makeMember( "type" ).makeString( assignOpCodeName( m_assignOpType ) );
       m_left->appendJSON( jsonObjectEncoder.makeMember( "lhs" ), includeLocation );
       m_right->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
@@ -47,11 +47,13 @@ namespace Fabric
       m_right->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> AssignOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType AssignOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = m_left->getType( basicBlockBuilder );
-      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      CG::ExprType lhsExprType = m_left->getExprType( basicBlockBuilder );
+      if ( lhsExprType.getUsage() != CG::USAGE_LVALUE )
+        throw CG::Error( getLocation(), "cannot be assigned to" );
+      lhsExprType.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return lhsExprType;
     }
     
     CG::ExprValue AssignOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -70,7 +72,7 @@ namespace Fabric
           return lhsExprValue;
         }
 
-        std::string name = methodOverloadName( assignOpMethodName( m_assignOpType ), lhsExprValue.getAdapter(), rhsExprValue.getAdapter() );
+        std::string name = assignOpOverloadName( m_assignOpType, lhsExprValue.getAdapter(), rhsExprValue.getAdapter() );
         RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
         if ( functionSymbol )
         {
@@ -89,7 +91,7 @@ namespace Fabric
           return lhsExprValue;
         }
         
-        throw CG::Error( getLocation(), "assignment operator " + std::string( CG::assignOpTypeDesc( m_assignOpType ) ) + " not supported for expressions of type " + lhsExprValue.getTypeUserName() );
+        throw CG::Error( getLocation(), "assignment operator " + std::string( CG::assignOpUserName( m_assignOpType ) ) + " not supported for expressions of type " + lhsExprValue.getTypeUserName() );
       }
       catch ( CG::Error e )
       {

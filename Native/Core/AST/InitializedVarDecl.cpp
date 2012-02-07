@@ -55,11 +55,9 @@ namespace Fabric
     {
       CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
       
-      std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
-      m_args->appendTypes( basicBlockBuilder, argTypes );
-      
-      RC::ConstHandle<CG::Adapter> adapter = result.getAdapter();
-      std::string initializerName = constructOverloadName( adapter, argTypes );
+      std::vector< RC::ConstHandle<CG::Adapter> > argAdapters;
+      m_args->appendAdapters( basicBlockBuilder, argAdapters );
+      std::string initializerName = constructorOverloadName( result.getAdapter(), argAdapters );
         
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
       if ( !functionSymbol )

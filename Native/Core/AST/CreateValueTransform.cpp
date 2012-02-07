@@ -57,9 +57,9 @@ namespace Fabric
         m_shared->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> CreateValueTransform::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType CreateValueTransform::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return m_input->getType( basicBlockBuilder );
+      return m_input->getExprType( basicBlockBuilder );
     }
     
     CG::ExprValue CreateValueTransform::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -70,10 +70,10 @@ namespace Fabric
       RC::Handle<CG::Context> context = basicBlockBuilder.getContext();
       llvm::LLVMContext &llvmContext = context->getLLVMContext();
       
-      RC::ConstHandle<CG::Adapter> inputAdapter = m_input->getType( basicBlockBuilder );
-      if ( !RT::isValueProducer( inputAdapter->getType() ) )
+      CG::ExprType inputExprType = m_input->getExprType( basicBlockBuilder );
+      if ( !RT::isValueProducer( inputExprType.getAdapter()->getType() ) )
         throw CG::Error( getLocation(), "input must be a value producer" );
-      RC::ConstHandle<CG::ValueProducerAdapter> valueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( inputAdapter );
+      RC::ConstHandle<CG::ValueProducerAdapter> valueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( inputExprType.getAdapter() );
       RC::ConstHandle<CG::Adapter> valueAdapter = valueProducerAdapter->getValueAdapter();
       
       RC::ConstHandle<CG::Symbol> operatorSymbol = basicBlockBuilder.getScope().get( m_operatorName );
@@ -124,10 +124,10 @@ namespace Fabric
       }
       else
       {
-        RC::ConstHandle<CG::Adapter> sharedAdapter_ = m_shared->getType( basicBlockBuilder );
-        if ( !RT::isValueProducer( sharedAdapter_->getType() ) )
+        CG::ExprType sharedExprType = m_shared->getExprType( basicBlockBuilder );
+        if ( !RT::isValueProducer( sharedExprType.getAdapter()->getType() ) )
           throw CG::Error( getLocation(), "shared must be a value producer" );
-        RC::ConstHandle<CG::ValueProducerAdapter> sharedValueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( sharedAdapter_ );
+        RC::ConstHandle<CG::ValueProducerAdapter> sharedValueProducerAdapter = RC::ConstHandle<CG::ValueProducerAdapter>::StaticCast( sharedExprType.getAdapter() );
         RC::ConstHandle<CG::Adapter> sharedAdapter = sharedValueProducerAdapter->getValueAdapter();
         CG::ExprValue sharedExprRValue = m_shared->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
         
