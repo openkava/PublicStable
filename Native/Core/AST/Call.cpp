@@ -48,18 +48,20 @@ namespace Fabric
     
     RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
-      m_args->appendTypes( basicBlockBuilder, argTypes );
+      std::vector<CG::ExprType> argExprTypes;
+      m_args->appendExprTypes( basicBlockBuilder, argExprTypes );
       
       RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( m_name );
       if ( !symbol )
       {
         std::string functionDesc = m_name + "(";
-        for ( size_t i=0; i<argTypes.size(); ++i )
+        for ( size_t i=0; i<argExprTypes.size(); ++i )
         {
           if ( i > 0 )
-            functionDesc += ",";
-          functionDesc += argTypes[i]->getUserName();
+            functionDesc += ", ";
+          if ( argExprTypes[i].getUsage() == CG::USAGE_LVALUE )
+            functionDesc += "io ";
+          functionDesc += argExprTypes[i].getUserName();
         }
         functionDesc += ")";
         
@@ -71,14 +73,19 @@ namespace Fabric
       return RC::ConstHandle<CG::FunctionSymbol>::StaticCast( symbol );
     }
     
-    RC::ConstHandle<CG::Adapter> Call::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType Call::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
       if ( !adapter )
         adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      
+      CG::ExprType exprType;
       if ( adapter )
+      {
+        exprType = CG::ExprType( adapter, CG::USAGE_RVALUE );
         adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      }
+      return exprType;
     }
     
     void Call::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
@@ -102,9 +109,9 @@ namespace Fabric
         CG::ExprValue result( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), thisLValue );
         basicBlockBuilder.getScope().put( CG::VariableSymbol::Create( result ) );
         
-        std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
-        m_args->appendTypes( basicBlockBuilder, argTypes );
-        if ( argTypes.size() == 1 && argTypes[0] == adapter )
+        std::vector< RC::ConstHandle<CG::Adapter> > argAdapters;
+        m_args->appendAdapters( basicBlockBuilder, argAdapters );
+        if ( argAdapters.size() == 1 && argAdapters[0] == adapter )
         {
           std::vector<CG::Usage> usages;
           usages.push_back( CG::USAGE_RVALUE );
@@ -115,21 +122,21 @@ namespace Fabric
         }
         else
         {
-          std::string initializerName = constructOverloadName( result.getAdapter(), argTypes );
+          std::string initializerName = constructorOverloadName( result.getAdapter(), argAdapters );
             
           RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
           if ( !functionSymbol )
           {
-            if ( argTypes.size() == 1 )
-              throw CG::Error( getLocation(), "no cast exists from " + argTypes[0]->getUserName() + " to " + adapter->getUserName() );
+            if ( argAdapters.size() == 1 )
+              throw CG::Error( getLocation(), "no cast exists from " + argAdapters[0]->getUserName() + " to " + adapter->getUserName() );
             else
             {
               std::string initializerName = adapter->getUserName() + "(";
-              for ( size_t i=0; i<argTypes.size(); ++i )
+              for ( size_t i=0; i<argAdapters.size(); ++i )
               {
                 if ( i > 0 )
                   initializerName += ", ";
-                initializerName += argTypes[i]->getUserName();
+                initializerName += argAdapters[i]->getUserName();
               }
               initializerName += ")";
               

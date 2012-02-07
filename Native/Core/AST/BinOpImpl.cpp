@@ -65,5 +65,5 @@ namespace Fabric
     {
       return m_params;
     }
-  };
-};
+  }
+}

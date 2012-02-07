@@ -55,7 +55,7 @@ namespace Fabric
 
       {
         // [pzion 20110202] Cast string to boolean
-        std::string name = constructOverloadName( booleanAdapter, this );
+        std::string name = constructorOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "constStringRValue", this, USAGE_RVALUE ) );
@@ -75,7 +75,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( stringAdapter, this );
+        std::string name = constructorOverloadName( stringAdapter, this );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "constStringRValue", this, USAGE_RVALUE ) );

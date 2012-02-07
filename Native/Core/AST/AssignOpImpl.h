@@ -8,7 +8,7 @@
 #ifndef _FABRIC_AST_ASSIGN_OP_IMPL_H
 #define _FABRIC_AST_ASSIGN_OP_IMPL_H
 
-#include <Fabric/Core/AST/MethodOpImpl.h>
+#include <Fabric/Core/AST/FunctionBase.h>
 #include <Fabric/Core/CG/OpTypes.h>
 
 namespace Fabric
@@ -18,7 +18,7 @@ namespace Fabric
     class CompoundStatement;
     class Param;
     
-    class AssignOpImpl : public MethodOpImpl
+    class AssignOpImpl : public FunctionBase
     {
       FABRIC_AST_NODE_DECL( AssignOpImpl );
       
@@ -31,6 +31,9 @@ namespace Fabric
         RC::ConstHandle<Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+                  
+      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:
     
@@ -47,8 +50,9 @@ namespace Fabric
     private:
     
       CG::AssignOpType m_assignOpType;
+      RC::ConstHandle<ParamVector> m_params;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_AST_ASSIGN_OP_IMPL_H

@@ -74,7 +74,7 @@ namespace Fabric
     {
       RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_friendlyName );
       if ( adapter )
-        return CG::constructOverloadName( adapter, m_params->getAdapters( cgManager ) );
+        return CG::constructorOverloadName( adapter, m_params->getAdapters( cgManager ) );
       else return m_entryName;
     }
 

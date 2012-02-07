@@ -44,19 +44,19 @@ namespace Fabric
     
     RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> lhsType = m_left->getType( basicBlockBuilder );
-      lhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      RC::ConstHandle<CG::Adapter> rhsType = m_right->getType( basicBlockBuilder );
-      rhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      CG::ExprType lhsType = m_left->getExprType( basicBlockBuilder );
+      lhsType.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      CG::ExprType rhsType = m_right->getExprType( basicBlockBuilder );
+      rhsType.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       
-      std::string functionName = CG::binOpOverloadName( m_binOpType, lhsType, rhsType );
+      std::string functionName = CG::binOpOverloadName( m_binOpType, lhsType.getAdapter(), rhsType.getAdapter() );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
       if ( functionSymbol )
         return functionSymbol;
       
       // [pzion 20110317] Fall back on stronger type
       
-      RC::ConstHandle<RT::Desc> castDesc = basicBlockBuilder.getStrongerTypeOrNone( lhsType->getDesc(), rhsType->getDesc() );
+      RC::ConstHandle<RT::Desc> castDesc = basicBlockBuilder.getStrongerTypeOrNone( lhsType.getDesc(), rhsType.getDesc() );
       if ( castDesc )
       {
         RC::ConstHandle<CG::Adapter> castType = basicBlockBuilder.getManager()->getAdapter( castDesc );
@@ -69,7 +69,7 @@ namespace Fabric
       
       // 
 
-      throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );
+      throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType.getUserName()) + " and " + _(rhsType.getUserName()) );
     }
     
     void BinOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
@@ -78,11 +78,11 @@ namespace Fabric
       m_right->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> BinOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType BinOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      return CG::ExprType( adapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue BinOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

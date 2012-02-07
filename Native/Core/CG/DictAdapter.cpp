@@ -132,7 +132,7 @@ namespace Fabric
       static const bool buildFunctions = true;
       
       {
-        std::string name = methodOverloadName( "size", this );
+        std::string name = methodOverloadName( "size", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
@@ -153,7 +153,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "has", this, m_keyAdapter );
+        std::string name = methodOverloadName( "has", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( m_keyAdapter, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
         params.push_back( FunctionParam( "keyRValue", m_keyAdapter, CG::USAGE_RVALUE ) );
@@ -195,7 +195,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "delete", this, m_keyAdapter );
+        std::string name = methodOverloadName( "delete", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( m_keyAdapter, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "dictLValue", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "keyRValue", m_keyAdapter, CG::USAGE_RVALUE ) );
@@ -235,7 +235,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "clear", this );
+        std::string name = methodOverloadName( "clear", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "dictLValue", this, CG::USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params, false );
@@ -269,7 +269,7 @@ namespace Fabric
       }
 
       {
-        std::string name = constructOverloadName( booleanAdapter, this );
+        std::string name = constructorOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
@@ -288,7 +288,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( stringAdapter, this );
+        std::string name = constructorOverloadName( stringAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
@@ -605,7 +605,7 @@ namespace Fabric
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       std::vector<FunctionParam> params;
       params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
-      std::string name = methodOverloadName( "size", this );
+      std::string name = methodOverloadName( "size", CG::ExprType( this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
       return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
     }

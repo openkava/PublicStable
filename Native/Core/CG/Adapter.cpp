@@ -121,7 +121,7 @@ namespace Fabric
     void Adapter::llvmAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       // [pzion 20110204] Start by looking for operator overload
-      std::string name = methodOverloadName( assignOpMethodName( ASSIGN_OP ), this, this );
+      std::string name = assignOpOverloadName( ASSIGN_OP, this, this );
       RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
       if ( functionSymbol )
       {
@@ -161,7 +161,7 @@ namespace Fabric
       }
       else
       {
-        std::string name = constructOverloadName( this, exprValue.getAdapter() );
+        std::string name = constructorOverloadName( this, exprValue.getAdapter() );
         exprValue.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
         RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
         if ( !functionSymbol )

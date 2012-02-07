@@ -72,7 +72,7 @@ namespace Fabric
       static const bool buildFunctions = true;
       
       {
-        std::string name = constructOverloadName( stringAdapter, this );
+        std::string name = constructorOverloadName( stringAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
@@ -93,7 +93,7 @@ namespace Fabric
       }
    
       {
-        std::string name = constructOverloadName( booleanAdapter, this );
+        std::string name = constructorOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
@@ -114,7 +114,7 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "getCount", this );
+        std::string name = methodOverloadName( "getCount", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -134,7 +134,7 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "produce", this );
+        std::string name = methodOverloadName( "produce", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_elementVariableArrayAdapter, USAGE_RVALUE ), params );
@@ -153,7 +153,7 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "produce", this, sizeAdapter );
+        std::string name = methodOverloadName( "produce", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "indexRValue", sizeAdapter, USAGE_RVALUE ) );
@@ -179,7 +179,7 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "produce", this, sizeAdapter, sizeAdapter );
+        std::string name = methodOverloadName( "produce", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "indexRValue", sizeAdapter, USAGE_RVALUE ) );
@@ -202,7 +202,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "flush", this );
+        std::string name = methodOverloadName( "flush", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );

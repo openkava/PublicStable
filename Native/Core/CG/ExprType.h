@@ -50,8 +50,6 @@ namespace Fabric
     public:
     
       ExprType();
-      ExprType( RC::ConstHandle<Adapter> const &adapter );
-      ExprType( Usage usage );
       ExprType( RC::ConstHandle<Adapter> const &adapter, Usage usage );
       ExprType( ExprType const &that );
       ~ExprType();

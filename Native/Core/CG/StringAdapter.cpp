@@ -144,7 +144,7 @@ namespace Fabric
    
       {
         // [pzion 20110202] Cast string to boolean
-        std::string name = constructOverloadName( booleanAdapter, this );
+        std::string name = constructorOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "stringRValue", this, USAGE_RVALUE ) );
@@ -170,7 +170,7 @@ namespace Fabric
         llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
         llvm::Constant *func = moduleBuilder->getOrInsertFunction( "__String__Append", funcType ); 
 
-        std::string name = methodOverloadName( assignOpMethodName( ASSIGN_OP_ADD ), this, this );
+        std::string name = assignOpOverloadName( ASSIGN_OP_ADD, this, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "lhsLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
@@ -210,7 +210,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "length", this );
+        std::string name = methodOverloadName( "length", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -239,7 +239,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "dataSize", this );
+        std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -255,7 +255,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "data", this );
+        std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
@@ -280,7 +280,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "compare", this, this );
+        std::string name = methodOverloadName( "compare", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "otherRValue", this, USAGE_RVALUE ) );
@@ -411,7 +411,7 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "hash", this );
+        std::string name = methodOverloadName( "hash", CG::ExprType( this, CG::USAGE_RVALUE ) );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
@@ -807,7 +807,7 @@ namespace Fabric
     llvm::Value *StringAdapter::llvmCallLength( BasicBlockBuilder &basicBlockBuilder, llvm::Value *stringRValue ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      std::string name = methodOverloadName( "length", this );
+      std::string name = methodOverloadName( "length", CG::ExprType( this, USAGE_RVALUE ) );
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "string", this, USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
@@ -821,7 +821,7 @@ namespace Fabric
       std::vector<FunctionParam> params;
       params.push_back( FunctionParam( "lhs", this, USAGE_RVALUE ) );
       params.push_back( FunctionParam( "rhs", this, USAGE_RVALUE ) );
-      std::string name = methodOverloadName( "compare", this, this );
+      std::string name = methodOverloadName( "compare", CG::ExprType( this, USAGE_RVALUE ), CG::ExprType( this, USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( integerAdapter, USAGE_RVALUE ), params, false );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
     }
@@ -871,7 +871,13 @@ namespace Fabric
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
       std::vector<FunctionParam> params;
       params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), methodOverloadName( "hash", this ), ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
+      FunctionBuilder functionBuilder(
+        basicBlockBuilder.getModuleBuilder(),
+        methodOverloadName( "hash", CG::ExprType( this, USAGE_RVALUE ) ),
+        ExprType( sizeAdapter, USAGE_RVALUE ),
+        params,
+        false
+        );
       return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
     }
     
@@ -881,7 +887,13 @@ namespace Fabric
       std::vector<FunctionParam> params;
       params.push_back( FunctionParam( "lhsRValue", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "rhsRValue", this, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), methodOverloadName( "compare", this, this ), ExprType( integerAdapter, USAGE_RVALUE ), params, false );
+      FunctionBuilder functionBuilder(
+        basicBlockBuilder.getModuleBuilder(),
+        methodOverloadName( "compare", CG::ExprType( this, USAGE_RVALUE ), CG::ExprType( this, USAGE_RVALUE ) ),
+        ExprType( integerAdapter, USAGE_RVALUE ),
+        params,
+        false
+        );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
     }
   };

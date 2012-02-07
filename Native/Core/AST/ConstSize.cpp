@@ -40,11 +40,11 @@ namespace Fabric
       cgManager->getIntegerAdapter();
     }
     
-    RC::ConstHandle<CG::Adapter> ConstSize::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType ConstSize::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getIntegerAdapter();
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      return CG::ExprType( adapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue ConstSize::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

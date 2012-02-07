@@ -5,46 +5,64 @@ namespace Fabric
 {
   namespace CG
   {
-    static std::string genericFunctionName( std::string const &genericFunctionName, std::vector< RC::ConstHandle<CG::Adapter> > const &paramExprTypes )
+    static std::string genericFunctionName(
+      std::string const &genericFunctionName,
+      std::vector<CG::ExprType> const &paramExprTypes
+      )
     {
       std::string result = "__" + genericFunctionName;
-      for ( size_t i=0; i<paramExprTypes.size(); ++i )
-        result += "__" + paramExprTypes[i]->getCodeName();
+      for ( std::vector<CG::ExprType>::const_iterator it=paramExprTypes.begin(); it!=paramExprTypes.end(); ++it )
+      {
+        switch ( it->getUsage() )
+        {
+          case CG::USAGE_LVALUE:
+            result += "__"; //io_";
+            break;
+          case CG::USAGE_RVALUE:
+            result += "__"; //in_";
+            break;
+          default:
+            FABRIC_ASSERT( false && "usage unspeicifed" );
+            break;
+        }
+        result += it->getAdapter()->getCodeName();
+      }
       return result;
     }
     
-    std::string constructOverloadName( RC::ConstHandle<CG::Adapter> const &thisType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramExprTypes )
+    std::string constructorOverloadName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      std::vector< RC::ConstHandle<CG::Adapter> > const &paramAdapters
+      )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > exprTypes;
-      exprTypes.push_back( thisType );
-      for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = paramExprTypes.begin(); it != paramExprTypes.end(); ++it )
-        exprTypes.push_back( *it );
+      std::vector<CG::ExprType> exprTypes;
+      exprTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
+      for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = paramAdapters.begin(); it != paramAdapters.end(); ++it )
+        exprTypes.push_back( CG::ExprType( *it, CG::USAGE_RVALUE ) );
       return genericFunctionName( "constructor", exprTypes );
     }
-    
-    std::string constructOverloadName( RC::Handle<CG::Manager> const &cgManager, std::string const &dstType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes )
+
+    std::string assignOpOverloadName( AssignOpType type, RC::ConstHandle<CG::Adapter> const &thisAdapter, RC::ConstHandle<CG::Adapter> const &thatAdapter )
     {
-      return constructOverloadName( cgManager->getAdapter( dstType ), paramTypes );
+      std::vector<CG::ExprType> exprTypes;
+      exprTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
+      exprTypes.push_back( CG::ExprType( thatAdapter, CG::USAGE_RVALUE ) );
+      return genericFunctionName( "operator_assign_" + std::string( assignOpCodeName(type) ), exprTypes );
     }
 
-    std::string assignOpMethodName( AssignOpType type )
+    std::string uniOpOverloadName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter )
     {
-      return std::string( assignOpTypeDesc(type) );
+      std::vector<CG::ExprType> exprTypes;
+      exprTypes.push_back( CG::ExprType( adapter, CG::USAGE_RVALUE ) );
+      return genericFunctionName( "operator_uni_" + std::string( uniOpCodeName(type) ), exprTypes );
     }
 
-    std::string uniOpOverloadName( UniOpType type, RC::ConstHandle< CG::Adapter > const &adapter )
+    std::string binOpOverloadName( BinOpType type, RC::ConstHandle<CG::Adapter> const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > exprTypes;
-      exprTypes.push_back( adapter );
-      return genericFunctionName( "operator_" + std::string( uniOpCodeName(type) ), exprTypes );
-    }
-
-    std::string binOpOverloadName( BinOpType type, RC::ConstHandle< CG::Adapter > const &lhsAdapter, RC::ConstHandle< CG::Adapter > const &rhsAdapter )
-    {
-      std::vector< RC::ConstHandle<CG::Adapter> > exprTypes;
-      exprTypes.push_back( lhsAdapter );
-      exprTypes.push_back( rhsAdapter );
-      return genericFunctionName( "operator_" + std::string( binOpCodeName(type) ), exprTypes );
+      std::vector<CG::ExprType> exprTypes;
+      exprTypes.push_back( CG::ExprType( lhsAdapter, CG::USAGE_RVALUE ) );
+      exprTypes.push_back( CG::ExprType( rhsAdapter, CG::USAGE_RVALUE ) );
+      return genericFunctionName( "operator_bin_" + std::string( binOpCodeName(type) ), exprTypes );
     }
 
     std::string binOpOverloadName( BinOpType type, RC::Handle<CG::Manager> const &cgManager, std::string const &lhsAdapterName, std::string const &rhsAdapterName )
@@ -52,19 +70,23 @@ namespace Fabric
       return binOpOverloadName( type, cgManager->getAdapter( lhsAdapterName ), cgManager->getAdapter( rhsAdapterName ) );
     }
 
-    std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes )
+    std::string methodOverloadName(
+      std::string const &name,
+      CG::ExprType const &thisExprType,
+      std::vector<CG::ExprType> const &paramTypes
+      )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > exprTypes;
-      exprTypes.push_back( thisType );
-      for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it )
+      std::vector<CG::ExprType> exprTypes;
+      exprTypes.push_back( thisExprType );
+      for ( std::vector<CG::ExprType>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it )
         exprTypes.push_back( *it );
       return genericFunctionName( "method_" + name, exprTypes );
     }
 
-    std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisType )
+    std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisAdapter )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > exprTypes;
-      exprTypes.push_back( thisType );
+      std::vector<CG::ExprType> exprTypes;
+      exprTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
       return genericFunctionName( "__destructor__", exprTypes );
     }
   }
