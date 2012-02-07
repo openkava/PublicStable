@@ -56,6 +56,13 @@ namespace Fabric
     return std::string( buffer );
   }
   
+  inline std::string _( uint64_t uint64 )
+  {
+    char buffer[32];
+    snprintf( buffer, 32, "%lu", (unsigned long)uint64 );
+    return std::string( buffer );
+  }
+  
   std::string _( float value );
   std::string _( double value );
 };
