@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#ifndef _FABRIC_AST_CONST_SIZE_H
-#define _FABRIC_AST_CONST_SIZE_H
+#ifndef _FABRIC_AST_CONST_UNSIGNED_INTEGER_H
+#define _FABRIC_AST_CONST_UNSIGNED_INTEGER_H
 
 #include <Fabric/Core/AST/Expr.h>
 
@@ -11,13 +11,13 @@ namespace Fabric
 {
   namespace AST
   {
-    class ConstSize : public Expr
+    class ConstUnsignedInteger : public Expr
     {
-      FABRIC_AST_NODE_DECL( ConstSize );
+      FABRIC_AST_NODE_DECL( ConstUnsignedInteger );
 
     public:
     
-      static RC::ConstHandle<ConstSize> Create( CG::Location const &location, std::string const &valueString );
+      static RC::ConstHandle<ConstUnsignedInteger> Create( CG::Location const &location, std::string const &valueString );
       
       virtual void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       
@@ -26,15 +26,15 @@ namespace Fabric
         
     protected:
     
-      ConstSize( CG::Location const &location, size_t value );
+      ConstUnsignedInteger( CG::Location const &location, std::string const &valueString );
       
       virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
     private:
     
-      size_t m_value;
+      std::string m_valueString;
     };
-  };
-};
+  }
+}
 
-#endif //_FABRIC_AST_CONST_SIZE_H
+#endif //_FABRIC_AST_CONST_UNSIGNED_INTEGER_H

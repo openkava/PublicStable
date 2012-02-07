@@ -78,7 +78,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/ConstBoolean.h>
 #include <Fabric/Core/AST/ConstDecl.h>
 #include <Fabric/Core/AST/ConstDeclStatement.h>
-#include <Fabric/Core/AST/ConstSize.h>
+#include <Fabric/Core/AST/ConstUnsignedInteger.h>
 #include <Fabric/Core/AST/ConstScalar.h>
 #include <Fabric/Core/AST/ConstString.h>
 #include <Fabric/Core/AST/ContainerLoop.h>
@@ -737,13 +737,19 @@ array_modifier
   }
   | TOKEN_LBRACKET TOKEN_CONST_UI TOKEN_RBRACKET array_modifier
   {
-    size_t length = Util::parseSize( *$2 );
+    uint64_t length = Util::parseUInt64( *$2 );
     delete $2;
 
     if ( length == 0 )
     {
       delete $4;
       yyerror( &yyloc, context, "fixed array size must be greater than zero" );
+      YYERROR;
+    }
+    else if ( length > SIZE_MAX )
+    {
+      delete $4;
+      yyerror( &yyloc, context, "fixed array size too large" );
       YYERROR;
     }
     else
@@ -1498,7 +1504,7 @@ primary_expression
   }
   | TOKEN_CONST_UI
   {
-    $$ = AST::ConstSize::Create( RTLOC, *$1 ).take();
+    $$ = AST::ConstUnsignedInteger::Create( RTLOC, *$1 ).take();
     delete $1;
   }
   | TOKEN_CONST_FP
