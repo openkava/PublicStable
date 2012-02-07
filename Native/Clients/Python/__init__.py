@@ -5,12 +5,20 @@ import ctypes
 import collections
 import atexit
 import Queue
+import signal
 
 # FIXME Windows
 if os.name == 'posix':
   _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
 else:
   raise Exception('not implemented for Windows yet!')
+
+# FIXME Windows
+_caughtSIGINT = False
+def _handleSIGINT( signum, frame ):
+  global _caughtSIGINT
+  _caughtSIGINT = True
+signal.signal( signal.SIGINT, _handleSIGINT )
 
 # catch uncaught exceptions so that we don't wait on threads 
 _uncaughtException = False
@@ -133,8 +141,13 @@ class _CLIENT( object ):
     while not self.__notifications.empty():
       self.__processOneNotification()
 
-  def __processOneNotification( self ):
-    n = self.__notifications.get()
+  def __processOneNotification( self, timeout = None ):
+    n = None
+    try:
+      n = self.__notifications.get( True, timeout )
+    except Queue.Empty:
+      return
+
     arg = None
     if 'arg' in n:
       arg = n[ 'arg' ]
@@ -146,8 +159,12 @@ class _CLIENT( object ):
 
   def __waitForClose( self ):
     if not _uncaughtException:
-      while not self.__closed or not self.__notifications.empty():
-        self.__processOneNotification()
+      while not _caughtSIGINT and (
+          not self.__closed or not self.__notifications.empty()
+        ):
+        # FIXME only using timeout so we can allow a Ctrl-C after
+        # trying to exit without correctly using client.close()
+        self.__processOneNotification( 0.1 )
 
   def __createClient( self ):
     result = ctypes.c_void_p()
@@ -203,6 +220,7 @@ class _CLIENT( object ):
       results = json.loads( jsonEncodedResults.value )
     except Exception:
       raise Exception( 'unable to parse JSON results: ' + jsonEncodedResults )
+    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
     for i in range(len(results)):
       result = results[i]
@@ -213,11 +231,11 @@ class _CLIENT( object ):
           unwind = unwinds[ j ]
           if ( unwind is not None ):
             unwind()
+        self.__processAllNotifications()
         raise Exception( 'Fabric core exception: ' + result[ 'exception' ] )
       elif ( callback is not None ):
         callback( result[ 'result' ] )
 
-    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
     self.__processAllNotifications()
 
   def _handleStateNotification( self, newState ):
@@ -1074,6 +1092,7 @@ class _DG( _NAMESPACE ):
       self.__didFireCallback = None
       self.__eventHandlers = None
       self.__typeName = None
+      self.__rt = dg._getClient().rt
 
     def _patch( self, diff ):
       super( _DG._EVENT, self )._patch( diff )
@@ -1113,19 +1132,18 @@ class _DG( _NAMESPACE ):
       self.__typeName = tn
 
     def select( self ):
-      # dictionary hack to simulate Python 3.x nonlocal
-      data = { '_': None }
+      data = []
       def __callback( results ):
         for i in range( 0, len( results ) ):
           result = results[ i ]
-          data[ '_' ].append( {
-            'node': self._dg._namedObjects[ result ],
-            'value': self.__rt._assignPrototypes( result.data, self.__typeName )
+          data.append( {
+            'node': self._dg._namedObjects[ result[ 'node' ] ],
+            'value': self.__rt._assignPrototypes( result[ 'data' ], self.__typeName )
           })
 
       self._nObjQueueCommand( 'select', self.__typeName, None, __callback )
       self._dg._executeQueuedCommands()
-      return data[ '_' ]
+      return data
 
     def getDidFireCallback( self ):
       return self.__didFireCallback
