@@ -570,11 +570,12 @@ namespace Fabric
       }
     };
 
+    static SymbolNameToAddressMap s_symbolNameToAddressMap;
+
     void *LookupExternalSymbol( std::string const &functionName )
     {
-      static SymbolNameToAddressMap symbolNameToAddressMap;
-      SymbolNameToAddressMap::const_iterator it = symbolNameToAddressMap.find( functionName );
-      if ( it != symbolNameToAddressMap.end() )
+      SymbolNameToAddressMap::const_iterator it = s_symbolNameToAddressMap.find( functionName );
+      if ( it != s_symbolNameToAddressMap.end() )
         return it->second;
       else return 0;
     }
