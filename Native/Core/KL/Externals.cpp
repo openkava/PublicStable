@@ -483,7 +483,7 @@ namespace Fabric
 
     void *LookupExternalSymbol( std::string const &functionName )
     {
-      SymbolNameToAddressMap symbolNameToAddressMap;
+      static SymbolNameToAddressMap symbolNameToAddressMap;
       if ( symbolNameToAddressMap.empty() )
       {
         symbolNameToAddressMap["malloc"] = (void *)&malloc;
