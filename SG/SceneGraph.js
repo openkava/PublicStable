@@ -257,27 +257,25 @@ FABRIC.SceneGraph = {
       return context.DependencyGraph.createNode(name);
     };
     
+    var managers = {};
     scene.constructManager = function(type, options) {
       if (!FABRIC.SceneGraph.managerDescriptions[type]) {
         throw ('Manager Constructor not Registered:' + type);
+      }
+      if (managers[type]) {
+        throw ('Manager of this type already constructed:' + type);
       }
       options = (options ? options : {});
       var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
       if (!managerNode) {
         throw (' Factory function method must return an object');
       }
-      var parentTypeOfFn = managerNode.pub.isTypeOf;
-      managerNode.pub.isTypeOf = function(classname) {
-        if (classname == type) {
-          return true;
-        }else if (parentTypeOfFn !== undefined) {
-          return parentTypeOfFn(classname);
-        }else {
-          return false;
-        }
-      }
+      managers[type] = managerNode;
       return managerNode;
     };
+    scene.getManager = function( type ){
+      return managers[type].pub;
+    }
     
     scene.constructNode = function(type, options) {
       if (!FABRIC.SceneGraph.nodeDescriptions[type]) {
@@ -830,16 +828,14 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         if(defineSetter===true){
           var setterName = 'set' + capitalizeFirstLetter(memberName);
           var setterFn = function(value, sliceIndex){
-            var prevalue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
+            var prevValue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
             corenode.setData(memberName, sliceIndex?sliceIndex:0, value);
             
             scene.pub.fireEvent('valuechanged', {
+              nodeName: name,
+              memberName: memberName,
               sgnode: sceneGraphNode.pub,
-              newvalue: value,
-              prevalue: prevalue,
-              sliceIndex: sliceIndex,
-              getterFn: getterFn,
-              setterFn: setterFn
+              dgnode: corenode
             });
           }
           sceneGraphNode.pub[setterName] = setterFn;
