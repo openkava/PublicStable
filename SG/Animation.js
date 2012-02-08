@@ -134,22 +134,48 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     // tracks causes significant performance issues. So the solution for
     // now is to disable track evaluation while manipulating, and only store
     // the tracks once manipulaiton is complete. 
-    var m_track, m_trackId;
+    var m_track, m_trackId, m_newUndoTransaction;
     animationTrackNode.pub.setValues = function(time, trackIds, values) {
     //  var trackSet = this.getTrackSet(trackSetId);
     //  trackSet.setValues(time, trackIds, values);
     //  this.setTrackSet(trackSet, trackSetId);
-    //  animationTrackNode.pub.fireEvent('valuechanged', {});
+    //  animationTrackNode.pub.fireEvent('keyframetrackchanged', {});
     
       m_track.setValues(time, trackIds, values);
     };
     animationTrackNode.beginManipulation = function(trackId) {
       m_trackId = trackId;
       m_track = animationTrackNode.pub.getTrack(trackId);
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager){
+        m_newUndoTransaction = false;
+        if(!undoManager.undoTransactionOpen()){
+          undoManager.openUndoTransaction();
+          m_newUndoTransaction = true;
+        }
+        var newTrackSet, prevTrackSet = animationTrackNode.pub.getTrack(m_trackId);
+        undoManager.addAction({
+          onClose: function() {
+            newTrackSet = m_track;//animationTrackNode.pub.getTrack(m_trackId);
+          },
+          onUndo: function() {
+            animationTrackNode.pub.setTrack(prevTrackSet, m_trackId);
+          },
+          onRedo: function() {
+            animationTrackNode.pub.setTrack(newTrackSet, m_trackId);
+          }
+        });
+      }
     }
     animationTrackNode.endManipulation = function() {
       animationTrackNode.pub.setTrack(m_track, m_trackId);
-      animationTrackNode.pub.fireEvent('valuechanged', {});
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager && m_newUndoTransaction){
+        undoManager.closeUndoTransaction();
+      }
+      animationTrackNode.pub.fireEvent('keyframetrackchanged', {});
     }
         
     animationTrackNode.getEvaluateCurveOperator = function() {
@@ -478,22 +504,52 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     // tracks causes significant performance issues. So the solution for
     // now is to disable track evaluation while manipulating, and only store
     // the tracks once manipulaiton is complete. 
-    var m_trackSet, m_trackSetId;
+    var m_trackSet, m_trackSetId, m_newUndoTransaction;
     animationLibraryNode.pub.setValues = function(trackSetId, time, trackIds, values) {
     //  var trackSet = this.getTrackSet(trackSetId);
     //  trackSet.setValues(time, trackIds, values);
     //  this.setTrackSet(trackSet, trackSetId);
-    //  animationLibraryNode.pub.fireEvent('valuechanged', {});
+    //  animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
     
       m_trackSet.setValues(time, trackIds, values);
     };
     animationLibraryNode.beginManipulation = function(trackSetId) {
       m_trackSetId = trackSetId;
       m_trackSet = dgnode.getData('trackSet', trackSetId);
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager){
+        m_newUndoTransaction = false;
+        if(!undoManager.undoTransactionOpen()){
+          undoManager.openUndoTransaction();
+          m_newUndoTransaction = true;
+        }
+        var newTrackSet, prevTrackSet = animationTrackNode.pub.getTrackSet(m_trackId);
+        undoManager.addAction({
+          onClose: function() {
+            newTrackSet = m_trackSet;//animationTrackNode.pub.getTrackSet(m_trackId);
+          },
+          onUndo: function() {
+            m_trackSet = prevTrackSet;
+            animationTrackNode.pub.setTrack(prevTrackSet, m_trackId);
+            animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
+          },
+          onRedo: function() {
+            m_trackSet = newTrackSet;
+            animationTrackNode.pub.setTrack(newTrackSet, m_trackId);
+            animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
+          }
+        });
+      }
     }
     animationLibraryNode.endManipulation = function() {
       dgnode.setData('trackSet', m_trackSetId, m_trackSet);
-      animationLibraryNode.pub.fireEvent('valuechanged', {});
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager && m_newUndoTransaction){
+        undoManager.closeUndoTransaction();
+      }
+      animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
     }
     
     var paramsdgnode;

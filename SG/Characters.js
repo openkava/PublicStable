@@ -466,20 +466,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       switch(type){
       case 'Number':
         return poseVariables.scalarValues[index];
-        break;
       case 'FABRIC.RT.Vec3':
         return poseVariables.vec3Values[index];
-        break;
       case 'FABRIC.RT.Quat':
         return poseVariables.quatValues[index];
-        break;
       case 'FABRIC.RT.Xfo':
         return poseVariables.xfoValues[index];
-        break;
       default:
         throw 'Unhandled type:' + val;
       }
-    }
+    };
+    
     characterVariablesNode.setValue = function(value, index, xfoTrackFilter) {
       var type = (typeof value == 'number') ? 'Number' : value.getType();
     //  if(!boundToAnimationTracks){
@@ -505,6 +502,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     //  else{
       if(m_animationLibraryNode){
         m_keyframeTrackBindings = m_animationLibraryNode.getBindings(m_trackSetId);
+        /*
         var findBinding = function(bindingsList){
           for(var i=0; i<bindingsList.length; i++){
             if(bindingsList[i].varId == index){
@@ -573,10 +571,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         default:
           throw 'Unhandled type:' + val;
         }
+        */
         if(!interactiveManipulation){
           m_animationLibraryNode.beginManipulation(m_trackSetId);
         }
-        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
+      //  m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
+        m_keyframeTrackBindings.setValue(m_trackSetId, m_animationControllerNode.pub.getTime(), value, index, filter, m_animationLibraryNode);
         if(!interactiveManipulation){
           m_animationLibraryNode.endManipulation();
         }

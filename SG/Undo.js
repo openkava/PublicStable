@@ -19,7 +19,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
     var undoStack = []; redoStack = [];
     var undoInProgress = false;
     var undoRedoing = false;
-    var currentUndo = undefined;
+    var currentUndoTransaction = undefined;
     var undoEnabled = true;
     
     //////////////////////////////////////
@@ -77,23 +77,23 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
           if(!undoEnabled || undoRedoing){ // commit any undos that are in progress
             this.close();
           }
-          currentUndo = createTransaction(undoName);
+          currentUndoTransaction = createTransaction(undoName);
           if( undoStack.length > options.maxDepth ){
             undoStack[0].destroy();
             undoStack.shift();
           }
-          undoStack.push(currentUndo);
+          undoStack.push(currentUndoTransaction);
           clearStack(redoStack);// Redos get trashed when a new undo is added.
           undoInProgress = true;
         },
         addAction: function( action ) {
           if(!undoEnabled || undoRedoing) return;
           var newTransaction = false;
-          if( currentUndo === undefined ){
+          if( currentUndoTransaction === undefined ){
             this.openUndoTransaction( action.name || "Undo" );
             newTransaction = true;
           }
-          currentUndo.addAction( action );
+          currentUndoTransaction.addAction( action );
           if( newTransaction ){
             this.closeUndoTransaction();
           }
@@ -104,8 +104,8 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
             console.warn("Undo Transaction not open.");
             return;
           }
-          currentUndo.close();
-          currentUndo = undefined;
+          currentUndoTransaction.close();
+          currentUndoTransaction = undefined;
           undoInProgress = false;
           
           undoManager.pub.fireEvent('undotransactionclosed');
@@ -146,6 +146,9 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         },
         undoInprogress: function(){
           return undoInProgress;
+        },
+        undoTransactionOpen: function(){
+          return currentUndoTransaction != undefined;
         },
         undoRedoing: function(){
           return undoRedoing;
