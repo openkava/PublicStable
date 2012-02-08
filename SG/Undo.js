@@ -20,7 +20,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
     var undoInProgress = false;
     var undoRedoing = false;
     var currentUndo = undefined;
-    var undoEnabled = false;
+    var undoEnabled = true;
     
     //////////////////////////////////////
     // A change set bundles together a collection of changes
@@ -101,7 +101,8 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         closeUndoTransaction: function() {
           if(!undoEnabled || undoRedoing) return;
           if(!undoInProgress ){
-            console.warn("Undo Transaction not open.")
+            console.warn("Undo Transaction not open.");
+            return;
           }
           currentUndo.close();
           currentUndo = undefined;
@@ -121,6 +122,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
             item.undo();
             redoStack.push(item);
             undoRedoing = false;
+            undoManager.pub.fireEvent('undo');
           }
         },
         // Redo the last undone change.
@@ -133,6 +135,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
             item.redo();
             undoStack.push(item);
             undoRedoing = false;
+            undoManager.pub.fireEvent('redo');
           }
         },
         disableUndo: function(){
@@ -140,6 +143,12 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         },
         enableUndo: function(){
           undoEnabled = true;
+        },
+        undoInprogress: function(){
+          return undoInProgress;
+        },
+        undoRedoing: function(){
+          return undoRedoing;
         },
         // Update the scene to a particular state in the undo /redo stack.
         updateTo: function( state ) {
