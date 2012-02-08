@@ -1,171 +1,245 @@
 
 
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
 FABRIC.define(["SG/SceneGraph"], function() {
-  
-/**
- * The UndoManager provides undo / redo functionality to the scene graph.
- */
+
+
 FABRIC.SceneGraph.registerManagerType('UndoManager', {
-  briefDesc: 'The UndoManager manages performed tasks.',
-  detailedDesc: 'The UndoManager manages performed tasks and is abled to undo resp. redo them.',
+  briefDesc: 'The UndoManager manages undos for Fabric applications.',
+  detailedDesc: '.',
   parentManagerDesc: '',
   optionsDesc: {
   },
   factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      maxTasks: 50
+    options = scene.assignDefaults(options, {
+      maxDepth: 100
     });
-
-    var blockTasks = false;
-    var undoTasks = [];
-    var redoTasks = [];
+    
+    var maxDepth = maxDepth;
+    // History is the set of closeted changes.
+    var undoStack = []; redoStack = [];
+    var undoInProgress = false;
+    var undoRedoing = false;
+    var currentUndo = undefined;
+    var undoEnabled = false;
+    
+    //////////////////////////////////////
+    // A change set bundles together a collection of changes
+     
+    var createTransaction = function(name){
+      var actions = [];
+      return {
+        addAction:function(changeItem){
+          actions.push( changeItem );
+        },
+        close: function() {
+          for ( i=0; i < actions.length; i++ ){
+            if(actions[i].onClose){
+              actions[i].onClose();
+            }
+          }
+        },
+        undo: function() {
+          for ( i=0; i < actions.length; i++ ){
+            actions[i].onUndo();
+          }
+        },
+        redo: function() {
+          for ( i=0; i < actions.length; i++ ){
+            actions[i].onRedo();
+          }
+        },
+        getName: function(){
+          return name;
+        },
+        // Some undo/redo actions contain state that needs to be explicity cleaned up.
+        // This occurs only when actions manage the construction/destruction of
+        // dependency graph nodes. 
+        destroy: function() {
+          for ( i=0; i < actions.length; i++ ){
+            if(actions[i].destroy){
+              actions[i].destroy();
+            }
+          }
+        }
+      }
+    }
+    var clearStack = function(stack){
+      for(var i=0;i<stack.length; i++){
+        stack[i].destroy();
+      }
+      stack.length = 0;
+    }
     
     var undoManager = {
       pub:{
-        getTasks: function() {
-          return undoTasks;
-        }
-      }
-    };
-    
-    // add a task to the stack
-    undoManager.pub.addTask = function(taskOptions) {
-      if(blockTasks)
-        return;
-      scene.assignDefaults(taskOptions, {
-        name: 'Task',
-        onDo: undefined,
-        onUndo: undefined,
-        additionCallBacks: undefined
-      });
-      if(!taskOptions.onDo)
-        throw('taskOptions.onDo is not specified!');
-      if(!taskOptions.onUndo)
-        throw('taskOptions.onUndo is not specified!');
-        
-      var task = {
-        name: taskOptions.name,
-        onDo: taskOptions.onDo,
-        onUndo: taskOptions.onUndo
-      };
-      
-      if(taskOptions.additionCallBacks) {
-        for(var key in taskOptions.additionCallBacks)
-          task[key] = taskOptions.additionCallBacks;
-      }
-      if(undoTasks.length >= options.maxTasks)
-        undoTasks.splice(0,1 + undoTasks.length - options.maxTasks);
-      undoTasks.push(task);
-      redoTasks = [];
-      undoManager.pub.fireEvent('taskAdded', { task: task });
-      return task;
-    };
-    
-    // add a task to the stack, and also do it
-    undoManager.pub.doTask = function(taskOptions) {
-      if(blockTasks)
-        return;
-      var task = undoManager.pub.addTask(taskOptions);
-      blockTasks = true;
-      task.onDo();
-      blockTasks = false;
-      undoManager.pub.fireEvent('taskDone',{task: task});
-    }
-
-    // undo a task from the stack
-    undoManager.pub.undo = function() {
-      if(undoTasks.length == 0)
-        return;
-      var task = undoTasks.pop();
-      blockTasks = true;
-      task.onUndo();
-      blockTasks = false;
-      redoTasks.push(task);
-      undoManager.pub.fireEvent('taskUndone',{task: task});
-    }
-
-    // redo a task from the stack
-    undoManager.pub.redo = function() {
-      if(redoTasks.length == 0)
-        return;
-      var task = redoTasks.pop();
-      blockTasks = true;
-      task.onDo();
-      blockTasks = false;
-      undoTasks.push(task);
-      undoManager.pub.fireEvent('taskRedone',{task: task});
-    }
-
-    // do a typical set data task
-    undoManager.pub.setDataTask = function(taskOptions) {
-      scene.assignDefaults(taskOptions, {
-        node: undefined,
-        member: undefined,
-        value: undefined,
-        name: undefined,
-        getter: undefined,
-        setter: undefined,
-        prevValue: undefined,
-        doTask: true
-      });
-      
-      // check and extend the options
-      if(taskOptions.node == undefined)
-        throw('taskOptions.node is not specified!');
-      if(taskOptions.member == undefined)
-        throw('taskOptions.member is not specified!');
-      if(taskOptions.value == undefined)
-        throw('taskOptions.value is not specified!');
-      var capitalizedMember = taskOptions.member[0].toUpperCase() + taskOptions.member.substr(1);
-      if(!taskOptions.name)
-        taskOptions.name = "set"+capitalizedMember;
-      if(!taskOptions.getter)
-        taskOptions.getter = "get"+capitalizedMember;
-      if(!taskOptions.setter)
-        taskOptions.setter = "set"+capitalizedMember;
-
-      // get the elemental variables
-      // and setup the onDo and onUndo functions
-      var node = taskOptions.node;
-      var value = taskOptions.value;
-      var prevValue = taskOptions.prevValue;
-      taskOptions.onDo = function() {
-        if(prevValue == undefined)
-          prevValue = node[taskOptions.getter]();
-        node[taskOptions.setter](value);
-      }
-      taskOptions.onUndo = function() {
-        node[taskOptions.setter](prevValue);
-      }
-      taskOptions.additionCallBacks = {
-        getPrevValue: function () {
-          return prevValue;
+        openUndoTransaction : function(undoName) {
+          if(!undoEnabled) return;
+          if(!undoEnabled || undoRedoing){ // commit any undos that are in progress
+            this.close();
+          }
+          currentUndo = createTransaction(undoName);
+          if( undoStack.length > options.maxDepth ){
+            undoStack[0].destroy();
+            undoStack.shift();
+          }
+          undoStack.push(currentUndo);
+          clearStack(redoStack);// Redos get trashed when a new undo is added.
+          undoInProgress = true;
         },
-        getValue: function () {
-          return value;
+        addAction: function( action ) {
+          if(!undoEnabled || undoRedoing) return;
+          var newTransaction = false;
+          if( currentUndo === undefined ){
+            this.openUndoTransaction( action.name || "Undo" );
+            newTransaction = true;
+          }
+          currentUndo.addAction( action );
+          if( newTransaction ){
+            this.closeUndoTransaction();
+          }
+        },
+        closeUndoTransaction: function() {
+          if(!undoEnabled || undoRedoing) return;
+          if(!undoInProgress ){
+            console.warn("Undo Transaction not open.")
+          }
+          currentUndo.close();
+          currentUndo = undefined;
+          undoInProgress = false;
+          
+          undoManager.pub.fireEvent('undotransactionclosed');
+        },
+        // Undo the last change.
+        undo: function() {
+          if(!undoEnabled) return;
+          // Make sure pending changes have been committed.
+          if( undoStack.length > 0 ) {
+            undoRedoing = true;
+            // Take the top diff from the undoStack, apply it, and store its
+            // shadow in the redo undoStack.
+            var item = undoStack.pop();
+            item.undo();
+            redoStack.push(item);
+            undoRedoing = false;
+          }
+        },
+        // Redo the last undone change.
+        redo: function() {
+          if(!undoEnabled) return;
+          if( redoStack.length > 0 ) {
+            undoRedoing = true;
+            // The inverse of undo, basically.
+            var item = redoStack.pop();
+            item.redo();
+            undoStack.push(item);
+            undoRedoing = false;
+          }
+        },
+        disableUndo: function(){
+          undoEnabled = false;
+        },
+        enableUndo: function(){
+          undoEnabled = true;
+        },
+        // Update the scene to a particular state in the undo /redo stack.
+        updateTo: function( state ) {
+          if(!undoEnabled) return;
+          if( state > 0 ) { // move into the redo region
+            for( i=0;i<state; i++) {
+              this.redo();
+            }
+          }
+          else if( state < 0 ) {
+            state = -state;
+            for( i=0; i<state; i++) {
+              this.undo();
+            }
+          }
+        },
+        // Ask for the size of the un/redo histories.
+        getUndoLevels: function() {
+          return undoStack.length;
+        },
+        getRedoLevels: function() {
+          return redoStack.length;
+        },
+        clearUndoStacks: function() {
+          clearStack(undoStack); clearStack(redoStack);
         }
-      };
-      
-      if(taskOptions.doTask) {
-        // if we are blocking tasks, simply execute,
-        // otherwise, stack it
-        if(blockTasks)
-          taskOptions.onDo();
-        else
-          undoManager.pub.doTask(taskOptions);
-      } else if(!blockTasks) {
-        undoManager.pub.addTask(taskOptions);
       }
-    }
-
+    };
     scene.addEventHandlingFunctions(undoManager);
     
     return undoManager;
-  }});
-
-
+  }
 });
+
+
+var createDGNodeMemberChangeUndoAction = function(dgnode, memberName, sliceIndex){
+  var newValue, prevValue = dgnode.getData(memberName, sliceIndex);
+  return { 
+    onClose:function() {
+      newValue = dgnode.getData(memberName, sliceIndex);
+    },
+    onUndo: function() {
+      gnode.setData(memberName, sliceIndex, prevValue);
+    },
+    onRedo: function() {
+      gnode.setData(memberName, sliceIndex, newValue);
+    }
+  }
+}
+
+// Note: I am stopping here for now.
+// The concept of decommissioning nodes is a good one, but it needs to propagate.
+// Maybe what is required throughtout the scene graph is reference counting on
+// all 'SceneGraphNodes'. as references are added and removed to thier dgnodes,
+// and event handlers, they keep track....
+// Ok, so we chould manage all dependencies and event handler relationships in
+// the base 'SceneGraphNode' class. This would make it possible to add reference
+// counting at this level, and then cause automatic decommisioning of nodes, where
+// they cache and disconnect all dependencies.
+
+var createConstructNodeUndoAction = function(scene, type, options){
+  var node = scene.constructNode(type, options);
+  var decommisioned = false;
+  return { 
+    onUndo: function() {
+      node.decommision();
+      decommisioned = true;
+    },
+    onRedo: function() {
+      node.recommision();
+      decommisioned = false;
+    },
+    destroy: function(){
+      if(decommisioned){
+        node.destroy();
+      }
+    }
+  }
+}
+
+var createDestroyNodeUndoAction = function(scene, type, options){
+  node.decommision();
+  var decommisioned = true;
+  return { 
+    onUndo: function() {
+      node.recommision();
+      decommisioned = false;
+    },
+    onRedo: function() {
+      node.decommision();
+      decommisioned = false;
+    },
+    destroy: function(){
+      if(decommisioned){
+        node.destroy();
+      }
+    }
+  }
+}
+
+  
+});
+
