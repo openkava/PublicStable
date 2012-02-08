@@ -9,8 +9,11 @@ operator lidarLoad(
   io FabricResource resource,
   io LidarReader lidar
 ) {
-  if(resource.data.dataSize() > 0) {
-    lidar.loadResource(resource,url);
+  if(!lidar.pointer) {
+    if(resource.data.dataSize() > 0)
+      lidar.loadResource(resource,url);
+    else if(resource.dataExternalLocation)
+      lidar.loadFileHandle(resource.dataExternalLocation);
   }
 }
 
