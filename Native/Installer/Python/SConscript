@@ -3,7 +3,7 @@
 #
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricPythonModule', 'fabricPythonLib', 'pythonLibraryName' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricPythonModule', 'fabricPythonLib', 'pythonLibraryName', 'installerExtFiles' )
 
 pythonPackageName = "FabricEnginePythonModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 
@@ -34,6 +34,11 @@ installerFiles.append( baseEnv.Command(
   pythonPackageDir.File('LICENSE.txt'),
   'LICENSE.txt',
   [ Copy( '$TARGET', '$SOURCE' ) ]
+) )
+
+installerFiles.append( Install(
+  pythonPackageDir.Dir('Exts'),
+  installerExtFiles
 ) )
 
 pythonInstaller = baseEnv.Command(
