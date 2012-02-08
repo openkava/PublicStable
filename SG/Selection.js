@@ -131,9 +131,9 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
     };
     if(undoManager) {
       selectionManager.pub.addEventListener('selectionChanged', function(evt){
-        undoManager.addTask({
+        undoManager.addAction({
           name: 'SelectionChanged',
-          onDo: function(){
+          onRedo: function(){
             selectionManager.pub.select(evt.selection);
           },
           onUndo: function(){
@@ -250,53 +250,57 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       hierarchical: false
     } );
 
+    var undoManager = scene.getManager('UndoManager');
+    
     /////
     // Propagate the manipulation to all selected members.
-    var dragStartGlobalXfo, dragStartSelGlobalXfos;
+    var dragStartGlobalXfo, dragStartXfos;
     var dragStartFn = function(evt) {
       dragStartGlobalXfo = groupTransform.pub.getGlobalXfo();
       var selection = selectionManager.getSelection();
-      dragStartSelGlobalXfos = [];
+      var dragEndXfos = [];
+      var dragStartXfosLocal = [];
+      dragStartXfos = [];
       for(var i=0; i<selection.length; i++){
-        dragStartSelGlobalXfos.push(selection[i].getTransformNode()[options.transformGetter]());
+        var startXfo = selection[i].getTransformNode()[options.transformGetter]();
+        dragStartXfos.push(startXfo);
+        dragStartXfosLocal.push(startXfo);
       }
-    }
-    var dragFn = function(evt) {
-    }
-    var dragEndFn = function(evt) {
-      
-      // if we support undo, let's create a task for this
-      if(selectionManager.getUndoManager()) {
-        
-        // store previous and current transforms into arrays
-        var selection = selectionManager.getSelectionCopy()
-        var previousTransforms = [];
-        var currentTransforms = [];
-        for(var i=0;i<dragStartSelGlobalXfos.length;i++) {
-          previousTransforms.push(dragStartSelGlobalXfos[i].clone());
-          currentTransforms.push(selection[i].getTransformNode()[options.transformGetter]());
-        }
-        selectionManager.getUndoManager().addTask({
-          name: "ViewPortManipulationManager",
-          onUndo: function (){
-            for(var i=0;i<selection.length;i++)
-              selection[i].getTransformNode()[options.transformSetter](previousTransforms[i]);
+      if(undoManager){
+        undoManager.addAction({
+          name: 'SelectionManipulation',
+          onClose: function() {
+            var selection = selectionManager.getSelection();
+            for(var i=0; i<selection.length; i++){
+              dragEndXfos.push(selection[i].getTransformNode()[options.transformGetter]());
+            }
           },
-          onDo: function (){
-            for(var i=0;i<selection.length;i++)
-              selection[i].getTransformNode()[options.transformSetter](currentTransforms[i]);
+          onUndo: function (){
+            var selection = selectionManager.getSelection();
+            for(var i=0;i<selection.length;i++){
+              selection[i].getTransformNode()[options.transformSetter](dragStartXfosLocal[i]);
+            }
+          },
+          onRedo: function (){
+            var selection = selectionManager.getSelection();
+            for(var i=0;i<selection.length;i++){
+              selection[i].getTransformNode()[options.transformSetter](dragEndXfos[i]);
+            }
           }
         });
       }
     }
     
     groupTransform.pub.setGlobalXfo = function(xfo){
+      if(undoManager && undoManager.undoRedoing()){
+        return;
+      }
       var xform = xfo.multiply(dragStartGlobalXfo.inverse());
       var selection = selectionManager.getSelection();
       for(var i=0; i<selection.length; i++){
-        selection[i].getTransformNode()[options.transformSetter]( xform.multiply(dragStartSelGlobalXfos[i]) );
+        selection[i].getTransformNode()[options.transformSetter]( xform.multiply(dragStartXfos[i]) );
       }
-      selectionManager.fireEvent('groupTransformChanged',{selection: selection});
+      selectionManager.fireEvent('selectionManipulated', { selection: selection });
     };
     
     groupTransform.getDGNode().addMember('xfoOffsets','Xfo[]');
@@ -352,7 +356,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
    }
 
     // retrieve the list of manipulators    
-    var manipulators = options.manipulators;
+    var manipulators = [];
     var manipulatorsDrawToggle = false;
     var toggleManipulatorsDisplay = function(drawToggle){
       if(!manipulators)
@@ -427,27 +431,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       }
     });
 
-    if(!manipulators){
-      var manipulator = scene.pub.constructNode('ScreenTranslationManipulator', {
-          name: options.name + 'ScreenTranslationManipulator',
-          color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-          parentNode: groupTransform.pub,
-          geometryNode: scene.pub.constructNode('Sphere', {radius: options.screenTranslationRadius, detail: 8.0}),
-          drawToggle: false,
-          drawOverlaid: true,
-        });
-      manipulator.addEventListener('dragstart', dragStartFn);
-      manipulator.addEventListener('drag', dragFn);
-      manipulator.addEventListener('dragend', dragEndFn);
-      manipulators = [];
-      manipulators.push(manipulator);
-    } else {
-      for(var i=0;i<manipulators.length;i++) {
-        manipulators[i].addEventListener('dragstart', dragStartFn);
-        manipulators[i].addEventListener('drag', dragFn);
-        manipulators[i].addEventListener('dragend', dragEndFn);
-      }
-    }
     
     // setup the public interface
     var selectionManipulationManager = {
@@ -457,8 +440,8 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         },
         addManipulator: function(manipulator) {
           manipulator.addEventListener('dragstart', dragStartFn);
-          manipulator.addEventListener('drag', dragFn);
-          manipulator.addEventListener('dragend', dragEndFn);
+        //  manipulator.addEventListener('drag', dragFn);
+        //  manipulator.addEventListener('dragend', dragEndFn);
           manipulator.setDrawToggle(manipulatorsDrawToggle);
           manipulators.push(manipulator);
         },
@@ -467,14 +450,28 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         },
         getManipulatorsDrawToggle: function() {
           return manipulatorsDrawToggle;
+        },
+        getSelectionManager: function(){
+          return selectionManager;
         }
       }
     };
     toggleManipulatorsDisplay(false);
     
-    selectionManipulationManager.pub.getSelectionManager = function(){
-      return selectionManager;
-    };
+    if(!options.manipulators){
+      selectionManipulationManager.addManipulator( scene.pub.constructNode('ScreenTranslationManipulator', {
+          name: options.name + 'ScreenTranslationManipulator',
+          color: FABRIC.RT.rgb(0, 0.8, 0, 1),
+          parentNode: groupTransform.pub,
+          geometryNode: scene.pub.constructNode('Sphere', {radius: options.screenTranslationRadius, detail: 8.0}),
+          drawToggle: false,
+          drawOverlaid: true
+        }));
+    } else {
+      for(var i=0; i < options.manipulators.length; i++) {
+        selectionManipulationManager.addManipulator( options.manipulators[i] );
+      }
+    }
     
     return selectionManipulationManager;
   }});

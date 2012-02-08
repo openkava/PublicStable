@@ -89,10 +89,15 @@ $(document).ready(function() {
         step: 0.01,
         value: prevValue
       }).bind( "slidestart", function(event, ui) {
+          // An undo transaction is opened, and actions can be added
+          // to the transaction. A transaction groups a collection
+          // of changes together as a single undo item. This is useful
+          // when manipulations caused multiple data values to change.
           undoManager.openUndoTransaction();
           var newVal, prevVal = ui.value;
           undoManager.addAction({
             onClose: function() {
+              // When the undo transaction is closed, we record the new value.
               newVal = $slider.slider('value');
             },
             onUndo: function() {
@@ -107,26 +112,6 @@ $(document).ready(function() {
         function(event, ui) {
           undoManager.closeUndoTransaction();
         });
-       /*
-      }).bind('slidechange',
-        function(event, ui) {
-          // the undo manager blocks the creation of
-          // tasks while it is undoing or redoing a task.
-          // that way recursion is avoided here.
-          undoManager.addAction({
-            name: "Slider "+index,
-            
-            // undo and (re)do callbacks
-            onUndo: function() {
-              $slider.slider('value', prevValue);
-            },
-            onRedo: function() {
-              $slider.slider('value', ui.value);
-            },
-          });
-        }
-       
-      );*/
     };
   }
   
@@ -148,7 +133,6 @@ $(document).ready(function() {
       if (errors.length > 0) {
         throw (errors.toString());
       }
-      undoManager.enableUndo();
       viewport.redraw();
       return true;
     }
