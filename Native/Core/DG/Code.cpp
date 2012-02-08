@@ -98,6 +98,8 @@ namespace Fabric
     
     void Code::compileAST( bool optimize )
     {
+      Util::Mutex::Lock mutexLock( m_mutex );
+
       RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
       if ( !context )
         return;
