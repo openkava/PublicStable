@@ -405,9 +405,9 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
 
 FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName, options) {
   
-  var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
-  var jsonFilename = path.fileName.split('.')[0];
-  var binarydatapath = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, "Secure ", "fez", jsonFilename);
+  var jsonfilehandle = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
+  var jsonfilename = FABRIC.IO.getFileHandleInfo( jsonfilehandle.file ).fileName;
+  var binarydatafilehandle = FABRIC.IO.buildFileHandleFromRelativePath(jsonfilehandle.folder+'/'+jsonfilename.split('.')[0]+'.bin');
   
   var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', options);
       
@@ -417,22 +417,21 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
   }
   
   this.getBinaryFileName = function(){
-    return binarydatapath.fileName;
+    return FABRIC.IO.getFileHandleInfo( binarydatafilehandle ).fileName;
   }
   
   this.write = function(instr) {
     str = instr;
-    FABRIC.IO.putTextFile(str, path);
-    FABRIC.flush();
-    writeBinaryDataNode.write('resource', binarydatapath);
+    FABRIC.IO.putTextFileContent(jsonfilehandle.file, str);
+    writeBinaryDataNode.write(binarydatafilehandle);
   }
   this.writeJSON = function(instr) {
     str = instr;
-    FABRIC.IO.putTextFile(str, path);
+    FABRIC.IO.putTextFileContent(path.file, str);
   }
   
   this.writeBinary = function() {
-    writeBinaryDataNode.write('resource', binarydatapath);
+    writeBinaryDataNode.write(binarydatapath.file, str);
   }
   
   this.log = function(instr) {
@@ -738,8 +737,6 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      compressionLevel: 1, // 0 - 9
-      secureKey: undefined
     });
       
     var writeBinaryDataNode = scene.constructNode('SceneGraphNode', options);
@@ -748,8 +745,9 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     var binarydatadgnode = writeBinaryDataNode.constructResourceLoadNode('DGLoadNode');
     var persistedNodes = {};
     var eventHandlers = {};
+    var dataNames = [];
     
-    writeBinaryDataNode.pub.write = function(resource, path){
+    writeBinaryDataNode.pub.write = function(handle){
       var dgErrors = writeBinaryDataNodeEvent.getErrors();
       if(dgErrors.length > 0){
         throw dgErrors;
@@ -763,43 +761,50 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         }
       }
       
+      writeEventHandler.setData('handle', 0, handle);
+      writeEventHandler.setData('dataNames', 0, dataNames);
+      // when this event fires, it writes the data to the file on disk.
       writeBinaryDataNodeEvent.fire();
-      binarydatadgnode.putResourceToFile(path,resource);
     }
-    
-    binarydatadgnode.addMember('container', 'SecureContainer');
-    binarydatadgnode.addMember('elements', 'SecureElement[]');
-    binarydatadgnode.addMember('secureKey', 'String', options.secureKey);
-    binarydatadgnode.addMember('compressionLevel', 'Integer', options.compressionLevel);
-
     var writeEventHandler = writeBinaryDataNode.constructEventHandlerNode('Propagation');
-    writeEventHandler.setScope('container', binarydatadgnode);
+    
+    writeEventHandler.addMember('handle','String');
+    writeEventHandler.addMember('stream','FabricFileStream');
+    writeEventHandler.addMember('dataNames','String[]');
+    writeEventHandler.addMember('seekOffsetsLocation','Size');
+    writeEventHandler.addMember('seekOffsets','Size[]');
+    
+
+    writeEventHandler.setScopeName('fileStream');
+    
     // attach an operator to clear the container!
     var nbOps = 0;
     var opSrc = {};
     writeEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'secureContainerClear',
+      operatorName: 'openFileStreamForWriting',
       parameterLayout: [
-        'container.container',
-        'container.elements'
+        "self.handle",
+        "self.stream",
+        "self.dataNames",
+        "self.seekOffsetsLocation",
+        "self.seekOffsets"
       ],
-      entryFunctionName: 'secureContainerClear',
-      srcFile: 'FABRIC_ROOT/SG/KL/loadSecure.kl',
+      entryFunctionName: 'openFileStreamForWriting',
+      srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
       async: false,
       mainThreadOnly: true
     }));
     nbOps++;
     
     writeEventHandler.postDescendBindings.append(scene.constructOperator({
-      operatorName: 'secureContainerSave',
+      operatorName: 'closeFileStream',
       parameterLayout: [
-        'container.container',
-        'container.resource',
-        'container.compressionLevel',
-        'container.secureKey'
+        "self.stream",
+        "self.seekOffsetsLocation",
+        "self.seekOffsets"
       ],
-      entryFunctionName: 'secureContainerSave',
-      srcFile: 'FABRIC_ROOT/SG/KL/loadSecure.kl',
+      entryFunctionName: 'closeFileStream',
+      srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
       async: false,
       mainThreadOnly: true
     }));
@@ -830,97 +835,59 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         }
         
         writeDGNodesEventHandler.setScope(dgnodeName, dgnode);
+        var dataName = sgnodeName+'.'+dgnodeName;
+        writeDGNodesEventHandler.addMember(dataName,'String', dataName);
+        
+        writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'writeSliceCountToStream',
+          srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
+          preProcessorDefinitions: {
+            DATA_TYPE: 'Size'
+          },
+          entryFunctionName: 'writeSliceCountToStream',
+          parameterLayout: [
+            'fileStream.stream',
+            'fileStream.dataNames',
+            'fileStream.seekOffsets',
+            'self.'+dataName,
+            dgnodeName+'.count'
+          ],
+          async: false
+        }));
+        
+        dataNames.push(dataName);
         
         // now setup the operators to store the data
         for(var i=0;i<memberNames.length;i++) {
           var memberName = memberNames[i];
           var memberType = members[memberName].type;
-          
           var isArray = memberType.indexOf('[]') > -1;
+          if(isArray){
+            memberType = memberType.slice(0, memberType.length-2);
+          }
           var isString = memberType.indexOf('String') > -1;
-          if(isArray && isString){
-            console.log("SecureStorage: Warning: Skipping member '"+memberName+"'. String Array members are not supported at this stage.");
-            continue;
-          }
           
-          var operatorName = 'storeSecureElement'+memberType.replace('[]','');
-          if(isArray)
-            operatorName += 'Array';
+          var dataName = sgnodeName+'.'+dgnodeName+'.'+memberName;
+          writeDGNodesEventHandler.addMember(memberName+'_name','String', dataName);
+          var operatorName = 'write' + (isArray ? 'Array' : 'Member') + 'ToStream';
           
-          // We currenlty store 'Size' values as 'Integer' values to be platform neutral.
-          var storedType = memberType.replace('Size','Integer');
-  
-          writeDGNodesEventHandler.addMember(memberName+'_name','String', sgnodeName+'.'+dgnodeName+'.'+memberName);
-          writeDGNodesEventHandler.addMember(memberName+'_type','String',storedType);
-          writeDGNodesEventHandler.addMember(memberName+'_version','Integer',options.version);
-          
-          if(!opSrc[operatorName]){
-            var srcCode = 'use FabricSECURE;\noperator '+operatorName+'(\n';
-            srcCode += '  io SecureContainer container,\n';
-            srcCode += '  io SecureElement elements[],\n';
-            srcCode += '  io String memberName,\n';
-            srcCode += '  io String memberType,\n';
-            srcCode += '  io Integer memberVersion,\n';
-            srcCode += '  io '+memberType.replace('[]','')+' member<>'+(isArray ? '[]' : '')+'\n';
-            srcCode += ') {\n';
-            srcCode += '  SecureElement element;\n';
-            srcCode += '  element.name = memberName;\n';
-            srcCode += '  element.type = memberType;\n';
-            srcCode += '  element.version = memberVersion;\n';
-            srcCode += '  element.slicecount = member.size();\n';
-            if(isArray) {
-              srcCode += '  for(Size i=0;i<member.size();i++){\n';
-              srcCode += '    element.sliceindex = Integer(i);\n';
-              srcCode += '    element.datacount = member[i].size();\n';
-              if(storedType != memberType) {
-                srcCode += '    '+storedType.replace('[]','')+' memberArray[];\n';
-                srcCode += '    memberArray.resize(member[i].size());\n';
-                srcCode += '    for(Size j=0;j<member[i].size();j++) {\n';
-                srcCode += '      memberArray[j] = '+storedType.replace('[]','')+'(member[i][j]);\n';
-                srcCode += '    }\n';
-                srcCode += '    container.addElement(element,memberArray.data(),memberArray.dataSize());\n'
-              } else {
-                srcCode += '    container.addElement(element,member[i].data(),member[i].dataSize());\n'
-              }
-              srcCode += '  }\n'
-            } else if(isString) {
-              srcCode += '  for(Size i=0;i<member.size();i++){\n';
-              srcCode += '    element.sliceindex = Integer(i);\n';
-              srcCode += '    element.datacount = member[i].length();\n';
-              srcCode += '    container.addElement(element,member[i].data(),member[i].length());\n'
-              srcCode += '  }\n'
-            } else {
-              srcCode += '  element.sliceindex = -1;\n';
-              srcCode += '  element.datacount = member.size();\n';
-              if(storedType != memberType) {
-                srcCode += '  '+storedType.replace('[]','')+' memberArray[];\n';
-                srcCode += '  memberArray.resize(member.size());\n';
-                srcCode += '  for(Size i=0;i<member.size();i++) {\n';
-                srcCode += '    memberArray[i] = '+storedType.replace('[]','')+'(member[i]);\n';
-                srcCode += '  }\n';
-                srcCode += '  container.addElement(element,memberArray.data(),memberArray.dataSize());\n'
-              } else {
-                srcCode += '  container.addElement(element,member.data(),member.dataSize());\n'
-              }
-            }
-            srcCode += '  elements.push(element);\n';
-            srcCode += '}\n';
-            opSrc[operatorName] = srcCode;
-          }
           writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
-            operatorName: operatorName,
-            srcCode: opSrc[operatorName],
+            operatorName: operatorName + memberType + (isArray ? 'Array' : ''),
+            srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
+            preProcessorDefinitions: {
+              DATA_TYPE: memberType
+            },
             entryFunctionName: operatorName,
             parameterLayout: [
-              'container.container',
-              'container.elements',
+              'fileStream.stream',
+              'fileStream.dataNames',
+              'fileStream.seekOffsets',
               'self.'+memberName+'_name',
-              'self.'+memberName+'_type',
-              'self.'+memberName+'_version',
               dgnodeName+'.'+memberName+'<>'
             ],
             async: false
           }));
+          dataNames.push(dataName);
         }
       }
     };
