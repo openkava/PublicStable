@@ -84,7 +84,7 @@ $(document).ready(function() {
       }
       viewport.redraw();
     });
-  
+  /*
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
   var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
   presetLoader.load(storage, function(nodeMap){
@@ -93,7 +93,7 @@ $(document).ready(function() {
       console.log("Constructed Node:" + nodeMap[nodeName].getName());
     }
   });
-  
+  */
   
   $('#saveResource').button({
       text: true,
@@ -103,8 +103,8 @@ $(document).ready(function() {
     })
     .click(function() {
      
-    //  var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
-      var storage = new FABRIC.SceneGraph.FileWriter(scene, 'PersistenceDemo', 'cow');
+      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
+   //   var storage = new FABRIC.SceneGraph.FileWriter(scene, 'PersistenceDemo', 'cow');
       
       var presetSaver = scene.constructManager('SceneSerializer',{
         typeRemappings: { ObjTriangles: 'Triangles' } 

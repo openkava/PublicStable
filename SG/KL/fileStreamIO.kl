@@ -1,0 +1,150 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use FabricFILESTREAM;
+use FabricFileStream;
+
+function Integer lookupDataIndex(
+  io String dataNames[],
+  io String dataName
+){
+  // look up the data member in the TOC.
+  Integer dataIndexId;
+  Integer i;
+  for(i=0;i<dataNames.size();i++) {
+    if(dataNames[i] == dataName) {
+      return i;
+    }
+  }
+  report "ERROR: data index not found :" + dataName;
+  return -1;
+}
+
+
+operator writeSliceCountToStream(
+  io FabricFileStream stream,
+  io String dataNames[],
+  io Size seekOffsets[],
+  io String dataName,
+  Size count
+){
+  if(stream.isWritable()) {
+    Integer dataIndexId = lookupDataIndex(dataNames, dataName);
+    if(dataIndexId >= 0){
+      seekOffsets[dataIndexId] = stream.getSeek();
+      stream.writeSize(count);
+    }
+  }
+}
+
+operator writeMemberToStream(
+  io FabricFileStream stream,
+  io String dataNames[],
+  io Size seekOffsets[],
+  io String dataName,
+  io DATA_TYPE member<>
+){
+  if(stream.isWritable()) {
+    Integer dataIndexId = lookupDataIndex(dataNames, dataName);
+    if(dataIndexId >= 0){
+      seekOffsets[dataIndexId] = stream.getSeek();
+      String dataType = "DATA_TYPE";
+      stream.writeString(dataType);
+      stream.writeData(member.data(),member.dataSize());
+    }
+  }
+}
+
+operator writeArrayToStream(
+  io FabricFileStream stream,
+  io String dataNames[],
+  io Size seekOffsets[],
+  io String dataName,
+  io DATA_TYPE data<>[]
+){
+  if(stream.isWritable()) {
+    Integer dataIndexId = lookupDataIndex(dataNames, dataName);
+    if(dataIndexId >= 0){
+      seekOffsets[dataIndexId] = stream.getSeek();
+      String dataType = "DATA_TYPE";
+      stream.writeString(dataType);
+      for(Integer i=0; i<data.size(); i++){
+        stream.writeSize(data[i].size());
+        stream.writeData(data[i].data(),data[i].dataSize());
+      }
+    }
+  }
+}
+
+function seekData(
+  io FabricFileStream stream,
+  io Size prevDataIndex,
+  in String dataNames[],
+  in Size dataSeekOffsets[],
+  in String dataName
+){
+  if(dataNames[prevDataIndex+1] == dataName){
+    // Most of the time the file is read incrementaly from beginning
+    // to end, so looking up the TOK should be rare. Here we check 
+    // if the seek is already at the correct location.
+    prevDataIndex++;
+    return;
+  }
+  else{
+    for(Size i=0;i<dataNames.size();i++) {
+      if(dataNames[i] == dataName) {
+        stream.setSeek(dataSeekOffsets[i]);
+        prevDataIndex = i;
+        return;
+      }
+    }
+  }
+}
+
+operator readSizeFromStream(
+  io FabricFileStream stream,
+  io Size prevDataIndex,
+  in String dataNames[],
+  in Size dataSeekOffsets[],
+  in String dataName,
+  io Size value
+){
+  if(stream.isValid()) {
+    seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName);
+    stream.readSize(value);
+  }
+}
+
+
+operator readMemberFromStream(
+  io FabricFileStream stream,
+  io Size prevDataIndex,
+  io String dataNames[],
+  io Size dataSeekOffsets[],
+  io String dataName,
+  io DATA_TYPE data<>
+){
+  if(stream.isValid()) {
+    seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName);
+    stream.readData(data.data(),data.dataSize());
+  }
+}
+
+
+operator readArrayFromStream(
+  io FabricFileStream stream,
+  io Size prevDataIndex,
+  in String dataNames[],
+  in Size dataSeekOffsets[],
+  in String dataName,
+  io DATA_TYPE data[]
+){
+  if(stream.isValid()) {
+    seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName);
+    Size size;
+    stream.readSize(size);
+    data.resize(size);
+    stream.readData(data.data(),data.dataSize());
+  }
+}
