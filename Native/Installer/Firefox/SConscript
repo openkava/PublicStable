@@ -6,7 +6,9 @@
 # with the MIME type application/x-xpinstall
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'installerExtFiles', 'distDir' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'generateDistZip', 'installerExtFiles', 'distDir' )
+
+installerName = 'FabricEngine-FirefoxExtension-' + buildOS + '-' + buildArch + '-' + FABRIC_VERSION
 
 firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
 
@@ -78,4 +80,7 @@ print( "!! Firefox Installer: you MUST perform the following steps before upload
 print( "!! 1. Calculate the SHA1 hash of "+installerFile.abspath+" and insert it into "+updateFile.abspath )
 print( "!! 2. Sign "+updateFile.abspath+" using the McCoy tool" )
 print( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-Alias( 'firefoxInstaller', [installerFile, updateFile] )
+
+firefoxInstaller = [installerFile, updateFile]
+Alias( 'firefoxInstaller', firefoxInstaller )
+Return( 'firefoxInstaller' )

@@ -5,7 +5,7 @@
 import os
 Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricPythonModule', 'fabricPythonLib', 'pythonLibraryName', 'installerExtFiles' )
 
-pythonPackageName = "FabricEnginePythonModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
+pythonPackageName = "FabricEngine-PythonModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 
 pythonPackageDir = distDir.Dir(pythonPackageName)
 pythonModuleDir = pythonPackageDir.Dir('python_modules').Dir('fabric')
@@ -49,3 +49,4 @@ pythonInstaller = baseEnv.Command(
   ]
 )
 Alias( 'pythonInstaller', pythonInstaller )
+Return( 'pythonInstaller' )
