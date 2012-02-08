@@ -3,7 +3,7 @@
 #
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricNodePackage', 'fabricNodeAddOn', 'nodeModuleReadMe', 'nodeModuleLicense' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricNodePackage', 'fabricNodeAddOn', 'nodeModuleReadMe', 'nodeModuleLicense', 'installerExtFiles' )
 
 nodePackageName = "FabricEngineNodeModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 
@@ -34,6 +34,11 @@ installerFiles.append( baseEnv.Command(
   nodePackageDir.File('LICENSE.txt'),
   nodeModuleLicense,
   [ Copy( '$TARGET', '$SOURCE' ) ]
+) )
+
+installerFiles.append( Install(
+  nodePackageDir.Dir('Exts'),
+  installerExtFiles
 ) )
 
 nodeInstaller = baseEnv.Command(
