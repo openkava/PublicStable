@@ -138,7 +138,7 @@ Export('generateDistZip')
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'baseEnv' )
+Import( 'baseEnv', 'buildOS' )
 
 if 'dist' in COMMAND_LINE_TARGETS:
   chromeInstaller = SConscript( 'Chrome/SConscript' )
