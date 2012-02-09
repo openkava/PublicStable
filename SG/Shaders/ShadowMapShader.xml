@@ -1,31 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shader>
 	<name>ShadowMaterial</name>
-  <prototypeMaterialType>ShadowMapMaterial</prototypeMaterialType>
+	<prototypeMaterialType>ShadowMapMaterial</prototypeMaterialType>
 
 	<uniforms>
 		<uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
 		<uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 	</uniforms>
 
-  <openglstateparams>
-    <enableOptions>
-      <option>GL_CULL_FACE</option>
-    </enableOptions>
-    <cullFace>GL_FRONT</cullFace>
-  </openglstateparams>
 
 	<attributes>
 		<attribute name="a_position" binding="positions"/>
 		<attribute name="a_normal" binding="normals"/>
 	</attributes>
 
-  <openglstateparams>
-    <enableOptions>
-      <option>GL_CULL_FACE</option>
-    </enableOptions>
-    <cullFace>GL_FRONT</cullFace>
-  </openglstateparams>
+	<openglstateparams>
+	  <enableOptions>
+	    <option>GL_CULL_FACE</option>
+	  </enableOptions>
+	  <cullFace>GL_FRONT</cullFace>
+	</openglstateparams>
   
 	<vertexshader>
 		<source>

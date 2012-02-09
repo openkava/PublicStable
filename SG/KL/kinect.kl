@@ -23,6 +23,14 @@ operator tiltKinectCamera(
   camera.tilt(angle,result);
 }
 
+operator resizeImage(
+  io Size width,
+  io Size height,
+  io Size newCount
+) {
+  newCount = width*height;
+}
+
 operator getKinectCameraAllPixels(
   io KinectCamera camera,
   io Scalar time
@@ -36,57 +44,45 @@ operator getKinectCameraAllPixels(
 
 operator getKinectCameraColorPixels(
   io KinectCamera camera,
-  io RGBA pixels[],
-  io Size width,
-  io Size height
+  io RGBA pixels<>
 ){
-  if(pixels.size() == 0)
-    pixels.resize(width*height);
-    
   if(pixels.size() == camera.colorData.size() && camera.initiated && camera.supportsColor){
-    pixels = camera.colorData;
+    for(Size i=0;i<pixels.size();i++)
+    {
+      pixels[i] = camera.colorData[i];
+      pixels[i].a = 255;
+    }
   }
 }
 
 operator getKinectCameraDepthPixels(
   io KinectCamera camera,
-  io Integer pixels[],
-  io Size width,
-  io Size height
+  io Integer pixels<>
 ){
-  if(pixels.size() == 0)
-    pixels.resize(width*height);
-    
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    pixels = camera.depthData;
+    for(Size i=0;i<pixels.size();i++)
+      pixels[i] = camera.depthData[i];
   }
 }
 
 operator getKinectCameraPlayerPixels(
   io KinectCamera camera,
-  io Integer pixels[],
-  io Size width,
-  io Size height
-){
-  if(pixels.size() == 0)
-    pixels.resize(width*height);
-    
-  if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    pixels = camera.playerData;
+  io Integer pixels<>
+){  
+  if(pixels.size() == camera.playerData.size() && camera.initiated && camera.supportsDepth){
+    for(Size i=0;i<pixels.size();i++)
+      pixels[i] = camera.playerData[i];
   }
 }
 
 operator getKinectCameraDepthAsColorPixels(
   io KinectCamera camera,
-  io RGBA pixels[],
+  io RGBA pixels<>,
   io Size width,
   io Size height,
   io Integer depthMin,
   io Integer depthMax
-){
-  if(pixels.size() == 0)
-    pixels.resize(width*height);
-    
+){  
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
     for(Size i=0;i<pixels.size();i++){
       if(camera.depthData[i] == 0){

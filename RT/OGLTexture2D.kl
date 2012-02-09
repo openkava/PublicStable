@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricCIMG;
+use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricEXR, FabricCIMG;
 use Vec2, Vec3, OGLShaderProgram;
 
 function OGLTexture2D.configure(
@@ -29,7 +29,7 @@ function OGLTexture2D.configure(
       glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
       glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
     }
-      
+    
     if(nbPixels == (width * height)){
       glTexImage2D(GL_TEXTURE_2D, 0, this.glInternalFormat, width, height, 0, this.glFormat, this.glType, pixels);
     }
@@ -186,7 +186,7 @@ function Boolean decodeRGBAImageData(
   io Size imageHeight,
   io RGBA bitmap[]
 ) {
-  if(resource.data.size() == 0)
+  if(resource.data.size() == 0 && !resource.dataExternalLocation)
     return false;
   String ext = resource.extension ? resource.extension : resource.mimeType;
   
@@ -197,18 +197,33 @@ function Boolean decodeRGBAImageData(
     case 'tif':
     case 'tiff':
     case 'image/tif':
-      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricCIMGOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case 'png':
     case 'image/png':
-      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricPNGOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case 'tga':
     case 'image/tga':
-      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricTGAOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     default:
       report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
@@ -230,13 +245,23 @@ function Boolean decodeColorImageData(
   switch (ext) {
     case'hdr':
     case'image/hdr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricHDROpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case'exr':
     case'image/exr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricEXRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricEXROpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     default:
       report "ERROR: unsupported file type(" + ext + ") :"+resource.url;

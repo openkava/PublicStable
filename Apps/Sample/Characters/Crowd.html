@@ -209,9 +209,9 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     var cellSize = 8.0;
     var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 3.5,
-        maxLinearAcceleration: 6,
-        maxAngularVelocity:  5,
-        maxAngularAcceleration: 5,
+        maxLinearAcceleration: 20,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -98,
@@ -256,6 +256,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     var ikrig = nodeMap.IKRig;
     var characterMesh =  nodeMap.characterMesh;
     var skeletonNode = ikrig.getSkeletonNode();
+    
+    ikrig.addSolver('Head', 'HeadLookAtSolver', { bones:{ bone:['USWolfHead'], neckBones:['USWolfNeck'] } } );
     
     ikrig.setControllerNode(crowdNode);
     

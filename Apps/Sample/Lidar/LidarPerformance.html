@@ -168,6 +168,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       // now load the next one
       if(lasID < numLasFiles-1)
         loadLas(lasID+1)();
+      return 'remove';
     });
   }};
 

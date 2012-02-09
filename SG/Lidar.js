@@ -98,6 +98,7 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
       resourceLoadNode.pub.getParsedNodes = function(){
         return parsedNodes;
       }
+      return 'remove';
     });
     
     return resourceLoadNode;

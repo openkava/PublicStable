@@ -99,7 +99,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       $('#loadingDialog').dialog('close');
       viewport.redraw();
     }, 150);
-
+    return 'remove';
   });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {

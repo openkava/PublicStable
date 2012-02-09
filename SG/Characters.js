@@ -714,10 +714,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       async: false
     }));
     characterRigNode.pub.getDebuggingEnabled = function(tf){
-      return debugGeometryDraw.pub.getDrawToggle();
+      return dgnode.getData('debugGeometry').enabled;
     }
     characterRigNode.pub.setDebuggingEnabled = function(tf){
       debugGeometryDraw.pub.setDrawToggle(tf);
+      var debugGeometry = dgnode.getData('debugGeometry');
+      debugGeometry.enabled = tf;
+      dgnode.setData('debugGeometry', 0, debugGeometry);
     }
     
     //////////////////////////////////////////

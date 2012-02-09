@@ -17,21 +17,18 @@
 
     <style type="text/css">
     
+
 #sidebar {
   width:240px;
 }  
 #viewer {
   right:240px;
-  bottom:105px;
+  bottom:115px;
 }
 #timeControls {
   right:240px;
-  height:105px;
 }
 
-#timeControls .ui-slider { margin-left: 5em; margin-right: 5em; }
-#timeControls .ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
-#timeControls .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
 
 
   #feedback { font-size: 1.4em; }
@@ -124,7 +121,7 @@ $(document).ready(function() {
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
-  });
+  });  
     
   var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
   var skeletonGeometryNode;
@@ -284,11 +281,11 @@ $(document).ready(function() {
 	
 	{ bone:'_LThighAnterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	{ bone:'_LThighPosterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
-	{ bone:'_LCalf', baseAttachment:'_LLeg2', tipAttachment:'_LLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
+	{ bone:'_LCalf', baseAttachment:'_LLeg2', tipAttachment:'_LLegAnkle', baseOffset:3, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	
 	{ bone:'_RThighAnterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	{ bone:'_RThighPosterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
-	{ bone:'_RCalf', baseAttachment:'_RLeg2', tipAttachment:'_RLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 }
+	{ bone:'_RCalf', baseAttachment:'_RLeg2', tipAttachment:'_RLegAnkle', baseOffset:3, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 }
       ]
     });
     
@@ -497,6 +494,7 @@ $(document).ready(function() {
     bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
     viewport.redraw();
   });
+  
   var tesslationSlider = $('#tesslation').slider({
       min: 1,
       max: 12.0,
@@ -617,6 +615,7 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      
       if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
         alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
         throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
@@ -698,9 +697,9 @@ $(document).ready(function() {
         <div id="timeControls">
           <div class="box">
             <div class="content">
-                <button id="stop">Stop</button>
-                <button id="play">Play</button>
-                <div id='timeSlider' style="margin-top:15px;"></div>
+              <button id="stop">Stop</button>
+              <button id="play">Play</button>
+              <div id='timeSlider' style="margin-top:15px;"></div>
             </div><!--content-->
           </div><!--box-->
         </div><!--timeControls-->

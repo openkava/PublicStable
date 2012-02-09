@@ -5,7 +5,8 @@
 
 
 FABRIC.define(["SG/SceneGraph",
-               "SG/Geometry"], function() {
+               "SG/Geometry",
+               "SG/Images"], function() {
   
 FABRIC.RT.KinectCamera = function(options) {
   if(!options)
@@ -93,23 +94,34 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
       
       kinectNode.pub.constructColorTextureNode = function() {
         var textureNode = scene.constructNode('Image2D', {
+          format: 'RGBA',
           createResourceLoadNode: false,
           createDgNodes: true,
           width: 640,
           height: 480,
-          forceRefresh: true
+          forceRefresh: true,
+          initImage: false
         });
-        var textureDGNode = textureNode.getDGNode();
-        textureDGNode.setDependency(dgnode,'kinect');
+        var texturePixelsDGNode = textureNode.getPixelsDGNode();
+        texturePixelsDGNode.setDependency(dgnode,'kinect');
 
-        // create init operator
-        textureDGNode.bindings.append(scene.constructOperator({
+        // create init operators
+        texturePixelsDGNode.bindings.append(scene.constructOperator({
+          operatorName: 'resizeImage',
+          parameterLayout: [
+            'uniforms.width',
+            'uniforms.height',
+            'self.newCount'
+          ],
+          entryFunctionName: 'resizeImage',
+          srcFile: 'FABRIC_ROOT/SG/KL/kinect.kl'
+        }));
+        
+        texturePixelsDGNode.bindings.append(scene.constructOperator({
           operatorName: 'getKinectCameraColorPixels',
           parameterLayout: [
             'kinect.camera',
-            'self.pixels',
-            'self.width',
-            'self.height'
+            'self.pixels<>'
           ],
           entryFunctionName: 'getKinectCameraColorPixels',
           srcFile: 'FABRIC_ROOT/SG/KL/kinect.kl'
@@ -124,23 +136,37 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
       
       kinectNode.pub.constructDepthTextureNode = function() {
         var textureNode = scene.constructNode('Image2D', {
+          format: 'RGBA',
           createResourceLoadNode: false,
           createDgNodes: true,
           width: 320,
           height: 240,
-          forceRefresh: true
+          forceRefresh: true,
+          initImage: false
         });
-        var textureDGNode = textureNode.getDGNode();
-        textureDGNode.setDependency(dgnode,'kinect');
+        
+        var texturePixelsDGNode = textureNode.getPixelsDGNode();
+        texturePixelsDGNode.setDependency(dgnode,'kinect');
 
-        // create init operator
-        textureDGNode.bindings.append(scene.constructOperator({
+        // create init operators
+        texturePixelsDGNode.bindings.append(scene.constructOperator({
+          operatorName: 'resizeImage',
+          parameterLayout: [
+            'uniforms.width',
+            'uniforms.height',
+            'self.newCount'
+          ],
+          entryFunctionName: 'resizeImage',
+          srcFile: 'FABRIC_ROOT/SG/KL/kinect.kl'
+        }));
+        
+        texturePixelsDGNode.bindings.append(scene.constructOperator({
           operatorName: 'getKinectCameraDepthAsColorPixels',
           parameterLayout: [
             'kinect.camera',
-            'self.pixels',
-            'self.width',
-            'self.height',
+            'self.pixels<>',
+            'uniforms.width',
+            'uniforms.height',
             'kinect.depthMin',
             'kinect.depthMax'
           ],
