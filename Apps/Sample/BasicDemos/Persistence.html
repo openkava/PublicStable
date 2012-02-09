@@ -61,10 +61,8 @@ $(document).ready(function() {
   // create a light
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  var modelName = 'cow';
-  
   var instances = [];
-  scene.importAssetFile('Models/' + modelName + '.obj', {
+  scene.importAssetFile('Models/cow.obj', {
       splitMaterials: true
     },
     function(assetNodes){
@@ -78,7 +76,7 @@ $(document).ready(function() {
           materialNode: material,
           transformNode: scene.constructNode('Transform', {
             hierarchical: false,
-            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
           }),
         });
         instances.push(instance);
@@ -86,17 +84,14 @@ $(document).ready(function() {
       viewport.redraw();
     });
   
-  
-  /*
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow4.json');
+  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow2.json');
   presetLoader.load(storage, function(nodeMap){
     // The node map contains a map of all the nodes constructed from the loaded file.
     for(var nodeName in nodeMap){
       console.log("Constructed Node:" + nodeMap[nodeName].getName());
     }
   });
-  */
   
   $('#saveResource').button({
       text: true,

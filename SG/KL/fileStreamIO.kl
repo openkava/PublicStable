@@ -137,9 +137,15 @@ operator readMemberFromStream(
   Size prevDataIndex = -1;
   if(stream.isValid()){
     if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+      String storedMemberType;
+      stream.readString(storedMemberType);
+      if(storedMemberType != "DATA_TYPE"){
+        report "ERROR: Stored type : '"+storedMemberType+"' does not match current type:'DATA_TYPE'";
+        stream.close();
+        return;
+      }
       stream.readData(data.data(),data.dataSize());
     }
-    report data;
     stream.close();
   }
 }
