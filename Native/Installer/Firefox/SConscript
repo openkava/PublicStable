@@ -78,7 +78,7 @@ xpiUpdateKey = baseEnv.File("xpi-update.pem")
 updateFile = baseEnv.Command(
   distDir.File("xpi-update-"+buildOS+"-"+buildArch+".rdf"),
   installerFile,
-  [['uhura', '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_BASE_VERSION + '/' + installerName + '.xpi']],
+  [['uhura', '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_VERSION + '/' + installerName + '.xpi']],
   KEY=xpiUpdateKey
   )
 baseEnv.Depends( updateFile, xpiUpdateKey )
