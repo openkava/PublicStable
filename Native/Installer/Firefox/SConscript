@@ -84,7 +84,7 @@ updateFile = baseEnv.Command(
   installerFile,
   [[perlCmd, baseEnv.File('#/ThirdParty/Private/uhura.pl'), '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_VERSION + '/' + installerName + '.xpi']],
   KEY=xpiUpdateKey
-  )
+  )[0]
 baseEnv.Depends( updateFile, xpiUpdateKey )
 
 firefoxInstaller = [installerFile, updateFile]
