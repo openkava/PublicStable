@@ -70,6 +70,7 @@ namespace Fabric
     private:
     
       class Param;
+      class ContainerParam;
       class SizeParam;
       class NewSizeParam;
       class IndexParam;
@@ -85,6 +86,8 @@ namespace Fabric
       RC::ConstHandle<RT::Impl> m_rtSizeImpl;
       RC::ConstHandle<RT::Desc> m_rtIndexDesc;
       RC::ConstHandle<RT::Impl> m_rtIndexImpl;
+      RC::ConstHandle<RT::Desc> m_rtContainerDesc;
+      RC::ConstHandle<RT::Impl> m_rtContainerImpl;
     };
   };
 };
