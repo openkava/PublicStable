@@ -10,10 +10,11 @@ operator lidarLoad(
   io LidarReader lidar
 ) {
   if(!lidar.pointer) {
-    if(resource.data.dataSize() > 0)
+    if(resource.data.dataSize() > 0) {
       lidar.loadResource(resource,url);
-    else if(resource.dataExternalLocation)
+    } else if(resource.dataExternalLocation) {
       lidar.loadFileHandle(resource.dataExternalLocation);
+    }
   }
 }
 

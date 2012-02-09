@@ -1071,13 +1071,9 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
       redrawOnLoad: true,
-      storeDataAsFile: false,
+      storeDataAsFile: true,
       url: undefined
     });
-    
-    if(options.url.substr(0,11).toLocaleLowerCase() == "fabricio://") {
-      options.storeDataAsFile = true;
-    }
     
     var fileName = options.url.split('/').pop();
     var baseName = fileName.split('.')[0];
