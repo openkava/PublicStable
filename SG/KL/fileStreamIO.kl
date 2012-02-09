@@ -77,7 +77,7 @@ operator writeArrayToStream(
   }
 }
 
-function seekData(
+function Boolean seekData(
   io FabricFileStream stream,
   io Size prevDataIndex,
   in String dataNames[],
@@ -86,65 +86,83 @@ function seekData(
 ){
   if(dataNames[prevDataIndex+1] == dataName){
     // Most of the time the file is read incrementaly from beginning
-    // to end, so looking up the TOK should be rare. Here we check 
+    // to end, so looking up the TOC should be rare. Here we check 
     // if the seek is already at the correct location.
     prevDataIndex++;
-    return;
+    return true;
   }
   else{
     for(Size i=0;i<dataNames.size();i++) {
       if(dataNames[i] == dataName) {
         stream.setSeek(dataSeekOffsets[i]);
+        report "Found :"+dataName;
         prevDataIndex = i;
-        return;
+        return true;
       }
     }
+    report "ERROR: Data not found in file:"+dataName;
+    return false;
   }
 }
 
-operator readSizeFromStream(
-  io FabricFileStream stream,
-  io Size prevDataIndex,
-  in String dataNames[],
-  in Size dataSeekOffsets[],
-  in String dataName,
-  io Size value
+
+operator readSliceCountFromStream(
+  io FabricResource resource,
+  io String dataNames[],
+  io Size dataSeekOffsets[],
+  io String dataName,
+  io Size newCount
 ){
-  if(stream.isValid()) {
-    seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName);
-    stream.readSize(value);
+  report "readSliceCountFromStream:";
+  FabricFileStream stream;
+  stream.open(resource.dataExternalLocation,"r");
+  Size prevDataIndex = -1;
+  if(stream.isValid() && seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+    
+    stream.readSize(newCount);
+    report "new count:"+newCount;
   }
 }
 
 
 operator readMemberFromStream(
-  io FabricFileStream stream,
-  io Size prevDataIndex,
+  io FabricResource resource,
   io String dataNames[],
   io Size dataSeekOffsets[],
   io String dataName,
   io DATA_TYPE data<>
 ){
-  if(stream.isValid()) {
-    seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName);
+  FabricFileStream stream;
+  stream.open(resource.dataExternalLocation,"r");
+  Size prevDataIndex = -1;
+  if(stream.isValid() && seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
     stream.readData(data.data(),data.dataSize());
   }
 }
 
 
 operator readArrayFromStream(
-  io FabricFileStream stream,
-  io Size prevDataIndex,
-  in String dataNames[],
-  in Size dataSeekOffsets[],
-  in String dataName,
-  io DATA_TYPE data[]
+  io FabricResource resource,
+  io String dataNames[],
+  io Size dataSeekOffsets[],
+  io String dataName,
+  io DATA_TYPE data<>[]
 ){
-  if(stream.isValid()) {
-    seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName);
+  FabricFileStream stream;
+  stream.open(resource.dataExternalLocation,"r");
+  Size prevDataIndex = -1;
+  if(stream.isValid() && seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+    String storedMemberType;
+    stream.readString(storedMemberType);
+    if(storedMemberType != "DATA_TYPE"){
+      report "ERROR: Stored type : '"+storedMemberType+"' does not match current type:'DATA_TYPE'";
+    }
     Size size;
-    stream.readSize(size);
-    data.resize(size);
-    stream.readData(data.data(),data.dataSize());
+    for(Integer i=0; i<data.size(); i++){
+      stream.readSize(size);
+      data[i].resize(size);
+      stream.readData(data[i].data(),data[i].dataSize());
+    }
+    stream.close();
   }
 }

@@ -20,22 +20,32 @@ operator openFileStreamForWriting(
     seekOffsets.resize(dataNames.size());
     stream.writeStringArray(dataNames);
     seekOffsetsLocation = stream.getSeek();
+    // Write an array of 0 so that we have
+    // allocated the space for the TOC later
     for(Size i=0;i<dataNames.size();i++) {
-      // store the seek offsets of these
-      // size values, so that we can seek later
-    //  seekOffsets[i] = stream.getSeek();
       stream.writeSize(0);
     }
   }
 }
 
 operator openFileStreamForReading(
-  io String handle,
-  io FabricFileStream stream
+  io FabricResource resource,
+  io FabricFileStream stream,
+  io String dataNames[],
+  io Size seekOffsets[]
 ){
   report "openFileStream";
+  report "dataExternalLocation:"+resource.dataExternalLocation;
+  
   if(!stream.isValid()) {
-    stream.open(handle,"r");
+    stream.open(resource.dataExternalLocation,"r");
+    if(stream.isValid()) {
+      stream.readStringArray(dataNames);
+  report "dataNames:" + dataNames;
+      seekOffsets.resize(dataNames.size);
+      stream.readData(seekOffsets.data(),seekOffsets.dataSize());
+  report "seekOffsets:" + seekOffsets;
+    }
   }
 }
 
@@ -52,4 +62,25 @@ operator closeFileStream(
   stream.setSeek(seekOffsetsLocation);
   stream.writeData(seekOffsets.data(),seekOffsets.dataSize());
   stream.close();
+}
+
+
+
+operator readTOCFromStream(
+  io FabricResource resource,
+  io String dataNames[],
+  io Size seekOffsets[]
+){
+  report "readTOCFromStream";
+  FabricFileStream stream;
+  stream.open(resource.dataExternalLocation,"r");
+  if(stream.isValid()) {
+    stream.readStringArray(dataNames);
+    seekOffsets.resize(dataNames.size);
+    stream.readData(seekOffsets.data(),seekOffsets.dataSize());
+    stream.close();
+    
+    report dataNames;
+    report seekOffsets;
+  }
 }
