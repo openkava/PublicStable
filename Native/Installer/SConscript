@@ -141,11 +141,12 @@ Export('generateDistZip')
 Import( 'baseEnv', 'buildOS' )
 
 if 'dist' in COMMAND_LINE_TARGETS:
-  chromeInstaller = SConscript( 'Chrome/SConscript' )
-  firefoxInstaller = SConscript( 'Firefox/SConscript' )
-  nodeInstaller = SConscript( 'Node/SConscript' )
-  pythonInstaller = SConscript( 'Python/SConscript' )
-  installers = [chromeInstaller, firefoxInstaller, nodeInstaller, pythonInstaller]
+  installers = []
+  installers.append( SConscript( 'Chrome/SConscript' ) )
+  installers.append( SConscript( 'Firefox/SConscript' ) )
+  if buildOS != 'Windows':
+    installers.append( SConscript( 'Node/SConscript' ) )
+    installers.append( SConscript( 'Python/SConscript' ) )
   Alias( 'dist', installers )
   if 'upload' in COMMAND_LINE_TARGETS:
     if buildOS == 'Windows':
