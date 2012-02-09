@@ -725,7 +725,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         writeDGNodesEventHandler.setScope(dgnodeName, dgnode);
         var dataName = sgnodeName+'.'+dgnodeName;
         writeDGNodesEventHandler.addMember(dataName,'String', dataName);
-        
+        /*
         writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'writeSliceCountToStream',
           srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
@@ -742,7 +742,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
           ],
           async: false
         }));
-        
+        */
         dataNames.push(dataName);
         // now setup the operators to store the data
         for(var i=0;i<memberNames.length;i++) {
@@ -757,7 +757,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
           var dataName = sgnodeName+'.'+dgnodeName+'.'+memberName;
           writeDGNodesEventHandler.addMember(memberName+'_name','String', dataName);
           var operatorName = 'write' + (isArray ? 'Array' : 'Member') + 'ToStream';
-          
+          /*
           if(isArray){
           writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: operatorName + memberType,
@@ -776,6 +776,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
             async: false
           }));
           }
+          */
           dataNames.push(dataName);
         }
       }

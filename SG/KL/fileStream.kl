@@ -20,6 +20,7 @@ operator openFileStreamForWriting(
     seekOffsets.resize(dataNames.size());
     stream.writeStringArray(dataNames);
     seekOffsetsLocation = stream.getSeek();
+    
     // Write an array of 0 so that we have
     // allocated the space for the TOC later
     for(Size i=0;i<dataNames.size();i++) {
@@ -65,9 +66,13 @@ operator closeFileStream(
   // Now we write the TOC. Each integer specifies the seek offset
   // of the data for the indexed data member. 
   stream.setSeek(seekOffsetsLocation);
-  stream.writeData(seekOffsets.data(),seekOffsets.dataSize());
-  stream.close();
   
+  // Write an array of 0 so that we have
+  // allocated the space for the TOC later
+  for(Size i=0;i<seekOffsets.size();i++) {
+    stream.writeSize(seekOffsets[i]);
+  }
+  stream.close();
   
   FabricFileStream stream2;
   stream2.open(handle,"r");
@@ -76,12 +81,14 @@ operator closeFileStream(
     Size seekOffsets2[];
     report "Stream Size:"+stream2.getSize();
     stream2.readStringArray(dataNames2);
+    /*
     seekOffsets2.resize(dataNames2.size);
     Size offset;
     for(Size i=0;i<dataNames2.size();i++) {
       stream2.readSize(offset);
       seekOffsets2[i] = offset;
     }
+    */
     stream2.close();
     
     report dataNames2;
