@@ -327,7 +327,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                 // in case a name collision occured, store a name remapping table.
                 nodeNameRemapping[ nodeData.name ] = node.getName();
                 var nodePrivate = scene.getPrivateInterface(node);
-                nodePrivate.readData(sceneDeserializer, nodeData);
+                nodePrivate.readData(sceneDeserializer, nodeData.data);
                 constructedNodeMap[node.getName()] = node;
                 remainingNodes--;
                 if(remainingNodes == 0){
@@ -501,8 +501,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
         ],
         entryFunctionName: 'readTOCFromStream',
         srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
-        async: false,
-        mainThreadOnly: true
+        async: false
       }));
       resourceloaddgnode.evaluate();
       var dataNames = resourceloaddgnode.getData('dataNames',0);
@@ -564,9 +563,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
             DATA_TYPE: 'Vec3'
           },
           entryFunctionName: 'readSliceCountFromStream',
-          srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
-          async: false,
-          mainThreadOnly: true
+          srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl'
         }));
         
         // check if the member exists
@@ -589,7 +586,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
           var dataName = sgnodeName+'.'+dgnodeName+'.'+memberName;
           binaryLoadMetadataDGNode.addMember(memberName+'_name','String', dataName);
           var operatorName = 'read' + (isArray ? 'Array' : 'Member') + 'FromStream';
-          /*
+          
           dgnode.bindings.append(scene.constructOperator({
             operatorName: operatorName + memberType,
             srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
@@ -603,10 +600,8 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
               'resourceNode.seekOffsets',
               'metaData.'+memberName+'_name',
               'self.'+memberName+'<>'
-            ],
-            async: false
+            ]
           }));
-          */
         }
       }
     };
@@ -665,8 +660,6 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     writeEventHandler.setScopeName('fileStream');
     
     // attach an operator to clear the container!
-    var nbOps = 0;
-    var opSrc = {};
     writeEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'openFileStreamForWriting',
       parameterLayout: [
@@ -678,10 +671,8 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
       ],
       entryFunctionName: 'openFileStreamForWriting',
       srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
-      async: false,
-      mainThreadOnly: true
+      async: false
     }));
-    nbOps++;
     
     writeEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'closeFileStream',
@@ -693,10 +684,8 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
       ],
       entryFunctionName: 'closeFileStream',
       srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
-      async: false,
-      mainThreadOnly: true
+      async: false
     }));
-    nbOps++;
     
     writeBinaryDataNodeEvent.appendEventHandler(writeEventHandler);
     eventHandlers['writeEventHandler'] = writeEventHandler;
@@ -725,7 +714,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         writeDGNodesEventHandler.setScope(dgnodeName, dgnode);
         var dataName = sgnodeName+'.'+dgnodeName;
         writeDGNodesEventHandler.addMember(dataName,'String', dataName);
-        /*
+        
         writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'writeSliceCountToStream',
           srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
@@ -742,7 +731,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
           ],
           async: false
         }));
-        */
+          
         dataNames.push(dataName);
         // now setup the operators to store the data
         for(var i=0;i<memberNames.length;i++) {
@@ -756,16 +745,16 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
           
           var dataName = sgnodeName+'.'+dgnodeName+'.'+memberName;
           writeDGNodesEventHandler.addMember(memberName+'_name','String', dataName);
-          var operatorName = 'write' + (isArray ? 'Array' : 'Member') + 'ToStream';
-          /*
-          if(isArray){
+          var operatorName = 'write'+ memberType + (isArray ? 'Array' : 'Member') + 'ToStream';
+          var entryFunctionName = 'write' + (isArray ? 'Array' : 'Member') + 'ToStream';
+          
           writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
-            operatorName: operatorName + memberType,
+            operatorName: operatorName,
             srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
             preProcessorDefinitions: {
               DATA_TYPE: memberType
             },
-            entryFunctionName: operatorName,
+            entryFunctionName: entryFunctionName,
             parameterLayout: [
               'fileStream.stream',
               'fileStream.dataNames',
@@ -775,8 +764,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
             ],
             async: false
           }));
-          }
-          */
+          
           dataNames.push(dataName);
         }
       }
