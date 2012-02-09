@@ -37,7 +37,7 @@ def createClient():
 
 # used in unit tests
 def stringify( obj ):
-  return json.dumps( _typeToDict( obj ) )
+  return json.dumps( _normalizeForUnitTests( _typeToDict( obj ) ) )
 
 # global for tracking GC ids for core objects
 _gcId = 0
@@ -45,6 +45,28 @@ def _getNextGCId():
   global _gcId
   _gcId = _gcId + 1
   return _gcId
+
+# for unit tests only, make floats use same precision across different
+# versions of python which have different repr() implementations and
+# change dicts to sorted lists so ordering doesn't change
+def _normalizeForUnitTests( obj ):
+  if type( obj ) is list:
+    objlist = []
+    for elem in obj:
+      objlist.append( _normalizeForUnitTests( elem ) )
+    return objlist
+  elif type( obj ) is dict:
+    objdictlist = []
+    for member in obj:
+      elemobj = {}
+      elemobj[ member ] = _normalizeForUnitTests( obj[ member ] )
+      objdictlist.append( elemobj )
+    objdictlist.sort()
+    return objdictlist
+  elif type( obj ) is float:
+    return format( obj, '.4f' )
+  else:
+    return obj
 
 # take a python class and convert its members down to a hierarchy of
 # dictionaries, ignoring methods
