@@ -274,7 +274,10 @@ FABRIC.SceneGraph = {
       return managerNode;
     };
     scene.getManager = function( type ){
-      return managers[type].pub;
+      if(managers[type]){
+        return managers[type].pub;
+      }
+      return undefined;
     }
     
     scene.constructNode = function(type, options) {

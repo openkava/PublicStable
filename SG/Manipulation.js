@@ -531,6 +531,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       viewportNode.redraw();
     }
     manipulatorNode.pub.addEventListener('mousedown_geom', function(evt) {
+      console.log('mousedown_geom');
       scene.pub.fireEvent('beginmanipulation', {
         manipulatorNode: manipulatorNode.pub
       });

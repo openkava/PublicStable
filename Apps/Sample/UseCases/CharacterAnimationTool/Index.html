@@ -48,7 +48,8 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Characters",
                 "SG/CharacterLocomotion",
                 "SG/Bullet",
-                "SG/Persistence",,
+                "SG/Persistence",
+                "SG/Undo",
                 "SG/Parsers/parseCollada",
                 "RT/LinearKeyframe",
                 "RT/BezierKeyframe"], function() {
@@ -101,6 +102,8 @@ $(document).ready(function() {
   });
 
   
+  // create the undo manager
+  undoManager = scene.constructManager("UndoManager");
   var layerManager = scene.constructNode('LayerManager');
   
   layerManager.addLayer('geometries');
