@@ -65,7 +65,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
         }
         if(!isNodeBeingSaved(node) && !isNodeExcluded(node)){
           var constructionOptions = {};
-          var nodeData = {};
+          var nodeData = { };
           var nodePrivate = scene.getPrivateInterface(node);
           nodePrivate.addDependencies(sceneSerializer);
           savedNodes.push(node);
@@ -306,15 +306,14 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
             dataObj = data;
             if(dataObj.metadata.binaryStorage){
               
-              var binaryFilePath = dataObj.metadata.binaryFilePath;
+              var binaryFilePath;
               if(storage.getUrl){
                 var pathArray = storage.getUrl().split('/');
                 pathArray.pop();
-                binaryFilePath = pathArray.join('/') + '/' + binaryFilePath;
+                binaryFilePath = pathArray.join('/') + '/' + dataObj.metadata.binaryFilePath;
               }
               loadNodeBinaryFileNode = scene.constructNode('LoadBinaryDataNode', {
-                url: binaryFilePath,
-                secureKey: 'secureKey'
+                url: binaryFilePath
               });
             }
             var remainingNodes = dataObj.sceneGraphNodes.length;
@@ -334,8 +333,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                 if(remainingNodes == 0){
                   if(loadNodeBinaryFileNode){
                     loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
-                      loadNodeBinaryFileNode.disposeData();
-                      return 'remove';//Avoid stacking up...
+                    //  loadNodeBinaryFileNode.disposeData();
+                    //  return 'remove';//Avoid stacking up...
                     });
                   }
                   if(callback)
@@ -405,9 +404,9 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
 
 FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName, options) {
   
-  var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
-  var jsonFilename = path.fileName.split('.')[0];
-  var binarydatapath = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, "Secure ", "fez", jsonFilename);
+  var jsonfilehandle = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
+  var jsonfilename = FABRIC.IO.getFileHandleInfo( jsonfilehandle.file ).fileName;
+  var binarydatafilehandle = FABRIC.IO.buildFileHandleFromRelativePath(jsonfilehandle.folder+'/'+jsonfilename.split('.')[0]+'.bin');
   
   var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', options);
       
@@ -417,22 +416,21 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
   }
   
   this.getBinaryFileName = function(){
-    return binarydatapath.fileName;
+    return FABRIC.IO.getFileHandleInfo( binarydatafilehandle ).fileName;
   }
   
   this.write = function(instr) {
     str = instr;
-    FABRIC.IO.putTextFile(str, path);
-    FABRIC.flush();
-    writeBinaryDataNode.write('resource', binarydatapath);
+    FABRIC.IO.putTextFileContent(jsonfilehandle.file, str);
+    writeBinaryDataNode.write(binarydatafilehandle);
   }
   this.writeJSON = function(instr) {
     str = instr;
-    FABRIC.IO.putTextFile(str, path);
+    FABRIC.IO.putTextFileContent(path.file, str);
   }
   
   this.writeBinary = function() {
-    writeBinaryDataNode.write('resource', binarydatapath);
+    writeBinaryDataNode.write(binarydatapath.file, str);
   }
   
   this.log = function(instr) {
@@ -471,13 +469,6 @@ FABRIC.SceneGraph.XHRReader = function(url) {
 };
 
 
-/*
-FABRIC.SceneGraph.registerParser('fez', function(scene, assetUrl, options) {
-  options.url = assetUrl;
-  return scene.constructNode('LoadBinaryDataNode', options);
-});
-*/
-
 
 FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
   briefDesc: 'The SecureStorageNode node is a ResourceLoad node able to load or save Fabric Engine Secure files.',
@@ -488,84 +479,65 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      secureKey: undefined,
-      version: 1
     });
 
+    options.storeDataAsFile = true;
     var loadBinaryDataNode = scene.constructNode('ResourceLoad', options),
       resourceloaddgnode = loadBinaryDataNode.getDGLoadNode();
     
-    loadBinaryDataNode.pub.getResourceFromFile = resourceloaddgnode.getResourceFromFile;
-
-    resourceloaddgnode.addMember('container', 'SecureContainer');
-    resourceloaddgnode.addMember('elements', 'SecureElement[]');
-    resourceloaddgnode.addMember('secureKey', 'String', options.secureKey);
-    
-    
-    
-    resourceloaddgnode.bindings.append(scene.constructOperator({
-      operatorName: 'secureContainerLoad',
-      parameterLayout: [
-        'self.url',
-        'self.resource',
-        'self.secureKey',
-        'self.container',
-        'self.elements'
-      ],
-      entryFunctionName: 'secureContainerLoad',
-      srcFile: 'FABRIC_ROOT/SG/KL/loadSecure.kl',
-      async: false,
-      mainThreadOnly: true
-    }));
+    resourceloaddgnode.addMember('stream','FabricFileStream');
+    resourceloaddgnode.addMember('dataNames','String[]');
+    resourceloaddgnode.addMember('seekOffsets','Size[]');
     
     var dataTOC = {};
     loadBinaryDataNode.pub.addEventListener('loadSuccess', function(pub) {
       // define the new nodes based on the identifiers in the file
+      resourceloaddgnode.bindings.append(scene.constructOperator({
+        operatorName: 'readTOCFromStream',
+        parameterLayout: [
+          "self.resource",
+          "self.dataNames",
+          "self.seekOffsets"
+        ],
+        entryFunctionName: 'readTOCFromStream',
+        srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
+        async: false
+      }));
       resourceloaddgnode.evaluate();
-      var elements = resourceloaddgnode.getData('elements',0);
+      var dataNames = resourceloaddgnode.getData('dataNames',0);
+      var seekOffsets = resourceloaddgnode.getData('seekOffsets',0);
       
       // first, parse for slicecounts
-      for(var i=0;i<elements.length;i++) {
-        var tokens = elements[i].name.split('.');
+      for(var i=0;i<dataNames.length;i++) {
+        var tokens = dataNames[i].split('.');
         var sgnodeName = tokens[0];
         var dgnodeName = tokens[1];
-        var memberName = tokens[2];
         
         if(!dataTOC[sgnodeName]){
           dataTOC[sgnodeName] = {};
         }
         if(!dataTOC[sgnodeName][dgnodeName]){
           dataTOC[sgnodeName][dgnodeName] = {};
-          dataTOC[sgnodeName][dgnodeName].sliceCount = elements[i].slicecount;
-          dataTOC[sgnodeName][dgnodeName].sliceCountElementIndex = i;
         }
-        if(!dataTOC[sgnodeName][dgnodeName][memberName]){
-          dataTOC[sgnodeName][dgnodeName][memberName] = elements[i];
+        if(tokens.length == 3){
+          var memberName = tokens[2];
+          if(!dataTOC[sgnodeName][dgnodeName][memberName]){
+            dataTOC[sgnodeName][dgnodeName][memberName] = { index:i, seekOffset: seekOffsets[i] };
+          }
         }
-        if(dataTOC[sgnodeName][dgnodeName][memberName].first == undefined){
-          dataTOC[sgnodeName][dgnodeName][memberName].first = i;
-        }
-        dataTOC[sgnodeName][dgnodeName][memberName].last = i;
       }
-      return 'remove';//Avoid stacking up...
     });
     
-    var loadedNodes = {};
-    var opSrc = {};
     loadBinaryDataNode.pub.loadDGNodes = function(sgnodeName, dgnodes) {
       
       var sgnodeDataTOC = dataTOC[sgnodeName];
       if(!sgnodeDataTOC){
         console.warn("No data stored for " + sgnodeName);
-      }
-      
-      if(loadedNodes[sgnodeName]){
-        console.log("Node already persisted");
         return;
       }
-      loadedNodes[sgnodeName] = dgnodes;
       
       var binaryLoadMetadataDGNode = loadBinaryDataNode.constructDGNode(sgnodeName+'MetaDataDGNode');
+      binaryLoadMetadataDGNode.addMember('prevDataIndex','Integer');
       
       for(var dgnodeName in dgnodes) {
         
@@ -573,158 +545,67 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
         var dgnodeDataToc = sgnodeDataTOC[dgnodeName];
         
         dgnode.setDependency(binaryLoadMetadataDGNode,'metaData');
-        dgnode.setDependency(resourceloaddgnode,'secureStorage');
+        dgnode.setDependency(resourceloaddgnode,'resourceNode');
         
-        var appendedOps = 0;
-        // check if we need to resize this node
-        if(dgnodeDataToc.sliceCount > 1) {
-          
-          binaryLoadMetadataDGNode.addMember(dgnodeName+'sliceCountElementIndex','Integer',dgnodeDataToc.sliceCountElementIndex);
-          dgnode.bindings.append(scene.constructOperator({
-            operatorName: 'secureContainerResize',
-            parameterLayout: [
-              'self.newCount',
-              'metaData.'+dgnodeName+'sliceCountElementIndex',
-              'secureStorage.elements'
-            ],
-            entryFunctionName: 'secureContainerResize',
-            srcFile: 'FABRIC_ROOT/SG/KL/loadSecure.kl',
-            async: false,
-            mainThreadOnly: true
-          }));
-          appendedOps++;
-        }
+        var dataName = sgnodeName+'.'+dgnodeName;
+        binaryLoadMetadataDGNode.addMember(dgnodeName+'sliceCount','String',dataName);
+        
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'readSliceCountFromStream',
+          parameterLayout: [
+            'resourceNode.resource',
+            'resourceNode.dataNames',
+            'resourceNode.seekOffsets',
+            'metaData.'+dgnodeName+'sliceCount',
+            'self.newCount'
+          ],
+          preProcessorDefinitions: {
+            DATA_TYPE: 'Vec3'
+          },
+          entryFunctionName: 'readSliceCountFromStream',
+          srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl'
+        }));
         
         // check if the member exists
         var dgnodeMembers = dgnode.getMembers();
         
-        for(var membername in dgnodeDataToc) {
-          if(membername== 'sliceCount' || membername== 'sliceCountElementIndex'){
+        for(var memberName in dgnodeDataToc) {
+          if(!dgnodeMembers[memberName]){
+            console.warn("SecureStorage: missing member '"+memberName+"'.")
             continue;
           }
-          if(!dgnodeMembers[membername]){
-            console.warn("SecureStorage: missing member '"+membername+"'.")
-            continue;
-          }
-          var memberDataDesc = dgnodeDataToc[membername];
+          var memberDataDesc = dgnodeDataToc[memberName];
           // check if the member has the right type
-          var originalType = dgnodeMembers[membername].type;
-          var type = memberDataDesc.type;
-          var isArray = type.indexOf('[]') > -1;
-          var isString = type.indexOf('String') > -1;
-          var storedType = originalType.replace('Size','Integer');
-          if(storedType != type) {
-            console.warn('SecureStorage: Member '+membername+' has wrong type: '+originalType);
-            continue;
-          }
-          
-          binaryLoadMetadataDGNode.addMember(dgnodeName+membername+'_first','Integer',memberDataDesc.first);
-          binaryLoadMetadataDGNode.addMember(dgnodeName+membername+'_last','Integer',memberDataDesc.last);
-          
-          // create the operator to load it
-          var operatorName = 'restoreSecureElement'+originalType.replace('[]','');
+          var memberType = dgnodeMembers[memberName].type;
+          var isArray = memberType.indexOf('[]') > -1;
           if(isArray){
-            operatorName += 'Array';
+            memberType = memberType.slice(0, memberType.length-2);
           }
-          if(!opSrc[operatorName]){
-            var srcCode = 'use FabricSECURE;\noperator '+operatorName+'(';
-            srcCode += '  io SecureContainer container,\n';
-            srcCode += '  io SecureElement elements[],\n';
-            srcCode += '  io Integer first,\n';
-            srcCode += '  io Integer last,\n';
-            srcCode += '  io '+originalType.replace('[]','')+' member<>'+(isArray ? '[]' : '')+'\n';
-            srcCode += ') {\n';
-            if(isArray || memberDataDesc.first != memberDataDesc.last) {
-              srcCode += '  Integer outIndex = 0;\n';
-              srcCode += '  for(Integer i=first;i<=last;i++) {\n';
-              if(storedType != originalType) {
-                srcCode += '    '+storedType.replace('[]','')+' memberArray[];\n';
-                srcCode += '    memberArray.resize(elements[i].datacount);\n';
-                srcCode += '    member[outIndex].resize(elements[i].datacount);\n';
-                srcCode += '    container.getElementData(i,memberArray.data(),memberArray.dataSize());\n'
-                srcCode += '    for(Size j=0;j<elements[i].datacount;j++) {\n';
-                srcCode += '      member[i][j] = '+originalType.replace('[]','')+'(memberArray[j]);\n';
-                srcCode += '    }\n';
-              } else {
-                srcCode += '    member[outIndex].resize(elements[i].datacount);\n';
-                srcCode += '    container.getElementData(i,member[outIndex].data(),member[outIndex].dataSize());\n'
-              }
-              srcCode += '    outIndex++;\n'
-              srcCode += '  }\n'
-            }
-            else if(isString) {
-              srcCode += '  Integer outIndex = 0;\n';
-              srcCode += '  for(Integer i=first;i<=last;i++) {\n';
-              srcCode += '    Size length = Size(elements[i].datacount);\n';
-              srcCode += '    member[outIndex] = "";\n';
-              srcCode += '    while(length > 0) {\n';
-              srcCode += '      if(length > 9) {\n';
-              srcCode += '        member[outIndex] += "0000000000";\n';
-              srcCode += '        length -= 10;\n';
-              srcCode += '      } else {\n';
-              srcCode += '        member[outIndex] += "0";\n';
-              srcCode += '        length -= 1;\n';
-              srcCode += '      }\n';
-              srcCode += '    }\n';
-              srcCode += '    container.getElementData(i,member[outIndex].data(),member[outIndex].length());\n'
-              srcCode += '    outIndex++;\n'
-              srcCode += '  }\n'
-            }
-            else {
-              if(storedType != originalType) {
-                srcCode += '  '+storedType.replace('[]','')+' memberArray[];\n';
-                srcCode += '  memberArray.resize(member.size());\n';
-                srcCode += '  container.getElementData(first,memberArray.data(),memberArray.dataSize());\n'
-                srcCode += '  for(Size i=0;i<member.size();i++) {\n';
-                srcCode += '    member[i] = '+originalType.replace('[]','')+'(memberArray[i]);\n';
-                srcCode += '  }\n';
-              } else {
-                srcCode += '  container.getElementData(first,member.data(),member.dataSize());\n'
-              }
-            }
-            srcCode += '}\n';
-            opSrc[operatorName] = srcCode;
-          }
+          var isString = memberType.indexOf('String') > -1;
+          
+          var dataName = sgnodeName+'.'+dgnodeName+'.'+memberName;
+          binaryLoadMetadataDGNode.addMember(memberName+'_name','String', dataName);
+          var operatorName = 'read' + (isArray ? 'Array' : 'Member') + 'FromStream';
+          
           dgnode.bindings.append(scene.constructOperator({
-              operatorName: operatorName,
-              srcCode: opSrc[operatorName],
-              entryFunctionName: operatorName,
-              parameterLayout: [
-                'secureStorage.container',
-                'secureStorage.elements',
-                'metaData.'+dgnodeName+membername+'_first',
-                'metaData.'+dgnodeName+membername+'_last',
-                'self.'+membername+'<>'
-              ],
-              async: false,
-              mainThreadOnly: true
-            }));
-          appendedOps++;
+            operatorName: operatorName + memberType,
+            srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
+            preProcessorDefinitions: {
+              DATA_TYPE: memberType
+            },
+            entryFunctionName: operatorName,
+            parameterLayout: [
+              'resourceNode.resource',
+              'resourceNode.dataNames',
+              'resourceNode.seekOffsets',
+              'metaData.'+memberName+'_name',
+              'self.'+memberName+'<>'
+            ]
+          }));
         }
-        loadedNodes[sgnodeName][dgnodeName].appendedOps = appendedOps;
       }
     };
     
-    loadBinaryDataNode.disposeData = function(){
-      /*
-      for(var sgnodename in loadedNodes){
-        for(var dgnodename in loadedNodes[sgnodename]){
-          var dgnodeData = loadedNodes[sgnodename][dgnodename];
-          var dgnode = dgnodeData.dgnode;
-          dgnode.evaluate();
-          var numOps = dgnode.bindings.getLength();
-          for(var i=numOps-1; i>=numOps-dgnodeData.appendedOps; i--){
-            dgnode.bindings.remove(i);
-          }
-        }
-      }
-      
-      // this frees up the memory used by the resource.
-      resourceloaddgnode.removeMember('resource');
-      resourceloaddgnode.removeMember('container');
-      resourceloaddgnode.removeMember('elements');
-      */
-    }
     return loadBinaryDataNode;
   }
 });
@@ -738,8 +619,6 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      compressionLevel: 1, // 0 - 9
-      secureKey: undefined
     });
       
     var writeBinaryDataNode = scene.constructNode('SceneGraphNode', options);
@@ -748,8 +627,9 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     var binarydatadgnode = writeBinaryDataNode.constructResourceLoadNode('DGLoadNode');
     var persistedNodes = {};
     var eventHandlers = {};
+    var dataNames = [];
     
-    writeBinaryDataNode.pub.write = function(resource, path){
+    writeBinaryDataNode.pub.write = function(handle){
       var dgErrors = writeBinaryDataNodeEvent.getErrors();
       if(dgErrors.length > 0){
         throw dgErrors;
@@ -763,47 +643,49 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         }
       }
       
+      writeEventHandler.setData('handle', 0, handle);
+      writeEventHandler.setData('dataNames', 0, dataNames);
+      // when this event fires, it writes the data to the file on disk.
       writeBinaryDataNodeEvent.fire();
-      binarydatadgnode.putResourceToFile(path,resource);
     }
-    
-    binarydatadgnode.addMember('container', 'SecureContainer');
-    binarydatadgnode.addMember('elements', 'SecureElement[]');
-    binarydatadgnode.addMember('secureKey', 'String', options.secureKey);
-    binarydatadgnode.addMember('compressionLevel', 'Integer', options.compressionLevel);
-
     var writeEventHandler = writeBinaryDataNode.constructEventHandlerNode('Propagation');
-    writeEventHandler.setScope('container', binarydatadgnode);
+    
+    writeEventHandler.addMember('handle','String');
+    writeEventHandler.addMember('stream','FabricFileStream');
+    writeEventHandler.addMember('dataNames','String[]');
+    writeEventHandler.addMember('seekOffsetsLocation','Size');
+    writeEventHandler.addMember('seekOffsets','Size[]');
+    
+
+    writeEventHandler.setScopeName('fileStream');
+    
     // attach an operator to clear the container!
-    var nbOps = 0;
-    var opSrc = {};
     writeEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'secureContainerClear',
+      operatorName: 'openFileStreamForWriting',
       parameterLayout: [
-        'container.container',
-        'container.elements'
+        "self.handle",
+        "self.stream",
+        "self.dataNames",
+        "self.seekOffsetsLocation",
+        "self.seekOffsets"
       ],
-      entryFunctionName: 'secureContainerClear',
-      srcFile: 'FABRIC_ROOT/SG/KL/loadSecure.kl',
-      async: false,
-      mainThreadOnly: true
+      entryFunctionName: 'openFileStreamForWriting',
+      srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
+      async: false
     }));
-    nbOps++;
     
     writeEventHandler.postDescendBindings.append(scene.constructOperator({
-      operatorName: 'secureContainerSave',
+      operatorName: 'closeFileStream',
       parameterLayout: [
-        'container.container',
-        'container.resource',
-        'container.compressionLevel',
-        'container.secureKey'
+        "self.handle",
+        "self.stream",
+        "self.seekOffsetsLocation",
+        "self.seekOffsets"
       ],
-      entryFunctionName: 'secureContainerSave',
-      srcFile: 'FABRIC_ROOT/SG/KL/loadSecure.kl',
-      async: false,
-      mainThreadOnly: true
+      entryFunctionName: 'closeFileStream',
+      srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
+      async: false
     }));
-    nbOps++;
     
     writeBinaryDataNodeEvent.appendEventHandler(writeEventHandler);
     eventHandlers['writeEventHandler'] = writeEventHandler;
@@ -830,97 +712,60 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         }
         
         writeDGNodesEventHandler.setScope(dgnodeName, dgnode);
+        var dataName = sgnodeName+'.'+dgnodeName;
+        writeDGNodesEventHandler.addMember(dataName,'String', dataName);
         
+        writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'writeSliceCountToStream',
+          srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
+          preProcessorDefinitions: {
+            DATA_TYPE: 'Size'
+          },
+          entryFunctionName: 'writeSliceCountToStream',
+          parameterLayout: [
+            'fileStream.stream',
+            'fileStream.dataNames',
+            'fileStream.seekOffsets',
+            'self.'+dataName,
+            dgnodeName+'.count'
+          ],
+          async: false
+        }));
+          
+        dataNames.push(dataName);
         // now setup the operators to store the data
         for(var i=0;i<memberNames.length;i++) {
           var memberName = memberNames[i];
           var memberType = members[memberName].type;
-          
           var isArray = memberType.indexOf('[]') > -1;
+          if(isArray){
+            memberType = memberType.slice(0, memberType.length-2);
+          }
           var isString = memberType.indexOf('String') > -1;
-          if(isArray && isString){
-            console.log("SecureStorage: Warning: Skipping member '"+memberName+"'. String Array members are not supported at this stage.");
-            continue;
-          }
           
-          var operatorName = 'storeSecureElement'+memberType.replace('[]','');
-          if(isArray)
-            operatorName += 'Array';
+          var dataName = sgnodeName+'.'+dgnodeName+'.'+memberName;
+          writeDGNodesEventHandler.addMember(memberName+'_name','String', dataName);
+          var operatorName = 'write'+ memberType + (isArray ? 'Array' : 'Member') + 'ToStream';
+          var entryFunctionName = 'write' + (isArray ? 'Array' : 'Member') + 'ToStream';
           
-          // We currenlty store 'Size' values as 'Integer' values to be platform neutral.
-          var storedType = memberType.replace('Size','Integer');
-  
-          writeDGNodesEventHandler.addMember(memberName+'_name','String', sgnodeName+'.'+dgnodeName+'.'+memberName);
-          writeDGNodesEventHandler.addMember(memberName+'_type','String',storedType);
-          writeDGNodesEventHandler.addMember(memberName+'_version','Integer',options.version);
-          
-          if(!opSrc[operatorName]){
-            var srcCode = 'use FabricSECURE;\noperator '+operatorName+'(\n';
-            srcCode += '  io SecureContainer container,\n';
-            srcCode += '  io SecureElement elements[],\n';
-            srcCode += '  io String memberName,\n';
-            srcCode += '  io String memberType,\n';
-            srcCode += '  io Integer memberVersion,\n';
-            srcCode += '  io '+memberType.replace('[]','')+' member<>'+(isArray ? '[]' : '')+'\n';
-            srcCode += ') {\n';
-            srcCode += '  SecureElement element;\n';
-            srcCode += '  element.name = memberName;\n';
-            srcCode += '  element.type = memberType;\n';
-            srcCode += '  element.version = memberVersion;\n';
-            srcCode += '  element.slicecount = member.size();\n';
-            if(isArray) {
-              srcCode += '  for(Size i=0;i<member.size();i++){\n';
-              srcCode += '    element.sliceindex = Integer(i);\n';
-              srcCode += '    element.datacount = member[i].size();\n';
-              if(storedType != memberType) {
-                srcCode += '    '+storedType.replace('[]','')+' memberArray[];\n';
-                srcCode += '    memberArray.resize(member[i].size());\n';
-                srcCode += '    for(Size j=0;j<member[i].size();j++) {\n';
-                srcCode += '      memberArray[j] = '+storedType.replace('[]','')+'(member[i][j]);\n';
-                srcCode += '    }\n';
-                srcCode += '    container.addElement(element,memberArray.data(),memberArray.dataSize());\n'
-              } else {
-                srcCode += '    container.addElement(element,member[i].data(),member[i].dataSize());\n'
-              }
-              srcCode += '  }\n'
-            } else if(isString) {
-              srcCode += '  for(Size i=0;i<member.size();i++){\n';
-              srcCode += '    element.sliceindex = Integer(i);\n';
-              srcCode += '    element.datacount = member[i].length();\n';
-              srcCode += '    container.addElement(element,member[i].data(),member[i].length());\n'
-              srcCode += '  }\n'
-            } else {
-              srcCode += '  element.sliceindex = -1;\n';
-              srcCode += '  element.datacount = member.size();\n';
-              if(storedType != memberType) {
-                srcCode += '  '+storedType.replace('[]','')+' memberArray[];\n';
-                srcCode += '  memberArray.resize(member.size());\n';
-                srcCode += '  for(Size i=0;i<member.size();i++) {\n';
-                srcCode += '    memberArray[i] = '+storedType.replace('[]','')+'(member[i]);\n';
-                srcCode += '  }\n';
-                srcCode += '  container.addElement(element,memberArray.data(),memberArray.dataSize());\n'
-              } else {
-                srcCode += '  container.addElement(element,member.data(),member.dataSize());\n'
-              }
-            }
-            srcCode += '  elements.push(element);\n';
-            srcCode += '}\n';
-            opSrc[operatorName] = srcCode;
-          }
           writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: operatorName,
-            srcCode: opSrc[operatorName],
-            entryFunctionName: operatorName,
+            srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
+            preProcessorDefinitions: {
+              DATA_TYPE: memberType
+            },
+            entryFunctionName: entryFunctionName,
             parameterLayout: [
-              'container.container',
-              'container.elements',
+              'fileStream.stream',
+              'fileStream.dataNames',
+              'fileStream.seekOffsets',
               'self.'+memberName+'_name',
-              'self.'+memberName+'_type',
-              'self.'+memberName+'_version',
               dgnodeName+'.'+memberName+'<>'
             ],
             async: false
           }));
+          
+          dataNames.push(dataName);
         }
       }
     };
