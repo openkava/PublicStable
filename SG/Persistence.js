@@ -686,6 +686,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     writeEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'closeFileStream',
       parameterLayout: [
+        "self.handle",
         "self.stream",
         "self.seekOffsetsLocation",
         "self.seekOffsets"

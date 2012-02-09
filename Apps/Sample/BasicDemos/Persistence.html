@@ -64,10 +64,8 @@ $(document).ready(function() {
   var modelName = 'cow';
   
   var instances = [];
-  
-  
   scene.importAssetFile('Models/' + modelName + '.obj', {
-      splitMaterials: false
+      splitMaterials: true
     },
     function(assetNodes){
       for(var name in assetNodes){
