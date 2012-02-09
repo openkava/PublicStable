@@ -12,6 +12,7 @@
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/RT/ContainerDesc.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
@@ -123,11 +124,13 @@ namespace Fabric
       : NamedObject( name, context )
       , m_context( context.ptr() )
       , m_count( 1 )
+      , m_rtContainerData( 0 )
     {
     }
     
     Container::~Container()
     {
+      free( m_rtContainerData );
     }
     
     Container::MemberDescs Container::getMemberDescs() const
@@ -189,6 +192,19 @@ namespace Fabric
       if ( it == m_members.end() )
         throw Exception( _(name) + ": no such member" );
       it->second->getArrayDescAndData( slicedArrayDesc, slicedArrayData );
+    }
+
+    void *Container::getRTContainerData()
+    {
+      if( !m_rtContainerData )
+      {
+        RC::ConstHandle<RT::ContainerDesc> desc = m_context->getRTManager()->getContainerDesc();
+      
+        m_rtContainerData = malloc( desc->getAllocSize() );
+        memset( m_rtContainerData, 0, desc->getAllocSize() );
+        desc->setValue( this, m_rtContainerData );
+      }
+      return m_rtContainerData;
     }
 
     size_t Container::getCount() const

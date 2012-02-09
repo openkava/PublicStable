@@ -72,7 +72,8 @@ namespace Fabric
         RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
         void *&slicedArrayData
         );
-    
+
+      void *getRTContainerData();
       size_t getCount() const;
       void setCount( size_t count );
 
@@ -143,6 +144,7 @@ namespace Fabric
 
       size_t m_count;
       Members m_members;
+      void* m_rtContainerData;
     };
   };
 };
