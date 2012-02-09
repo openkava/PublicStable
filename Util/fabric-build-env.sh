@@ -74,25 +74,18 @@ EOF
     echo "Creating directory $FABRIC_LIBRARY_DST_DIR"
     mkdir -p "$FABRIC_LIBRARY_DST_DIR"
 
-	  if [ "$FABRIC_BUILD_OS" = "Darwin" ]; then
-      FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Fabric/Exts"
-	  elif [ "$FABRIC_BUILD_OS" = "Windows" ]; then
-      FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/FabricEngine/Exts"
-		else
-      FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/Exts"
-		fi
-
+    FABRIC_EXTS_SRC="$FABRIC_DIST_PATH/Exts"
     FABRIC_EXTS_DST="$FABRIC_LIBRARY_DST_DIR/Exts"
     echo "Setting up $FABRIC_EXTS_DST -> $FABRIC_EXTS_SRC"
     ln -snf "$FABRIC_EXTS_SRC" "$FABRIC_EXTS_DST"
 
     if [ "$FABRIC_BUILD_OS" != "Windows" ]; then
-			FABRIC_NODE_MODULE_SRC="$FABRIC_DIST_PATH/FabricEngine/node_modules/Fabric"
+			FABRIC_NODE_MODULE_SRC="$FABRIC_DIST_PATH/NodeModule"
 			FABRIC_NODE_MODULE_DST="$HOME/node_modules/Fabric"
 			echo "Linking $FABRIC_NODE_MODULE_DST -> $FABRIC_NODE_MODULE_SRC"
 			ln -snf "$FABRIC_NODE_MODULE_SRC" "$FABRIC_NODE_MODULE_DST"
 
-      FABRIC_PYTHON_MODULE_SRC="$FABRIC_DIST_PATH/FabricEngine/python_modules/fabric"
+      FABRIC_PYTHON_MODULE_SRC="$FABRIC_DIST_PATH/PythonModule"
       FABRIC_PYTHON_MODULE_DIR="$HOME/python_modules"
       FABRIC_PYTHON_MODULE_DST="$FABRIC_PYTHON_MODULE_DIR/fabric"
       echo "Linking $FABRIC_PYTHON_MODULE_DST -> $FABRIC_PYTHON_MODULE_SRC"
@@ -102,7 +95,7 @@ EOF
 
     case "$FABRIC_BUILD_OS" in
       Darwin)
-        FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/FabricEngine/Library/Internet Plug-Ins/Fabric.$FABRIC_BUILD_ARCH.plugin"
+        FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/NPAPI/Fabric.$FABRIC_BUILD_ARCH.plugin"
 				FABRIC_NPAPI_DST_DIR="$HOME/Library/Internet Plug-Ins"
 				FABRIC_NPAPI_DST="$FABRIC_NPAPI_DST_DIR/Fabric.$FABRIC_BUILD_ARCH.plugin"
 				;;
@@ -112,10 +105,9 @@ EOF
 				FABRIC_NPAPI_DST="$FABRIC_NPAPI_DST_DIR/libFabricPlugin.so"
 				;;
 			Windows)
-		 		FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/FabricEngine"
+		 		FABRIC_NPAPI_SRC="$FABRIC_DIST_PATH/NPAPI"
 		esac
 		if [ "$FABRIC_NPAPI_LINK" -eq 1 ]; then
-
 		  if [ "$FABRIC_BUILD_OS" = "Windows" ]; then
 			  if [ -f $FABRIC_NPAPI_SRC/npFabricPlugin.dll ]; then
 					echo "Regristering NPAPI plugin"

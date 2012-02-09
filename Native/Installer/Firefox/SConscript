@@ -6,7 +6,9 @@
 # with the MIME type application/x-xpinstall
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'installerExtFiles', 'distDir', 'FABRIC_BASE_VERSION' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'FABRIC_BASE_VERSION', 'FABRIC_VERSION', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'generateDistZip', 'installerExtFiles', 'distDir' )
+
+installerName = 'FabricEngine-FirefoxExtension-' + buildOS + '-' + buildArch + '-' + FABRIC_VERSION
 
 firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
 
@@ -71,11 +73,16 @@ installerEnv.DistZip(
   installerFile,
   installerFiles
 )
+
+xpiUpdateKey = baseEnv.File("xpi-update.pem")
 updateFile = baseEnv.Command(
   distDir.File("xpi-update-"+buildOS+"-"+buildArch+".rdf"),
   installerFile,
-  [['uhura', '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_BASE_VERSION + '/FabricEngine-' + buildOS + '-' + buildArch + '.xpi']],
-  KEY=baseEnv.File("xpi-update.pem")
+  [['uhura', '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_VERSION + '/' + installerName + '.xpi']],
+  KEY=xpiUpdateKey
   )
+baseEnv.Depends( updateFile, xpiUpdateKey )
 
-Alias( 'firefoxInstaller', [installerFile, updateFile] )
+firefoxInstaller = [installerFile, updateFile]
+Alias( 'firefoxInstaller', firefoxInstaller )
+Return( 'firefoxInstaller' )
