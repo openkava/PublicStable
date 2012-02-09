@@ -89,6 +89,7 @@ function Boolean seekData(
     // to end, so looking up the TOC should be rare. Here we check 
     // if the seek is already at the correct location.
     prevDataIndex++;
+    stream.setSeek(dataSeekOffsets[prevDataIndex]);
     return true;
   }
   else{
@@ -116,11 +117,18 @@ operator readSliceCountFromStream(
   report "readSliceCountFromStream:";
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
-  Size prevDataIndex = -1;
-  if(stream.isValid() && seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+  if(stream.isValid()){
+    report "Stream Size:"+stream.getSize();
+  
+    Size prevDataIndex = -1;
+    if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+      report "Currr Pos:"+stream.getSeek();
+      Size val;
+      stream.readSize(val);
+      report "new count:"+val;
+    }
     
-    stream.readSize(newCount);
-    report "new count:"+newCount;
+    stream.close();
   }
 }
 
@@ -135,8 +143,11 @@ operator readMemberFromStream(
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
   Size prevDataIndex = -1;
-  if(stream.isValid() && seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
-    stream.readData(data.data(),data.dataSize());
+  if(stream.isValid()){
+    if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+      stream.readData(data.data(),data.dataSize());
+    }
+    stream.close();
   }
 }
 
@@ -156,6 +167,8 @@ operator readArrayFromStream(
     stream.readString(storedMemberType);
     if(storedMemberType != "DATA_TYPE"){
       report "ERROR: Stored type : '"+storedMemberType+"' does not match current type:'DATA_TYPE'";
+      stream.close();
+      return;
     }
     Size size;
     for(Integer i=0; i<data.size(); i++){
