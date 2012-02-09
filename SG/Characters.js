@@ -389,7 +389,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var m_animationLibraryNode;
     var m_animationControllerNode;
     var m_trackSetId;
-    var m_keyframeTrackBindings;
+  //  var m_keyframeTrackBindings;
     var interactiveManipulation = false;
     
     scene.pub.addEventListener('beginmanipulation', function(evt){
@@ -423,6 +423,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
       dgnode.setData('trackSetId', 0, m_trackSetId);
       
+      
+    scene.pub.addEventListener('endmanipulation', function(evt){
+      if(m_animationLibraryNode){
+        m_animationLibraryNode.endManipulation();
+        characterVariablesNode.pub.setEnableTrackEvaluation(true);
+        interactiveManipulation = false;
+      }
+    });
+      
       if(boundToAnimationTracks){
         return
       }
@@ -449,15 +458,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         dgnode.setData('trackSetId', 0, trackSetId);
       }
       
-      scene.pub.addEventListener('beginmanipulation', function(evt){
-        characterVariablesNode.pub.setEnableTrackEvaluation(false);
-        m_animationLibraryNode.beginManipulation(m_trackSetId);
-        
-      });
-      scene.pub.addEventListener('endmanipulation', function(evt){
-        m_animationLibraryNode.endManipulation();
-        characterVariablesNode.pub.setEnableTrackEvaluation(true);
-      });
       boundToAnimationTracks = true;
     }
     
@@ -501,86 +501,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     //  }
     //  else{
       if(m_animationLibraryNode){
-        m_keyframeTrackBindings = m_animationLibraryNode.getBindings(m_trackSetId);
-        /*
-        var findBinding = function(bindingsList){
-          for(var i=0; i<bindingsList.length; i++){
-            if(bindingsList[i].varId == index){
-              return bindingsList[i];
-            }
-          }
-          throw "Binding not found";
-        }
-        var binding, values;
-        var trackIds;
-        switch(type){
-        case 'Number':
-          binding = findBinding(m_keyframeTrackBindings.scalarBindings);
-          values = [value];
-          trackIds = binding.trackIds;
-          break;
-        case 'FABRIC.RT.Vec3':
-          binding = findBinding(m_keyframeTrackBindings.vec3Bindings);
-          values = [value.x, value.y, value.z];
-          trackIds = binding.trackIds;
-          break;
-        case 'FABRIC.RT.Quat':
-          binding = findBinding(m_keyframeTrackBindings.quatBindings);
-          if(binding.trackIds.length == 3){
-            var euler = new FABRIC.RT.Euler();
-            euler.setFromQuat(value);
-            values = [euler.x, euler.y, euler.z];
-          }else if(binding.trackIds.length == 4){
-            values = [value.w, value.x, value.y, value.z];
-          }
-          trackIds = binding.trackIds;
-          break;
-        case 'FABRIC.RT.Xfo':
-          binding = findBinding(m_keyframeTrackBindings.xfoBindings);
-          trackIds = binding.trackIds;
-          if(binding.trackIds.length == 6){
-            var euler = new FABRIC.RT.Euler();
-            euler.setFromQuat(value.ori);
-            values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
-          }else if(binding.trackIds.length == 7){
-            
-            if(xfoTrackFilter){
-              var filteredValues = [];
-              var filteredTrackIds = [];
-              if(xfoTrackFilter.tr){
-                filteredValues = [value.tr.x, value.tr.y, value.tr.z];
-                filteredTrackIds = [trackIds[0], trackIds[1], trackIds[2]]
-              }
-              if(xfoTrackFilter.ori){
-                filteredValues = filteredValues.concat([value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w]);
-                filteredTrackIds = filteredTrackIds.concat([trackIds[3], trackIds[4], trackIds[5], trackIds[6]]);
-              }
-              if(xfoTrackFilter.sc){
-                filteredValues = [value.sc.x, value.sc.y, value.sc.z];
-                filteredTrackIds = [trackIds[6], trackIds[7], trackIds[8]]
-              }
-              values = filteredValues;
-              trackIds = filteredTrackIds;
-            }
-            else{
-              values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
-              trackIds = binding.trackIds;
-            }
-          }
-          break;
-        default:
-          throw 'Unhandled type:' + val;
-        }
-        */
         if(!interactiveManipulation){
           m_animationLibraryNode.beginManipulation(m_trackSetId);
         }
-      //  m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
-        m_keyframeTrackBindings.setValue(m_trackSetId, m_animationControllerNode.pub.getTime(), value, index, filter, m_animationLibraryNode);
+        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), value, index, xfoTrackFilter);
         if(!interactiveManipulation){
           m_animationLibraryNode.endManipulation();
         }
-        
       }
     }
     characterVariablesNode.setValues = function(values, indices) {
@@ -588,7 +515,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         characterVariablesNode.setValue(values[i], indices[i]);
       }
     }
-    
     
     //////////////////////////////////////////
     // Persistence
