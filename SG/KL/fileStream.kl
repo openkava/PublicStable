@@ -12,15 +12,12 @@ operator openFileStreamForWriting(
   io Size seekOffsetsLocation,
   io Size seekOffsets[]
 ){
-  report "openFileStream";
   stream.open(handle,"w");
-  report "dataNames:"+dataNames;
   
   if(stream.isValid() && dataNames.size() > 0) {
     seekOffsets.resize(dataNames.size());
     stream.writeStringArray(dataNames);
     seekOffsetsLocation = stream.getSeek();
-  report "seekOffsetsLocation:" + seekOffsetsLocation;
     
     // Write an array of 0 so that we have
     // allocated the space for the TOC later
@@ -36,9 +33,6 @@ operator openFileStreamForReading(
   io String dataNames[],
   io Size seekOffsets[]
 ){
-  report "openFileStream";
-  report "dataExternalLocation:"+resource.dataExternalLocation;
-  
   if(!stream.isValid()) {
     stream.open(resource.dataExternalLocation,"r");
     if(stream.isValid()) {
@@ -60,8 +54,6 @@ operator closeFileStream(
   io Size seekOffsetsLocation,
   io Size seekOffsets[]
 ){
-  report "closeFileStream";
-    report "seekOffsets:"+seekOffsets;
   // Now we write the TOC. Each integer specifies the seek offset
   // of the data for the indexed data member. 
   stream.setSeek(seekOffsetsLocation);
@@ -81,7 +73,6 @@ operator readTOCFromStream(
   io String dataNames[],
   io Size seekOffsets[]
 ){
-  report "readTOCFromStream";
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
   if(stream.isValid()) {

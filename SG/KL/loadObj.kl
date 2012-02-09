@@ -50,7 +50,7 @@ function decodeObj(
     }
   }
 
-  if( true || printDetailedInfo ) {
+  if( printDetailedInfo ) {
     Size nbEntities, nbPts, nbTris;
     FabricOBJGetNbEntityPoints(objParseHandle, -1, nbPts);
     FabricOBJGetNbEntityTriangles(objParseHandle, -1, nbTris);
