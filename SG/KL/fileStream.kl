@@ -20,6 +20,7 @@ operator openFileStreamForWriting(
     seekOffsets.resize(dataNames.size());
     stream.writeStringArray(dataNames);
     seekOffsetsLocation = stream.getSeek();
+  report "seekOffsetsLocation:" + seekOffsetsLocation;
     
     // Write an array of 0 so that we have
     // allocated the space for the TOC later
