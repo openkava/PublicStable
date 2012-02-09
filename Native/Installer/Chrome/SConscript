@@ -82,7 +82,7 @@ baseEnv.Command(
     Move( chromeInstallerFile, archDistDir.Dir('Chrome').File(installerName+'.crx') ),
   ]
 )
-chromeUpdateFile = baseEnv.Template( distDir.File("crx-update-"+buildOS+"-"+buildArch+".xml"), "crx-update.xml.template" )
+chromeUpdateFile = baseEnv.Template( distDir.File("crx-update-"+buildOS+"-"+buildArch+".xml"), "crx-update.xml.template" )[0]
 chromeInstaller = [chromeInstallerFile, chromeUpdateFile]
 Alias( 'chromeInstaller', chromeInstaller )
 Return( 'chromeInstaller' )
