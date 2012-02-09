@@ -96,7 +96,6 @@ function Boolean seekData(
     for(Size i=0;i<dataNames.size();i++) {
       if(dataNames[i] == dataName) {
         stream.setSeek(dataSeekOffsets[i]);
-        report "Found :"+dataName;
         prevDataIndex = i;
         return true;
       }
@@ -114,20 +113,13 @@ operator readSliceCountFromStream(
   io String dataName,
   io Size newCount
 ){
-  report "readSliceCountFromStream:";
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
   if(stream.isValid()){
-    report "Stream Size:"+stream.getSize();
-  
     Size prevDataIndex = -1;
     if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
-      report "Currr Pos:"+stream.getSeek();
-      Size val;
-      stream.readSize(val);
-      report "new count:"+val;
+      stream.readSize(newCount);
     }
-    
     stream.close();
   }
 }
@@ -147,6 +139,7 @@ operator readMemberFromStream(
     if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
       stream.readData(data.data(),data.dataSize());
     }
+    report data;
     stream.close();
   }
 }
