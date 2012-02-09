@@ -43,7 +43,11 @@ operator openFileStreamForReading(
       stream.readStringArray(dataNames);
   report "dataNames:" + dataNames;
       seekOffsets.resize(dataNames.size);
-      stream.readData(seekOffsets.data(),seekOffsets.dataSize());
+      Size offset;
+      for(Size i=0;i<dataNames.size();i++) {
+        stream.readSize(offset);
+        seekOffsets[i] = offset;
+      }
   report "seekOffsets:" + seekOffsets;
     }
   }
@@ -51,6 +55,7 @@ operator openFileStreamForReading(
 
 
 operator closeFileStream(
+  io String handle,
   io FabricFileStream stream,
   io Size seekOffsetsLocation,
   io Size seekOffsets[]
@@ -62,6 +67,26 @@ operator closeFileStream(
   stream.setSeek(seekOffsetsLocation);
   stream.writeData(seekOffsets.data(),seekOffsets.dataSize());
   stream.close();
+  
+  
+  FabricFileStream stream2;
+  stream2.open(handle,"r");
+  if(stream2.isValid()) {
+    String dataNames2[];
+    Size seekOffsets2[];
+    report "Stream Size:"+stream2.getSize();
+    stream2.readStringArray(dataNames2);
+    seekOffsets2.resize(dataNames2.size);
+    Size offset;
+    for(Size i=0;i<dataNames2.size();i++) {
+      stream2.readSize(offset);
+      seekOffsets2[i] = offset;
+    }
+    stream2.close();
+    
+    report dataNames2;
+    report seekOffsets2;
+  }
 }
 
 
@@ -78,10 +103,16 @@ operator readTOCFromStream(
     report "Stream Size:"+stream.getSize();
     stream.readStringArray(dataNames);
     seekOffsets.resize(dataNames.size);
-    stream.readData(seekOffsets.data(),seekOffsets.dataSize());
+    Size offset;
+    for(Size i=0;i<dataNames.size();i++) {
+      stream.readSize(offset);
+      seekOffsets[i] = offset;
+    }
     stream.close();
     
     report dataNames;
     report seekOffsets;
   }
 }
+
+
