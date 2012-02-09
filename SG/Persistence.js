@@ -65,7 +65,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
         }
         if(!isNodeBeingSaved(node) && !isNodeExcluded(node)){
           var constructionOptions = {};
-          var nodeData = {};
+          var nodeData = { };
           var nodePrivate = scene.getPrivateInterface(node);
           nodePrivate.addDependencies(sceneSerializer);
           savedNodes.push(node);
@@ -327,7 +327,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                 // in case a name collision occured, store a name remapping table.
                 nodeNameRemapping[ nodeData.name ] = node.getName();
                 var nodePrivate = scene.getPrivateInterface(node);
-                nodePrivate.readData(sceneDeserializer, nodeData.data);
+                nodePrivate.readData(sceneDeserializer, nodeData);
                 constructedNodeMap[node.getName()] = node;
                 remainingNodes--;
                 if(remainingNodes == 0){
@@ -743,7 +743,6 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
         }));
         
         dataNames.push(dataName);
-        
         // now setup the operators to store the data
         for(var i=0;i<memberNames.length;i++) {
           var memberName = memberNames[i];
@@ -758,6 +757,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
           writeDGNodesEventHandler.addMember(memberName+'_name','String', dataName);
           var operatorName = 'write' + (isArray ? 'Array' : 'Member') + 'ToStream';
           
+          if(isArray){
           writeDGNodesEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: operatorName + memberType,
             srcFile: 'FABRIC_ROOT/SG/KL/fileStreamIO.kl',
@@ -774,6 +774,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
             ],
             async: false
           }));
+          }
           dataNames.push(dataName);
         }
       }

@@ -75,6 +75,7 @@ operator readTOCFromStream(
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
   if(stream.isValid()) {
+    report "Stream Size:"+stream.getSize();
     stream.readStringArray(dataNames);
     seekOffsets.resize(dataNames.size);
     stream.readData(seekOffsets.data(),seekOffsets.dataSize());

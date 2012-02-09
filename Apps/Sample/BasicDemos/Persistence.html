@@ -62,9 +62,12 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
   var modelName = 'cow';
+  
   var instances = [];
+  
+  
   scene.importAssetFile('Models/' + modelName + '.obj', {
-      splitMaterials: true
+      splitMaterials: false
     },
     function(assetNodes){
       for(var name in assetNodes){
@@ -84,9 +87,11 @@ $(document).ready(function() {
       }
       viewport.redraw();
     });
+  
+  
   /*
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
+  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow4.json');
   presetLoader.load(storage, function(nodeMap){
     // The node map contains a map of all the nodes constructed from the loaded file.
     for(var nodeName in nodeMap){
