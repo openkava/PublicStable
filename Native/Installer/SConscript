@@ -150,7 +150,7 @@ if 'dist' in COMMAND_LINE_TARGETS:
   Alias( 'dist', installers )
   if 'upload' in COMMAND_LINE_TARGETS:
     if buildOS == 'Windows':
-      uploadCommand = [[ 'scp', '$SOURCES', 'fabric-engine.com:' ]]
+      uploadCommand = [[ 'scp', '-i', os.environ['HOME'] + '/.ssh/id_rsa', '$SOURCES', 'fabric-engine.com:' ]]
     else:
       uploadCommand = [[ 'rsync', '-e', 'ssh', '--progress', '$SOURCES', 'fabric-engine.com:' ]]
     upload = baseEnv.AlwaysBuild( baseEnv.Command(
