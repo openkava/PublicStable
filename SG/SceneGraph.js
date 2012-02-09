@@ -561,6 +561,7 @@ FABRIC.SceneGraph = {
       if(file.substr(0,11).toLocaleLowerCase() == "fabricio://") {
         var filename = FABRIC.IO.getFileHandleInfo(file).fileName;
         ext = filename.split('.').pop().toLocaleLowerCase();
+        options.storeDataAsFile = true;
       }
       if (FABRIC.SceneGraph.assetLoaders[ext]) {
         var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
@@ -1073,6 +1074,10 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       storeDataAsFile: false,
       url: undefined
     });
+    
+    if(options.url.substr(0,11).toLocaleLowerCase() == "fabricio://") {
+      options.storeDataAsFile = true;
+    }
     
     var fileName = options.url.split('/').pop();
     var baseName = fileName.split('.')[0];
