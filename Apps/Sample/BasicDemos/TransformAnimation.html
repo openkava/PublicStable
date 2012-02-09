@@ -170,7 +170,7 @@ $(document).ready(function() {
     .click(function() {
       var binding = transformNode.getOperatorBinding();
       var operatorEditorWindow = window.open(
-          FABRIC.processURL('FABRIC_ROOT/Core/OperatorEditor/operatorEditor.html')
+          FABRIC.processURL('FABRIC_ROOT/Core/OperatorEditor/operatorEditor.html', false)
            + '?id=' + scene.getContextId()
            + '?operator=' + binding.getOperator().getName(),
           'Fabric Operator Editor:' + binding.getOperator().getName(),

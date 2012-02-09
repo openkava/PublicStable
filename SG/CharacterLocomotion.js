@@ -1,6 +1,7 @@
 
 
-FABRIC.define(["SG/Characters"], function() {
+FABRIC.define(["SG/Characters",
+               "SG/CharacterSolvers"], function() {
 
 
 
@@ -64,12 +65,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     
     solver.generateTracks = function(trackSet, trackBindings){
       var storeEulerAngles = false;
-      trackSet.addXfoTrack('comXfo', new FABRIC.RT.rgb(1, 0, 0), storeEulerAngles, trackBindings, comXfoId);
+      trackSet.addXfoTrack('com.xfo', new FABRIC.RT.rgb(1, 0, 0), storeEulerAngles, trackBindings, comXfoId);
       var color = FABRIC.RT.rgb(0, 1, 1);
-      trackSet.addScalarTrack('speed', color, trackBindings, comParam0VarId);
-      trackSet.addScalarTrack('acceleration', color, trackBindings, comParam1VarId);
-      trackSet.addScalarTrack('gradient', color, trackBindings, comParam2VarId);
-      trackSet.addScalarTrack('direction', color, trackBindings, comParam3VarId);
+      trackSet.addScalarTrack('com.speed', color, trackBindings, comParam0VarId);
+      trackSet.addScalarTrack('com.acceleration', color, trackBindings, comParam1VarId);
+      trackSet.addScalarTrack('com.gradient', color, trackBindings, comParam2VarId);
+      trackSet.addScalarTrack('com.direction', color, trackBindings, comParam3VarId);
     }
     
     solver.invert = function(variablesNode){
@@ -316,6 +317,7 @@ FABRIC.RT.CharacterControllerParams = function() {
   this.trailCircularArrayIndex = 0;
   this.balanceXfo = new FABRIC.RT.Xfo();
   this.lift = 0;
+  this.gradient = 0;
   this.state = 0;
 };
 
@@ -329,6 +331,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       trailCircularArrayIndex: 'Integer',
       balanceXfo: 'Xfo',
       lift: 'Scalar',
+      gradient: 'Scalar',
       state: 'Integer'
     },
     constructor: FABRIC.RT.CharacterControllerParams
@@ -727,5 +730,52 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     
     return locomotionVariables;
   }});
+
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('HeadLookAtSolver', {
+  constructSolver: function(options, scene) {
+    scene.assignDefaults(options, {
+        rigNode: undefined,
+        manipulatorSizes: undefined
+      });
+    
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      name = solver.getName();
+    
+    var headParams = options.bones;
+    var boneIDs = solver.generateBoneMapping(headParams, ['bone', ['neckBones']]);
+    var headXfo = referencePose[boneIDs.bone];
+    var referenceAlignmentVec = headXfo.ori.inverse().rotateVector(new FABRIC.RT.Vec3(0,0,1));
+    
+    skeletonNode.addMember('headBoneId', 'Integer', boneIDs.bone);
+    skeletonNode.addMember('neckBoneIds', 'Integer[]', boneIDs.neckBones);
+    skeletonNode.addMember('referenceAlignmentVec', 'Vec3', referenceAlignmentVec);
+    rigNode.addMember(name + 'alignmentVec', 'Vec3', new FABRIC.RT.Vec3(0,0,1));
+    rigNode.addSolverOperator({
+      operatorName: 'solveHeadLookAt',
+      srcFile: 'FABRIC_ROOT/SG/KL/solveHubRig.kl',
+      entryFunctionName: 'solveHeadLookAt',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.headBoneId',
+        'skeleton.neckBoneIds',
+        'skeleton.referenceAlignmentVec',
+        'self.'+ name + 'alignmentVec',
+        'charactercontroller.xfo<>',
+        'charactercontroller.goalLinearVelocity<>',
+        'self.index',
+        'self.debugGeometry'
+      ]
+    });
+    
+    return solver; 
+  }
+});
+
+
 
 });

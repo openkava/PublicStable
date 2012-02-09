@@ -558,6 +558,11 @@ FABRIC.SceneGraph = {
     };
     scene.pub.importAssetFile = function(file, options, callback) {
       var ext = file.split('.').pop().toLocaleLowerCase();
+      if(file.substr(0,11).toLocaleLowerCase() == "fabricio://") {
+        var filename = FABRIC.IO.getFileHandleInfo(file).fileName;
+        ext = filename.split('.').pop().toLocaleLowerCase();
+        options.storeDataAsFile = true;
+      }
       if (FABRIC.SceneGraph.assetLoaders[ext]) {
         var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
         return assets;
@@ -1066,7 +1071,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
       redrawOnLoad: true,
-      storeDataAsFile: false,
+      storeDataAsFile: true,
       url: undefined
     });
     

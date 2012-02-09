@@ -17,6 +17,7 @@ FABRIC.SceneGraph.registerParser('abc', function(scene, assetUrl, options, callb
   var resourceLoadNode = scene.constructNode('AlembicLoadNode', options);
   resourceLoadNode.addEventListener('loadSuccess', function(){
     callback(resourceLoadNode.getParsedNodes());
+    return 'remove';
   });
 });
 

@@ -1216,7 +1216,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
             var prevQuat;
             for (var j = 0; j < outputSource.technique.accessor.count; j++) {
               var matrixValues = getSourceData(outputSource, j);
-              var mat = makeRT(Mat44, matrixValues);
+              var mat = makeRT(FABRIC.RT.Mat44, matrixValues);
               var xfo = new FABRIC.RT.Xfo();
               xfo.setFromMat44(mat);
               tr_x_keyvalues.push(xfo.tr.x);

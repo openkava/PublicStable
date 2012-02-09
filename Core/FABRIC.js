@@ -5,7 +5,7 @@
  
 var FABRIC = (function() {
 
-  var requiredVersion = [1,0,19];
+  var requiredVersion = [1,0,21];
   // we keep an array of context ids,
   // so we can open the debugger with one
   var contextIDs = [];
@@ -2245,7 +2245,7 @@ var requirejs, require, define;
   
   var displayPluginInstallPage = function( div ){
     var iframeTag = document.createElement('iframe');
-    iframeTag.setAttributeNS(null, 'src', 'http://demos.fabric-engine.com/Fabric/Core/pluginInstall.html?ver=' + requiredVersion.join('.'));
+    iframeTag.setAttributeNS(null, 'src', fabricRootURL+'/Core/pluginInstall.html?ver=' + requiredVersion.join('.'));
     iframeTag.setAttributeNS(null, 'style', 'position:absolute; left:0; right:0; top:0; bottom:0; z-index:10');
     iframeTag.setAttributeNS(null, 'width', '100%');
     iframeTag.setAttributeNS(null, 'height', '100%');
@@ -2332,7 +2332,7 @@ var requirejs, require, define;
     FABRIC.displayDebugger = function(ctx) {
       if(!ctx) ctx = context;
       var debuggerWindow = window.open(
-          FABRIC.processURL('FABRIC_ROOT/Core/Debugger/debugger.html') +
+          FABRIC.processURL('FABRIC_ROOT/Core/Debugger/debugger.html', false) +
           '?id=' + context.getContextID() +
           '?title=' + document.title.replace(/[^a-zA-Z\t0-9]+/g,''),
           'Fabric Debugger',
@@ -2510,13 +2510,13 @@ var requirejs, require, define;
   };
   
   
-  var processURL = function(url) {
+  var processURL = function(url, addVer) {
     if (url.split('/')[0] === 'FABRIC_ROOT') {
       // Remove the "FABRIC_ROOT" and replace it with
       // the path to the Fabric SDK.
-      return fabricRootURL + url.split('/').splice(1).join('/') + '?ver=' + requiredVersion.join('');
+      return fabricRootURL + url.split('/').splice(1).join('/') + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
     }else{
-      return url + '?' + requiredVersion.join('');
+      return url + '?' + requiredVersion.join('') + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
     }
   };
 

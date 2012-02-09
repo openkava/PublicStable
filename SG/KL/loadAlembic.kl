@@ -11,7 +11,12 @@ operator alembicLoad(
   io FabricResource resource,
   io AlembicHandle handle
 ) {
-  handle.loadResource(resource);
+  if(!handle.pointer) {
+    if(resource.data.size() > 0)
+      handle.loadResource(resource);
+    else if(resource.dataExternalLocation)
+      handle.loadFileHandle(resource.dataExternalLocation);
+  }
 }
 
 operator alembicSetTime(
