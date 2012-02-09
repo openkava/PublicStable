@@ -17,8 +17,9 @@ operator videoLoadResource(
   if(!handle.pointer){
     if(resource.data.size() > 0)
       FabricVIDEOOpenResource(resource.data.data(), resource.data.dataSize(), handle);
-    else if(resource.dataExternalLocation)
+    else if(resource.dataExternalLocation) {
       FabricVIDEOOpenFileHandle(resource.dataExternalLocation, handle);
+    }
   }
 }
 

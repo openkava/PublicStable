@@ -200,24 +200,30 @@ function Boolean decodeRGBAImageData(
       if(resource.data.size() > 0) {
         FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
         resource.data.resize(0);
-      } else if(resource.dataExternalLocation)
+      } else if(resource.dataExternalLocation) {
         FabricCIMGOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case 'png':
     case 'image/png':
       if(resource.data.size() > 0) {
         FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
         resource.data.resize(0);
-      } else if(resource.dataExternalLocation)
+      } else if(resource.dataExternalLocation) {
         FabricPNGOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case 'tga':
     case 'image/tga':
       if(resource.data.size() > 0) {
         FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
         resource.data.resize(0);
-      } else if(resource.dataExternalLocation)
+      } else if(resource.dataExternalLocation) {
         FabricTGAOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     default:
       report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
@@ -242,16 +248,20 @@ function Boolean decodeColorImageData(
       if(resource.data.size() > 0) {
         FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
         resource.data.resize(0);
-      } else if(resource.dataExternalLocation)
+      } else if(resource.dataExternalLocation) {
         FabricHDROpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case'exr':
     case'image/exr':
       if(resource.data.size() > 0) {
         FabricEXRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
         resource.data.resize(0);
-      } else if(resource.dataExternalLocation)
+      } else if(resource.dataExternalLocation) {
         FabricEXROpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     default:
       report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
