@@ -822,7 +822,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           return type;
         }
       },
-      addMemberInterface : function(corenode, memberName, defineSetter) {
+      addMemberInterface : function(corenode, memberName, defineSetter, setterCallback) {
         var getterName = 'get' + capitalizeFirstLetter(memberName);
         var getterFn = function(sliceIndex){
           return corenode.getData(memberName, sliceIndex);
@@ -831,15 +831,10 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         if(defineSetter===true){
           var setterName = 'set' + capitalizeFirstLetter(memberName);
           var setterFn = function(value, sliceIndex){
-            var prevValue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
             corenode.setData(memberName, sliceIndex?sliceIndex:0, value);
-            
-            scene.pub.fireEvent('valuechanged', {
-              nodeName: name,
-              memberName: memberName,
-              sgnode: sceneGraphNode.pub,
-              dgnode: corenode
-            });
+            if(setterCallback){
+              setterCallback(value);
+            }
           }
           sceneGraphNode.pub[setterName] = setterFn;
           memberInterfaces[memberName] = { getterFn:getterFn, setterFn:setterFn };
