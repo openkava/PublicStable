@@ -15,7 +15,7 @@ operator loadImagePIXELFORMAT(
   io PIXELFORMAT bitmap[],
   io Size newCount
 ) {
-  if(resource.data.size() > 0)
+  if(resource.data.size() > 0 || Boolean(resource.dataExternalLocation))
   {
     decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
     newCount = bitmap.size();
@@ -57,7 +57,7 @@ operator loadAndBindTexturePIXELFORMAT(
   io Integer textureUnit
 ) {
 //  report("loadAndBindTexturePIXELFORMAT -> textureUnit:" + textureUnit);
-  if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && resource.data.size() != 0){
+  if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && (resource.data.size() > 0 || Boolean(resource.dataExternalLocation))){
     Size width, height;
     PIXELFORMAT bitmap[];
     if(decodePIXELFORMATImageData(resource, width, height, bitmap)){

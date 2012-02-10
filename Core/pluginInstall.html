@@ -203,7 +203,15 @@ $(document).ready(function() {
         alert("Unsupported Browser. Fabric supports only Chrome and Firefox.");
         return false;
     }
-    url = "http://dist.fabric-engine.com/"+version+"/FabricEngine-"+os+"-"+arch+"."+ext;
+    var baseURL;
+    if(document.location.origin === "http://demos.testing.fabric-engine.com"){
+      // During testing, plugin installers are pulled from the 'dist.testing' path.
+      baseURL = "http://dist.testing.fabric-engine.com";
+    }
+    else{
+      baseURL = "http://dist.fabric-engine.com";
+    }
+    url = baseURL+"/"+version+"/FabricEngine-"+os+"-"+arch+"."+ext;
   }
   
   createDownloadURL();
