@@ -79,7 +79,6 @@ $(document).ready(function() {
     });
   window.onresize = function () {
     resizeCurveEditor();
-  //  curveEditorContainer.resize();
   };
  resizeCurveEditor();
  
@@ -160,13 +159,15 @@ $(document).ready(function() {
       }
     });
   
+  /*
   $('#curveEditorButton').button({
       text: true,
       icons: {
         primary: 'ui-icon-image'
       }
     });
-    
+  */
+  
   $('#presetNameDialog').dialog({
     autoOpen: false,
     modal: true
@@ -197,20 +198,20 @@ FABRIC.require(["SG/SceneGraph",
     
 FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader.xml');
     
-
-  scene = FABRIC.SceneGraph.createScene({
-    timeStep: 1/60 /* 30 fps */
+  
+  var scene = FABRIC.SceneGraph.createScene({
+    timeStep: 1/30 /* 30 fps */
   });
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
     enableRaycasting: true,
     rayIntersectionThreshold: 0.1
   });
- /*
-   viewport.setBackgroundTextureNode(scene.constructNode('Image', {
-     url: 'Resources/fabric-demo-gradient.png'
+ 
+   viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+     url: '../../BasicDemos/Resources/fabric-demo-gradient.png'
    }));
- */
+ 
    // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
       nearDistance: 0.1,
@@ -272,18 +273,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
   });  
     
-    
-  var curveEditorWindow;
-  var trackFilters;
-  scene.addEventListener('beginmanipulation', function(evt){
-    if(evt.manipulatorNode.getTargetName){
-      trackFilters = [evt.manipulatorNode.getTargetName()];
-      if(curveEditorWindow){
-	curveEditorWindow.setCurveFilters(trackFilters);
-      }
-    }
-  });
-  
+   
   var selectedAnimation = 0;
   var setSelectedAnimation = function(val){
     selectedAnimation = val;
@@ -308,12 +298,15 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     }
   }
   
+  var createNewAnimation = function(name){
+    rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, name, true, controllerNode);
+    rebuildAnimationLibraryList();
+  }
+  
   $('#newAnimation').button()
     .click(function() {
       var closeDialogAndNewAnimation = function(){
-        var newTrackSetName = $("#presetName").val();
-        rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, newTrackSetName, true, controllerNode);
-        rebuildAnimationLibraryList();
+        createNewAnimation($("#presetName").val());
         $("#presetNameDialog").dialog( "close" );
       }
       $('#presetNameDialog').dialog({
@@ -369,17 +362,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     });
   }
   
-  var timeSlider = $('#timeSlider').slider({
-      min: 0,
-      max: 4,
-      step: 0.01
-    }).bind('slide',
-      function(event, ui) {
-	setPlayButtonToPlay();
-        scene.animation.pause();
-        scene.animation.setTime(ui.value);
-        scene.redrawAllViewports();
-    });
   
   $('#stop').button()
     .click(function() {
@@ -408,13 +390,30 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
         scene.animation.pause();
       }
     });
-
+ 
+  var sceneTimeRange 
+  var editingTimeFromTimeSlider = false;
+  var timeSlider = $('#timeSlider').slider({
+      min: 0,
+      max: 4,
+      step: 0.01
+    }).bind('slide',
+      function(event, ui) {
+        editingTimeFromTimeSlider = true;
+	setPlayButtonToPlay();
+        scene.animation.pause();
+        scene.animation.setTime(ui.value);
+        scene.redrawAllViewports();
+        editingTimeFromTimeSlider = false;
+    });
+  
   scene.addEventListener('timechanged', function(evt){
-    if(evt.playing){
+    if(!editingTimeFromTimeSlider){
       $('#timeSlider').slider().slider('value', scene.animation.getTime());
     }
   });
   
+  /*
   $('#curveEditorButton').button({
       text: true,
       icons: {
@@ -432,7 +431,17 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
        }, true);
       });
     });
+  */
+  
+  $('#frameX').button()
+    .click(function() {
+    });
     
+  $('#frameY').button()
+    .click(function() {
+    });
+  
+  
   var rigNode, rigInstances = {};
   var skeletonGeometryNode;
   
@@ -451,11 +460,36 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   
   rebuildAnimationLibraryList();
   
- // var  curveEditor = constructCurveEditor('curveContainer', bezierKeyAnimationLibrary);
-  
   var controllerNode = scene.constructNode('AnimationController');
   
+  /////////////////////////////////////////
+  // Set up the Curve Editor in the bottom panel.
+  var curveEditor;
   /*
+  var  curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyAnimationLibrary, {
+    timeRange : new FABRIC.Vec2(0, 4),
+    fitEditorToKeyRanges: false
+  });
+  window.addEventListener('resize', curveEditor.resize, true);
+  $( "#editor" ).bind('resize',
+   function(event, ui) {
+     curveEditor.resize();
+   });
+  */
+  
+  var curveEditorWindow;
+  var trackFilters;
+  scene.addEventListener('endmanipulation', function(evt){
+    if(evt.manipulatorNode.getTargetName){
+      trackFilters = [evt.manipulatorNode.getTargetName()];
+    //  if(curveEditorWindow){
+	//curveEditorWindow.setCurveFilters(trackFilters);
+    //  }
+      curveEditor.setCurveFilters(trackFilters);
+    }
+  });
+  
+  
   scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
     
     rigNode = assetNodes.BodyCharacterRig;
@@ -670,12 +704,23 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       });
     
     rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
+    rebuildAnimationLibraryList();
+    
+    
+    curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyAnimationLibrary, {
+      timeRange : new FABRIC.Vec2(0, 4),
+      fitEditorToKeyRanges: false,
+      trackFilters: ['none']
+    });
+    window.addEventListener('resize', curveEditor.resize, true);
+    
+    $( "#editor" ).bind('resize',
+     function(event, ui) {
+       curveEditor.resize();
+     });
   });
-  */
     
-    
-  
-  
+   
   $("#displaySkeleton").attr('checked', true).change(function() {
     skeletonGeometryNode.getInstanceNode().setDrawToggle($("#displaySkeleton").is(":checked"));
     viewport.redraw();
@@ -728,10 +773,11 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
         alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
         throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
       }
-      
+      /*
       setInterval(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
         }, 600);
+      */
       return true;
     }
   });
@@ -766,23 +812,24 @@ $(document).ready(function() {
         </div><!--viewer-->
         <div id="sidebar">
           
+          <!--
           <div class="box">
             <h2 id="agents">PERFORMANCE</h2>
             <div class="content" id="frameRate">Frame Rate:</div><p></p>
-          </div><!--box-->
-          
+          </div>
+            -->
           
           <div class="box">
             <h2>DATA</h2>
             <div class="content">
-              <button id="newAnimation" style="margin-top:10px;">New</button>
-              <button id="deleteAnimation" style="margin-top:10px;">Delete</button>
-              <button id="saveResource" style="margin-top:10px;">Save</button>
-              <button id="exportResource" style="margin-top:10px;">Export</button>
+              <button id="newAnimation">New</button>
+              <button id="deleteAnimation">Delete</button>
+              <button id="saveResource" style="margin-top:5px;">Save</button>
+              <button id="exportResource" style="margin-top:5px;">Export</button>
               <ol id="animationLibraryList">
               </ol>
+              <!--
               <button id="curveEditorButton" style="margin-top:10px;">Open Curve Editor</button><br>
-           <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
             -->
               <label for="displaySkeleton">Display Skeleton</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/><br>
 	      <label for="displayRigging">Display Rigging</label><input type="checkbox" id="displayRigging" style="margin-top:10px;" /><br>
@@ -836,7 +883,9 @@ $(document).ready(function() {
         <div class="box">
           <h2>TRACKS</h2>
           <div class="content">
-            <input type="checkbox" id="displayKeys" style="margin-top:10px;"/><label for="displayKeys">Display Keys:</label>
+            <input type="checkbox" id="displayKeys" style="margin-top:10px;"/><label for="displayKeys">Display Keys</label><br>
+            <button id="frameX">FrameX</button>
+            <button id="frameY">FrameY</button>
             <ul id="keyframeTracks">
             </ul>
           </div><!--content-->
