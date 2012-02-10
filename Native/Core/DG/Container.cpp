@@ -475,14 +475,13 @@ namespace Fabric
       std::vector<std::string> &errors,
       RC::ConstHandle<Binding> const &binding,
       Scope const &scope,
-      size_t *newCount,
       unsigned prefixCount,
       void * const *prefixes
       )
     {
       SelfScope selfScope( this, &scope );
 
-      return binding->bind( errors, selfScope, newCount, prefixCount, prefixes );
+      return binding->bind( errors, selfScope, prefixCount, prefixes );
     }
     
     void Container::jsonDescMembers( JSON::Encoder &resultEncoder ) const

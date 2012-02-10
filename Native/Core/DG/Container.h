@@ -125,7 +125,6 @@ namespace Fabric
         std::vector<std::string> &errors,
         RC::ConstHandle<Binding> const &binding,
         Scope const &scope,
-        size_t *newCount,
         unsigned prefixCount = 0,
         void * const *prefixes = 0
         );

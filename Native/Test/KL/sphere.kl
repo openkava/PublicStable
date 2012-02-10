@@ -24,16 +24,6 @@ function Vec3 *( Vec3 v, Scalar s ) {
   return Vec3( v.x*s, v.y*s, v.z*s );
 }
 
-function setSphereVertexCount(
-  io Integer detail,
-  io Size newCount
-) {
-  var Integer slices = (detail >= 0) ? (detail * 2 + 3) : 3;
-  var Integer loops = (detail >= 0) ? (detail + 1) : 1;
-
-  newCount = 2 * slices * (2 + loops);
-}
-
 function generateSphere(
   io Scalar radius,
   io Integer detail,

@@ -58,7 +58,6 @@ namespace Fabric
         RC::ConstHandle<AST::Operator> const &astOperator,
         Scope const &scope,
         RC::ConstHandle<Function> const &function,
-        size_t *newSize,
         unsigned prefixCount=0,
         void * const *prefixes=0
         );
@@ -72,7 +71,6 @@ namespace Fabric
       class Param;
       class ContainerParam;
       class SizeParam;
-      class NewSizeParam;
       class IndexParam;
       class MemberParam;
       class ElementParam;
