@@ -107,20 +107,12 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
 
         // create init operators
         texturePixelsDGNode.bindings.append(scene.constructOperator({
-          operatorName: 'resizeImage',
-          parameterLayout: [
-            'uniforms.width',
-            'uniforms.height',
-            'self.newCount'
-          ],
-          entryFunctionName: 'resizeImage',
-          srcFile: 'FABRIC_ROOT/SG/KL/kinect.kl'
-        }));
-        
-        texturePixelsDGNode.bindings.append(scene.constructOperator({
           operatorName: 'getKinectCameraColorPixels',
           parameterLayout: [
+            'self',
             'kinect.camera',
+            'uniforms.width',
+            'uniforms.height',
             'self.pixels<>'
           ],
           entryFunctionName: 'getKinectCameraColorPixels',
@@ -150,19 +142,9 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
 
         // create init operators
         texturePixelsDGNode.bindings.append(scene.constructOperator({
-          operatorName: 'resizeImage',
-          parameterLayout: [
-            'uniforms.width',
-            'uniforms.height',
-            'self.newCount'
-          ],
-          entryFunctionName: 'resizeImage',
-          srcFile: 'FABRIC_ROOT/SG/KL/kinect.kl'
-        }));
-        
-        texturePixelsDGNode.bindings.append(scene.constructOperator({
           operatorName: 'getKinectCameraDepthAsColorPixels',
           parameterLayout: [
+            'self',
             'kinect.camera',
             'self.pixels<>',
             'uniforms.width',

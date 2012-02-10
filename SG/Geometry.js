@@ -317,19 +317,17 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
     
     // The data copy must always have the same count on the attributes node,
     // as the original geometry node.
-    geometryDataCopyNode.getAttributesDGNode().bindings.append(
-      scene.constructOperator({
-        operatorName: 'matchCount',
-        srcCode: '\n'+
-        'operator matchCount(Size parentCount, io Size selfCount) {\n' +
-        '  selfCount = parentCount;\n' +
-        '}',
-        entryFunctionName: 'matchCount',
-        parameterLayout: [
-          'parentattributes.count',
-          'self.newCount'
-        ]
-      }));
+    geometryDataCopyNode.getAttributesDGNode().bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.setCount( parentContainer.getCount() ); }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'parentattributes',
+        'self'
+      ],
+      async: false
+    }));
+
     var redrawEventHandler = geometryDataCopyNode.getRedrawEventHandler();
     var uniformsdgnode = geometryDataCopyNode.getUniformsDGNode();
     var attributesdgnode = geometryDataCopyNode.getAttributesDGNode();

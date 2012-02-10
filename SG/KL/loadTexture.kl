@@ -8,28 +8,23 @@ use Xfo;
 use Mat44;
 use PIXELFORMAT;
 
-operator loadImagePIXELFORMAT(
+operator loadSlicedImagePIXELFORMAT(
+  io Container container,
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
-  io PIXELFORMAT bitmap[],
-  io Size newCount
+  io PIXELFORMAT slicedBitmap<>
 ) {
   if(resource.data.size() > 0)
   {
+    PIXELFORMAT bitmap[];
     decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
-    newCount = bitmap.size();
+    Size newSize = bitmap.size();
+    container.setCount( newSize );
+    for( Size i = 0; i < newSize; ++i )
+      slicedBitmap[i] = bitmap[i];
     resource.data.resize(0);
   }
-}
-
-operator sliceImagePIXELFORMAT(
-  in Size index,
-  io PIXELFORMAT bitmap[],
-  io PIXELFORMAT pixel
-) {
-  if(bitmap.size() > 0)
-    pixel = bitmap[index];
 }
 
 operator clearImagePIXELFORMAT(
@@ -79,20 +74,16 @@ operator unbindTextures(
   }
 }
 
-operator resizeImagePIXELFORMAT(
+operator initImageFromPIXELFORMAT(
+  io Container container,
   io Size width,
   io Size height,
-  io Size newCount
-) {
-  newCount = width * height;
-}
-
-operator initImageFromPIXELFORMAT(
   io PIXELFORMAT color,
   io Boolean initiated,
   io PIXELFORMAT pixels<>
 ) {
   if(!initiated) {
+    container.setCount( width * height );
     for(var Size i=0;i<pixels.size();i++)
       pixels[i] = color;
     initiated = true;

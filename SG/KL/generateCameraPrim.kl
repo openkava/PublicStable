@@ -4,19 +4,15 @@
 
 use Vec3;
 
-operator setCameraPrimVertexCount(
-  io Size newCount
-) {
-  newCount = 13;
-}
-
 operator generateCameraPrim(
+  io Container container,
   io Vec3 positions<>,
   io Integer indices[],
   io Scalar size
 ) {
   Integer iidx = 0;
   Integer vidx = 0;
+  container.setCount(Size(13));
 
   var Scalar bodySize = 0.85;
   var Scalar lensSize = 0.6;

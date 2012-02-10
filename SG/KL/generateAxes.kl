@@ -4,17 +4,13 @@
 
 use Vec3;
 
-operator setAxesVertexCount(
-  io Size newCount
-) {
-  newCount = 19;
-}
-
 operator generateAxes(
+  io Container container,
   io Vec3 positions<>,
   io Integer indices[],
   io Scalar size
 ) {
+  container.setCount(Size(19));
   indices.resize(23);
 
   Integer iidx = 0;
