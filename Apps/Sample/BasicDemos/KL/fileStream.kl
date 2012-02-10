@@ -68,12 +68,15 @@ operator saveTrianglesToStream
   }
 }
 
-operator resizeTrianglesFromStream
+operator loadTrianglesFromStream
 (
+  io Container container,
   io String path,
-  io FabricFileStream stream,
   io String name,
-  io Size newCount
+  io FabricFileStream stream,
+  io Vec3 positions<>,
+  io Vec3 normals<>,
+  io Integer indices[]
 )
 {
   if(!stream.isValid() && path.length() > 0) {
@@ -94,19 +97,10 @@ operator resizeTrianglesFromStream
         offset = storedOffset;
     }
     stream.setSeek(offset);
+    Size newCount;
     stream.readSize(newCount);
-  }
-}
+    container.setCount(newCount);
 
-operator loadTrianglesFromStream
-(
-  io FabricFileStream stream,
-  io Vec3 positions<>,
-  io Vec3 normals<>,
-  io Integer indices[]
-)
-{
-  if(stream.isValid()) {
     stream.readData(positions.data(),positions.dataSize());
     stream.readData(normals.data(),normals.dataSize());
     Size nbIndices = 0;

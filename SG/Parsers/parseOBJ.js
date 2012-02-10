@@ -58,22 +58,11 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
     // we cannot make synchronous requests while asynch requests are in progress.
     // so we pre-construct the operators here
     scene.constructOperator({
-        operatorName: 'setVertexCount',
-        srcFile: 'FABRIC_ROOT/SG/KL/loadObj.kl',
-        entryFunctionName: 'setVertexCount',
-        parameterLayout: [
-          'resource.handle',
-          'uniforms.entityIndex',
-          'resource.reload',
-          'self.newCount'
-        ],
-        async: false
-      });
-    scene.constructOperator({
         operatorName: 'setObjGeom',
         srcFile: 'FABRIC_ROOT/SG/KL/loadObj.kl',
         entryFunctionName: 'setObjGeom',
         parameterLayout: [
+          'self',
           'resource.handle',
           'uniforms.entityIndex',
           'uniforms.indices',
@@ -197,21 +186,11 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
     
       var attributesdgnode = trianglesNode.getAttributesDGNode();
       attributesdgnode.bindings.append(scene.constructOperator({
-        operatorName: 'setVertexCount',
-        srcFile: 'FABRIC_ROOT/SG/KL/loadObj.kl',
-        entryFunctionName: 'setVertexCount',
-        parameterLayout: [
-          'resource.handle',
-          'uniforms.entityIndex',
-          'resource.reload',
-          'self.newCount'
-        ]
-      }));
-      attributesdgnode.bindings.append(scene.constructOperator({
         operatorName: 'setObjGeom',
         srcFile: 'FABRIC_ROOT/SG/KL/loadObj.kl',
         entryFunctionName: 'setObjGeom',
         parameterLayout: [
+          'self',
           'resource.handle',
           'uniforms.entityIndex',
           'uniforms.indices',

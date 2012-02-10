@@ -308,6 +308,7 @@ operator subdividePatch(
 }
 
 function generateTeapotBase(
+  io Container container,
   in Scalar size,
   in Integer detail,
   in Boolean genTex,
@@ -324,11 +325,8 @@ function generateTeapotBase(
 
   getTeapotHull(tp, tv, tn);
 
-//  positions.resize(tp.size() * nb_points * nb_points);
-//  normals.resize(positions.size());
-//  if (genTex) {
-//    uvs.resize(positions.size());
-//  }
+  container.setCount(Size(tp.size() * nb_points * nb_points));
+
   indices.resize(tp.size() * (nb_points - 1) * (nb_points - 1) * 6);
 
   Size voff = 0.0, idxoff = 0;
@@ -347,28 +345,14 @@ function generateTeapotBase(
   }
 }
 
-
-operator setTeapotVertexCount(
-  io Integer detail,
-  io Size newCount
-) {
-  Integer nb_points = (detail >= 0) ? (detail + 2) : 2;
-  Patch tp[];
-  Vec3 tv[], tn[];
-  getTeapotHull(tp, tv, tn);
-
-  newCount = tp.size() * nb_points * nb_points;
-}
-
-
 operator generateTeapot(
+  io Container container,
   io Scalar size,
   io Integer detail,
-
   io Integer indices[],
   io Vec3 positions<>,
   io Vec3 normals<>,
   io Vec2 uvs<>
 ) {
-  generateTeapotBase(size, detail, true, indices, positions, normals, uvs);
+  generateTeapotBase(container, size, detail, true, indices, positions, normals, uvs);
 }

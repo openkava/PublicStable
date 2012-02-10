@@ -87,17 +87,8 @@ operator parseObj(
     decodeObj( resource, printDetailedInfo, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, groupNames, materialNames);
 }
 
-
-operator setVertexCount(
-  io OBJDataHandle objParseHandle,
-  io Integer entityIndex,
-  io Boolean reload,
-  io Size newCount
-) {
-  FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, newCount);
-}
-
 operator setObjGeom(
+  io Container container,
   io OBJDataHandle objParseHandle,
   io Integer entityIndex,
   io Integer indices[],
@@ -106,6 +97,9 @@ operator setObjGeom(
   io Vec2 uvs<>,
   io Boolean reload
 ) {
+  Size count;
+  FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, count);
+  container.setCount(count);
   FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
   FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
   FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );

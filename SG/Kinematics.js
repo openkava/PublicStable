@@ -147,14 +147,13 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     // create the operator to convert the matrices into a texture
     dgnode.addMember('textureMatrix', 'Mat44');
     
-      
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.setCount( parentContainer.getCount() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
-        'transforms.count',
-        'self.newCount'
+        'transforms',
+        'self'
       ],
       async: false
     }));

@@ -583,7 +583,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
           dgnode.bindings.append(scene.constructOperator({
             operatorName: 'secureContainerResize',
             parameterLayout: [
-              'self.newCount',
+              'self',
               'metaData.'+dgnodeName+'sliceCountElementIndex',
               'secureStorage.elements'
             ],
