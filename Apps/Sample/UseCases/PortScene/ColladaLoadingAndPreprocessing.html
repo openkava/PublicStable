@@ -141,41 +141,44 @@ FABRIC.require(["SG/SceneGraph",
     materialConstructorCallback: materialCallback
   };
   
-  
+  // There is something wrong with this file. we get an assert during redraw.
 //  scene.importAssetFile('Models/Buros.DAE', parseOptions, collectInstanced);
+//  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstanced);
   /*
   
   
   */
   
   /*
+   var fileName = 'CRANES_RMGCrane';
   scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstanced);
+  DONE
   */
-  scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstanced);
   
   /*
+  var fileName = 'Buildings2_GARAGE_FACTORIES2';
   scene.importAssetFile('Models/Buildings2.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/GARAGE.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstanced);
+  DONE
   */
   /*
-   var fileName = 'Trailors_Ships_Containers';
+  var fileName = 'Trailors_Ships_Containers';
   scene.importAssetFile('Models/Trailors.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/Ships.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/Containers.DAE', parseOptions, collectInstanced);
+  DONE
   */
-  
   /*
-   var fileName = 'Industry_FACTORIES';
+  var fileName = 'Industry_FACTORIES';
   scene.importAssetFile('Models/Industry.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstanced);
+  DONE
   */
-  
 
-  /*
-   var fileName = 'TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea';
+/*
+  var fileName = 'TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea';
   scene.importAssetFile('Models/TerrainAndOtherBits.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/TERRAIN_MAIN.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/Domesky.DAE', {
@@ -203,8 +206,8 @@ FABRIC.require(["SG/SceneGraph",
     },
     blockRedrawingTillResourceIsLoaded: false
   }, collectInstanced);
-  
-  */
+  DONE
+*/
   
   
   scene.addEventListener('mousedown_geom', function(evt) {
@@ -219,7 +222,7 @@ FABRIC.require(["SG/SceneGraph",
     })
     .click(function() {
      
-      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'port');
+      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', fileName);
       
       presetSaver.save(storage);
       
