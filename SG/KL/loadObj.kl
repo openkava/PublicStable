@@ -18,8 +18,15 @@ function decodeObj(
   io String groupNames[],
   io String materialNames[]
 ) {
-  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
-  resource.data.resize(0);//Note: this might not be safe if loadObj is called twice on the same data; maybe it should be an option?
+
+  if(!objParseHandle.handle) {
+    if(resource.data.size() > 0) {
+      FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
+      resource.data.resize(0);//Note: this might not be safe if loadObj is called twice on the same data; maybe it should be an option?
+    } else if(resource.dataExternalLocation) {
+      FabricOBJOpenFileHandle(resource.dataExternalLocation, splitByObject, splitByGroup, splitByMaterial, objParseHandle);
+    }
+  }
 
   Boolean hadErrors;
   FabricOBJHadErrors( objParseHandle, hadErrors );

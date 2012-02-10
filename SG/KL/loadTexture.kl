@@ -15,7 +15,7 @@ operator loadSlicedImagePIXELFORMAT(
   io Size imageHeight,
   io PIXELFORMAT slicedBitmap<>
 ) {
-  if(resource.data.size() > 0)
+  if(resource.data.size() > 0 || Boolean(resource.dataExternalLocation))
   {
     PIXELFORMAT bitmap[];
     decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
@@ -52,7 +52,7 @@ operator loadAndBindTexturePIXELFORMAT(
   io Integer textureUnit
 ) {
 //  report("loadAndBindTexturePIXELFORMAT -> textureUnit:" + textureUnit);
-  if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && resource.data.size() != 0){
+  if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && (resource.data.size() > 0 || Boolean(resource.dataExternalLocation))){
     Size width, height;
     PIXELFORMAT bitmap[];
     if(decodePIXELFORMATImageData(resource, width, height, bitmap)){
