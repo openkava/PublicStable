@@ -134,22 +134,48 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     // tracks causes significant performance issues. So the solution for
     // now is to disable track evaluation while manipulating, and only store
     // the tracks once manipulaiton is complete. 
-    var m_track, m_trackId;
+    var m_track, m_trackId, m_newUndoTransaction;
     animationTrackNode.pub.setValues = function(time, trackIds, values) {
     //  var trackSet = this.getTrackSet(trackSetId);
     //  trackSet.setValues(time, trackIds, values);
     //  this.setTrackSet(trackSet, trackSetId);
-    //  animationTrackNode.pub.fireEvent('valuechanged', {});
+    //  animationTrackNode.pub.fireEvent('keyframetrackchanged', {});
     
       m_track.setValues(time, trackIds, values);
     };
     animationTrackNode.beginManipulation = function(trackId) {
       m_trackId = trackId;
       m_track = animationTrackNode.pub.getTrack(trackId);
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager){
+        m_newUndoTransaction = false;
+        if(!undoManager.undoTransactionOpen()){
+          undoManager.openUndoTransaction();
+          m_newUndoTransaction = true;
+        }
+        var newTrackSet, prevTrackSet = animationTrackNode.pub.getTrack(m_trackId);
+        undoManager.addAction({
+          onClose: function() {
+            newTrackSet = m_track;//animationTrackNode.pub.getTrack(m_trackId);
+          },
+          onUndo: function() {
+            animationTrackNode.pub.setTrack(prevTrackSet, m_trackId);
+          },
+          onRedo: function() {
+            animationTrackNode.pub.setTrack(newTrackSet, m_trackId);
+          }
+        });
+      }
     }
     animationTrackNode.endManipulation = function() {
       animationTrackNode.pub.setTrack(m_track, m_trackId);
-      animationTrackNode.pub.fireEvent('valuechanged', {});
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager && m_newUndoTransaction){
+        undoManager.closeUndoTransaction();
+      }
+      animationTrackNode.pub.fireEvent('keyframetrackchanged', {});
     }
         
     animationTrackNode.getEvaluateCurveOperator = function() {
@@ -451,6 +477,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
     };
+    animationLibraryNode.pub.setTrackSet = function(trackSet, trackSetId) {
+      return dgnode.getData('trackSet', trackSetId, trackSet);
+    };
     
     animationLibraryNode.getBindings = function(trackSetId) {
       return dgnode.getData('bindings', trackSetId);
@@ -478,22 +507,131 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     // tracks causes significant performance issues. So the solution for
     // now is to disable track evaluation while manipulating, and only store
     // the tracks once manipulaiton is complete. 
-    var m_trackSet, m_trackSetId;
-    animationLibraryNode.pub.setValues = function(trackSetId, time, trackIds, values) {
+    var m_trackSet, m_trackSetId, m_newUndoTransaction;
+    animationLibraryNode.pub.setValues = function(trackSetId, time, value, index, xfoTrackFilter) {
+      
+      var type = (typeof value == 'number') ? 'Number' : value.getType();
+      var bindings = animationLibraryNode.getBindings(trackSetId);
+      var findBinding = function(bindingsList){
+        for(var i=0; i<bindingsList.length; i++){
+          if(bindingsList[i].varId == index){
+            return bindingsList[i];
+          }
+        }
+        throw "Binding not found";
+      }
+      var binding, values;
+      var trackIds;
+      switch(type){
+      case 'Number':
+        binding = findBinding(bindings.scalarBindings);
+        values = [value];
+        trackIds = binding.trackIds;
+        break;
+      case 'FABRIC.RT.Vec3':
+        binding = findBinding(bindings.vec3Bindings);
+        values = [value.x, value.y, value.z];
+        trackIds = binding.trackIds;
+        break;
+      case 'FABRIC.RT.Quat':
+        binding = findBinding(bindings.quatBindings);
+        if(binding.trackIds.length == 3){
+          var euler = new FABRIC.RT.Euler();
+          euler.setFromQuat(value);
+          values = [euler.x, euler.y, euler.z];
+        }else if(binding.trackIds.length == 4){
+          values = [value.w, value.x, value.y, value.z];
+        }
+        trackIds = binding.trackIds;
+        break;
+      case 'FABRIC.RT.Xfo':
+        binding = findBinding(bindings.xfoBindings);
+        trackIds = binding.trackIds;
+        if(binding.trackIds.length == 6){
+          var euler = new FABRIC.RT.Euler();
+          euler.setFromQuat(value.ori);
+          values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
+        }else if(binding.trackIds.length == 7){
+          
+          if(xfoTrackFilter){
+            var filteredValues = [];
+            var filteredTrackIds = [];
+            if(xfoTrackFilter.tr){
+              filteredValues = [value.tr.x, value.tr.y, value.tr.z];
+              filteredTrackIds = [trackIds[0], trackIds[1], trackIds[2]]
+            }
+            if(xfoTrackFilter.ori){
+              filteredValues = filteredValues.concat([value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w]);
+              filteredTrackIds = filteredTrackIds.concat([trackIds[3], trackIds[4], trackIds[5], trackIds[6]]);
+            }
+            if(xfoTrackFilter.sc){
+              filteredValues = [value.sc.x, value.sc.y, value.sc.z];
+              filteredTrackIds = [trackIds[6], trackIds[7], trackIds[8]]
+            }
+            values = filteredValues;
+            trackIds = filteredTrackIds;
+          }
+          else{
+            values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
+            trackIds = binding.trackIds;
+          }
+        }
+        break;
+      default:
+        throw 'Unhandled type:' + val;
+      }
+      
+      // This is commented out, because we fetch the
+      // track set at the beginning of the manipulation
+      // and push it only at the end.
     //  var trackSet = this.getTrackSet(trackSetId);
     //  trackSet.setValues(time, trackIds, values);
     //  this.setTrackSet(trackSet, trackSetId);
-    //  animationLibraryNode.pub.fireEvent('valuechanged', {});
+    //  animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
     
       m_trackSet.setValues(time, trackIds, values);
     };
     animationLibraryNode.beginManipulation = function(trackSetId) {
       m_trackSetId = trackSetId;
       m_trackSet = dgnode.getData('trackSet', trackSetId);
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager){
+        // A new transaction may have already been opened if the 
+        // event has already been recieved from a different source. 
+        if(!m_newUndoTransaction){
+          if(!undoManager.undoTransactionOpen()){
+            undoManager.openUndoTransaction();
+            m_newUndoTransaction = true;
+          }
+          var newTrackSet, prevTrackSet = animationLibraryNode.pub.getTrackSet(m_trackSetId);
+          undoManager.addAction({
+            onClose: function() {
+              newTrackSet = m_trackSet;//animationLibraryNode.pub.getTrackSet(m_trackId);
+            },
+            onUndo: function() {
+              m_trackSet = prevTrackSet;
+              dgnode.setData('trackSet', m_trackSetId, prevTrackSet);
+              animationLibraryNode.pub.fireEvent('keyframetrackchanged', { trackSetId: m_trackSetId });
+            },
+            onRedo: function() {
+              m_trackSet = newTrackSet;
+              dgnode.setData('trackSet', m_trackSetId, newTrackSet);
+              animationLibraryNode.pub.fireEvent('keyframetrackchanged', { trackSetId: m_trackSetId });
+            }
+          });
+        }
+      }
     }
     animationLibraryNode.endManipulation = function() {
       dgnode.setData('trackSet', m_trackSetId, m_trackSet);
-      animationLibraryNode.pub.fireEvent('valuechanged', {});
+      
+      var undoManager = scene.getManager('UndoManager');
+      if(undoManager && m_newUndoTransaction){
+        undoManager.closeUndoTransaction();
+        m_newUndoTransaction = false;
+      }
+      animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
     }
     
     var paramsdgnode;
