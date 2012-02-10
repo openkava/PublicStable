@@ -982,7 +982,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID);
+      variablesNode.setAnimationLibraryNode(animationLibrary);
+      variablesNode.setAnimationControllerNode(controllerNode);
+      variablesNode.setBoundTrack(trackSetID);
       
     }
   }

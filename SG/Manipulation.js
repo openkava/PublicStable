@@ -563,8 +563,7 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     scene.assignDefaults(options, {
         targetNode: undefined,
         targetMember: 'globalXfo',
-        localXfo: new FABRIC.RT.Xfo(),
-        undoManager: undefined
+        localXfo: new FABRIC.RT.Xfo()
       });
     if(!options.targetNode)
       options.targetNode = options.parentNode;
@@ -594,25 +593,28 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     options.transformNode = transformNode.pub;
     var manipulatorNode = scene.constructNode('Manipulator', options );
     
+    
     // take care of undo
-    var undoManager = options.undoManager;
-    manipulatorNode.pub.setUndoManager = function(manager) {
-      undoManager = manager;
-    };
+    var undoManager = scene.getManager('UndoManager');
     if(undoManager) {
-      var prevXfo = undefined;
-      var isManipulating = false;
       manipulatorNode.pub.addEventListener('dragstart', function() {
-        prevXfo = manipulatorNode.getTargetXfo().clone();
+        undoManager.openUndoTransaction();
+        var newXfo, prevXfo = manipulatorNode.getTargetXfo();
+        undoManager.addAction({
+          name: 'InstanceManipulation',
+          onClose: function() {
+            newXfo = manipulatorNode.getTargetXfo();
+          },
+          onUndo: function() {
+            manipulatorNode.setTargetXfo(prevXfo);
+          },
+          onRedo: function() {
+            manipulatorNode.setTargetXfo(newXfo);
+          }
+        });
       });
       manipulatorNode.pub.addEventListener('dragend', function() {
-        undoManager.setDataTask({
-          name: 'InstanceManipulation',
-          node: targetNode,
-          member: targetMember,
-          value: manipulatorNode.getTargetXfoCached().clone(),
-          prevValue: prevXfo.clone()
-        });  
+        undoManager.closeUndoTransaction();
       });
     }
     
@@ -626,26 +628,17 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     manipulatorNode.getTargetXfo = function() {
       return targetNode[targetMemberGetter]();
     }
-    var localTargetXfo = undefined;
-    manipulatorNode.getTargetXfoCached = function() {
-      return localTargetXfo;
-    }
     manipulatorNode.setTargetXfo = function(xfo) {
-        targetNode[targetMemberSetter](xfo);
-        localTargetXfo = xfo.clone();
-        manipulatorNode.pub.fireEvent('targetManipulated',{newTargetXfo: xfo});
+      targetNode[targetMemberSetter](xfo);
     }
     manipulatorNode.setTargetOri = function(ori) {
       var xfo = this.getTargetXfo();
       xfo.ori = ori;
       this.setTargetXfo(xfo);
     }
-    
     manipulatorNode.getManipulationSpaceXfo = function() {
       return transformNode.pub.getGlobalXfo();
     }
-    
-    
     // Thia function is used to find the closest local axis to
     // the given vec. The local axis can then be used in manipulation.
     // Manipulators can then determine the best local axis based on the
@@ -1070,6 +1063,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
+        radius: 15
       });
     var xfoManipulator = scene.constructNode('SceneGraphNode', options);
     var name = xfoManipulator.pub.getName();
