@@ -22,7 +22,7 @@ function OGLRenderTarget.genTextures() {
   }
 
   //Create Frame Buffer Object
-  Size fbos[];
+  Integer fbos[];
   fbos.resize(1);
   glGenFramebuffers(1, fbos);
   this.fbo = fbos[0];
@@ -30,7 +30,7 @@ function OGLRenderTarget.genTextures() {
   glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);
   
   this.numColorBuffers = 0;
-  Size textureIDs[];
+  Integer textureIDs[];
   textureIDs.resize(1);
   
   for(i=0; i<this.textures.size(); i++){
@@ -139,7 +139,7 @@ function OGLRenderTarget.prebind(
       // the textures if they have.
     
       Size numTextures = (this.hasDepthBufferTexture ? 1 : 0) + this.numColorBuffers;
-      Size bufferIDs[];
+      Integer bufferIDs[];
       bufferIDs.resize(1);
       
       // Textures need to be deleted first.;
