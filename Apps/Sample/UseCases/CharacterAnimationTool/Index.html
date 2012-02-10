@@ -14,9 +14,53 @@
     <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../ga.js" charset="utf-8"></script>
 
+  <script type="text/javascript" src="../../../../SG/CurveEditor/CurveEditor.js" charset="utf-8"></script>
 
     <style type="text/css">
     
+
+#editor {
+  width:100%;
+  height:70%;
+}
+/*
+  .ui-resizable-handle {
+    background: #78AB46;
+    height: 16px;
+  }
+    .ui-icon-grip-dotted-horizontal {
+     margin-left:50%;
+    }
+*/
+
+
+#curveEditorContainer {
+  position: absolute;
+  width:100%;
+  left: 0;
+  right: 0;
+  bottom: 0; 
+}
+
+#curveViewer {
+  position:absolute;
+  left:0;
+  right:251px;
+  top:0;
+  bottom:0;
+  /*min-width:960px;*/
+}
+
+#curveContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: solid 1px #CCC;
+  box-shadow: inset 0 1px 3px #bebebe;
+/*  background: #E1DDDC url(images/bg-page.jpg) repeat left top;*/
+}
 
 #sidebar {
   width:240px;
@@ -42,7 +86,29 @@
     <script type="text/javascript">
     
 $(document).ready(function() {
-    
+ 
+ var $resizerHandle = $( "#editor" ).resizable({ handles: 's', maxHeight: '95%' }).find( ".ui-resizable-handle" );
+ $resizerHandle.css('background', '#78AB46');
+ /*
+ $resizerHandle.height('#16px');
+ $resizerHandle.append( "<span class='ui-icon ui-icon-grip-dotted-horizontal' style='margin-left:50%'></span>" ).parent();
+ // .wrap( "<div class='ui-handle-helper-parent'></div>" ).parent();
+ */
+ 
+ var resizeCurveEditor = function(){
+   $( "#curveEditorContainer" ).css( 'top', ($( "#editor" ).height()+8)+'px' );
+ }
+  $( "#editor" ).bind('resize',
+    function(event, ui) {
+     $( "#editor" ).css( 'width', '100%' );
+      resizeCurveEditor();
+    });
+  window.onresize = function () {
+    resizeCurveEditor();
+  //  curveEditorContainer.resize();
+  };
+ resizeCurveEditor();
+ 
   $( "#undoRedoSet" ).buttonset();
   
   $('#ikblendLArm').slider({
@@ -120,7 +186,7 @@ $(document).ready(function() {
       }
     });
   
-  $('#curveEditor').button({
+  $('#curveEditorButton').button({
       text: true,
       icons: {
         primary: 'ui-icon-image'
@@ -135,6 +201,12 @@ $(document).ready(function() {
   $('#loadingDialog').dialog({
     modal: true
   });
+  
+  $('#presetNameDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  
     
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
@@ -177,12 +249,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
 
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var material = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-    lightNode: light
-  });
-  
   // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
@@ -194,8 +260,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       color: new FABRIC.RT.rgb(0.3,0.3,0.3,1.0)
     } )
   });
-
-  
+  /*
   // create the undo manager
   var undoManager = scene.constructManager("UndoManager");
   undoManager.addEventListener('undo', scene.redrawAllViewports );
@@ -214,7 +279,8 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   
   layerManager.addLayer('geometries');
   layerManager.addLayer('rig');
-	
+  
+  
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
   bodyMaterial = scene.constructNode('MonsterMaterial', {
@@ -448,6 +514,9 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       });
     
     bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+    
+    var  curveEditor = constructCurveEditor('curveEditorContainer', bezierKeyAnimationLibrary);
+    
     controllerNode = scene.constructNode('AnimationController');
     rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
     
@@ -559,6 +628,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     skeletonGeometryNode.getInstanceNode().setDrawToggle($("#displaySkeleton").is(":checked"));
     viewport.redraw();
   });
+  
   $("#displayRig").attr('checked', true).change(function(event, ui) {
     var checked = $('#displayRig').attr('checked') === 'checked';
     layerManager.setRig(checked);
@@ -570,6 +640,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     rigNode.setDebuggingEnabled(checked);
     viewport.redraw();
   });
+  
   $("#displayWireframe").attr('checked', false).change(function(event, ui) {
     var checked = $('#displayWireframe').attr('checked') === 'checked';
     bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
@@ -596,6 +667,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       }
     });
   }
+  
   var timeSlider = $('#timeSlider').slider({
       min: 0,
       max: 4,
@@ -642,8 +714,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     }
   });
   
-  
-  $('#curveEditor').button({
+  $('#curveEditorButton').button({
       text: true,
       icons: {
         primary: 'ui-icon-image'
@@ -660,11 +731,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
        }, true);
       });
     });
-    
-  $('#presetNameDialog').dialog({
-    autoOpen: false,
-    modal: true
-  });
+  */
   
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
@@ -691,6 +758,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   });
   
 });
+
 });
 
 // jQuert UI Styling classes
@@ -734,7 +802,7 @@ $(document).ready(function() {
               <button id="exportResource" style="margin-top:10px;">Export</button>
               <ol id="animationLibraryList">
               </ol>
-              <button id="curveEditor" style="margin-top:10px;">Open Curve Editor</button><br>
+              <button id="curveEditorButton" style="margin-top:10px;">Open Curve Editor</button><br>
            <!--   <input type="checkbox" id="displayRig" style="margin-top:10px;" /><label for="displayRig">Display Rig</label><br>
             -->
               <label for="displaySkeleton">Display Skeleton</label><input type="checkbox" id="displaySkeleton" style="margin-top:10px;"/><br>
@@ -770,6 +838,33 @@ $(document).ready(function() {
         </div><!--timeControls-->
         
       </div> <!--editor-->
+      <div id="curveEditorContainer">
+       
+      <div id="curveViewer">
+        <div id="curveContainer" style="background-color: #696969;">
+        </div>
+      </div><!--viewer-->
+
+      <div id="sidebar">
+        <!--
+        <div class="box">
+        <h2>INFO</h2>
+        <div class="content">
+        KeyFrame Animation.<br>
+        Hold 'Alt' to break the key handles.
+        </div><!--content- ->
+        </div>box-->
+        <div class="box">
+          <h2>KEYFRAME TRACKS</h2>
+          <div class="content">
+            <input type="checkbox" id="displayKeys" style="margin-top:10px;"/><label for="displayKeys">Display Keys:</label>
+            <ul id="keyframeTracks">
+            </ul>
+          </div><!--content-->
+        </div><!--box-->
+      </div><!--sidebar-->
+       
+      </div><!--curveEditorContainer-->
     </div><!--wrapper-->
   </body> 
   </html>

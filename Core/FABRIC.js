@@ -2384,11 +2384,11 @@ var requirejs, require, define;
 
       var onDOMWindowResize = function() {
         if (options.aspectRatio) {
-          embedTag.width = element.offsetWidth;
+          embedTag.width = '100%';
           embedTag.height = element.offsetWidth * options.aspectRatio;
         } else {
-          embedTag.width = element.offsetWidth;
-          embedTag.height = element.offsetHeight;
+          embedTag.width = '100%';
+          embedTag.height = '100%';
         }
       };
       embedTag.width = 1;

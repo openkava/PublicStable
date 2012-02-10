@@ -442,8 +442,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
   
   var fitCurveEditorToWindow = function(){
-    var newWindowWidth = $('#viewer').width();
-    var newWindowHeight = $('#viewer').height();
+    var newWindowWidth = $('#curveViewer').width();
+    var newWindowHeight = $('#curveViewer').height();
     
     // Occasionaly when the window is opened, it has a negative width and
     // then we get sent a resize event. Here, we re-fit the curve to the screen.
