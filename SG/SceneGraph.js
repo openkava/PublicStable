@@ -562,6 +562,7 @@ FABRIC.SceneGraph = {
       if(file.substr(0,11).toLocaleLowerCase() == "fabricio://") {
         var filename = FABRIC.IO.getFileHandleInfo(file).fileName;
         ext = filename.split('.').pop().toLocaleLowerCase();
+        options.storeDataAsFile = true;
       }
       if (FABRIC.SceneGraph.assetLoaders[ext]) {
         var assets = FABRIC.SceneGraph.assetLoaders[ext](scene.pub, file, options, callback);
@@ -1064,7 +1065,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
       redrawOnLoad: true,
-      storeDataAsFile: false,
+      storeDataAsFile: true,
       url: undefined
     });
     

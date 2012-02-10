@@ -5,7 +5,7 @@
  
 var FABRIC = (function() {
 
-  var requiredVersion = [1,0,20];
+  var requiredVersion = [1,0,21];
   // we keep an array of context ids,
   // so we can open the debugger with one
   var contextIDs = [];
@@ -2245,7 +2245,7 @@ var requirejs, require, define;
   
   var displayPluginInstallPage = function( div ){
     var iframeTag = document.createElement('iframe');
-    iframeTag.setAttributeNS(null, 'src', 'http://demos.fabric-engine.com/Fabric/Core/pluginInstall.html?ver=' + requiredVersion.join('.'));
+    iframeTag.setAttributeNS(null, 'src', fabricRootURL+'/Core/pluginInstall.html?ver=' + requiredVersion.join('.'));
     iframeTag.setAttributeNS(null, 'style', 'position:absolute; left:0; right:0; top:0; bottom:0; z-index:10');
     iframeTag.setAttributeNS(null, 'width', '100%');
     iframeTag.setAttributeNS(null, 'height', '100%');
