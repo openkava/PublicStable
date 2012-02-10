@@ -20,6 +20,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
+  if(options.blockRedrawingTillResourceIsLoaded == undefined) options.blockRedrawingTillResourceIsLoaded = true;
   
   // Load animations in the collada file into an animation library using an existing rig.
   if(options.loadAnimationUsingRig == undefined) options.loadAnimationUsingRig = false;
@@ -735,9 +736,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   }
   
   var parseInstanceGeometry = function(node) {
-    var instanceController = {
+    var instanceGeometry = {
       url: node.getAttribute('url')
-      };
+    };
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
@@ -746,7 +747,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       }
       child = child.nextElementSibling;
     }
-    return instanceController;
+    return instanceGeometry;
   }
   
   var parseInstanceController = function(node) {
@@ -768,7 +769,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     var nodeData = {
       name:  node.getAttribute('name'),
       type:  node.getAttribute('type'),
-      instance_geometry: undefined,
       xfo: new FABRIC.RT.Xfo(),
       rotationOrder: '',
       children:[]
@@ -947,6 +947,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       }
       var technique = profile.technique.techniquedata;
       var lightingmodel = technique.lightingmodel;
+      var materialNode;
+      if(options.materialConstructorCallback){
+        materialNode = options.materialConstructorCallback(lightingmodel, colladaData.libraryImages);
+      }else{
+        
       var materialOptions = { name: effectData.name };
       var i;
       for (i in options.materialOptions) {
@@ -961,13 +966,23 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         if(lightingmodel[i].texture){
           var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
           var imageUrl = remapPath(textureData.path);
+          if(imageUrl.split('.')[1]!= 'png'){
+            var imageUrlArray = imageUrl.split('.');
+            imageUrlArray.pop();
+            imageUrlArray.push('png');
+            imageUrl = imageUrlArray.join('.');
+          }
           if(!imageLibrary[imageUrl]){
-            imageLibrary[imageUrl] = scene.constructNode('Image2D', { url: imageUrl });
+            imageLibrary[imageUrl] = scene.constructNode('Image2D', {
+              url: imageUrl,
+              blockRedrawingTillResourceIsLoaded: options.blockRedrawingTillResourceIsLoaded
+            });
           }
           materialOptions[options.materialMaps[i]] = imageLibrary[imageUrl];
         }
       }
       materialNode = scene.constructNode(options.materialType, materialOptions);
+      }
       assetNodes[materialNode.getName()] = materialNode;
     }else{
       // construct a default material and return it instead.
@@ -1093,6 +1108,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   
   var constructGeometries = function(geometryData){
     var geometryNodes = [];
+    var materialNodes = [];
     if(geometryData.mesh){
       var meshData = geometryData.mesh;
       var constructGeometryNode = function(polygons){
@@ -1109,8 +1125,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
           });
         }
         geometryNode.loadGeometryData(processedData.geometryData);
-        assetNodes[name] = geometryNode;
+        assetNodes[geometryNode.getName()] = geometryNode;
         geometryNodes.push(geometryNode);
+        
+        if(polygons.material){
+          var materialData = colladaData.libraryMaterials[polygons.material];
+          var materialNode = constructMaterial(materialData);
+          assetNodes[materialNode.getName()] = materialNode;
+          materialNodes.push(materialNode);
+        }
       }
       if(meshData.triangles){
         for(var i=0; i<meshData.triangles.length; i++){
@@ -1127,7 +1150,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       alert("This collada importer only supports polygon and triangle meshes.");
       throw "This collada importer only supports polygon and triangle meshes."
     }
-    return geometryNodes;
+    return { geometries: geometryNodes, materials: materialNodes };
   }
 
   
@@ -1566,7 +1589,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       characterMeshNode.loadGeometryData(processedData.geometryData);
       
       characterMeshNode.setInvMatrices(invmatrices, jointRemapping);
-      assetNodes[name] = characterMeshNode;
+      assetNodes[characterMeshNode.getName()] = characterMeshNode;
       return characterMeshNode;
     }
     
@@ -1608,51 +1631,56 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   var constructScene = function(sceneData){
     
     var constructInstance = function(instanceData, parentTransformNode){
-      var materialNode;
+      
+      var transformNodeOptions = { name: instanceData.name +"Transform" };
+      if(parentTransformNode){
+        transformNodeOptions.hierarchical = true;
+        transformNodeOptions.localXfo = instanceData.xfo;
+        transformNodeOptions.parentTransformNode = parentTransformNode;
+      }else{
+        if(options.parentTransformNode){
+          transformNodeOptions.hierarchical = true;
+          transformNodeOptions.parentTransformNode = options.parentTransformNode;
+        }else{
+          transformNodeOptions.hierarchical = false;
+          transformNodeOptions.globalXfo = instanceData.xfo;
+        }
+      }
+      var transformNode = scene.constructNode('Transform', transformNodeOptions );
+          
       if(instanceData.instance_geometry){
         var url = instanceData.instance_geometry.url.slice(1);
-        var geometries = getGeometryNodes(url);
+        var geometryNodes = getGeometryNodes(url);
+        var geometries = geometryNodes.geometries;
+        var materials = geometryNodes.materials;
         for(var i=0; i<geometries.length; i++){
+          var materialNode = materials[i];
           var geometryNode = geometries[i];
           if(instanceData.instance_geometry.instance_material){
             // TODO:
-            materialNode = constructMaterial();
+            var materialData = colladaData.libraryMaterials[instanceData.instance_geometry.instance_material];
+            materialNode = constructMaterial(materialData);
           }
           
-          var transformNodeOptions = { name: instanceData.name +"Transform" };
-          if(parentTransformNode){
-            transformNodeOptions.hierarchical = true;
-            transformNodeOptions.localXfo = instanceData.xfo;
-            transformNodeOptions.parentTransformNode = parentTransformNode;
-          }else{
-            if(options.parentTransformNode){
-              transformNodeOptions.hierarchical = true;
-              transformNodeOptions.parentTransformNode = options.parentTransformNode;
-            }else{
-              transformNodeOptions.hierarchical = false;
-              transformNodeOptions.globalXfo = instanceData.xfo;
-            }
-          }
-          var transformNode = scene.constructNode('Transform', transformNodeOptions );
           if(geometryNode/* && materialNode*/){
             var instanceNode = scene.constructNode('Instance', {
               name: instanceData.name, 
               transformNode: transformNode,
               geometryNode: geometryNode,
-              materialNode: materialNode
+              materialNode: materialNode,
+              enableRaycasting: true
             });
-            assetNodes[instanceData.name] = instanceNode;
+            assetNodes[instanceNode.getName()] = instanceNode;
           }
         }
-      
       }
       else if(instanceData.instance_controller){
         var url = instanceData.instance_controller.url.slice(1);
         var controllerNodes = constructController(sceneData, url, instanceData.name);
         
         for(var i=0; i<controllerNodes.geometries.length; i++){
-          geometryNode = controllerNodes.geometries[i];
-          materialNode = controllerNodes.materials[i];
+          var geometryNode = controllerNodes.geometries[i];
+          var materialNode = controllerNodes.materials[i];
           if(instanceData.instance_controller.instance_material){
             // TODO: materialNode =
           }

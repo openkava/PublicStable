@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">  
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+    <title>FABRIC - Collada Viewer</title> 
+        
+    <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../ga.js" charset="utf-8"></script>
+
+    <script type="text/javascript">
+     
+$(document).ready(function() {
+    $('#loadingDialog').dialog({
+      modal: true
+    });
+});
+   
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Persistence",
+                "SG/Parsers/parseCollada"], function() {
+
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    windowElement: document.getElementById('FabricContainer'),
+    enableRaycasting: true,
+  });
+  
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      nearDistance: 0.1,
+      farDistance: 900,
+      target: new FABRIC.RT.Vec3(0, 0, 0),
+      position: new FABRIC.RT.Vec3(-18, 47.7, 79.3)
+    });
+
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+
+  viewport.setCameraNode(camera);
+
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  
+  var presetSaver = scene.constructManager('SceneSerializer',{
+    typeRemappings: { ObjTriangles: 'Triangles' } 
+  });
+  
+  var nodes = {};
+  var collectInstanced = function(nodeMap){
+    for(var nodeName in nodeMap){
+      presetSaver.addNode(nodeMap[nodeName]);
+    }
+  }
+  
+  var imageLibrary = {};
+  var materialCallback = function(materialData, textureLibraryData){
+    var materialOptions, materialType = 'PhongMaterial';
+    
+    var remapPath = function(path){
+      var oldbasePath = 'file://C:\\Projects\\FabricAssets\\Port\\FINAL_2011_MAX7_FILES';
+      var newbasePath = 'TexturesPNGs';
+      if(path.substring(0, oldbasePath.length) === oldbasePath){
+        return newbasePath + path.substring(oldbasePath.length);
+      }
+      return path;
+    }
+    var loadTexture = function(textureID){
+      var textureData = textureLibraryData[textureID];
+      if(textureData.path == 'file://'){
+        return undefined;
+      }
+      var imageUrl = remapPath(textureData.path);
+      if(imageUrl.split('.')[1]!= 'png'){
+        var imageUrlArray = imageUrl.split('.');
+        imageUrlArray.pop();
+        imageUrlArray.push('png');
+        imageUrl = imageUrlArray.join('.');
+      }
+      if(!imageLibrary[imageUrl]){
+        imageLibrary[imageUrl] = scene.constructNode('Image2D', {
+          url: imageUrl,
+          blockRedrawingTillResourceIsLoaded: false
+        });
+      }
+      return imageLibrary[imageUrl];
+    }
+  
+    if(materialData.diffuse.texture){
+      var diffuseTexture = loadTexture(materialData.diffuse.texture.texture);
+      if(materialData.specular.texture){
+        var specularTexture = loadTexture(materialData.specular.texture.texture);
+        materialType = 'PhongTextureMaterial';
+        materialOptions = {
+          lightNode: light,
+          diffuseTextureNode: diffuseTexture,
+          specularTextureNode: specularTexture
+        }
+      }else{
+        if(diffuseTexture){
+          materialType = 'PhongTextureSimpleMaterial';
+          materialOptions = {
+            lightNode: light,
+            diffuseTextureNode: loadTexture(materialData.diffuse.texture.texture),
+            specularColor: materialData.specular.color
+          }
+        }
+        else{
+          materialType = 'PhongMaterial';
+          materialOptions = {
+            lightNode: light,
+            diffuseColor: materialData.diffuse.color,
+            specularColor: materialData.specular.color
+          }
+        }
+      }
+    }else{
+      materialType = 'PhongMaterial';
+      materialOptions = {
+        lightNode: light,
+        diffuseColor: materialData.diffuse.color,
+        specularColor: materialData.specular.color
+      }
+    }
+    
+    return scene.constructNode(materialType, materialOptions);
+  }
+  
+  
+  var parseOptions = {
+    scaleFactor: 0.01,
+    materialConstructorCallback: materialCallback
+  };
+  
+  
+//  scene.importAssetFile('Models/Buros.DAE', parseOptions, collectInstanced);
+  /*
+  
+  
+  */
+  
+  /*
+  scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstanced);
+  */
+  scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstanced);
+  
+  /*
+  scene.importAssetFile('Models/Buildings2.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/GARAGE.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstanced);
+  */
+  /*
+   var fileName = 'Trailors_Ships_Containers';
+  scene.importAssetFile('Models/Trailors.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/Ships.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/Containers.DAE', parseOptions, collectInstanced);
+  */
+  
+  /*
+   var fileName = 'Industry_FACTORIES';
+  scene.importAssetFile('Models/Industry.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstanced);
+  */
+  
+
+  /*
+   var fileName = 'TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea';
+  scene.importAssetFile('Models/TerrainAndOtherBits.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/TERRAIN_MAIN.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/Domesky.DAE', {
+    scaleFactor: 0.01,
+    materialType: 'FlatTextureMaterial',
+    materialOptions: {
+    },
+    materialMaps: {
+      diffuse: 'textureNode'
+    },
+    pathRemapping: {
+     'file://C:\\Projects\\FabricAssets\\Port\\FINAL_2011_MAX7_FILES': 'TexturesPNGs'
+    },
+    blockRedrawingTillResourceIsLoaded: false
+  }, collectInstanced);
+  
+  scene.importAssetFile('Models/Sea.DAE', {
+    scaleFactor: 0.01,
+    materialType: 'PhongMaterial',
+    materialOptions: {
+      lightNode: light,
+      diffuseColor: new FABRIC.RT.rgb(0.3, 0.5, 0.8),
+      shininess: 5.0,
+      bumpiness: 0.5
+    },
+    blockRedrawingTillResourceIsLoaded: false
+  }, collectInstanced);
+  
+  */
+  
+  
+  scene.addEventListener('mousedown_geom', function(evt) {
+      console.log('Mouse Down:' + evt.targetNode.getName());
+    });
+  
+  $('#saveResource').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-disk'
+      }
+    })
+    .click(function() {
+     
+      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'port');
+      
+      presetSaver.save(storage);
+      
+    });
+    
+  $(document).ready(function() {
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      $('#loadingProgressBar').progressbar({
+        value: (1.0-(doneWeight/totalWeight))*100
+      });
+      if (nbRemaining===0) {
+        $('#loadingDialog').dialog('close');
+        var errors = scene.getErrors();
+        if (errors.length > 0) {
+          throw (errors.toString());
+        }
+        viewport.redraw();
+        return true;
+      }
+    });
+  });
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+            </div><!--content-->
+          </div><!--box-->
+
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <button id="saveResource" style="margin-top:10px;">Save</button>
+            </div><!--content-->
+          </div><!--box-->
+          
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>
