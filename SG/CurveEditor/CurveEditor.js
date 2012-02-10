@@ -22,6 +22,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var isBezier = animationLibraryNode.getKeyframeType() == 'BezierKeyframe';
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
+  svgRoot.attr('id', "curveEditorSVGRoot");
   if(options.volumerenderdemohack){
     svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
   }

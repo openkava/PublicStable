@@ -899,9 +899,9 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
     dgnode.setDependency(parametersdgnode, 'parameters');
     
-    trackDisplayNode.addMemberInterface(parametersdgnode, 'trackSetId', true, true);
-    trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true, true);
-    trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true, true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'trackSetId', true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true);
 
     trackDisplayNode.addReferenceInterface('AnimationLibrary', 'Animation',
       function(nodePrivate, trackSetId){

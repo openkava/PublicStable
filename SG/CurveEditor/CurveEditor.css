@@ -1,5 +1,41 @@
 
 
+#curveEditorContainer {
+  position: absolute;
+  width:100%;
+  left: 0;
+  right: 0;
+  bottom: 0; 
+}
+
+#curveViewer {
+  position:absolute;
+  left:0;
+  right:251px;
+  top:0;
+  bottom:0;
+}
+
+#curveContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: solid 1px #CCC;
+  box-shadow: inset 0 1px 3px #bebebe;
+/*  background: #E1DDDC url(images/bg-page.jpg) repeat left top;*/
+}
+
+
+#curveEditorSVGRoot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
 #keyframeTracks {
   left:0;
   right:0;
@@ -67,22 +103,3 @@ rect.Selected {
 }
 
 
-#curveViewer {
-  position:absolute;
-  left:0;
-  right:251px;
-  top:0;
-  bottom:0;
-  /*min-width:960px;*/
-}
-
-#curveContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border: solid 1px #CCC;
-  box-shadow: inset 0 1px 3px #bebebe;
-/*  background: #E1DDDC url(images/bg-page.jpg) repeat left top;*/
-}
