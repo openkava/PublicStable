@@ -12,8 +12,6 @@ HDF5_VERSION := 1.8.7
 ALEMBIC_VERSION := 1.0_2011080800
 TEEM_VERSION := 1.10.0
 TIFF_VERSION := 3.9.5
-OPENCV_SOURCE_VERSION := 2.3.1a
-OPENCV_VERSION := 2.3.1
 
 RSYNC := rsync
 
@@ -50,7 +48,6 @@ endif
   unpack_zlib patch_zlib configure_zlib build_zlib install_zlib clean_zlib \
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
   unpack_tiff patch_tiff configure_tiff build_tiff install_tiff clean_tiff \
-  unpack_opencv patch_opencv configure_opencv build_opencv install_opencv clean_opencv \
   unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
   unpack_boost patch_boost configure_boost build_boost install_boost clean_boost \
   unpack_hdf5 patch_hdf5 configure_hdf5 build_hdf5 install_hdf5 clean_hdf5 \
@@ -60,9 +57,9 @@ endif
 
 all: build
 
-build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff build_opencv
+build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff
 
-unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff unpack_opencv
+unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff
 
 check_env_vars: 
 ifeq ($(BUILD_PLATFORM),Darwin)
@@ -340,38 +337,6 @@ Build/.tiff.unpack:
 	mkdir -p Build
 	for ARCH in $(ARCHS); do \
 		( cd Build && tar jxf ../SourcePackages/tiff-$(TIFF_VERSION).tar.bz2 && mv tiff-$(TIFF_VERSION) tiff-$(TIFF_VERSION)-$$ARCH ); \
-	done
-	touch $@
-
-#####
-
-build_opencv: Build/.opencv.build
-
-configure_opencv: Build/.opencv.configure
-
-patch_opencv: Build/.opencv.patch
-
-unpack_opencv: Build/.opencv.unpack
-
-Build/.opencv.build: Build/.opencv.configure
-	for ARCH in $(ARCHS); do \
-		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && make -j2 ); \
-	done
-	touch $@
-
-Build/.opencv.configure: Build/.opencv.patch
-	for ARCH in $(ARCHS); do \
-		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_JPEG=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_GTK=OFF -DWITH_GSTREAMER=OFF -DWITH_V4L=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
-	done
-	touch $@
-
-Build/.opencv.patch: Build/.opencv.unpack
-	touch $@
-
-Build/.opencv.unpack:
-	mkdir -p Build
-	for ARCH in $(ARCHS); do \
-		( cd Build && tar jxf ../SourcePackages/OpenCV-$(OPENCV_SOURCE_VERSION).tar.bz2 && mv OpenCV-$(OPENCV_VERSION) OpenCV-$(OPENCV_VERSION)-$$ARCH ); \
 	done
 	touch $@
 
@@ -755,33 +720,6 @@ install_tiff_libraries:
           cp Build/tiff-$(TIFF_VERSION)-$$ARCH/libtiff/.libs/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/tiff/; \
         done
 
-install_opencv: install_opencv_headers install_opencv_libraries
-
-install_opencv_headers:
-	for ARCH in $(ARCHS); do \
-          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-          cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/include/open* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/calib3d/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/contrib/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/core/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/features2d/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/flann/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/gpu/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/highgui/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/imgproc/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/legacy/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/ml/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/objdetect/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/ts/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-					cp -r Build/OpenCV-$(OPENCV_VERSION)-$(FIRST_ARCH)/modules/video/include/* $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/OpenCV; \
-        done
-
-install_opencv_libraries:
-	for ARCH in $(ARCHS); do \
-          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/OpenCV/; \
-          cp Build/OpenCV-$(OPENCV_VERSION)-$$ARCH/lib/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/OpenCV/; \
-        done
-
 install_ilmbase: install_ilmbase_headers install_ilmbase_libraries
 
 install_ilmbase_headers:
@@ -992,7 +930,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_tiff clean_opencv
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_tiff
 	rm -rf Build
 
 clean_ilmbase:
@@ -1042,12 +980,6 @@ clean_tiff:
 		rm -rf Build/tiff-$(TIFF_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.tiff.*
-
-clean_opencv:
-	for ARCH in $(ARCHS); do \
-		rm -rf Build/OpenCV-$(OPENCV_VERSION)-$$ARCH; \
-	done
-	rm -rf Build/.opencv.*
 
 clean_libedit:
 	for ARCH in $(ARCHS); do \
