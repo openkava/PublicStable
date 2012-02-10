@@ -7,5 +7,5 @@ struct RGBA {
 
 function FabricCIMGDecode( Data data, Size dataSize, io String ext, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
 function FabricCIMGOpenFileHandle( String fileHandle, io String ext, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
-function FabricCIMGCreateFromText( String text, io String ext, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
-function FabricCIMGSaveToFileHandle( String fileHandle, io String ext, Size imageWidth, Size imageHeight, Boolean mirrorVertically, io RGBA imagePixels[] );
+function FabricCIMGCreateFromText( String text, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
+function FabricCIMGSaveToFileHandle( String fileHandle, Size imageWidth, Size imageHeight, Boolean mirrorVertically, io RGBA imagePixels[] );
