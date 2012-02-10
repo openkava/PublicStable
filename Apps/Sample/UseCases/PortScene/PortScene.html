@@ -38,7 +38,7 @@ FABRIC.require(["SG/SceneGraph",
   
   // Create a camera to draw the scene from
  camera = scene.constructNode('TargetCamera', {
-      nearDistance: 1,
+      nearDistance: 0.1,
       farDistance: 900,
       target: new FABRIC.RT.Vec3(0, 0, 0),
       position: new FABRIC.RT.Vec3(-18, 47.7, 79.3)
@@ -47,25 +47,17 @@ FABRIC.require(["SG/SceneGraph",
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
-  /*
-  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  presetLoader.load(new FABRIC.SceneGraph.XHRReader('terrain_sea_sky.json'));
-
-  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  presetLoader.load(new FABRIC.SceneGraph.XHRReader('trailors_ships_containers.json'));
   
-  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  presetLoader.load(new FABRIC.SceneGraph.XHRReader('Industry_FACTORIES.json'));
-  */
-  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  presetLoader.load(new FABRIC.SceneGraph.XHRReader('CRANES_RMGCrane.json'));
-  /*
-  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  presetLoader.load(new FABRIC.SceneGraph.XHRReader('Buildings2_GARAGE_FACTORIES2_BotrMachinery.json'));
+  var loadSubScene = function(fileName){
+    var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
+    presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName));
+  }
   
-  */
-  
-  
+  loadSubScene('TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea.json');
+  loadSubScene('CRANES_RMGCrane.json');
+  loadSubScene('Buildings2_GARAGE_FACTORIES2.json');
+  loadSubScene('Trailors_Ships_Containers.json');
+  loadSubScene('Industry_FACTORIES.json');
 
   $(document).ready(function() {
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
