@@ -6,8 +6,9 @@ Import( 'extsEnv', 'ExtSLName', 'buildOS', 'tiffFlags' )
 
 cimgPluginEnv = extsEnv.Clone()
 sources = Glob('*.cpp')
-
-libtiffRoot = '../../../ThirdParty/Private/libtiff'
+if buildOS == "Windows":
+  sources.append(Glob('../../../ThirdParty/Private/jpeglib/*.c'))
+  cimgPluginEnv.Append(CPPPATH = ['../../../ThirdParty/Private/jpeglib'])
 
 cimgPluginEnv.MergeFlags(tiffFlags)
 cimgPlugin = cimgPluginEnv.SharedLibrary( ExtSLName('FabricCIMG'), sources ),
