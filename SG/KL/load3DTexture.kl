@@ -16,13 +16,15 @@ function decode3DImageUShortData(
   io Mat44 xfoMat
 ) {
   xfoMat.setIdentity();
-  if(resource.data.size() == 0)
+  if(imageUShortVoxels.size() != 0)
     return;
   String ext = resource.extension ? resource.extension : resource.mimeType;
   switch (ext) {
     case'nrrd':
-      FabricTeemNRRDLoadUShort(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat);
-      //resource.data.resize(0); Medical Imaging use case: for some reason, load3DImageUShortData is called twice and xfoMat is not set properly
+      if(resource.data.size() > 0)
+        FabricTeemNRRDLoadUShort(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat);
+      else if(resource.dataExternalLocation)
+        FabricTeemNRRDLoadUShortFromFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat);
       break;
     default:
       report "Unsupported 3D image format: " + ext;
