@@ -58,11 +58,11 @@ FABRIC.RT.oglTexture3D_Scalar = function(){
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('OGLTexture3D', {
     members: {
-     glInternalFormat: 'Size',
-     glFormat: 'Size',
-     glType: 'Size',
-     bufferID: 'Size',
-     nbPixels: 'Size',
+     glInternalFormat: 'Integer',
+     glFormat: 'Integer',
+     glType: 'Integer',
+     bufferID: 'Integer',
+     nbPixels: 'Integer',
      textureMinFilter: 'Integer',
      textureMaxFilter: 'Integer',
      wrapS: 'Integer',

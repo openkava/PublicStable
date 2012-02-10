@@ -56,7 +56,7 @@ function decodeObj(
     FabricOBJGetNbEntityPoints(objParseHandle, -1, nbPts);
     FabricOBJGetNbEntityTriangles(objParseHandle, -1, nbTris);
     FabricOBJGetNbEntities(objParseHandle, nbEntities);
-    report "OBJ " + resource.url + ": " + nbEntities + " entities: " + nbPts + " vertices, " + nbTris + "triangles";
+    report "OBJ " + resource.url + ": " + nbEntities + " entities: " + nbPts + " vertices, " + nbTris + " triangles";
     String values[];
     FabricOBJGetMaterialLibraries(objParseHandle, values);
     report "  Materials libraries: " + values;

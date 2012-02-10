@@ -53,7 +53,7 @@ function OGLTextureCube.configure(io Integer textureUnit) {
   if(!this.isLoaded()){
     return;
   }
-  var Size buffers[];
+  var Integer buffers[];
   buffers.resize(1);
   glGenTextures(1, buffers);
   this.bufferID = buffers[0];
