@@ -198,10 +198,10 @@ function Boolean decodeRGBAImageData(
     case 'tiff':
     case 'image/tif':
       if(resource.data.size() > 0) {
-        FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), ext, imageWidth, imageHeight, bitmap);
         resource.data.resize(0);
       } else if(resource.dataExternalLocation) {
-        FabricCIMGOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        FabricCIMGOpenFileHandle(resource.dataExternalLocation, ext, imageWidth, imageHeight, bitmap);
         resource.dataExternalLocation = "";
       }
       break;
