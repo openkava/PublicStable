@@ -45,7 +45,6 @@ namespace Fabric
       
       virtual bool isContainerParam() const { return false; }
       virtual bool isSizeParam() const { return false; }
-      virtual bool isNewSizeParam() const { return false; }
       virtual bool isIndexParam() const { return false; }
       virtual bool isMemberParam() const { return false; }
       virtual bool isElementParam() const { return false; }
@@ -79,23 +78,6 @@ namespace Fabric
       virtual std::string desc() const
       {
         return "count";
-      }
-    };
-    
-    class Prototype::NewSizeParam : public Prototype::Param
-    {
-    public:
-    
-      NewSizeParam( unsigned index )
-        : Param( index )
-      {
-      }
-    
-      virtual bool isNewSizeParam() const { return true; }
-
-      virtual std::string desc() const
-      {
-        return "newCount";
       }
     };
 
@@ -239,8 +221,6 @@ namespace Fabric
           
             if ( memberName == "count" )
               param = new SizeParam(i);
-            else if ( memberName == "newCount" )
-              param = new NewSizeParam(i);
             else if ( memberName == "index" )
               param = new IndexParam(i);
             else if ( desc.substr( memberNameEnd ) == "<>" )
@@ -281,7 +261,6 @@ namespace Fabric
       RC::ConstHandle<AST::Operator> const &astOperator,
       Scope const &scope,
       RC::ConstHandle<Function> const &function,
-      size_t *newSize,
       unsigned prefixCount,
       void * const *prefixes
       )
@@ -347,16 +326,6 @@ namespace Fabric
                 if ( astParamExprType.getUsage() != CG::USAGE_RVALUE )
                   errors.push_back( parameterErrorPrefix + "'size' cannot be an 'io' parmeter" );
                 result->setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
-              }
-              else if ( param->isNewSizeParam() )
-              {
-                if ( astParamImpl != m_rtSizeImpl )
-                  errors.push_back( parameterErrorPrefix + "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getUserName()) );
-                if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                  errors.push_back( parameterErrorPrefix + "'newSize' must be an 'io' parameter" );
-                if ( !newSize )
-                  errors.push_back( parameterErrorPrefix + "can't access count" );
-                result->setBaseAddress( prefixCount+param->index(), newSize );
               }
               else if ( param->isIndexParam() )
               {
