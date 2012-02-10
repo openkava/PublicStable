@@ -57,6 +57,7 @@ namespace Fabric
       
       static const bool buildFunctions = true;
       
+      llvm::Function *toStringFunction = 0;
       {
         std::string name = constructOverloadName( stringAdapter, this );
         std::vector< FunctionParam > params;
@@ -66,32 +67,59 @@ namespace Fabric
         if ( buildFunctions )
         {
           llvm::Value *stringLValue = functionBuilder[0];
-          llvm::Value *arrayRValue = functionBuilder[1];
+          llvm::Value *containerRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
-          stringAdapter->llvmCallCast( basicBlockBuilder, this, arrayLValue, stringLValue );
+          llvm::Value *containerLValue = llvmRValueToLValue( basicBlockBuilder, containerRValue );
+          stringAdapter->llvmCallCast( basicBlockBuilder, this, containerLValue, stringLValue );
           basicBlockBuilder->CreateRetVoid();
+          toStringFunction = functionBuilder.getLLVMFunction();
         }
       }
-   
+
+/*      {
+        std::string name = methodOverloadName( "getName", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( stringAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *containerRValue = functionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" ) );
+          CG::FunctionScope &functionScope = functionBuilder.getScope();
+          functionScope.llvmPrepareReturnLValue( basicBlockBuilder );
+          llvm::Value *resultLValue = functionBuilder.getScope().llvmGetReturnLValue();
+          basicBlockBuilder->CreateCall2( toStringFunction, resultLValue, containerRValue );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }*/
+
       {
         std::string name = constructOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "containerRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
-          llvm::Value *rValue = functionBuilder[0];
+          llvm::Value *booleanLValue = functionBuilder[0];
+          llvm::Value *containerRValue = functionBuilder[1];
           basicBlockBuilder->SetInsertPoint( basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( llvmToBoolean( basicBlockBuilder, rValue ) );
+          
+          std::vector<llvm::Type const *> argTypes;
+          argTypes.push_back( llvmRType( context ) );
+          llvm::FunctionType const *funcType = llvm::FunctionType::get( booleanAdapter->llvmRType( context ), argTypes, false );
+          llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__ToBoolean", funcType ); 
+          llvm::Value *booleanRValue = basicBlockBuilder->CreateCall( func, containerRValue );
+          booleanAdapter->llvmAssign( basicBlockBuilder, booleanLValue, booleanRValue );
+          basicBlockBuilder->CreateRetVoid();
         }
       }
 
       {
-        std::string name = methodOverloadName( "setCount", this );
+        std::string name = methodOverloadName( "setCount", this, sizeAdapter );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "selfLValue", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
@@ -106,7 +134,7 @@ namespace Fabric
           basicBlockBuilder->CreateRetVoid();
         }
       }
- 
+
       {
         std::string name = methodOverloadName( "getCount", this );
         std::vector<FunctionParam> params;
@@ -155,7 +183,7 @@ namespace Fabric
       RC::Handle<Context> context = basicBlockBuilder.getContext();
       std::vector<llvm::Type const *> argTypes;
       argTypes.push_back( llvmLType( context ) );
-      argTypes.push_back( llvmRType( context ) );
+      argTypes.push_back( llvmSizeType( context ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
       llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__SetCount", funcType ); 
       std::vector< llvm::Value * > args;
@@ -174,19 +202,6 @@ namespace Fabric
       argTypes.push_back( llvmRType( context ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvmSizeType( context ), argTypes, false );
       llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__GetCount", funcType ); 
-      return basicBlockBuilder->CreateCall( func, containerRValue );
-    }
-
-    llvm::Value *ContainerAdapter::llvmToBoolean(
-      CG::BasicBlockBuilder &basicBlockBuilder,
-      llvm::Value *containerRValue
-      ) const
-    {
-      RC::Handle<Context> context = basicBlockBuilder.getContext();
-      std::vector<llvm::Type const *> argTypes;
-      argTypes.push_back( llvmRType( context ) );
-      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvmSizeType( context ), argTypes, false );
-      llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__ToBoolean", funcType ); 
       return basicBlockBuilder->CreateCall( func, containerRValue );
     }
 

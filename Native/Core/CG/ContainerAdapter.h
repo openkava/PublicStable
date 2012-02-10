@@ -53,7 +53,6 @@ namespace Fabric
 
       void llvmSetCount( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *containerLValue, llvm::Value *newSizeRValue ) const;
       llvm::Value *llvmGetCount( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *containerRValue ) const;
-      llvm::Value *llvmToBoolean( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *containerRValue ) const;
 
     private:
 

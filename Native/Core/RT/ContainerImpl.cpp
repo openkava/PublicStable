@@ -97,7 +97,7 @@ namespace Fabric
 
     void ContainerImpl::setValue( RC::Handle< DG::Container> const &container, void *data ) const
     {
-      RC::WeakHandle<DG::Container> *bits = *static_cast<RC::WeakHandle<DG::Container> **>( data );
+      RC::WeakHandle<DG::Container> *&bits = *static_cast<RC::WeakHandle<DG::Container> **>( data );
       if( container )
       {
         if( !bits )
@@ -121,11 +121,11 @@ namespace Fabric
 
     void ContainerImpl::DisposeData( void *data )
     {
-      RC::WeakHandle<DG::Container> *bits = *reinterpret_cast<RC::WeakHandle<DG::Container> **>( data );
+      RC::WeakHandle<DG::Container> *&bits = *reinterpret_cast<RC::WeakHandle<DG::Container> **>( data );
       if ( bits )
       {
         delete bits;
-        *bits = 0;
+        bits = 0;
       }
     }
 
