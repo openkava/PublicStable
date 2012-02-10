@@ -33,11 +33,11 @@ FABRIC.RT.cubeMapLDR = function(){
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('OGLTextureCube', {
     members: {
-      glInternalFormat: 'Size',
-      glFormat: 'Size',
-      glType: 'Size',
+      glInternalFormat: 'Integer',
+      glFormat: 'Integer',
+      glType: 'Integer',
       size: 'Size',
-      bufferID: 'Size',
+      bufferID: 'Integer',
       textureData: 'RGBA[][]',
       textureDataSize: 'Size[]'
     },

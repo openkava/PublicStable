@@ -78,28 +78,28 @@ operator draw2DVolumeSlice(
 
   Data NULL;
 
-  Size bufferIDArray[];
+  Integer bufferIDArray[];
   bufferIDArray.resize(1);
 
   glGenBuffers(1, bufferIDArray);
-  Size bufferID0 = bufferIDArray[0];
+  Integer bufferID0 = bufferIDArray[0];
   glGenBuffers(1, bufferIDArray);
-  Size bufferID1 = bufferIDArray[0];
+  Integer bufferID1 = bufferIDArray[0];
   glGenBuffers(1, bufferIDArray);
-  Size bufferID2 = bufferIDArray[0];
+  Integer bufferID2 = bufferIDArray[0];
   
   glBindBuffer(GL_ARRAY_BUFFER, bufferID0);
-  glBufferData(GL_ARRAY_BUFFER, p.dataSize(), p.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, Integer(p.dataSize()), p.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(posLocation);
   glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
   glBindBuffer(GL_ARRAY_BUFFER, bufferID1);
-  glBufferData(GL_ARRAY_BUFFER, t.dataSize(), t.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, Integer(t.dataSize()), t.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(tex3DLocation);
   glVertexAttribPointer(tex3DLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
   glBindBuffer(GL_ARRAY_BUFFER, bufferID2);
-  glBufferData(GL_ARRAY_BUFFER, idx.dataSize(), idx.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, Integer(idx.dataSize()), idx.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID2);
