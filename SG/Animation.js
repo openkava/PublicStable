@@ -397,6 +397,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       }
     };
     
+    scene.addEventHandlingFunctions(animationTrackNode);
     return animationTrackNode;
   }});
 
@@ -441,6 +442,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       if(bindings){
         dgnode.setData('bindings', trackSetId, bindings);
       }
+      animationLibraryNode.pub.fireEvent('tracksetadded', { trackSetId: trackSetId } );
       return trackSetId;
     };
     animationLibraryNode.pub.getTimeRange = function(trackSetId) {
@@ -751,6 +753,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
     };
     
+    scene.addEventHandlingFunctions(animationLibraryNode);
     return animationLibraryNode;
   }});
 
@@ -902,23 +905,33 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     trackDisplayNode.addMemberInterface(parametersdgnode, 'trackSetId', true);
     trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true);
     trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true);
-
+    
+    var tracks;
     trackDisplayNode.addReferenceInterface('AnimationLibrary', 'Animation',
       function(nodePrivate, trackSetId){
         animationLibraryNode = nodePrivate;
         var trackDataType = animationLibraryNode.pub.getValueType();
-        var tracks = animationLibraryNode.pub.getTracks(trackSetId);
+        tracks = animationLibraryNode.pub.getTracks(trackSetId);
         dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
   
         dgnode.addMember('values', trackDataType+'[]');
         parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
         dgnode.setCount(tracks.length);
-  
+        
+        animationLibraryNode.pub.addEventListener('tracksetadded', function(evt){
+          if(evt.trackSetId == trackSetId){
+          //  tracks = animationLibraryNode.pub.getTracks(trackSetId);
+          //  dgnode.setCount(tracks.length);
+          }
+        });
+        
         dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
       });
     trackDisplayNode.pub.getCurveData = function(trackIndex) {
-      dgnode.evaluate();
-      return dgnode.getData('values', trackIndex);
+      if(tracks && tracks.length > 0){
+        dgnode.evaluate();
+        return dgnode.getData('values', trackIndex);
+      }
     }
 
     if (options.animationTrackNode) {
