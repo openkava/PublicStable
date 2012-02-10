@@ -52,7 +52,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       // use a custom getter
       transformNode.pub.setGlobalXfo = function(val) {
         if (parentTransformNode) {
-          var parentXfo = parentTransformNode.getGlobalXfo();
+          var parentXfo = parentTransformNode.pub.getGlobalXfo();
           val = val.multiply(parentXfo.inverse());
           dgnode.setData('localXfo', val);
         }
@@ -110,16 +110,23 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       constructionOptions.hierarchical = options.hierarchical;
       if(parentTransformNode){
         nodeData.parentTransformNode = parentTransformNode.pub.getName();
+        nodeData.localXfo = transformNode.pub.getLocalXfo();
+      }else{
+        nodeData.globalXfo = transformNode.pub.getGlobalXfo();
       }
-      nodeData.globalXfo = transformNode.pub.getGlobalXfo();
       
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     transformNode.readData = function(sceneDeserializer, nodeData) {
       if(nodeData.parentTransformNode){
         transformNode.pub.setParentNode(sceneDeserializer.getNode(nodeData.parentTransformNode));
+        if(nodeData.localXfo){
+          transformNode.pub.setLocalXfo(nodeData.localXfo);
+        }
       }
-      transformNode.pub.setGlobalXfo(nodeData.globalXfo);
+      else if(nodeData.globalXfo){
+        transformNode.pub.setGlobalXfo(nodeData.globalXfo);
+      }
       
       parentReadData(sceneDeserializer, nodeData);
     };

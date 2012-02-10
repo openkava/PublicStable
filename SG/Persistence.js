@@ -310,7 +310,11 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               if(storage.getUrl){
                 var pathArray = storage.getUrl().split('/');
                 pathArray.pop();
-                binaryFilePath = pathArray.join('/') + '/' + dataObj.metadata.binaryFilePath;
+                if(pathArray.length == 0){
+                  binaryFilePath = dataObj.metadata.binaryFilePath;
+                }else{
+                  binaryFilePath = pathArray.join('/') + '/' + dataObj.metadata.binaryFilePath;
+                }
               }
               loadNodeBinaryFileNode = scene.constructNode('LoadBinaryDataNode', {
                 url: binaryFilePath
