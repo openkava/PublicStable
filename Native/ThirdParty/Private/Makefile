@@ -12,6 +12,7 @@ HDF5_VERSION := 1.8.7
 ALEMBIC_VERSION := 1.0_2011080800
 TEEM_VERSION := 1.10.0
 TIFF_VERSION := 3.9.5
+JPEG_VERSION := 8d
 OPENCV_SOURCE_VERSION := 2.3.1a
 OPENCV_VERSION := 2.3.1
 
@@ -50,6 +51,7 @@ endif
   unpack_zlib patch_zlib configure_zlib build_zlib install_zlib clean_zlib \
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
   unpack_tiff patch_tiff configure_tiff build_tiff install_tiff clean_tiff \
+  unpack_jpeg patch_jpeg configure_jpeg build_jpeg install_jpeg clean_jpeg \
   unpack_opencv patch_opencv configure_opencv build_opencv install_opencv clean_opencv \
   unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
   unpack_boost patch_boost configure_boost build_boost install_boost clean_boost \
@@ -60,9 +62,9 @@ endif
 
 all: build
 
-build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff build_opencv
+build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_node build_libedit build_tiff build_jpeg build_opencv
 
-unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff unpack_opencv
+unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_node unpack_libedit unpack_tiff unpack_jpeg unpack_opencv
 
 check_env_vars: 
 ifeq ($(BUILD_PLATFORM),Darwin)
@@ -302,6 +304,44 @@ Build/.libedit.unpack:
 	mkdir -p Build
 	for ARCH in $(ARCHS); do \
 		( cd Build && tar jxf ../SourcePackages/libedit-$(LIBEDIT_VERSION).tar.bz2 && mv libedit-$(LIBEDIT_VERSION) libedit-$(LIBEDIT_VERSION)-$$ARCH ); \
+	done
+	touch $@
+
+#####
+
+build_jpeg: build_jpeg Build/.jpeg.build
+
+configure_jpeg: Build/.jpeg.configure
+
+patch_jpeg: Build/.jpeg.patch
+
+unpack_jpeg: Build/.jpeg.unpack
+
+Build/.jpeg.build: Build/.jpeg.configure
+	for ARCH in $(ARCHS); do \
+		( cd Build/jpeg-$(JPEG_VERSION)-$$ARCH && make -j2 ); \
+	done
+	touch $@
+
+Build/.jpeg.configure: Build/.jpeg.patch
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		( cd Build/jpeg-$(JPEG_VERSION)-$$ARCH && CFLAGS="-fPIC" ./configure --enable-static --disable-shared ); \
+	done
+else 
+	for ARCH in $(ARCHS); do \
+		( cd Build/jpeg-$(JPEG_VERSION)-$$ARCH && CFLAGS="-arch $$ARCH" ./configure --enable-static --disable-shared ); \
+	done
+endif
+	touch $@
+
+Build/.jpeg.patch: Build/.jpeg.unpack
+	touch $@
+
+Build/.jpeg.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/jpegsrc.v$(JPEG_VERSION).tar.bz2 && mv jpeg-$(JPEG_VERSION) jpeg-$(JPEG_VERSION)-$$ARCH ); \
 	done
 	touch $@
 
@@ -739,7 +779,25 @@ Build/.zlib.unpack:
 	mkdir -p Build
 	touch $@
   
-install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_teem install_node install_libedit install_gtkglext install_tiff
+install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_teem install_node install_libedit install_gtkglext install_jpeg install_tiff
+
+###
+
+install_jpeg: install_jpeg_headers install_jpeg_libraries
+
+install_jpeg_headers:
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/jpeg/jpeg; \
+          cp Build/jpeg-$(JPEG_VERSION)-$(FIRST_ARCH)/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/jpeg/jpeg/; \
+        done
+
+install_jpeg_libraries:
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/jpeg/; \
+          cp Build/jpeg-$(JPEG_VERSION)-$$ARCH/.libs/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/jpeg/; \
+        done
+
+###
 
 install_tiff: install_tiff_headers install_tiff_libraries
 
@@ -992,7 +1050,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_tiff clean_opencv
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic clean_jpeg clean_tiff clean_opencv
 	rm -rf Build
 
 clean_ilmbase:
@@ -1036,6 +1094,12 @@ clean_teem:
 		rm -rf Build/teem-$(TEEM_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.teem.*
+
+clean_jpeg:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/jpeg-$(TIFF_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.jpeg.*
 
 clean_tiff:
 	for ARCH in $(ARCHS); do \
