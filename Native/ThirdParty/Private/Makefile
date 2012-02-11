@@ -400,9 +400,20 @@ Build/.opencv.build: Build/.opencv.configure
 	touch $@
 
 Build/.opencv.configure: Build/.opencv.patch
+ifeq ($(BUILD_PLATFORM),Darwin)
+	for ARCH in $(ARCHS); do \
+                if [ $$ARCH = "x86_64" ]; then \
+                  CMAKE_OSX_ARCHITECTURES="x86_64"; \
+                else \
+                  CMAKE_OSX_ARCHITECTURES="i386"; \
+                fi; \
+		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DCMAKE_OSX_ARCHITECTURES="$$CMAKE_OSX_ARCHITECTURES" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_JPEG=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_GTK=OFF -DWITH_GSTREAMER=OFF -DWITH_V4L=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
+	done
+else
 	for ARCH in $(ARCHS); do \
 		( cd Build/OpenCV-$(OPENCV_VERSION)-$$ARCH && cmake . -DCMAKE_C_FLAGS="-fPIC" -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_JPEG=OFF -DWITH_FFMPEG=OFF -DWITH_PNG=OFF -DWITH_TIFF=OFF -DWITH_JASPER=OFF -DWITH_OPENEXR=OFF -DWITH_GTK=OFF -DWITH_GSTREAMER=OFF -DWITH_V4L=OFF -DBUILD_NEW_PYTHON_SUPPORT=OFF ); \
 	done
+endif
 	touch $@
 
 Build/.opencv.patch: Build/.opencv.unpack
