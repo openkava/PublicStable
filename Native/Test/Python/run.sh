@@ -38,7 +38,7 @@ for f in "$@"; do
     mv $TMPFILE ${f%.py}.out
     echo "REPL $(basename $f)"
   else
-    EXPFILE=${f%.py}.$BUILD_OS.$BUILD_ARCH.out
+    EXPFILE=${f%.py}.$FABRIC_BUILD_OS.$FABRIC_BUILD_ARCH.out
     [ -f "$EXPFILE" ] || EXPFILE=${f%.py}.out
     if ! cmp $TMPFILE $EXPFILE; then
       echo "FAIL $(basename $f)"
