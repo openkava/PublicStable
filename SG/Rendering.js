@@ -57,13 +57,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       redrawEventHandler = viewportNode.constructEventHandlerNode('Redraw');
       
     dgnode.addMember('backgroundColor', 'Color', options.backgroundColor);
+    
+    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
 
     redrawEventHandler.setScope('viewPort', dgnode);
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'viewPortBeginRender',
-          srcFile: 'FABRIC_ROOT/SG/KL/viewPortBeginRender.kl',
-          entryFunctionName: 'viewPortBeginRender',
+          operatorName: 'viewportBeginRender',
+          srcFile: 'FABRIC_ROOT/SG/KL/viewport.kl',
+          entryFunctionName: 'viewportBeginRender',
           parameterLayout: [
             'window.width',
             'window.height',
@@ -71,8 +73,29 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           ]
         }));
 
-
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
+    var windowRedrawEventHandler = viewportNode.constructEventHandlerNode('WindowRedraw');
+    
+    fabricwindow.windowNode.addMember('numDrawnVerticies', 'Size');
+    fabricwindow.windowNode.addMember('numDrawnTriangles', 'Size');
+    fabricwindow.windowNode.addMember('numDrawnGeometries', 'Size');
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnVerticies', false);
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnTriangles', false);
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnGeometries', false);
+            
+    windowRedrawEventHandler.setScope('window', fabricwindow.windowNode);
+    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
+    windowRedrawEventHandler.appendChildEventHandler(redrawEventHandler);
+    windowRedrawEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'windowBeginRender',
+          srcFile: 'FABRIC_ROOT/SG/KL/window.kl',
+          entryFunctionName: 'windowBeginRender',
+          parameterLayout: [
+            'window.numDrawnVerticies',
+            'window.numDrawnTriangles',
+            'window.numDrawnGeometries'
+          ]
+        }));
     
     var initialLoad = true;
     var visible = false;
@@ -84,13 +107,11 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(initialLoad) {
             initialLoad = false;
             loading = false;
-            redrawEventHandler.setScope('window', fabricwindow.windowNode);
             if(scene.getScenePreRedrawEventHandler()){
-              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
+              windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
-            fabricwindow.redrawEvent.appendEventHandler(redrawEventHandler);
             if(scene.getScenePostRedrawEventHandler()){
-              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
+              windowRedrawEventHandler.appendChildEventHandler(scene.getScenePostRedrawEventHandler());
             }
             if(raycastingEnabled){
               // the sceneRaycastEventHandler propogates the event throughtout the scene.
@@ -147,9 +168,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           // this operator calculates the rayOri and rayDir from the scopes collected so far.
           // The scopes should be the window, viewport, camera and projection.
           viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-            operatorName: 'ViewportRaycast',
-            srcFile: 'FABRIC_ROOT/SG/KL/viewPortUpdateRayCast.kl',
-            entryFunctionName: 'viewPortUpdateRayCast',
+            operatorName: 'viewportUpdateRayCast',
+            srcFile: 'FABRIC_ROOT/SG/KL/viewport.kl',
+            entryFunctionName: 'viewportUpdateRayCast',
             parameterLayout: [
               'camera.cameraMat44',
               'camera.projectionMat44',
@@ -209,7 +230,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return fabricwindow;
     };
     
-    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
     viewportNode.addReferenceInterface('Camera', 'Camera',
       function(nodePrivate){
       // remove the child event handler first

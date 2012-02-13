@@ -32,32 +32,49 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Parsers/parseCollada"], function() {
 
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('Viewport', {
-    windowElement: document.getElementById('FabricContainer')
+  viewport = scene.constructNode('Viewport', {
+    windowElement: document.getElementById('FabricContainer'),
+    enableRaycasting: true,
   });
   
   // Create a camera to draw the scene from
- camera = scene.constructNode('TargetCamera', {
-      nearDistance: 0.1,
-      farDistance: 900,
+  camera = scene.constructNode('TargetCamera', {
+      nearDistance: 10,
+      farDistance: 20000,
       target: new FABRIC.RT.Vec3(0, 0, 0),
-      position: new FABRIC.RT.Vec3(-18, 47.7, 79.3)
+      position: new FABRIC.RT.Vec3(-2000, 1000, 3000)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
   
-  var loadSubScene = function(fileName){
-    var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
+  
+  var light = scene.constructNode('DirectionalLight', {
+    position: new FABRIC.RT.Vec3(1000, 2000, 5),
+    target: new FABRIC.RT.Vec3(0, 2, -6),
+    direction: (new FABRIC.RT.Vec3(-1, -1, -1)).unit(),
+    farDistance: 16000,
+    resolution: 2048,
+    castShadows: true,
+    display: false,
+    size: 1800
+  });
+  
+  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
+  presetLoader.setPreLoadedNode(light);
+    
+  var loadSubScene = function(fileName, callback){
     presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName));
   }
-  
-  loadSubScene('SceneData/TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea.json');
-  loadSubScene('SceneData/CRANES_RMGCrane.json');
-  loadSubScene('SceneData/Buildings2_GARAGE_FACTORIES2.json');
+    
+  loadSubScene('SceneData/Terrain.json');
+  loadSubScene('SceneData/Cranes.json');
+  loadSubScene('SceneData/PortMachinery.json');
+  loadSubScene('SceneData/Buildings.json');
   loadSubScene('SceneData/Trailors_Ships_Containers.json');
-  loadSubScene('SceneData/Industry_FACTORIES.json');
+  loadSubScene('SceneData/Rafinery_K1.json');
+  
 
   $(document).ready(function() {
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -71,6 +88,14 @@ FABRIC.require(["SG/SceneGraph",
           throw (errors.toString());
         }
         viewport.redraw();
+        
+        setInterval(function() {
+            document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
+          }, 600);
+        setInterval(function() {
+            document.getElementById('numDrawnGeometries').childNodes[0].data = 'Num Drawn Geometries:' + viewport.getNumDrawnGeometries();
+            document.getElementById('numDrawnTriangles').childNodes[0].data = 'Num Drawn Triangles:' + viewport.getNumDrawnTriangles();
+          }, 1600);
         return true;
       }
     });
@@ -102,6 +127,9 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
+              <div id="frameRate">Frame Rate:</div><p></p>
+              <div id="numDrawnGeometries">Num Drawn Geometries:</div><p></p>
+              <div id="numDrawnTriangles">Num Drawn Triangles:</div><p></p>
             </div><!--content-->
           </div><!--box-->
 

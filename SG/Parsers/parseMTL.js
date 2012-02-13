@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
+FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options, callback) {
 
   var materialName,
     materialData = {},
@@ -16,16 +16,12 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
   }
   if(!options.materialProperties){
     options.materialProperties = {
-      Ns: 'Ns',
-      Ni: 'Ni',
-      d: 'd',
-      Tr: 'Tr',
-      Tf: 'Tf',
-      illum: 'illum',
-      Ka: 'Ka',
-      Kd: 'Kd',
-      Ks: 'Ks',
-      Ke: 'Ke'
+      Ns: 'shininess',
+      d: 'transparency',
+      Tr: 'transparency',
+      Ka: 'ambientColor',
+      Kd: 'diffuseColor',
+      Ks: 'specularColor'
     }
   }
   if(!options.materialMaps){
@@ -34,10 +30,8 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
       map_Ka: 'specularTexture'
     }
   }
-  var materialProperties = {};
-  for(var i in options.materialProperties){
-    materialProperties[i.toLowerCase()] = options.materialProperties[i];
-  }
+  var materialProperties = options.materialProperties;
+  
   var materialMaps = {};
   for(var i in options.materialMaps){
     materialMaps[i.toLowerCase()] = options.materialMaps[i];
@@ -58,68 +52,79 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
   }
 
 
-  var objText = FABRIC.loadResourceURL(assetFile, 'text/plain');
-  var lines = objText.split('\n');
-  if (lines.length <= 1) {
-    lines = objText.split('\r');
-  }
 
-  if (lines.length <= 1) {
-    if (onFailFn) {
-      onFailFn('Incorect obj file encoding');
+  FABRIC.loadResourceURL(assetFile, 'text/plain', function(objText){
+      
+    var lines = objText.split('\n');
+    if (lines.length <= 1) {
+      lines = objText.split('\r');
     }
-    return;
-  }
-
-  var numLines = lines.length;
-  var numSubAssets = 0;
-  var lineNumber = 0;
-  var materialType = options.materialType;
-  while (lineNumber < numLines) {
-    var line = lines[lineNumber].replace(/^\s+|\s+$/g, '');
-    ++lineNumber;
-    if (line.length <= 1 || line[0] == '#') {
-      continue;
-    }
-    var separatorPos = line.indexOf(' ');
-    var identifier = line.substring(0, separatorPos);
-    var value = line.substring(separatorPos+1);
-
-    if (identifier == 'newmtl') {
-      if (materialName && (!materialNames || materialNames.indexOf(materialName) !== -1)) {
-        onMaterialParsed(materialType, materialData, materialName);
+  
+    if (lines.length <= 1) {
+      if (onFailFn) {
+        onFailFn('Incorect obj file encoding');
       }
-      materialName = value;
-      materialType = options.materialType;
+      return;
     }
-    else if (identifier == 'shader') {
-      materialType = value;
-    }
-    // Here we map values in the MTL file with properties and maps in the material.
-    else if (materialProperties[identifier] && value) {
-      if (!materialNames || materialNames.indexOf(materialName) !== -1) {
-        materialData[materialProperties[identifier]] = parseFloat(value);
+  
+    var numLines = lines.length;
+    var numSubAssets = 0;
+    var lineNumber = 0;
+    var materialType = options.materialType;
+    while (lineNumber < numLines) {
+      var line = lines[lineNumber].replace(/^\s+|\s+$/g, '');
+      ++lineNumber;
+      if (line.length <= 1 || line[0] == '#') {
+        continue;
       }
-    }
-    else if (materialMaps && materialMaps[identifier.toLowerCase()] && value) {
-      if (!materialNames || materialNames.indexOf(materialName) !== -1) {
-        if(!imageLibrary[value]){
-        //  console.log(value);
-          imageLibrary[value] = scene.constructNode('Image2D', {
-            name: value,
-            url: options.basePath + '/' + value
-          });
+      var separatorPos = line.indexOf(' ');
+      var identifier = line.substring(0, separatorPos);
+      var value = line.substring(separatorPos+1);
+  
+      if (identifier == 'newmtl') {
+        if (materialName && (!materialNames || materialNames.indexOf(materialName) !== -1)) {
+          onMaterialParsed(materialType, materialData, materialName);
         }
-        materialData[materialMaps[identifier.toLowerCase()]] = imageLibrary[value];
+        materialName = value;
+        materialType = options.materialType;
+      }
+      else if (identifier == 'shader') {
+        materialType = value;
+      }
+      // Here we map values in the MTL file with properties and maps in the material.
+      else if (materialProperties[identifier] && value) {
+        if (!materialNames || materialNames.indexOf(materialName) !== -1) {
+          var values = value.split(' ');
+          if(values.length == 3){
+            value = new FABRIC.RT.Color(parseFloat(values[0]), parseFloat(values[1]), parseFloat(values[2]));
+          }else{
+            value = parseFloat(value);
+          }
+          materialData[materialProperties[identifier]] = value;
+        }
+      }
+      else if (materialMaps && materialMaps[identifier.toLowerCase()] && value) {
+        if (!materialNames || materialNames.indexOf(materialName) !== -1) {
+          if(!imageLibrary[value]){
+          //  console.log(value);
+            imageLibrary[value] = scene.constructNode('Image2D', {
+              name: value,
+              url: options.basePath + '/' + value
+            });
+          }
+          materialData[materialMaps[identifier.toLowerCase()]] = imageLibrary[value];
+        }
       }
     }
-  }
-
-  if (materialName && (!materialNames || materialNames.indexOf(materialName) !== -1)) {
-    onMaterialParsed(materialType, materialData, materialName);
-  }
-
-  return materialLibrary;
+  
+    if (materialName && (!materialNames || materialNames.indexOf(materialName) !== -1)) {
+      onMaterialParsed(materialType, materialData, materialName);
+    }
+    if(callback){
+      callback(materialLibrary);
+    }
+  
+  });
 });
 
 

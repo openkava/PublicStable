@@ -400,7 +400,9 @@ FABRIC.SceneGraph.registerNodeType('Points', {
         entryFunctionName: 'drawPoints',
         parameterLayout: [
           'shader.shaderProgram',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -451,7 +453,9 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
         parameterLayout: [
           'shader.shaderProgram',
           'self.indicesBuffer',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -558,7 +562,10 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
         parameterLayout: [
           'shader.shaderProgram',
           'self.indicesBuffer',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnTriangles',
+          'window.numDrawnGeometries'
         ]
       }));
     }
