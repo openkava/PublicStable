@@ -9,89 +9,90 @@ namespace Fabric
 {
   namespace CG
   {
-    static std::string genericFunctionName(
-      std::string const &genericFunctionName,
-      std::vector<CG::ExprType> const &paramExprTypes
-      )
+    static inline char const *EncodeUsage( CG::Usage usage )
     {
-      std::string result = "__" + genericFunctionName;
-      for ( std::vector<CG::ExprType>::const_iterator it=paramExprTypes.begin(); it!=paramExprTypes.end(); ++it )
+      switch ( usage )
       {
-        switch ( it->getUsage() )
-        {
-          case CG::USAGE_LVALUE:
-            result += "__"; //io_";
-            break;
-          case CG::USAGE_RVALUE:
-            result += "__"; //in_";
-            break;
-          default:
-            FABRIC_ASSERT( false && "usage unspeicifed" );
-            break;
-        }
-        result += it->getAdapter()->getCodeName();
+        case CG::USAGE_LVALUE:
+          return "io";
+        case CG::USAGE_RVALUE:
+          return "in";
+        default:
+          FABRIC_ASSERT( false );
+          return 0;
       }
-      return result;
     }
     
-    std::string constructorOverloadName(
+    static std::string EncodeParametersForDefaultSymbolName( ExprTypeVector const &paramTypes )
+    {
+      std::string result;
+      for ( ExprTypeVector::const_iterator it=paramExprTypes.begin(); it!=paramExprTypes.end(); ++it )
+        result += "__" + std::string( EncodeUsage( it->getUsage() ) ) + "_" + it->getAdapter()->getCodeName();
+      return result;
+    }
+
+    std::string FunctionDefaultSymbolName( std::string const &functionName, ExprTypeVector const &paramTypes )
+    {
+      return "__function_" + functionName + EncodeParametersForDefaultSymbolName( paramTypes );
+    }
+
+    std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &≈,
+      std::vector< RC::ConstHandle<CG::Adapter> > const &otherParamAdapters
+      )
+    {
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( CG::ExprType( paramTypes, CG::USAGE_LVALUE ) );
+      for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = otherParamAdapters.begin(); it != otherParamAdapters.end(); ++it )
+        paramTypes.push_back( CG::ExprType( *it, CG::USAGE_RVALUE ) );
+      return "__constructor" + EncodeParametersForDefaultSymbolName( paramTypes );
+    }
+
+    std::string DestructorDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter )
+    {
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( CG::ExprType( paramTypes, CG::USAGE_LVALUE ) );
+      return "__destructor" + EncodeParametersForDefaultSymbolName( paramTypes );
+    }
+
+    std::string AssignOpDefaultSymbolName(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
-      std::vector< RC::ConstHandle<CG::Adapter> > const &paramAdapters
+      AssignOpType type,
+      RC::ConstHandle<CG::Adapter> const &thatAdapter
       )
     {
-      std::vector<CG::ExprType> exprTypes;
-      exprTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
-      for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = paramAdapters.begin(); it != paramAdapters.end(); ++it )
-        exprTypes.push_back( CG::ExprType( *it, CG::USAGE_RVALUE ) );
-      return genericFunctionName( "constructor", exprTypes );
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
+      paramTypes.push_back( CG::ExprType( thatAdapter, CG::USAGE_RVALUE ) );
+      return "__assop_" + assignOpCodeName( type ) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string assignOpOverloadName( AssignOpType type, RC::ConstHandle<CG::Adapter> const &thisAdapter, RC::ConstHandle<CG::Adapter> const &thatAdapter )
+    std::string UniOpDefaultSymbolName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter )
     {
-      std::vector<CG::ExprType> exprTypes;
-      exprTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
-      exprTypes.push_back( CG::ExprType( thatAdapter, CG::USAGE_RVALUE ) );
-      return genericFunctionName( "operator_assign_" + std::string( assignOpCodeName(type) ), exprTypes );
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( CG::ExprType( adapter, CG::USAGE_RVALUE ) );
+      return "__uniop_" + uniOpCodeName(type) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string uniOpOverloadName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter )
+    std::string BinOpDefaultSymbolName( BinOpType type, RC::ConstHandle<CG::Adapter> const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter )
     {
-      std::vector<CG::ExprType> exprTypes;
-      exprTypes.push_back( CG::ExprType( adapter, CG::USAGE_RVALUE ) );
-      return genericFunctionName( "operator_uni_" + std::string( uniOpCodeName(type) ), exprTypes );
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( CG::ExprType( lhsAdapter, CG::USAGE_RVALUE ) );
+      paramTypes.push_back( CG::ExprType( rhsAdapter, CG::USAGE_RVALUE ) );
+      return "__binop_" + binOpCodeName(type) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string binOpOverloadName( BinOpType type, RC::ConstHandle<CG::Adapter> const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter )
-    {
-      std::vector<CG::ExprType> exprTypes;
-      exprTypes.push_back( CG::ExprType( lhsAdapter, CG::USAGE_RVALUE ) );
-      exprTypes.push_back( CG::ExprType( rhsAdapter, CG::USAGE_RVALUE ) );
-      return genericFunctionName( "operator_bin_" + std::string( binOpCodeName(type) ), exprTypes );
-    }
-
-    std::string binOpOverloadName( BinOpType type, RC::Handle<CG::Manager> const &cgManager, std::string const &lhsAdapterName, std::string const &rhsAdapterName )
-    {
-      return binOpOverloadName( type, cgManager->getAdapter( lhsAdapterName ), cgManager->getAdapter( rhsAdapterName ) );
-    }
-
-    std::string methodOverloadName(
-      std::string const &name,
-      CG::ExprType const &thisExprType,
-      std::vector<CG::ExprType> const &paramTypes
+    std::string MethodDefaultSymbolName(
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprTypeVector const &otherParamTypes
       )
     {
-      std::vector<CG::ExprType> exprTypes;
-      exprTypes.push_back( thisExprType );
-      for ( std::vector<CG::ExprType>::const_iterator it = paramTypes.begin(); it != paramTypes.end(); ++it )
-        exprTypes.push_back( *it );
-      return genericFunctionName( "method_" + name, exprTypes );
-    }
-
-    std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisAdapter )
-    {
-      std::vector<CG::ExprType> exprTypes;
-      exprTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
-      return genericFunctionName( "__destructor__", exprTypes );
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( thisType );
+      for ( CG::ExprTypeVector::const_iterator it=otherParamTypes.begin(); it!=otherParamTypes.end(); ++it )
+        paramTypes.push_back( *it );
+      return "__method_" + name + EncodeParametersForDefaultSymbolName( paramTypes );
     }
   }
 }

@@ -15,7 +15,7 @@ namespace Fabric
 {
   namespace CG
   {
-    class FunctionSymbol;
+    class Function;
   };
   
   namespace AST
@@ -39,7 +39,7 @@ namespace Fabric
       
       virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
-      RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const;
+      CG::Function const &getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const;
 
     private:
     

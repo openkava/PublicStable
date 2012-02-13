@@ -21,58 +21,64 @@ namespace Fabric
     
     RC::ConstHandle<AssignOpImpl> AssignOpImpl::Create(
       CG::Location const &location,
-      std::string const &thisType,
+      std::string const &thisTypeName,
       CG::AssignOpType assignOpType,
       RC::ConstHandle<AST::Param> rhs,
+      std::string const *symbolName,
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new AssignOpImpl( location, thisType, assignOpType, rhs, body );
+      return new AssignOpImpl( location, thisTypeName, assignOpType, rhs, symbolName, body );
     }
     
     AssignOpImpl::AssignOpImpl(
       CG::Location const &location,
-      std::string const &thisType,
+      std::string const &thisTypeName,
       CG::AssignOpType assignOpType,
       RC::ConstHandle<AST::Param> rhs,
+      std::string const *symbolName,
       RC::ConstHandle<CompoundStatement> const &body
       )
       : FunctionBase(
         location,
         "",
-        body
+        symbolName,
+        body,
+        false
         )
+      , m_thisTypeName( thisTypeName )
       , m_assignOpType( assignOpType )
-      , m_params(
-        ParamVector::Create(
-          Param::Create(
-            location,
-            "this",
-            thisType,
-            CG::USAGE_LVALUE
-            ),
-          rhs
-          )
-        )
+      , m_rhs( rhs )
     {
+      FABRIC_ASSERT( m_rhs->getUsage() == CG::USAGE_RVALUE );
     }
     
     void AssignOpImpl::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
       FunctionBase::appendJSONMembers( jsonObjectEncoder, includeLocation );
       jsonObjectEncoder.makeMember( "op" ).makeString( CG::assignOpUserName( m_assignOpType ) );
-      m_params->appendJSON( jsonObjectEncoder.makeMember( "params" ), includeLocation );
+      m_rhs->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
-    std::string AssignOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string AssignOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      RC::ConstHandle<ParamVector> params = getParams( cgManager );
-      return CG::assignOpOverloadName( m_assignOpType, params->get(0)->getAdapter( cgManager ), params->get(1)->getAdapter( cgManager ) );
+      RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
+      return CG::AssignOpPencilName( thisAdapter, m_assignOpType );
+    }
+    
+    std::string AssignOpImpl::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
+      RC::ConstHandle<CG::Adapter> thatAdapter = cgManager->getAdapter( m_rhs->getType() );
+      return CG::AssignOpDefaultSymbolName( thisAdapter, m_assignOpType, thatAdapter );
     }
 
     RC::ConstHandle<ParamVector> AssignOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return m_params;
+      return ParamVector::Create(
+        Param::Create( getLocation(), "this", m_thisTypeName, CG::USAGE_LVALUE ),
+        m_rhs
+        );
     }
   }
 }

@@ -69,11 +69,6 @@ namespace Fabric
         return m_exprType.getUsage();
       }
 
-      std::string desc() const
-      {
-        return m_exprType.desc();
-      }
-
       bool usesReturnLValue() const
       {
         if ( m_exprType.isValid() && !m_returnsStaticDataPtr )

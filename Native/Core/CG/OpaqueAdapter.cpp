@@ -90,7 +90,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( booleanAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "opaqueRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -108,7 +108,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( stringAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "opaqueRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -126,7 +126,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -140,7 +140,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )

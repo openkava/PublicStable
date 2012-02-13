@@ -77,7 +77,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "size", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector<FunctionParam> params;
+        ParamVector params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
         if ( buildFunctions )
@@ -97,7 +97,7 @@ namespace Fabric
       }
       
       {
-        std::vector<FunctionParam> params;
+        ParamVector params;
         params.push_back( FunctionParam( "dstLValue", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "srcRValue", this, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__DefaultAssign", ExprType(), params, false, 0, true );
@@ -243,7 +243,7 @@ namespace Fabric
       }
       
       {
-        std::vector<FunctionParam> params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
         std::string name = methodOverloadName( "resize", CG::ExprType( this, CG::USAGE_LVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ) );
@@ -419,7 +419,7 @@ namespace Fabric
       }
       
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
         if ( guarded )
@@ -473,7 +473,7 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
         if ( guarded )
@@ -528,7 +528,7 @@ namespace Fabric
       }
       
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__ConstIndexNoCheck", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
@@ -549,7 +549,7 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndexNoCheck", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
@@ -572,7 +572,7 @@ namespace Fabric
 
       {
         std::string name = constructorOverloadName( booleanAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "arrayRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -591,7 +591,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( stringAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "arrayRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -617,7 +617,7 @@ namespace Fabric
         llvm::Constant *func = moduleBuilder->getOrInsertFunction( "__"+getCodeName()+"__Append", funcType ); 
 
         std::string name = assignOpOverloadName( ASSIGN_OP_ADD, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -639,7 +639,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_ADD, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
@@ -658,7 +658,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "swap", CG::ExprType( this, CG::USAGE_LVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "lhsRValue", sizeAdapter, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", sizeAdapter, USAGE_RVALUE ) );
@@ -701,7 +701,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "push", CG::ExprType( this, CG::USAGE_LVALUE ), CG::ExprType( m_memberAdapter, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "memberRValue", m_memberAdapter, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -723,7 +723,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "pop", CG::ExprType( this, CG::USAGE_LVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_memberAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -760,7 +760,7 @@ namespace Fabric
       {
         // [pzion 20110205] FIXME this version should be removed once we have automatic casting
         std::string name = methodOverloadName( "resize", CG::ExprType( this, CG::USAGE_LVALUE ), CG::ExprType( integerAdapter, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", integerAdapter, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -780,7 +780,7 @@ namespace Fabric
       {
         {
           std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
-          std::vector< FunctionParam > params;
+          ParamVector params;
           params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
           FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
           if ( buildFunctions )
@@ -797,7 +797,7 @@ namespace Fabric
         
         {
           std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
-          std::vector< FunctionParam > params;
+          ParamVector params;
           params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
           FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
           if ( buildFunctions )
@@ -835,7 +835,7 @@ namespace Fabric
       bool const guarded = basicBlockBuilder.getModuleBuilder().getCompileOptions()->getGuarded();
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
-      std::vector< FunctionParam > params;
+      ParamVector params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       if ( guarded )
@@ -859,7 +859,7 @@ namespace Fabric
       bool const guarded = basicBlockBuilder.getModuleBuilder().getCompileOptions()->getGuarded();
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
-      std::vector< FunctionParam > params;
+      ParamVector params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       if ( guarded )
@@ -876,7 +876,7 @@ namespace Fabric
     llvm::Value *VariableArrayAdapter::llvmConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
-      std::vector< FunctionParam > params;
+      ParamVector params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__ConstIndexNoCheck", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
@@ -887,7 +887,7 @@ namespace Fabric
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
-      std::vector< FunctionParam > params;
+      ParamVector params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndexNoCheck", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
@@ -907,7 +907,7 @@ namespace Fabric
     void VariableArrayAdapter::llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSizeRValue ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
-      std::vector< FunctionParam > params;
+      ParamVector params;
       params.push_back( FunctionParam( "arrayLValue", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
       std::string name = methodOverloadName( "resize", CG::ExprType( this, CG::USAGE_LVALUE ), CG::ExprType( sizeAdapter, CG::USAGE_RVALUE ) );
@@ -945,7 +945,7 @@ namespace Fabric
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       std::string name = methodOverloadName( "size", CG::ExprType( this, CG::USAGE_RVALUE ) );
-      std::vector< FunctionParam > params;
+      ParamVector params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
       return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), arrayRValue );
@@ -1031,7 +1031,7 @@ namespace Fabric
 
     void VariableArrayAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
-      std::vector<FunctionParam> params;
+      ParamVector params;
       params.push_back( FunctionParam( "dstLValue", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "srcRValue", this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__DefaultAssign", ExprType(), params, false, 0, true );

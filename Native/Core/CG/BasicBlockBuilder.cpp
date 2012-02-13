@@ -6,6 +6,7 @@
 #include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 
 namespace Fabric
@@ -78,9 +79,9 @@ namespace Fabric
       return m_functionBuilder.getContext();
     }
 
-    RC::ConstHandle<FunctionSymbol> BasicBlockBuilder::maybeGetFunction( std::string const &entryName ) const
+    RC::ConstHandle<PencilSymbol> BasicBlockBuilder::maybeGetPencil( std::string const &entryName ) const
     {
-      return m_functionBuilder.maybeGetFunction( entryName );
+      return m_functionBuilder.maybeGetPencil( entryName );
     }
 
     RC::ConstHandle<RT::Desc> BasicBlockBuilder::getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const

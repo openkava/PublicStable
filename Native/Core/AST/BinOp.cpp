@@ -12,6 +12,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/OpTypes.h>
+#include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
@@ -42,34 +43,16 @@ namespace Fabric
       m_right->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::Function const &BinOp::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       CG::ExprType lhsType = m_left->getExprType( basicBlockBuilder );
       lhsType.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       CG::ExprType rhsType = m_right->getExprType( basicBlockBuilder );
       rhsType.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       
-      std::string functionName = CG::binOpOverloadName( m_binOpType, lhsType.getAdapter(), rhsType.getAdapter() );
-      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
-      if ( functionSymbol )
-        return functionSymbol;
-      
-      // [pzion 20110317] Fall back on stronger type
-      
-      RC::ConstHandle<RT::Desc> castDesc = basicBlockBuilder.getStrongerTypeOrNone( lhsType.getDesc(), rhsType.getDesc() );
-      if ( castDesc )
-      {
-        RC::ConstHandle<CG::Adapter> castType = basicBlockBuilder.getManager()->getAdapter( castDesc );
-
-        functionName = CG::binOpOverloadName( m_binOpType, castType, castType );
-        functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
-        if ( functionSymbol )
-          return functionSymbol;
-      }
-      
-      // 
-
-      throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType.getUserName()) + " and " + _(rhsType.getUserName()) );
+      std::string pencilName = CG::BinOpPencilName( m_binOpType );
+      RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
+      return pencilSymbol->getFunction( getLocation(), lhsType, rhsType );
     }
     
     void BinOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
@@ -80,15 +63,15 @@ namespace Fabric
     
     CG::ExprType BinOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunction( basicBlockBuilder ).getReturnInfo().getAdapter();
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       return CG::ExprType( adapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue BinOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
-      RC::ConstHandle< CG::FunctionSymbol > functionSymbol = getFunctionSymbol( basicBlockBuilder );
-      std::vector<CG::FunctionParam> const &functionParams = functionSymbol->getParams();
+      CG::Function const &function = getFunction( basicBlockBuilder );
+      CG::ParamVector const &functionParams = function.getParams();
         
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "the result of " + functionParams[0].getAdapter()->getUserName() + " " + CG::binOpUserName( m_binOpType ) + " " + functionParams[1].getAdapter()->getUserName() + " is not an l-value" );
@@ -99,7 +82,7 @@ namespace Fabric
       CG::ExprValue rhsExprValue = m_right->buildExprValue( basicBlockBuilder, functionParams[1].getUsage(), lValueErrorDesc );
       try
       {
-        result = functionSymbol->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
+        result = function.llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
       }
       catch ( Exception e )
       {

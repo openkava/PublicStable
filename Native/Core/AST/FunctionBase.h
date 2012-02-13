@@ -28,12 +28,18 @@ namespace Fabric
     class FunctionBase : public Global
     {
     public:
+          
+      virtual bool isFunction() const { return false; }
+      virtual bool isDestructor() const { return false; }
       
-      virtual std::string const *getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const;
-      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
+      std::string getSymbolName( RC::Handle<CG::Manager> const &cgManager ) const;
+      
+      virtual std::string const *getScopeName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getPencilName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
+      virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const = 0;
 
-      std::string const &getReturnType() const
+      std::string const &getReturnTypeName() const
       {
         return m_returnTypeName;
       }
@@ -47,8 +53,9 @@ namespace Fabric
       FunctionBase(
         CG::Location const &location,
         std::string const &returnTypeName,
+        std::string const *symbolName,
         RC::ConstHandle<CompoundStatement> const &body,
-        bool exportSymbol = false
+        bool exportSymbol
         );
       
       virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
@@ -56,6 +63,7 @@ namespace Fabric
     private:
     
       std::string m_returnTypeName;
+      std::string m_symbolName;
       RC::ConstHandle<CompoundStatement> m_body;
       bool m_exportSymbol;
     };

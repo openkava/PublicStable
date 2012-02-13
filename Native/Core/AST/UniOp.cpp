@@ -7,8 +7,10 @@
 
 #include "UniOp.h"
 #include <Fabric/Core/CG/Adapter.h>
-#include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/Function.h>
+#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
@@ -18,6 +20,15 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( UniOp );
     
+    RC::ConstHandle<UniOp> UniOp::Create(
+      CG::Location const &location,
+      CG::UniOpType uniOpType,
+      RC::ConstHandle<Expr> const &child
+      )
+    {
+      return new UniOp( location, uniOpType, child );
+    }
+
     UniOp::UniOp( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child )
       : Expr( location )
       , m_uniOpType( uniOpType )
@@ -32,14 +43,14 @@ namespace Fabric
       m_child->appendJSON( jsonObjectEncoder.makeMember( "child" ), includeLocation );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::Function const &UniOp::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       CG::ExprType childExprType = m_child->getExprType( basicBlockBuilder );
-      std::string functionName = CG::uniOpOverloadName( m_uniOpType, childExprType.getAdapter() );
-      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
-      if ( !functionSymbol )
+      std::string pencilName = CG::UniOpPencilName( m_uniOpType );
+      RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
+      if ( !pencilSymbol )
         throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childExprType.getUserName()) );
-      return functionSymbol;
+      return pencilSymbol->getFunction( getLocation(), childExprType );
     }
     
     void UniOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
@@ -49,20 +60,20 @@ namespace Fabric
     
     CG::ExprType UniOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunction( basicBlockBuilder ).getReturnInfo().getAdapter();
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       return CG::ExprType( adapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue UniOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
-      RC::ConstHandle< CG::FunctionSymbol > functionSymbol = getFunctionSymbol( basicBlockBuilder );
-      std::vector<CG::FunctionParam> const &functionParams = functionSymbol->getParams();
+      CG::Function const &function = getFunction( basicBlockBuilder );
+      CG::ParamVector const &functionParams = function.getParams();
       
       try
       {
         CG::ExprValue childExprValue = m_child->buildExprValue( basicBlockBuilder, functionParams[0].getUsage(), lValueErrorDesc );
-        return functionSymbol->llvmCreateCall( basicBlockBuilder, childExprValue );
+        return function.llvmCreateCall( basicBlockBuilder, childExprValue );
       }
       catch ( CG::Error e )
       {

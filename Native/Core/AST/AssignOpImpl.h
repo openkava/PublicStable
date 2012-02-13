@@ -26,22 +26,25 @@ namespace Fabric
     
       static RC::ConstHandle<AssignOpImpl> Create(
         CG::Location const &location,
-        std::string const &thisType,
+        std::string const &thisTypeName,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<Param> rhs,
+        std::string const *scopeName,
         RC::ConstHandle<CompoundStatement> const &body
         );
                   
-      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getPencilName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:
     
       AssignOpImpl(
         CG::Location const &location,
-        std::string const &thisType,
+        std::string const &thisTypeName,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<Param> rhs,
+        std::string const *scopeName,
         RC::ConstHandle<CompoundStatement> const &body
         );
       
@@ -49,8 +52,9 @@ namespace Fabric
     
     private:
     
+      std::string m_thisTypeName;
       CG::AssignOpType m_assignOpType;
-      RC::ConstHandle<ParamVector> m_params;
+      RC::ConstHandle<Param> m_rhs;
     };
   }
 }
