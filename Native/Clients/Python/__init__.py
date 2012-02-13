@@ -196,6 +196,9 @@ class _CLIENT( object ):
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
 
+    if self.__closed:
+      raise Exception( 'Fabric client has already been closed' )
+
     self.__fabric.jsonExec(
       self.__fabricClient,
       data,
