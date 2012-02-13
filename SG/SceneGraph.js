@@ -263,7 +263,7 @@ FABRIC.SceneGraph = {
         throw ('Manager Constructor not Registered:' + type);
       }
       if (managers[type]) {
-        throw ('Manager of this type already constructed:' + type);
+        console.warn ('Manager of this type already constructed:' + type);
       }
       options = (options ? options : {});
       var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
