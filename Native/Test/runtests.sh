@@ -42,7 +42,13 @@ ERROR=0
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  CMD="$VALGRIND_CMD $TEST_CMD $f"
+  # certain tests will always fail with valgrind and can't be suppressed
+  if [ -f ${f%.$TEST_SUFFIX}.novalgrind ]; then
+    CMD="$TEST_CMD $f"
+  else
+    CMD="$VALGRIND_CMD $TEST_CMD $f"
+  fi
+
   $CMD 2>&1 \
     | grep -v '^\[FABRIC\] Fabric Engine version' \
     | grep -v '^\[FABRIC\] This build of Fabric' \
