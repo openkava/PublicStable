@@ -1,10 +1,11 @@
-FABRIC = require('Fabric').createClient();
+import fabric
+fabricClient = fabric.createClient()
 
-node = FABRIC.DependencyGraph.createNode("testDGNode");
+node = fabricClient.DependencyGraph.createNode("testDGNode");
 node.addMember("intMember", "Integer");
 node.addMember("stringMember", "String");
 
-op = FABRIC.DependencyGraph.createOperator("op");
+op = fabricClient.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("op");
 op.setSourceCode('\
 operator op(\n\
@@ -31,10 +32,10 @@ operator op(\n\
   report bad.getCount();\n\
 }\n\
 ');
-if (op.getDiagnostics().length > 0 ) {
-  console.log(JSON.stringify(op.getDiagnostics()));
-}
-opBinding = FABRIC.DG.createBinding();
+if len( op.getDiagnostics() ) > 0:
+  print(fabric.stringify(op.getDiagnostics()));
+
+opBinding = fabricClient.DG.createBinding();
 opBinding.setOperator(op);
 opBinding.setParameterLayout([
   "self",
@@ -42,17 +43,13 @@ opBinding.setParameterLayout([
   "self.stringMember<>"
 ]);
 node.bindings.append(opBinding);
-try
-{
+try:
   node.evaluate();
-}
-catch(e)
-{
-  console.log("Runtime eval error (uninit container access): " + e);
-}
+except Exception as e:
+  print("Runtime eval error (uninit container access): " + str(e) );
 
-//Error test: we are not allowed to have io Container along with members elements
-badOp = FABRIC.DependencyGraph.createOperator("badOp");
+# Error test: we are not allowed to have io Container along with members elements
+badOp = fabricClient.DependencyGraph.createOperator("badOp");
 badOp.setEntryFunctionName("badOp");
 badOp.setSourceCode('\
 operator badOp(\n\
@@ -62,17 +59,17 @@ operator badOp(\n\
 {\n\
 }\n\
 ');
-if (badOp.getDiagnostics().length > 0 ) {
-  console.log(JSON.stringify(badOp.getDiagnostics()));
-}
-badOpBinding = FABRIC.DG.createBinding();
+if len( badOp.getDiagnostics() ) > 0:
+  print(fabric.stringify(badOp.getDiagnostics()));
+
+badOpBinding = fabricClient.DG.createBinding();
 badOpBinding.setOperator(badOp);
 badOpBinding.setParameterLayout([
   "self",
   "self.intMember"
 ]);
 node.bindings.append(badOpBinding);
-if ( node.getErrors().length > 0 )
-  console.log("Bad bindings error: " + JSON.stringify((node.getErrors())));
+if len( node.getErrors() ) > 0:
+  print("Bad bindings error: " + fabric.stringify((node.getErrors())));
 
-FABRIC.close();
+fabricClient.close();
