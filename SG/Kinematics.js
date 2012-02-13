@@ -47,7 +47,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
           entryFunctionName: 'calcGlobalXfo'
         }));
 
-      transformNode.addMemberInterface(dgnode, 'localXfo', true, true);
+      transformNode.addMemberInterface(dgnode, 'localXfo', true);
 
       // use a custom getter
       transformNode.pub.setGlobalXfo = function(val) {

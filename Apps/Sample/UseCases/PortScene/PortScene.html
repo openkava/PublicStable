@@ -53,11 +53,11 @@ FABRIC.require(["SG/SceneGraph",
     presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName));
   }
   
-  loadSubScene('TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea.json');
-  loadSubScene('CRANES_RMGCrane.json');
-  loadSubScene('Buildings2_GARAGE_FACTORIES2.json');
-  loadSubScene('Trailors_Ships_Containers.json');
-  loadSubScene('Industry_FACTORIES.json');
+  loadSubScene('SceneData/TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea.json');
+  loadSubScene('SceneData/CRANES_RMGCrane.json');
+  loadSubScene('SceneData/Buildings2_GARAGE_FACTORIES2.json');
+  loadSubScene('SceneData/Trailors_Ships_Containers.json');
+  loadSubScene('SceneData/Industry_FACTORIES.json');
 
   $(document).ready(function() {
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {

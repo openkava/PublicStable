@@ -966,12 +966,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         if(lightingmodel[i].texture){
           var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
           var imageUrl = remapPath(textureData.path);
-          if(imageUrl.split('.')[1]!= 'png'){
-            var imageUrlArray = imageUrl.split('.');
-            imageUrlArray.pop();
-            imageUrlArray.push('png');
-            imageUrl = imageUrlArray.join('.');
-          }
           if(!imageLibrary[imageUrl]){
             imageLibrary[imageUrl] = scene.constructNode('Image2D', {
               url: imageUrl,

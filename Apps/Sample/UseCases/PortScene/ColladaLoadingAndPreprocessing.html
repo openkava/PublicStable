@@ -68,7 +68,7 @@ FABRIC.require(["SG/SceneGraph",
     
     var remapPath = function(path){
       var oldbasePath = 'file://C:\\Projects\\FabricAssets\\Port\\FINAL_2011_MAX7_FILES';
-      var newbasePath = 'TexturesPNGs';
+      var newbasePath = 'Textures';
       if(path.substring(0, oldbasePath.length) === oldbasePath){
         return newbasePath + path.substring(oldbasePath.length);
       }
@@ -80,12 +80,6 @@ FABRIC.require(["SG/SceneGraph",
         return undefined;
       }
       var imageUrl = remapPath(textureData.path);
-      if(imageUrl.split('.')[1]!= 'png'){
-        var imageUrlArray = imageUrl.split('.');
-        imageUrlArray.pop();
-        imageUrlArray.push('png');
-        imageUrl = imageUrlArray.join('.');
-      }
       if(!imageLibrary[imageUrl]){
         imageLibrary[imageUrl] = scene.constructNode('Image2D', {
           url: imageUrl,
@@ -150,7 +144,7 @@ FABRIC.require(["SG/SceneGraph",
   */
   
   /*
-   var fileName = 'CRANES_RMGCrane';
+  var fileName = 'CRANES_RMGCrane';
   scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstanced);
   DONE
@@ -163,21 +157,22 @@ FABRIC.require(["SG/SceneGraph",
   scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstanced);
   DONE
   */
+  
   /*
   var fileName = 'Trailors_Ships_Containers';
   scene.importAssetFile('Models/Trailors.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/Ships.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/Containers.DAE', parseOptions, collectInstanced);
-  DONE
   */
+  
   /*
   var fileName = 'Industry_FACTORIES';
   scene.importAssetFile('Models/Industry.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstanced);
-  DONE
+  
   */
 
-/*
+  /*
   var fileName = 'TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea';
   scene.importAssetFile('Models/TerrainAndOtherBits.DAE', parseOptions, collectInstanced);
   scene.importAssetFile('Models/TERRAIN_MAIN.DAE', parseOptions, collectInstanced);
@@ -190,7 +185,7 @@ FABRIC.require(["SG/SceneGraph",
       diffuse: 'textureNode'
     },
     pathRemapping: {
-     'file://C:\\Projects\\FabricAssets\\Port\\FINAL_2011_MAX7_FILES': 'TexturesPNGs'
+     'file://C:\\Projects\\FabricAssets\\Port\\FINAL_2011_MAX7_FILES': 'Textures'
     },
     blockRedrawingTillResourceIsLoaded: false
   }, collectInstanced);
@@ -206,9 +201,9 @@ FABRIC.require(["SG/SceneGraph",
     },
     blockRedrawingTillResourceIsLoaded: false
   }, collectInstanced);
-  DONE
-*/
   
+  
+  */
   
   scene.addEventListener('mousedown_geom', function(evt) {
       console.log('Mouse Down:' + evt.targetNode.getName());
