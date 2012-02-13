@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Mat44, Vec2;
+use Vec2, Mat44, Xfo;
 
 function Mat44 asymmetricPerspectiveFrustum(
   Scalar l, Scalar r,
@@ -99,3 +99,11 @@ operator updateCameraProjection(
     projectionMat44 = symmetricOrthographicFrustum(frustumW, frustumH, near, far);
   }
 }
+
+operator loadFocalDist(io Xfo xfo, io Vec3 target, io Scalar focalDist){
+  focalDist = xfo.tr.distanceTo(target);
+}
+
+
+
+

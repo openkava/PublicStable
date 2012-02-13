@@ -51,12 +51,12 @@ operator writeMemberToStream(
       seekOffsets[dataIndexId] = stream.getSeek();
       String dataType = "DATA_TYPE";
       stream.writeString(dataType);
-      stream.writeData(member.data(),member.dataSize());
+      stream.writeDataCompressed(member.data(),member.dataSize());
     }
   }
 }
 
-operator writeArrayToStream(
+operator writeArrayToStream(  
   io FabricFileStream stream,
   io String dataNames[],
   io Size seekOffsets[],
@@ -71,7 +71,7 @@ operator writeArrayToStream(
       stream.writeString(dataType);
       for(Integer i=0; i<data.size(); i++){
         stream.writeSize(data[i].size());
-        stream.writeData(data[i].data(),data[i].dataSize());
+        stream.writeDataCompressed(data[i].data(),data[i].dataSize());
       }
     }
   }
@@ -144,7 +144,7 @@ operator readMemberFromStream(
         stream.close();
         return;
       }
-      stream.readData(data.data(),data.dataSize());
+      stream.readDataCompressed(data.data(),data.dataSize());
     }
     stream.close();
   }
@@ -173,7 +173,7 @@ operator readArrayFromStream(
     for(Integer i=0; i<data.size(); i++){
       stream.readSize(size);
       data[i].resize(size);
-      stream.readData(data[i].data(),data[i].dataSize());
+      stream.readDataCompressed(data[i].data(),data[i].dataSize());
     }
     stream.close();
   }

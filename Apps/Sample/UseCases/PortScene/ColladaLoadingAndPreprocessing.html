@@ -29,34 +29,48 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Persistence",
-                "SG/Parsers/parseCollada"], function() {
+                "SG/Parsers/parseCollada",
+                "SG/Parsers/parseMTL",
+                "SG/Parsers/parseOBJ"], function() {
 
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('Viewport', {
+   viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
     enableRaycasting: true,
   });
   
   // Create a camera to draw the scene from
-  var camera = scene.constructNode('TargetCamera', {
-      nearDistance: 0.1,
-      farDistance: 900,
+  camera = scene.constructNode('TargetCamera', {
+      nearDistance: 10,
+      farDistance: 20000,
       target: new FABRIC.RT.Vec3(0, 0, 0),
-      position: new FABRIC.RT.Vec3(-18, 47.7, 79.3)
+      position: new FABRIC.RT.Vec3(-2000, 1000, 3000)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+//  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  light = scene.constructNode('DirectionalLight', {
+    position: new FABRIC.RT.Vec3(1000, 2000, 5),
+    target: new FABRIC.RT.Vec3(0, 2, -6),
+    direction: (new FABRIC.RT.Vec3(-1, -1, -1)).unit(),
+    farDistance: 16000,
+    resolution: 2048,
+    castShadows: true,
+    display: true,
+    size: 1800
+  });
+  var lightManip = scene.constructNode('XfoManipulator', { parentNode: light.getTransformNode(), size: 40, radius: 300 });
   
   var presetSaver = scene.constructManager('SceneSerializer',{
-    typeRemappings: { ObjTriangles: 'Triangles' } 
+    typeRemappings: { ObjTriangles: 'Triangles' } ,
+    filteredNodeTypes: ['ObjResource']
   });
   
   var nodes = {};
-  var collectInstanced = function(nodeMap){
+  var collectInstances = function(nodeMap){
     for(var nodeName in nodeMap){
       presetSaver.addNode(nodeMap[nodeName]);
     }
@@ -80,6 +94,10 @@ FABRIC.require(["SG/SceneGraph",
         return undefined;
       }
       var imageUrl = remapPath(textureData.path);
+      var ext = imageUrl.split('.')[1];
+      if(ext === 'gif'){
+        return undefined;
+      }
       if(!imageLibrary[imageUrl]){
         imageLibrary[imageUrl] = scene.constructNode('Image2D', {
           url: imageUrl,
@@ -91,7 +109,7 @@ FABRIC.require(["SG/SceneGraph",
   
     if(materialData.diffuse.texture){
       var diffuseTexture = loadTexture(materialData.diffuse.texture.texture);
-      if(materialData.specular.texture){
+      if(diffuseTexture && materialData.specular.texture){
         var specularTexture = loadTexture(materialData.specular.texture.texture);
         materialType = 'PhongTextureMaterial';
         materialOptions = {
@@ -131,53 +149,98 @@ FABRIC.require(["SG/SceneGraph",
   
   
   var parseOptions = {
-    scaleFactor: 0.01,
+    scaleFactor: 1.0,
     materialConstructorCallback: materialCallback
   };
   
   // There is something wrong with this file. we get an assert during redraw.
-//  scene.importAssetFile('Models/Buros.DAE', parseOptions, collectInstanced);
-//  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstanced);
+//  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstances);
   /*
   
   
   */
+  var fileName = 'Cranes';
+  scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstances);
   
-  /*
-  var fileName = 'CRANES_RMGCrane';
-  scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstanced);
-  DONE
-  */
-  
-  /*
-  var fileName = 'Buildings2_GARAGE_FACTORIES2';
-  scene.importAssetFile('Models/Buildings2.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/GARAGE.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstanced);
-  DONE
-  */
   
   /*
   var fileName = 'Trailors_Ships_Containers';
-  scene.importAssetFile('Models/Trailors.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/Ships.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/Containers.DAE', parseOptions, collectInstanced);
+  scene.importAssetFile('Models/Trailors.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/Ships.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/Containers.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/TruckTANKER.DAE', parseOptions, collectInstances);
+  DONE
   */
   
   /*
-  var fileName = 'Industry_FACTORIES';
-  scene.importAssetFile('Models/Industry.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstanced);
-  
+  var fileName = 'PortMachinery';
+  scene.importAssetFile('Models/W_PLANTS.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/OilTank01.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/OilTank02.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/OilTank03.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/Industry.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/RafinerySmall.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstances);
+  DONE
   */
 
   /*
-  var fileName = 'TerrainAndOtherBits_TERRAIN_MAIN_Domesky_Sea';
-  scene.importAssetFile('Models/TerrainAndOtherBits.DAE', parseOptions, collectInstanced);
-  scene.importAssetFile('Models/TERRAIN_MAIN.DAE', parseOptions, collectInstanced);
+  var fileName = 'Buildings';
+  scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/Buildings.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/Buildings2.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/GARAGE.DAE', parseOptions, collectInstances);
+//  scene.importAssetFile('Models/Buros.OBJ', parseOptions, collectInstances);
+DONE
+*/
+  
+  /*
+  var fileName = 'Rafinery_K1';
+  scene.importAssetFile('Models/Rafinery_K1.mtl', { materialOptions: { lightNode: light } },
+    function(materials){
+      var loadRafinery_K1Node = scene.constructNode('ObjResource', {
+        url: 'Models/Rafinery_K1.obj',
+        splitMaterials: true,
+        splitGroups: true,
+        printDetailedInfo: true
+      } );
+      loadRafinery_K1Node.addEventListener('objparsesuccess', function(evt){
+        var loadedGeometries = evt.loadedGeometries;
+        for(var i in evt.objectNames){
+          var objectName = evt.objectNames[i];
+          var materialName = evt.materialNames[i];
+          var material = materials[materialName];
+          if(!material){
+            material = scene.constructNode('PhongMaterial', {
+              diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+              lightNode: light
+            });
+          }
+          var instance = scene.constructNode('Instance', {
+            geometryNode: loadedGeometries[objectName],
+            materialNode: material,
+            transformNode: scene.constructNode('Transform', {
+                hierarchical: false,
+                globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+              }),
+          });
+          presetSaver.addNode(instance);
+        }
+      });
+    });
+    DONE
+  */
+  
+  
+  /*
+  var fileName = 'Terrain';
+  scene.importAssetFile('Models/TerrainAndOtherBits.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/TERRAIN_MAIN.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('Models/MastC01.DAE', parseOptions, collectInstances);
   scene.importAssetFile('Models/Domesky.DAE', {
-    scaleFactor: 0.01,
+    scaleFactor: 1.0,
     materialType: 'FlatTextureMaterial',
     materialOptions: {
     },
@@ -188,10 +251,10 @@ FABRIC.require(["SG/SceneGraph",
      'file://C:\\Projects\\FabricAssets\\Port\\FINAL_2011_MAX7_FILES': 'Textures'
     },
     blockRedrawingTillResourceIsLoaded: false
-  }, collectInstanced);
+  }, collectInstances);
   
   scene.importAssetFile('Models/Sea.DAE', {
-    scaleFactor: 0.01,
+    scaleFactor: 1.0,
     materialType: 'PhongMaterial',
     materialOptions: {
       lightNode: light,
@@ -200,9 +263,9 @@ FABRIC.require(["SG/SceneGraph",
       bumpiness: 0.5
     },
     blockRedrawingTillResourceIsLoaded: false
-  }, collectInstanced);
-  
-  
+  }, collectInstances);
+
+    DONE
   */
   
   scene.addEventListener('mousedown_geom', function(evt) {
