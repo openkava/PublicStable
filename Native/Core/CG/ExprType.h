@@ -8,6 +8,7 @@
 #include <Fabric/Base/RC/ConstHandle.h>
 
 #include <string>
+#include <vector>
 
 namespace Fabric
 {
@@ -71,17 +72,21 @@ namespace Fabric
       std::string const &getUserName() const;
       std::string const &getCodeName() const;
       
-      std::string desc() const;
-      
       bool operator ==( ExprType const &that ) const;
       bool operator !=( ExprType const &that ) const;
     };
-  };
-  
-  inline std::string _( CG::ExprType const &exprType )
-  {
-    return exprType.desc();
+    
+    class ExprTypeVector : public std::vector<ExprType>
+    {
+    public:
+    
+      ExprTypeVector()
+      {
+      }
+      
+      std::string desc() const;
+    };
   }
-};
+}
 
 #endif //_FABRIC_CG_EXPR_TYPE_H

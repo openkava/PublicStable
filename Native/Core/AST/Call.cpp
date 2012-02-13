@@ -11,6 +11,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -46,9 +47,9 @@ namespace Fabric
       m_args->appendJSON( jsonObjectEncoder.makeMember( "args" ), includeLocation );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::Function const &Call::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      std::vector<CG::ExprType> argExprTypes;
+      CG::ExprTypeVector argExprTypes;
       m_args->appendExprTypes( basicBlockBuilder, argExprTypes );
       
       RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( m_name );
@@ -68,16 +69,20 @@ namespace Fabric
         throw Exception( "function " + _(functionDesc) + " not found" );
       }
 
-      if ( !symbol->isFunction() )
+      if ( !symbol->isPencil() )
         throw Exception( _(m_name) + " is not a function" );
-      return RC::ConstHandle<CG::FunctionSymbol>::StaticCast( symbol );
+      RC::ConstHandle<CG::PencilSymbol> pencilSymbol = RC::ConstHandle<CG::PencilSymbol>::StaticCast( symbol );
+      return pencilSymbol->getFunction( getLocation(), argExprTypes );
     }
     
     CG::ExprType Call::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
       if ( !adapter )
-        adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      {
+        CG::Function const &function = getFunction( basicBlockBuilder );
+        adapter = function.getReturnInfo().getAdapter();
+      }
       
       CG::ExprType exprType;
       if ( adapter )
@@ -122,10 +127,10 @@ namespace Fabric
         }
         else
         {
-          std::string initializerName = constructorOverloadName( result.getAdapter(), argAdapters );
+          std::string pencilName = ConstructorPencilName( result.getAdapter() );
             
-          RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
-          if ( !functionSymbol )
+          RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
+          if ( !pencilSymbol )
           {
             if ( argAdapters.size() == 1 )
               throw CG::Error( getLocation(), "no cast exists from " + argAdapters[0]->getUserName() + " to " + adapter->getUserName() );
@@ -144,7 +149,11 @@ namespace Fabric
             }
           }
 
-          std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
+          CG::ExprTypeVector argTypes;
+          argTypes.push_back( result.getExprType() );
+          m_args->appendExprTypes( basicBlockBuilder, argTypes );
+          CG::Function const &function = pencilSymbol->getFunction( getLocation(), argTypes );
+          CG::ParamVector const functionParams = function.getParams();
           
           std::vector<CG::Usage> argUsages;
           for ( size_t i=1; i<functionParams.size(); ++i )
@@ -154,7 +163,7 @@ namespace Fabric
           exprValues.push_back( result );
           m_args->appendExprValues( basicBlockBuilder, argUsages, exprValues, "cannot be used as an io argument" );
           
-          functionSymbol->llvmCreateCall( basicBlockBuilder, exprValues );
+          function.llvmCreateCall( basicBlockBuilder, exprValues );
         }
         
         result.castTo( basicBlockBuilder, usage );
@@ -162,14 +171,14 @@ namespace Fabric
       }
       else
       {
-        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = getFunctionSymbol( basicBlockBuilder );
-        if ( usage == CG::USAGE_LVALUE && functionSymbol->getReturnInfo().getUsage() != CG::USAGE_LVALUE )
+        CG::Function const &function = getFunction( basicBlockBuilder );
+        if ( usage == CG::USAGE_LVALUE && function.getReturnInfo().getUsage() != CG::USAGE_LVALUE )
           throw Exception( "result of function "+_(m_name)+" is not an l-value" );
         
         CG::ExprValue result( basicBlockBuilder.getContext() );
         try
         {
-          std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
+          CG::ParamVector const functionParams = function.getParams();
 
           std::vector<CG::Usage> paramUsages;
           for ( size_t i=0; i<functionParams.size(); ++i )
@@ -181,7 +190,7 @@ namespace Fabric
           std::vector<CG::ExprValue> args;
           m_args->appendExprValues( basicBlockBuilder, paramUsages, args, "cannot be an io argument" );
           
-          result = functionSymbol->llvmCreateCall( basicBlockBuilder, args );
+          result = function.llvmCreateCall( basicBlockBuilder, args );
         }
         catch ( CG::Error e )
         {

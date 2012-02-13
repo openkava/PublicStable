@@ -6,10 +6,12 @@
  */
 
 #include "StructMemberOp.h"
-#include <Fabric/Core/CG/StructAdapter.h>
-#include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/Function.h>
+#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/StructAdapter.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
@@ -53,11 +55,12 @@ namespace Fabric
         }
       }
       
-      std::string functionName = methodOverloadName( m_memberName, structExprType );
-      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
-      if ( !functionSymbol )
+      std::string pencilName = CG::MethodPencilName( structExprType.getAdapter(), m_memberName );
+      RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
+      if ( !pencilSymbol )
         throw CG::Error( getLocation(), "type " + structExprType.getUserName() + " has no member or method named " + _(m_memberName) );
-      RC::ConstHandle<CG::Adapter> returnAdapter = functionSymbol->getReturnInfo().getAdapter();
+      CG::Function const &function = pencilSymbol->getFunction( getLocation(), structExprType );
+      RC::ConstHandle<CG::Adapter> returnAdapter = function.getReturnInfo().getAdapter();
       returnAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       return CG::ExprType( returnAdapter, CG::USAGE_RVALUE );
     }
@@ -104,17 +107,18 @@ namespace Fabric
           }
         }
 
-        std::string functionName = methodOverloadName( m_memberName, CG::ExprType( adapter, CG::USAGE_RVALUE ) );
-        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
-        if ( functionSymbol )
+        std::string pencilName = CG::MethodPencilName( adapter, m_memberName );
+        RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
+        if ( pencilSymbol )
         {
-          std::vector<CG::FunctionParam> const &functionParams = functionSymbol->getParams();
+          CG::Function const &function = pencilSymbol->getFunction( getLocation(), CG::ExprType( adapter, CG::USAGE_RVALUE ) );
+          CG::ParamVector const &functionParams = function.getParams();
           
           if ( functionParams.size() != 1 )
             throw CG::Error( getLocation(), "method "+_(m_memberName)+" of type +"+_(adapter->getUserName())+" takes one or more parameters" );
           
           CG::ExprValue structExprValue = m_structExpr->buildExprValue( basicBlockBuilder, functionParams[0].getUsage(), lValueErrorDesc );
-          return functionSymbol->llvmCreateCall( basicBlockBuilder, structExprValue );
+          return function.llvmCreateCall( basicBlockBuilder, structExprValue );
         }
 
         throw CG::Error( getLocation(), _(adapter->getUserName()) + " has no member or method named " + _(m_memberName) );

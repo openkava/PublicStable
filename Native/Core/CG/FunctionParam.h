@@ -5,15 +5,23 @@
 #ifndef _FABRIC_CG_FUNCTION_PARAM_H
 #define _FABRIC_CG_FUNCTION_PARAM_H
 
+#include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/ExprType.h>
 #include <Fabric/Base/Exception.h>
 
 #include <string>
 
+namespace llvm
+{
+  class Type;
+}
+
 namespace Fabric
 {
   namespace CG
   {
+    class Context;
+    
     class FunctionParam
     {
     public:
@@ -87,16 +95,86 @@ namespace Fabric
         }
         return 0;
       }
-      
-      std::string desc() const
-      {
-        return m_name + ":" + m_exprType.desc();
-      }
 
     private:
     
       std::string m_name;
       ExprType m_exprType;
+    };
+    
+    class ParamVector : public std::vector<FunctionParam>
+    {
+    public:
+    
+      ParamVector()
+      {
+      }
+      
+      ParamVector( FunctionParam const &param )
+      {
+        push_back( param );
+      }
+      
+      ParamVector(
+        FunctionParam const &param1,
+        FunctionParam const &param2
+        )
+      {
+        push_back( param1 );
+        push_back( param2 );
+      }
+      
+      ParamVector(
+        FunctionParam const &param1,
+        FunctionParam const &param2,
+        FunctionParam const &param3
+        )
+      {
+        push_back( param1 );
+        push_back( param2 );
+        push_back( param3 );
+      }
+      
+      ParamVector( ParamVector const &that )
+      {
+        reserve( that.size() );
+        for ( const_iterator it=that.begin(); it!=that.end(); ++it )
+          push_back( *it );
+      }
+      
+      ParamVector &operator =( ParamVector const &that )
+      {
+        reserve( that.size() );
+        for ( const_iterator it=that.begin(); it!=that.end(); ++it )
+          push_back( *it );
+        return *this;
+      }
+      
+      void appendAdapters( std::vector< RC::ConstHandle<CG::Adapter> > &adapters ) const
+      {
+        for ( const_iterator it=begin(); it!=end(); ++it )
+          adapters.push_back( it->getAdapter() );
+      }
+      
+      std::vector< RC::ConstHandle<CG::Adapter> > getAdapters() const
+      {
+        std::vector< RC::ConstHandle<CG::Adapter> > result;
+        appendAdapters( result );
+        return result;
+      }
+      
+      void appendTypes( ExprTypeVector &paramTypes ) const
+      {
+        for ( const_iterator it=begin(); it!=end(); ++it )
+          paramTypes.push_back( it->getExprType() );
+      }
+      
+      ExprTypeVector getTypes() const
+      {
+        ExprTypeVector result;
+        appendTypes( result );
+        return result;
+      }
     };
   }
 }

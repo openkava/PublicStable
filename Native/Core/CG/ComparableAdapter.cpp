@@ -30,7 +30,7 @@ namespace Fabric
     llvm::Value *ComparableAdapter::llvmHash( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      std::vector<FunctionParam> params;
+      ParamVector params;
       params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder(
         basicBlockBuilder.getModuleBuilder(),
@@ -44,7 +44,7 @@ namespace Fabric
     llvm::Value *ComparableAdapter::llvmCompare( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const
     {
       RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
-      std::vector<FunctionParam> params;
+      ParamVector params;
       params.push_back( FunctionParam( "lhsRValue", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "rhsRValue", this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder(

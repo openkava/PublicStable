@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-04.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_CG_SCOPE_H
@@ -15,6 +12,7 @@
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/FunctionParam.h>
 #include <Fabric/Core/CG/ReturnInfo.h>
+#include <Fabric/Core/CG/Symbol.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Base/Exception.h>
 
@@ -22,193 +20,6 @@ namespace Fabric
 {
   namespace CG
   {
-    class Symbol : public RC::Object
-    {
-    public:
-    
-      virtual bool isValue() const { return false; }
-      virtual bool isFunction() const { return false; }
-      
-      virtual std::string desc() const = 0;
-    };
-    
-    class ValueSymbol : public Symbol
-    {
-    public:
-    
-      virtual bool isValue() const { return true; }
-      virtual bool isVariable() const { return false; }
-      virtual bool isParameter() const { return false; }
-      virtual bool isConstant() const { return false; }
-      
-      CG::ExprValue const &getExprValue() const
-      {
-        return m_exprValue;
-      }
-      
-      RC::ConstHandle<CG::Adapter> getAdapter() const
-      {
-        return m_exprValue.getAdapter();
-      }
-      
-    protected:
-    
-      ValueSymbol( CG::ExprValue const &exprValue )
-        : m_exprValue( exprValue )
-      {
-      }
-      
-    private:
-    
-      CG::ExprValue m_exprValue;
-    };
-    
-    class VariableSymbol : public ValueSymbol
-    {
-    public:
-    
-      static RC::ConstHandle<VariableSymbol> Create( CG::ExprValue const &exprValue )
-      {
-        return new VariableSymbol( exprValue );
-      }
-      
-      virtual bool isVariable() const { return true; }
-      
-      virtual std::string desc() const
-      {
-        return "Variable(" + getExprValue().desc() + ")";
-      }
-      
-    protected:
-    
-      VariableSymbol( CG::ExprValue const &exprValue )
-        : ValueSymbol( exprValue )
-      {
-      }
-    };
-    
-    class ParameterSymbol : public ValueSymbol
-    {
-    public:
-    
-      static RC::ConstHandle<ParameterSymbol> Create( CG::ExprValue const &exprValue )
-      {
-        return new ParameterSymbol( exprValue );
-      }
-      
-      virtual bool isParameter() const { return true; }
-      
-      virtual std::string desc() const
-      {
-        return "Parameter(" + getExprValue().desc() + ")";
-      }
-      
-    protected:
-    
-      ParameterSymbol( CG::ExprValue const &exprValue )
-        : ValueSymbol( exprValue )
-      {
-      }
-    };
-    
-    class ConstantSymbol : public ValueSymbol
-    {
-    public:
-    
-      static RC::ConstHandle<ConstantSymbol> Create( CG::ExprValue const &exprValue )
-      {
-        return new ConstantSymbol( exprValue );
-      }
-      
-      virtual bool isConstant() const { return true; }
-      
-      virtual std::string desc() const
-      {
-        return "Constant(" + getExprValue().desc() + ")";
-      }
-      
-    protected:
-    
-      ConstantSymbol( CG::ExprValue const &exprValue )
-        : ValueSymbol( exprValue )
-      {
-      }
-    };
-
-    class FunctionSymbol : public Symbol
-    {
-    public:
-      
-      static RC::ConstHandle<FunctionSymbol> Create( llvm::Function *llvmFunction, ReturnInfo const &returnInfo, std::vector< FunctionParam > const &params )
-      {
-        return new FunctionSymbol( llvmFunction, returnInfo, params );
-      }
-      
-      virtual bool isFunction() const { return true; }
-      
-      llvm::Function *getLLVMFunction() const
-      {
-        return m_llvmFunction;
-      }
-      
-      ReturnInfo const &getReturnInfo() const
-      {
-        return m_returnInfo;
-      }
-      
-      std::vector< FunctionParam > const &getParams() const
-      {
-        return m_params;
-      }
-
-      virtual std::string desc() const
-      {
-        std::string result = "FunctionSymbol( " + m_returnInfo.desc();
-        for ( size_t i=0; i<m_params.size(); ++i )
-        {
-          if ( i == 0 )
-            result += "; ";
-          else
-            result += ", ";
-          result += m_params[i].getName();
-        }
-        result += " )";
-        return result;
-      }
-      
-      ExprValue llvmCreateCall( BasicBlockBuilder &basicBlockBuilder, std::vector< ExprValue > &args ) const;
-      
-      ExprValue llvmCreateCall( BasicBlockBuilder &basicBlockBuilder, ExprValue const &arg ) const
-      {
-        std::vector< ExprValue > args;
-        args.push_back( arg );
-        return llvmCreateCall( basicBlockBuilder, args );
-      }
-      
-      ExprValue llvmCreateCall( BasicBlockBuilder &basicBlockBuilder, ExprValue const &arg1, ExprValue const &arg2 ) const
-      {
-        std::vector< ExprValue > args;
-        args.push_back( arg1 );
-        args.push_back( arg2 );
-        return llvmCreateCall( basicBlockBuilder, args );
-      }
-      
-    protected:
-      
-      FunctionSymbol( llvm::Function *llvmFunction, ReturnInfo const &returnInfo, std::vector< FunctionParam > const &params )
-        : m_llvmFunction( llvmFunction )
-        , m_returnInfo( returnInfo )
-        , m_params( params )
-      {
-      }
-            
-    private:
-    
-      llvm::Function *m_llvmFunction;
-      ReturnInfo m_returnInfo;
-      std::vector< FunctionParam > m_params;
-    };
-    
     class Scope
     {
     public:
@@ -243,16 +54,6 @@ namespace Fabric
         else if ( m_parentScope )
           return m_parentScope->get( name );
         else return 0;
-      }
-      
-      std::string desc( std::string const &indent = "" ) const
-      {
-        std::string result = "";
-        for ( StringToSymbolMap::const_iterator it=m_namedSymbols.begin(); it!=m_namedSymbols.end(); ++it )
-          result += it->first + ": " + it->second->desc() + "\n";
-        if ( m_parentScope )
-          result += m_parentScope->desc( indent + "  " );
-        return result;
       }
       
       void llvmUnwind( BasicBlockBuilder &bbb ) const
@@ -498,12 +299,7 @@ namespace Fabric
       ReturnInfo m_returnInfo;
       llvm::Value *m_returnLValue;
     };
-  };
-  
-  inline std::string _( CG::ReturnInfo const &returnInfo )
-  {
-    return returnInfo.desc();
   }
-};
+}
 
 #endif //_FABRIC_CG_SCOPE_H

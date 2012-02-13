@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "FunctionBuilder.h"
 #include "ModuleBuilder.h"
 #include "Manager.h"
@@ -12,35 +16,31 @@ namespace Fabric
   namespace CG
   {
     FunctionBuilder::FunctionBuilder(
-      ModuleBuilder &moduleBuilder,
-      std::string const &entryName,
-      ExprType const &returnExprType,
-      std::vector< FunctionParam > const &params,
-      bool exportSymbol,
-      std::string const *friendlyName, 
-      bool returnsStaticDataPtr
+      ModuleBuilder &moduleBuilder, 
+      std::string const &pencilName, 
+      std::string const &symbolName,
+      RC::ConstHandle<Adapter> const &returnAdapter, 
+      ParamVector const &params,
+      size_t flags
       )
       : m_moduleBuilder( moduleBuilder )
       , m_functionScope( NULL )
     {
-      
-      build( entryName, returnExprType, params, exportSymbol, friendlyName, returnsStaticDataPtr );
+      build( pencilName, symbolName, returnAdapter, params, flags );
     }
     
     FunctionBuilder::FunctionBuilder( 
       ModuleBuilder &moduleBuilder, 
-      std::string const &entryName, 
+      std::string const &pencilName, 
+      std::string const &symbolName,
       std::string const &paramLayout,
-      bool exportSymbol,
-      std::string const *friendlyName,
-      bool returnsStaticDataPtr
+      size_t flags
       )
       : m_moduleBuilder( moduleBuilder )
       , m_functionScope( NULL )
     {
-      
       RC::Handle<CG::Manager> manager = moduleBuilder.getManager();
-      std::vector< CG::FunctionParam > paramList;
+      CG::ParamVector paramList;
       CG::ExprType    returnExprType;
       
       if( !paramLayout.empty() )
@@ -96,21 +96,23 @@ namespace Fabric
         } while( end != std::string::npos );
       }
       
-      build( entryName, returnExprType, paramList, exportSymbol, friendlyName, returnsStaticDataPtr );
+      build( pencilName, symbolName, returnExprType, paramList, flags );
     }
     
     void FunctionBuilder::build( 
-      std::string const &entryName, 
-      ExprType const &returnExprType, 
-      std::vector< FunctionParam > const &params,
-      bool exportSymbol,
-      std::string const *friendlyName, 
-      bool returnsStaticDataPtr
+      std::string const &pencilName, 
+      std::string const &symbolName, 
+      RC::ConstHandle<Adapter> const &returnAdapter, 
+      ParamVector const &params, 
+      size_t flags
       )
     {
       RC::Handle<Context> context = getContext();
       
-      ReturnInfo returnInfo( returnExprType, returnsStaticDataPtr );
+      ReturnInfo returnInfo(
+        ExprType( returnAdapter, USAGE_RVALUE ),
+        flags & ReturnsStaticDataPtr
+        );
 
       llvm::Type const *llvmReturnType = 0;
       if ( returnExprType && !returnInfo.usesReturnLValue() )
@@ -148,7 +150,7 @@ namespace Fabric
       AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get(AWI, 1);
       
-      llvm::Function *existingLLVMFunction = m_moduleBuilder->getFunction( entryName.c_str() );
+      llvm::Function *existingLLVMFunction = m_moduleBuilder->getFunction( symbolName.c_str() );
       if ( existingLLVMFunction )
       {
         // [pzion 20110825] FIXME: should verify sanity here through asserts on types, attributes
@@ -158,7 +160,7 @@ namespace Fabric
       else
       {
         m_llvmFunction = llvm::cast<llvm::Function>( m_moduleBuilder->getOrInsertFunction( entryName.c_str(), m_llvmFunctionType, attrListPtr ) );
-        m_llvmFunction->setLinkage( exportSymbol? llvm::GlobalValue::ExternalLinkage: llvm::GlobalValue::PrivateLinkage );
+        m_llvmFunction->setLinkage( (flags & ExportSymbol)? llvm::GlobalValue::ExternalLinkage: llvm::GlobalValue::PrivateLinkage );
       }
       
       llvm::Function::arg_iterator ai = m_llvmFunction->arg_begin();
@@ -187,8 +189,7 @@ namespace Fabric
         m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), context, ai ) ) );
       }
       
-      RC::ConstHandle<FunctionSymbol> functionSymbol = CG::FunctionSymbol::Create( m_llvmFunction, returnInfo, params );
-      m_moduleBuilder.addFunction( entryName, functionSymbol, friendlyName );
+      m_pencil = m_moduleBuilder.addFunction( scopeName, pencilName, Function( m_llvmFunction, returnInfo, params ) );
     }
 
     FunctionBuilder::FunctionBuilder(
@@ -260,9 +261,9 @@ namespace Fabric
       return *m_functionScope;
     }
 
-    RC::ConstHandle<FunctionSymbol> FunctionBuilder::maybeGetFunction( std::string const &entryName ) const
+    RC::ConstHandle<PencilSymbol> FunctionBuilder::maybeGetPencil( std::string const &entryName ) const
     {
-      return m_moduleBuilder.maybeGetFunction( entryName );
+      return m_moduleBuilder.maybeGetPencil( entryName );
     }
     
     RC::ConstHandle<Adapter> FunctionBuilder::maybeGetAdapter( std::string const &userName ) const

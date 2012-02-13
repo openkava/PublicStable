@@ -75,29 +75,32 @@ namespace Fabric
       return !insertResult;
     }
 
-    void ModuleBuilder::addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName )
+    RC::ConstHandle<PencilSymbol> ModuleBuilder::addFunction(
+      std::string const &pencilName,
+      CG::Function const &function
+      )
     {
       FABRIC_ASSERT( entryName.length() > 0 );
       
-      std::pair< Functions::iterator, bool > insertResult = m_functions.insert( Functions::value_type( entryName, functionSymbol ) );
-      if ( !insertResult.second )
+      RC::Handle<PencilSymbol> &pencil = m_pencils[pencilName];
+      if ( !pencil )
+        pencil = PencilSymbol::Create( pencilName );
+      CG::Function const *existingFunction = pencil->maybeGetPreciseFunction( function.getParamTypes() );
+      if ( existingFunction )
       {
-        RC::ConstHandle<FunctionSymbol> const &existingFunctionSymbol = insertResult.first->second;
-        llvm::Function *llvmFunction = functionSymbol->getLLVMFunction();
-        llvm::Function *existingLLVMFunction = existingFunctionSymbol->getLLVMFunction();
-        if ( llvmFunction != existingLLVMFunction )
-          throw Exception( "function with entry name " + _(entryName) + " already exists" );
+        if ( existingFunction->getLLVMFunction() != function.getLLVMFunction() )
+          throw Exception( friendlyName + "(" + existingFunction->getParamTypes().desc() + ") already exists" );
       }
+      else pencil->add( function );
       
-      if ( friendlyName )
-        m_moduleScope.put( *friendlyName, functionSymbol );
+      return pencil;
     }
     
-    RC::ConstHandle<FunctionSymbol> ModuleBuilder::maybeGetFunction( std::string const &entryName ) const
+    RC::ConstHandle<PencilSymbol> ModuleBuilder::maybeGetPencil( std::string const &pencilName ) const
     {
-      RC::ConstHandle<FunctionSymbol> result;
-      Functions::const_iterator it = m_functions.find( entryName );
-      if ( it != m_functions.end() )
+      RC::ConstHandle<PencilSymbol> result;
+      Pencils::const_iterator it = m_pencils.find( pencilName );
+      if ( it != m_pencils.end() )
         result = it->second;
       return result;
     }

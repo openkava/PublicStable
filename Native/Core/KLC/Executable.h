@@ -71,19 +71,23 @@ namespace Fabric
           {
             functionPtr = (void (*)(...))( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
             
-            std::vector< RC::ConstHandle<AST::Function> > functions;
-            m_ast->collectFunctions( functions );
+            std::vector< RC::ConstHandle<AST::FunctionBase> > functionBases;
+            m_ast->collectFunctionBases( functionBases );
             
-            for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
+            for ( std::vector< RC::ConstHandle<AST::FunctionBase> >::const_iterator it=functionBases.begin(); it!=functionBases.end(); ++it )
             {
-              RC::ConstHandle<AST::Function> const &function = *it;
-              
-              std::string const *friendlyName = function->getFriendlyName( m_cgManager );
-              if ( friendlyName && *friendlyName == operatorName )
+              RC::ConstHandle<AST::FunctionBase> const &functionBase = *it;
+              if ( functionBase->isFunction() )
               {
-                if( !function->isOperator() )
-                  throw Exception( _(operatorName) + " is not an operator" );
-                astOperator = RC::ConstHandle<AST::Operator>::StaticCast( function );
+                RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( functionBase );
+                
+                std::string const &declaredName = function->getDeclaredName();
+                if ( declaredName == operatorName )
+                {
+                  if( !function->isOperator() )
+                    throw Exception( _(operatorName) + " is not an operator" );
+                  astOperator = RC::ConstHandle<AST::Operator>::StaticCast( function );
+                }
               }
             }
           }
