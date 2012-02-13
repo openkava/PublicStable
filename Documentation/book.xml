@@ -4,7 +4,7 @@
   xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns:db="http://docbook.org/ns/docbook" version="5.0">
   <info>
-    <title>Fabric SceneGraph Documentation</title>
+    <title>Fabric Engine SceneGraph Documentation</title>
     <copyright>
       <year>2012</year>
       <holder>Fabric Engine Inc.</holder>
@@ -24,6 +24,78 @@
   </info>
   <section>
     <title>Introduction</title>
-    <para> This is the skeleton for the documentation. </para>
+    <section>
+      <title>What's Fabric Engine's SceneGraph?</title>
+      <para>The <emphasis role="bold">SceneGraph</emphasis> is a wrapper for its counterpart, the
+        Fabric Engine Core. Fabric Engine's core is a very low level system, providing the core
+        objects such as a <emphasis role="bold">Dependency Graph Node</emphasis>, <emphasis
+          role="bold">Operators</emphasis> and other elements. The <emphasis role="bold"
+          >SceneGraph</emphasis> however is an abstraction layer for the core. It provides <emphasis
+          role="italic">presets</emphasis> for <emphasis role="bold">Dependency Graph
+          Node</emphasis> setups, called the <emphasis role="bold">SceneGraphNodes</emphasis>. The
+          <emphasis role="bold">SceneGraph</emphasis> is purely implemented in JavaScript, and
+        therefore can be customized easily for any specialized purpose.</para>
+      <para>The <emphasis role="bold">SceneGraph</emphasis> is provided as a series of JavaScript
+        files which implement <emphasis role="bold">SceneGraphNodes</emphasis> for a certain usage
+        field, for example the file <emphasis role="italic">Images.js</emphasis> contains several
+          <emphasis role="bold">SceneGraphNodes</emphasis> implementing 2D images, 3D images and
+        video.</para>
+      <para><emphasis role="bold">SceneGraphNodes</emphasis> encapsulate the core objects necessary
+        to provide a certain functionality. The <emphasis role="bold">VideoNode</emphasis>, for
+        example, contains the <emphasis role="bold">Dependency Graph Nodes</emphasis> to store all
+        of the video related data, as well as all of the <emphasis role="bold">Operators</emphasis>
+        to read and manipulate the video stream. Moreover it provides JavaScript functions to access
+        and manipulate the video. </para>
+      <para><emphasis role="bold">SceneGraphNodes</emphasis> that don't contain any <emphasis
+          role="bold">Dependency Graph Node</emphasis>, and are used mainly to provide utility
+        functionality, are called <emphasis role="bold">Managers</emphasis>. One example of a
+        manager is the <emphasis role="bold">UndoManager</emphasis>.</para>
+      <para>The <emphasis role="bold">SceneGraph</emphasis> furthermore provides graphical
+        utilities, such as the <emphasis role="bold">Debugger</emphasis>, which allows to inspect
+        the constructed core <emphasis role="bold">Dependency Graph</emphasis>, and other tools, for
+        example the <emphasis role="bold">Curve Editor</emphasis>, which allows to inspect and edit
+        FCurve animation.</para>
+    </section>
+    <section>
+      <title>SceneGraphNode Construction</title>
+      <para>All <emphasis role="bold">SceneGraphNodes</emphasis> implemented in the <emphasis
+          role="bold">SceneGraph</emphasis> are registered by providing their type as well as a
+        constructor function. A node of a registered type can be constructed by using JavaScript
+        like this:</para>
+      <para><emphasis role="italic">var sgNode = scene.constructNode('Image2D', { name:
+          'myImageNode' } );</emphasis></para>
+      <para>The options supported by each <emphasis role="bold">SceneGraphNode</emphasis> can be
+        found in the following chapters, respectively in the <emphasis role="bold">SceneGraphNode
+          Reference</emphasis> of this document. </para>
+    </section>
+    <section>
+      <title>Public and Private Interfaces</title>
+      <para><emphasis role="bold">SceneGraphNodes</emphasis> provide a private as well as a public
+        interface. Outside of constructor functions it's only possible to access the public
+        interface, while inside of constructor functions it's possible to access the private
+        interface. This allows to include helper functions in the each node, such as setter
+        functions for private members for example, that are only accessible in constructor functions
+        of other nodes. Since the options used for the construction of a node can contain references
+        to a public interface, you can retrieve the private interface by using this call:</para>
+      <para><emphasis role="italic">var privateInterface =
+          scene.getPrivateInterface(publicInterface);</emphasis></para>
+      <para>To access the public interface from a private one, you simply need to access the
+          <emphasis role="italic">.pub</emphasis> member of the private interface.<emphasis
+          role="bold"> Managers</emphasis> can also access private interfaces, allowing them to
+        perform changes to the private data, for example.</para>
+    </section>
+    <section>
+      <title>Custom SceneGraphNodes and Inheritance</title>
+      <para>Applications can register their own, custom <emphasis role="bold"
+          >SceneGraphNodes</emphasis>. This can be useful and necessary when extending an existing
+        node, for example, or providing a completely new one. Inside the constructor function of the
+        custom node all other nodes can be accessed through their private interfaces, allowing to
+        modify and access the inner workings of the <emphasis role="bold">SceneGraph</emphasis>.
+        Extending the private or the public interface allows to inherit features of another
+          <emphasis role="bold">SceneGraphNode</emphasis>. It is also possible to override an
+        existing function on each interface by simply setting it to different function inside the
+        custom node's constructor. For further details refer to the tutorials sections of this
+        document.</para>
+    </section>
   </section>
 </article>
