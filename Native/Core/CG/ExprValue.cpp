@@ -133,13 +133,6 @@ namespace Fabric
     {
       return getDesc()->getImpl();
     }
-    
-    std::string ExprValue::desc() const
-    {
-      if ( m_exprType && m_value )
-        return m_exprType.desc() + ":" + _(m_value);
-      else return "nil";
-    }
 
     ExprValue &ExprValue::castTo( BasicBlockBuilder &basicBlockBuilder, ExprType const &dstExprType )
     {

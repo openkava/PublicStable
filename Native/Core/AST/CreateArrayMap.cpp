@@ -66,10 +66,11 @@ namespace Fabric
       RC::ConstHandle<CG::Symbol> operatorSymbol = basicBlockBuilder.getScope().get( m_operatorName );
       if ( !operatorSymbol )
         throw CG::Error( getLocation(), _(m_operatorName) + ": operator not found" );
-      if ( !operatorSymbol->isFunction() )
+      if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
-      RC::ConstHandle<CG::FunctionSymbol> operator_ = RC::ConstHandle<CG::FunctionSymbol>::StaticCast( operatorSymbol );
-      std::vector<CG::FunctionParam> const &operatorParams = operator_->getParams();
+      RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
+      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[1].getAdapter();
       RC::ConstHandle<CG::ArrayProducerAdapter> outputArrayProducerAdapter = basicBlockBuilder.getManager()->getArrayProducerOf( outputAdapter );
       return CG::ExprType( outputArrayProducerAdapter, CG::USAGE_RVALUE );
@@ -87,10 +88,11 @@ namespace Fabric
       RC::ConstHandle<CG::Symbol> operatorSymbol = basicBlockBuilder.getScope().get( m_operatorName );
       if ( !operatorSymbol )
         throw CG::Error( getLocation(), _(m_operatorName) + ": operator not found" );
-      if ( !operatorSymbol->isFunction() )
+      if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
-      RC::ConstHandle<CG::FunctionSymbol> operator_ = RC::ConstHandle<CG::FunctionSymbol>::StaticCast( operatorSymbol );
-      std::vector<CG::FunctionParam> const &operatorParams = operator_->getParams();
+      RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
+      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
       if ( operatorParams.size() < 2 )
         throw MR::ArrayMapOperator::GetPrototypeException();
 
@@ -170,7 +172,7 @@ namespace Fabric
             
             std::vector<llvm::Value *> args;
             args.push_back( basicBlockBuilder->CreateBitCast(
-              operator_->getLLVMFunction(),
+              function.getLLVMFunction(),
               llvm::Type::getInt8PtrTy( llvmContext )
               ) );
             args.push_back( sizeAdapter->llvmConst( context, operatorParams.size() ) );
@@ -198,7 +200,7 @@ namespace Fabric
         
         std::vector<llvm::Value *> args;
         args.push_back( basicBlockBuilder->CreateBitCast(
-          operator_->getLLVMFunction(),
+          function.getLLVMFunction(),
           llvm::Type::getInt8PtrTy( llvmContext )
           ) );
         args.push_back( sizeAdapter->llvmConst( context, operatorParams.size() ) );

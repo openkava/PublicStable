@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_CG_FUNCTION_BUILDER_H
 #define _FABRIC_CG_FUNCTION_BUILDER_H
 
@@ -19,28 +23,30 @@ namespace Fabric
   {
     class Manager;
     class ModuleBuilder;
+    class PencilSymbol;
     
     class FunctionBuilder
     {
     public:
     
+      static const size_t ExportSymbol = 0x01;
+      static const size_t ReturnsStaticDataPtr = 0x02;
+    
       FunctionBuilder( 
-        ModuleBuilder &moduleBuilder, 
-        std::string const &entryName, 
-        ExprType const &returnExprType, 
-        std::vector< FunctionParam > const &params,
-        bool exportSymbol = false,
-        std::string const *friendlyName = 0,
-        bool returnsStaticDataPtr = false
+        ModuleBuilder &moduleBuilder,
+        std::string const &pencilName,
+        std::string const &symbolName,
+        RC::ConstHandle<Adapter> const &returnAdapter, 
+        ParamVector const &params,
+        size_t flags
         );
       
       FunctionBuilder( 
         ModuleBuilder &moduleBuilder, 
-        std::string const &entryName, 
+        std::string const &pencilName,
+        std::string const &symbolName,
         std::string const &paramLayout,
-        bool exportSymbol = false,
-        std::string const *friendlyName = 0, 
-        bool returnsStaticDataPtr = false
+        size_t flags
         );
         
       FunctionBuilder(
@@ -64,26 +70,28 @@ namespace Fabric
       llvm::Argument *operator[]( size_t index );
       
       FunctionScope &getScope();
-      RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
+      RC::ConstHandle<PencilSymbol> maybeGetPencil( std::string const &entryName ) const;
 
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location ) const;
       
+      RC::ConstHandle<CG::PencilSymbol> getPencil() const;
+      
     private:
     
       void build( 
-        std::string const &entryName, 
-        ExprType const &returnExprType, 
-        std::vector< FunctionParam > const &params, 
-        bool exportSymbol,
-        std::string const *friendlyName, 
-        bool returnsStaticDataPtr
+        std::string const &pencilName, 
+        std::string const &symbolName, 
+        RC::ConstHandle<Adapter> const &returnAdapter, 
+        ParamVector const &params, 
+        size_t flags
         );
                 
       ModuleBuilder &m_moduleBuilder;
       llvm::FunctionType const *m_llvmFunctionType;
       llvm::Function *m_llvmFunction;
       FunctionScope *m_functionScope;
+      RC::ConstHandle<CG::PencilSymbol> m_pencil;
     };
   };
 };

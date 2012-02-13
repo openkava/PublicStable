@@ -73,7 +73,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( booleanAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -91,7 +91,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( byteAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "byteLValue", byteAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -109,7 +109,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( integerAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "integerLValue", integerAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -127,7 +127,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( sizeAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "sizeLValue", sizeAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -148,7 +148,7 @@ namespace Fabric
         RC::ConstHandle<FloatAdapter> fp32Adapter = getManager()->getFP32Adapter();
         
         std::string name = constructorOverloadName( fp32Adapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "fp32LValue", fp32Adapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -169,7 +169,7 @@ namespace Fabric
         RC::ConstHandle<FloatAdapter> fp64Adapter = getManager()->getFP64Adapter();
         
         std::string name = constructorOverloadName( fp64Adapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "fp64LValue", fp64Adapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -187,7 +187,7 @@ namespace Fabric
       
       {
         std::string name = constructorOverloadName( stringAdapter, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "scalarRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
@@ -205,7 +205,7 @@ namespace Fabric
       
       {
         std::string name = uniOpOverloadName( UNI_OP_POS, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -219,7 +219,7 @@ namespace Fabric
       
       {
         std::string name = uniOpOverloadName( UNI_OP_NEG, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -233,7 +233,7 @@ namespace Fabric
       }
       
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("sin");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -254,7 +254,7 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("cos");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -275,11 +275,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > tanfParams;
+        ParamVector tanfParams;
         tanfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder tanfFunctionBuilder( moduleBuilder, externalFunctionNameForType("tan"), ExprType( this, USAGE_RVALUE ), tanfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("tan");
         FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -293,11 +293,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > externalFunctionParams;
+        ParamVector externalFunctionParams;
         externalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder externalFunctionBuilder( moduleBuilder, externalFunctionNameForType("log10"), ExprType( this, USAGE_RVALUE ), externalFunctionParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("log10");
         FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -311,11 +311,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > externalFunctionParams;
+        ParamVector externalFunctionParams;
         externalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder externalFunctionBuilder( moduleBuilder, externalFunctionNameForType("log"), ExprType( this, USAGE_RVALUE ), externalFunctionParams, true );
 
-        std::vector< FunctionParam > internalFunctionParams;
+        ParamVector internalFunctionParams;
         internalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("log");
         FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), internalFunctionParams, false, &name );
@@ -329,11 +329,11 @@ namespace Fabric
       }
 
       {
-        std::vector<FunctionParam> externalFunctionParams;
+        ParamVector externalFunctionParams;
         externalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder externalFunctionBuilder( moduleBuilder, externalFunctionNameForType("exp"), ExprType( this, USAGE_RVALUE ), externalFunctionParams, true );
 
-        std::vector<FunctionParam> internalFunctionParams;
+        ParamVector internalFunctionParams;
         internalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("exp");
         FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), internalFunctionParams, false, &name );
@@ -347,11 +347,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > acosfParams;
+        ParamVector acosfParams;
         acosfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder acosfFunctionBuilder( moduleBuilder, externalFunctionNameForType("acos"), ExprType( this, USAGE_RVALUE ), acosfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("acos");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -365,11 +365,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > asinfParams;
+        ParamVector asinfParams;
         asinfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder asinfFunctionBuilder( moduleBuilder, externalFunctionNameForType("asin"), ExprType( this, USAGE_RVALUE ), asinfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("asin");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -383,11 +383,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > atanfParams;
+        ParamVector atanfParams;
         atanfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder atanfFunctionBuilder( moduleBuilder, externalFunctionNameForType("atan"), ExprType( this, USAGE_RVALUE ), atanfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("atan");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -401,12 +401,12 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > atan2fParams;
+        ParamVector atan2fParams;
         atan2fParams.push_back( FunctionParam( "y", this, USAGE_RVALUE ) );
         atan2fParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder atan2fFunctionBuilder( moduleBuilder, externalFunctionNameForType("atan2"), ExprType( this, USAGE_RVALUE ), atan2fParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "y", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("atan2");
@@ -422,7 +422,7 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("sqrt");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -443,7 +443,7 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("abs");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -478,11 +478,11 @@ namespace Fabric
       }
 
       {
-        std::vector< FunctionParam > roundfParams;
+        ParamVector roundfParams;
         roundfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder roundfFunctionBuilder( moduleBuilder, externalFunctionNameForType("round"), ExprType( this, USAGE_RVALUE ), roundfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("round");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -496,11 +496,11 @@ namespace Fabric
       }
       
       {
-        std::vector< FunctionParam > ceilfParams;
+        ParamVector ceilfParams;
         ceilfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder ceilfFunctionBuilder( moduleBuilder, externalFunctionNameForType("ceil"), ExprType( this, USAGE_RVALUE ), ceilfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("ceil");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -514,11 +514,11 @@ namespace Fabric
       }
       
       {
-        std::vector< FunctionParam > floorfParams;
+        ParamVector floorfParams;
         floorfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         FunctionBuilder floorfFunctionBuilder( moduleBuilder, externalFunctionNameForType("floor"), ExprType( this, USAGE_RVALUE ), floorfParams, true );
 
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("floor");
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
@@ -532,7 +532,7 @@ namespace Fabric
       }
       
       {
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "y", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("pow");
@@ -556,7 +556,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_ADD, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
@@ -573,7 +573,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_SUB, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
@@ -590,7 +590,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_MUL, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
@@ -607,7 +607,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_DIV, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
@@ -624,7 +624,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_MOD, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
@@ -641,7 +641,7 @@ namespace Fabric
             
       {
         std::string name = binOpOverloadName( BIN_OP_EQ, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params );
@@ -658,7 +658,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_NE, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params );
@@ -675,7 +675,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_GT, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params );
@@ -692,7 +692,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_GE, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params );
@@ -709,7 +709,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_LT, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params );
@@ -726,7 +726,7 @@ namespace Fabric
       
       {
         std::string name = binOpOverloadName( BIN_OP_LE, this, this );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params );
@@ -743,7 +743,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -757,7 +757,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector< FunctionParam > params;
+        ParamVector params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -771,7 +771,7 @@ namespace Fabric
      
       {
         std::string name = methodOverloadName( "hash", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector<FunctionParam> params;
+        ParamVector params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
@@ -842,7 +842,7 @@ namespace Fabric
       
       {
         std::string name = methodOverloadName( "compare", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( this, CG::USAGE_RVALUE ) );
-        std::vector<FunctionParam> params;
+        ParamVector params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( integerAdapter, USAGE_RVALUE ), params );

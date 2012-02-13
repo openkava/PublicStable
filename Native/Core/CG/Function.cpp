@@ -2,8 +2,9 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "Scope.h"
-
+#include <Fabric/Core/CG/Function.h>
+#include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/Symbol.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
 
@@ -13,7 +14,43 @@ namespace Fabric
 {
   namespace CG
   {
-    ExprValue FunctionSymbol::llvmCreateCall( BasicBlockBuilder &basicBlockBuilder, std::vector<ExprValue> &args ) const
+    bool Function::isExactMatch( ExprTypeVector const &argTypes ) const
+    {
+      if ( argTypes.size() != m_params.size() )
+        return false;
+      
+      for ( size_t i=0; i<argTypes.size(); ++i )
+      {
+        if ( argTypes[i] == m_params[i].getExprType() )
+          continue;
+        
+        return false;
+      }
+      
+      return true;
+    }
+    
+    bool Function::isLValueToRValueMatch( ExprTypeVector const &argTypes ) const
+    {
+      if ( argTypes.size() != m_params.size() )
+        return false;
+      
+      for ( size_t i=0; i<argTypes.size(); ++i )
+      {
+        if ( argTypes[i] == m_params[i].getExprType() )
+          continue;
+          
+        if ( argTypes[i].getAdapter() == m_params[i].getAdapter()
+          && argTypes[i].getUsage() == CG::USAGE_LVALUE && m_params[i].getUsage() == CG::USAGE_RVALUE )
+          continue;
+          
+        return false;
+      }
+      
+      return true;
+    }
+    
+    ExprValue Function::llvmCreateCall( BasicBlockBuilder &basicBlockBuilder, std::vector<ExprValue> &args ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
       
@@ -61,5 +98,5 @@ namespace Fabric
 
       return CG::ExprValue( m_returnInfo.getExprType(), context, returnValue );
     }
-  };
-};
+  }
+}
