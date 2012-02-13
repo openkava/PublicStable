@@ -43,10 +43,10 @@ function Integer OGLShaderProgram.createAndCompileShader(OGLShaderSource shaders
       report(this.name + ' : Shader compilation succeeded with warnings:');
     }
     var String infoLog;
-    var Size bufferSize[];
-    var Size bufferTotalSize = 0;
+    var Integer bufferSize[];
+    var Integer bufferTotalSize = 0;
     for(var Size i=0;i<infoLen.size();i++){
-      bufferSize.push(Size(infoLen[i]));
+      bufferSize.push(infoLen[i]);
       bufferTotalSize += bufferSize[i];
     }
       
@@ -91,11 +91,11 @@ function OGLShaderProgram.logShaderParameters() {
   glGetProgramiv(this.programId, GL_ACTIVE_UNIFORMS, nbUniforms);
   for (i = 0; i < nbUniforms[0]; i++) {
     var Integer size[];
-    var Size type[];
-    var Size nbReceived[];
+    var Integer type[];
+    var Integer nbReceived[];
     size.push(0);
-    type.push(Size(0));
-    nbReceived.push(Size(0));
+    type.push(0);
+    nbReceived.push(0);
     glGetActiveUniform(this.programId, i, 1024, nbReceived, size, type, name);
     if(this.debug){
       report( "U: " + i + " - " + size + " - " + type + " - " + name );
@@ -118,11 +118,11 @@ function OGLShaderProgram.logShaderParameters() {
   glGetProgramiv(this.programId, GL_ACTIVE_ATTRIBUTES, nbAttribs);
   for (i = 0; i < nbAttribs[0]; i++) {
     var Integer size[];
-    var Size type[];
-    var Size nbReceived[];
+    var Integer type[];
+    var Integer nbReceived[];
     size.push(0);
-    type.push(Size(0));
-    nbReceived.push(Size(0));
+    type.push(0);
+    nbReceived.push(0);
     glGetActiveAttrib(this.programId, i, 1024, nbReceived, size, type, name);
     if(this.debug){
       report( "A: " + i + " - " + size + " - " + type + " - " + name );
@@ -192,11 +192,11 @@ function OGLShaderProgram.createProgramFromShaders() {
         if (linked.size() > 0 || linked[0] > 1) {
           report(this.name + ' : Program linking succeeded, with warnings:');
         }
-        var Size bufferSize[];
-        var Size bufferTotalSize = 0;
+        var Integer bufferSize[];
+        var Integer bufferTotalSize = 0;
         for(var Size i=0;i<infoLen.size();i++)
         {
-          bufferSize.push(Size(infoLen[i]));
+          bufferSize.push(infoLen[i]);
           bufferTotalSize += bufferSize[i];
         }
 
@@ -321,11 +321,11 @@ function Boolean OGLShaderProgram.validateUniformBinding(
   glGetProgramiv(this.programId, GL_ACTIVE_UNIFORMS, nbUniforms);
   for (i = 0; i < nbUniforms[0]; i++) {
     var Integer size[];
-    var Size type[];
-    var Size nbReceived[];
+    var Integer type[];
+    var Integer nbReceived[];
     size.push(0);
-    type.push(Size(0));
-    nbReceived.push(Size(0));
+    type.push(0);
+    nbReceived.push(0);
     glGetActiveUniform(this.programId, i, 1024, nbReceived, size, type, name);
     Integer activeUniformLocation = glGetUniformLocation(this.programId, name);
     if(activeUniformLocation == location){

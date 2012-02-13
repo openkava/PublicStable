@@ -512,9 +512,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var updateGraphEventFn = function(evt){
     updateGraph();
   };
-  animationLibraryNode.addEventListener('valuechanged', updateGraphEventFn);
+  animationLibraryNode.addEventListener('keyframetrackchanged', updateGraphEventFn);
   window.onunload = function(){
-    animationLibraryNode.removeEventListener('valuechanged', updateGraphEventFn);
+    animationLibraryNode.removeEventListener('keyframetrackchanged', updateGraphEventFn);
     if(updateTimeStripe){
       scene.removeEventListener('timechanged', updateTimeStripe);
     }
