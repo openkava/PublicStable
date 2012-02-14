@@ -20,12 +20,10 @@
 
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
-		"SG/Kinematics",
+            		"SG/Kinematics",
                 "SG/Materials",
                 "SG/Manipulation",
-		"SG/Animation",
-		"RT/LinearKeyframe",
-		"RT/BezierKeyframe"], function() {
+            		"SG/Animation"], function() {
  
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
@@ -81,8 +79,8 @@ FABRIC.require(["SG/SceneGraph",
   var animationControllerNode = scene.constructNode('AnimationController', {
       timeRange: new FABRIC.RT.Vec2(0, 100)
     });
-  var linearKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationTrack');
-  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationTrack');
+  var linearKeyCharacterAnimationContainer = scene.constructNode('LinearTrackAnimationContainer');
+  var bezierKeyCharacterAnimationContainer = scene.constructNode('BezierTrackAnimationContainer');
 
   var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
   var bezierkey = function(time, value, intan, outtan){ return new FABRIC.RT.BezierKeyframe(time, value, intan, outtan); };
@@ -94,23 +92,23 @@ FABRIC.require(["SG/SceneGraph",
   // Specifying a -1 mapping values means that that sub elemnt is not mapped.
 
   ///////////////////////////////////////////////
-  // LinearKeyAnimationTrack
+  // LinearKeyTrackAnimationContainer
   
-  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(0, 0), linearkey(50, 0), linearkey(75, 50), linearkey(100, 0)
     ]));
-  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(1, 0, 0), [
+  linearKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(1, 0, 0), [
       linearkey(0, 0), linearkey(10, 20), linearkey(20, -5), linearkey(50, -5), linearkey(75, 50), linearkey(100, 0)
     ]));
-  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(0, 0), linearkey(50, 0), linearkey(75, 20), linearkey(100, 0)
     ]));
   
-  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  linearKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+  linearKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
     ]));
   
 
@@ -119,7 +117,7 @@ FABRIC.require(["SG/SceneGraph",
     globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-50, 0, 0) })
   });
   
-  linearKeyAnimationLibrary.bindNodeMembersToTracks(
+  linearKeyCharacterAnimationContainer.bindNodeMembersToTracks(
     linearAnimatedTransformNode, {
       'globalXfo.tr': [0, 1, 2]
     });
@@ -132,17 +130,17 @@ FABRIC.require(["SG/SceneGraph",
   
 
   ///////////////////////////////////////////////
-  // BezierKeyAnimationTrack
-  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
+  // BezierKeyTrackAnimationContainer
+  bezierKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
       bezierkey(0, -20, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
       bezierkey(50, 0, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
       bezierkey(75, -20, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
-  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
+  bezierKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
     ]));
-  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
+  bezierKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
       bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(10, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
@@ -150,20 +148,20 @@ FABRIC.require(["SG/SceneGraph",
       bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
                        
-  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(1, 0, 0), [
+  bezierKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(1, 0, 0), [
       bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 2, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
       bezierkey(50, 2, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
       bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
-  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.y', FABRIC.RT.rgb(0, 1, 0), [
+  bezierKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('ori.y', FABRIC.RT.rgb(0, 1, 0), [
       bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
       bezierkey(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
       bezierkey(50, -2, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
       bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
     ]));
-  bezierKeyAnimationLibrary.addTrack(new FABRIC.RT.KeyframeTrack('ori.z', FABRIC.RT.rgb(0, 0, 1), [
+  bezierKeyCharacterAnimationContainer.addTrack(new FABRIC.RT.KeyframeTrack('ori.z', FABRIC.RT.rgb(0, 0, 1), [
     ]));
 
   var bezierAnimatedTransformNode = scene.constructNode('Transform', {
@@ -171,7 +169,7 @@ FABRIC.require(["SG/SceneGraph",
     globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
   });
   
-  bezierKeyAnimationLibrary.bindNodeMembersToTracks(
+  bezierKeyCharacterAnimationContainer.bindNodeMembersToTracks(
     bezierAnimatedTransformNode, {
       'globalXfo.tr': [0, 1, 2],
       'globalXfo.ori': [3, 4, 5]
@@ -185,8 +183,8 @@ FABRIC.require(["SG/SceneGraph",
 /*
   ///////////////////////////////////////////////
   // EulerRotation
-  var bezierEulerKeyframeTrackNode = scene.constructNode('BezierKeyAnimationTrack', {
-    name:'EulerBezierKeyAnimationTrack'
+  var bezierEulerKeyframeTrackNode = scene.constructNode('BezierTrackAnimationContainer', {
+    name:'EulerBezierKeyTrackAnimationContainer'
   } );
   bezierEulerKeyframeTrackNode.setTrackCount(2);
   var key = FABRIC.Animation.bezierKeyframe;
@@ -213,9 +211,9 @@ FABRIC.require(["SG/SceneGraph",
   });
 
   var bezierAnimationEvaluatorNode = scene.constructNode('AnimationEvaluator', {
-    name:'EulerBezierKeyAnimationTrack' ,
+    name:'EulerBezierKeyTrackAnimationContainer' ,
     animationControllerNode: animationControllerNode,
-    animationTrackNode: bezierEulerKeyframeTrackNode
+    trackAnimationContainerNode: bezierEulerKeyframeTrackNode
   });
 
   var xfo = new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(50, 0, 0) });
@@ -252,7 +250,7 @@ $(document).ready(function() {
 
   $('#curveEditor').button()
     .click(function() {
-      bezierKeyAnimationLibrary.openCurveEditor();
+      bezierKeyCharacterAnimationContainer.openCurveEditor();
     });
 
   
