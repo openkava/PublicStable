@@ -290,7 +290,7 @@ $(document).ready(function() {
   }
 
   var locomotionControllerNode, diffuseColor, material;
-  var rigFile, animationLibraryFile;
+  var rigFile, characterAnimationContainerFile;
   var minFrequency = 0.0;
   switch(rigName){
   case 'Spiedel':
@@ -313,7 +313,7 @@ $(document).ready(function() {
     });
     */
     rigFile = 'Assets/Spiedel.json';
-    animationLibraryFile = 'Assets/SpiedelAnimation.json';
+    characterAnimationContainerFile = 'Assets/SpiedelAnimation.json';
     minFrequency = 0.75;
     break;
   case 'CMan0005':
@@ -330,7 +330,7 @@ $(document).ready(function() {
         circleSize: 0.6
       });
     rigFile = 'Assets/CMan0005.json';
-    animationLibraryFile = 'Assets/CMan0005Animation.json';
+    characterAnimationContainerFile = 'Assets/CMan0005Animation.json';
     minFrequency = 0.75;
     break;
   case 'USWolf':
@@ -348,7 +348,7 @@ $(document).ready(function() {
         translationControls: new FABRIC.RT.Vec2(0,0)
       });
     rigFile = 'Assets/USWolf.json';
-    animationLibraryFile = 'Assets/USWolfAnimation.json';
+    characterAnimationContainerFile = 'Assets/USWolfAnimation.json';
     minFrequency = 0.75;
     break;
   case 'centipede':
@@ -385,7 +385,7 @@ $(document).ready(function() {
     }
   
     var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
-    var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+    var storage = new FABRIC.SceneGraph.XHRReader(characterAnimationContainerFile);
     animationLoader.load(storage, function(animationLoaderNodeMap){
       var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
       
@@ -396,7 +396,7 @@ $(document).ready(function() {
         bulletWorldNode: bulletWorldNode,
         minFrequency: minFrequency
       });
-      locomotionVariables.setAnimationLibraryNode(libraryAnimations);
+      locomotionVariables.setCharacterAnimationContainerNode(libraryAnimations);
       rig.setVariablesNode(locomotionVariables);
     });
   });

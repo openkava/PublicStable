@@ -1,5 +1,5 @@
 
-var constructCurveEditor = function(domRootID, animationLibraryNode, options){
+var constructCurveEditor = function(domRootID, characterAnimationContainerNode, options){
   
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
@@ -19,7 +19,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
   var windowHeight = rootDomNode.clientHeight;
-  var isBezier = animationLibraryNode.getKeyframeType() == 'BezierKeyframe';
+  var isBezier = characterAnimationContainerNode.getKeyframeType() == 'BezierKeyframe';
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
   if(options.volumerenderdemohack){
@@ -41,18 +41,18 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     containmentRect.attr('stroke-width', 2);
   }
   ///////////////
-  var tracksData = animationLibraryNode.getTracks(trackSetId);
+  var tracksData = characterAnimationContainerNode.getTracks(trackSetId);
   var trackCount = tracksData.length;
   var yRange = new FABRIC.Vec2(0, 0);
   var curvesData = [];
   var trackGroups = [];
   var trackDisplayed = [];
   
-  trackDisplayNode = scene.getSceneGraphNode(animationLibraryNode.getName()+'TrackDisplay');
+  trackDisplayNode = scene.getSceneGraphNode(characterAnimationContainerNode.getName()+'TrackDisplay');
   if(!trackDisplayNode){
     trackDisplayNode = scene.constructNode('TrackDisplay', {
-      name:animationLibraryNode.getName()+'TrackDisplay',
-      animationLibraryNode: animationLibraryNode,
+      name:characterAnimationContainerNode.getName()+'TrackDisplay',
+      characterAnimationContainerNode: characterAnimationContainerNode,
       trackSetId: trackSetId
     });
   }
@@ -297,7 +297,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               function(evt) {
                 var keyGsVal = screenXfo.toGraphSpace(evt.localPos);
                 tracksData[trackId].moveKey(keyIndex, keyGsVal.x, keyGsVal.y);
-                animationLibraryNode.setTrack(trackData, trackId, trackSetId);
+                characterAnimationContainerNode.setTrack(trackData, trackId, trackSetId);
                 updateCurve();
                 updateDrawnKeys();
                 scene.redrawAllViewports();
@@ -319,7 +319,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                 function(evt) {
                   var keyInTanGsVal = screenXfo.toGraphSpace(evt.localPos, true);
                   trackData.setInTangentValue(keyIndex, keyInTanGsVal, evt.altKey);
-                  animationLibraryNode.setTrack(trackData, trackId, trackSetId);
+                  characterAnimationContainerNode.setTrack(trackData, trackId, trackSetId);
                   updateCurve();
                   updateDrawnKeys();
                   scene.redrawAllViewports();
@@ -341,7 +341,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                 function(evt) {
                   var keyOutTanGsVal = screenXfo.toGraphSpace(evt.localPos, true);
                   trackData.setOutTangentValue(keyIndex, keyOutTanGsVal, evt.altKey);
-                  animationLibraryNode.setTrack(trackData, trackId, trackSetId);
+                  characterAnimationContainerNode.setTrack(trackData, trackId, trackSetId);
                   updateCurve();
                   updateDrawnKeys();
                   scene.redrawAllViewports();
@@ -405,7 +405,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   var setCurveFilters = function(filters){
     trackFilters = filters;
-    tracksData = animationLibraryNode.getTracks(trackSetId);
+    tracksData = characterAnimationContainerNode.getTracks(trackSetId);
     buildCurveEditor();
   }
   
@@ -505,16 +505,16 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
   
   var updateGraph = function(){
-    tracksData = animationLibraryNode.getTracks(trackSetId);
+    tracksData = characterAnimationContainerNode.getTracks(trackSetId);
     updateTimeRange();
   }
   
   var updateGraphEventFn = function(evt){
     updateGraph();
   };
-  animationLibraryNode.addEventListener('keyframetrackchanged', updateGraphEventFn);
+  characterAnimationContainerNode.addEventListener('keyframetrackchanged', updateGraphEventFn);
   window.onunload = function(){
-    animationLibraryNode.removeEventListener('keyframetrackchanged', updateGraphEventFn);
+    characterAnimationContainerNode.removeEventListener('keyframetrackchanged', updateGraphEventFn);
     if(updateTimeStripe){
       scene.removeEventListener('timechanged', updateTimeStripe);
     }

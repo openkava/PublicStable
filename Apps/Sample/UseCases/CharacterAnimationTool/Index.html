@@ -232,7 +232,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
   });  
     
-  var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
+  var rigNode, rigInstances = {}, bezierKeyCharacterAnimationContainer, controllerNode, localStorage, presetSaver;
   var skeletonGeometryNode;
   scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
     
@@ -447,24 +447,24 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
 	viewport.redraw();
       });
     
-    bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+    bezierKeyCharacterAnimationContainer = scene.constructNode('BezierCharacterAnimationContainer');
     controllerNode = scene.constructNode('AnimationController');
-    rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
+    rigNode.generateAnimationTracks(bezierKeyCharacterAnimationContainer, 'test', true, controllerNode);
     
     
-    var animationLibraryLoader = scene.constructManager('SceneDeserializer');
-    animationLibraryLoader.setPreLoadedNode(bezierKeyAnimationLibrary);
+    var characterAnimationContainerLoader = scene.constructManager('SceneDeserializer');
+    characterAnimationContainerLoader.setPreLoadedNode(bezierKeyCharacterAnimationContainer);
     localStorage = new FABRIC.SceneGraph.LocalStorage('TestAnimation');
     
-    animationLibraryLoader.load(localStorage, function(nodeMap){
-      rebuildAnimationLibraryList();
+    characterAnimationContainerLoader.load(localStorage, function(nodeMap){
+      rebuildCharacterAnimationContainerList();
       viewport.redraw();
     });
   
     presetSaver = scene.constructManager('SceneSerializer');
-    presetSaver.addNode(bezierKeyAnimationLibrary);
+    presetSaver.addNode(bezierKeyCharacterAnimationContainer);
   
-    rebuildAnimationLibraryList();
+    rebuildCharacterAnimationContainerList();
     
   });
 
@@ -489,10 +489,10 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       setSelectedAnimation($(ui.selected).val());
     }
   });
-  var rebuildAnimationLibraryList = function(){
+  var rebuildCharacterAnimationContainerList = function(){
     $('#animationLibraryList').empty();
-    for(var i=0; i<bezierKeyAnimationLibrary.getTrackSetCount(); i++){
-      var presetName = bezierKeyAnimationLibrary.getTrackSetName(i);
+    for(var i=0; i<bezierKeyCharacterAnimationContainer.getTrackSetCount(); i++){
+      var presetName = bezierKeyCharacterAnimationContainer.getTrackSetName(i);
       var li = $(document.createElement('li'));
       li.addClass('ui-widget-content'); li.text(presetName); li.val(i);
       if(selectedAnimation == i){
@@ -507,8 +507,8 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     .click(function() {
       var closeDialogAndNewAnimation = function(){
         var newTrackSetName = $("#presetName").val();
-        rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, newTrackSetName, true, controllerNode);
-        rebuildAnimationLibraryList();
+        rigNode.generateAnimationTracks(bezierKeyCharacterAnimationContainer, newTrackSetName, true, controllerNode);
+        rebuildCharacterAnimationContainerList();
         $("#presetNameDialog").dialog( "close" );
       }
       $('#presetNameDialog').dialog({
@@ -531,13 +531,13 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   
   $('#deleteAnimation').button()
     .click(function() {
-      bezierKeyAnimationLibrary.removeTrackSet(selectedAnimation);
+      bezierKeyCharacterAnimationContainer.removeTrackSet(selectedAnimation);
       if(selectedAnimation>0){
         setSelectedAnimation(selectedAnimation-1);
       }else{
         setSelectedAnimation(selectedAnimation+1);
       }
-      rebuildAnimationLibraryList();
+      rebuildCharacterAnimationContainerList();
     });
   
   $('#saveResource').button()
@@ -650,7 +650,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       }
     })
     .click(function() {
-      curveEditorWindow = bezierKeyAnimationLibrary.openCurveEditor({
+      curveEditorWindow = bezierKeyCharacterAnimationContainer.openCurveEditor({
         trackFilters: trackFilters,
         trackSetId: selectedAnimation
       });
