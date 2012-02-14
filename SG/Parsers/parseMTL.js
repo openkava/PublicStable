@@ -12,7 +12,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options, call
     materialNames = options.materialNames;
     
   if(!options.materialType){
-    options.materialType = "PhongTextureMaterial";
+    options.materialType = "PhongMaterial";
   }
   if(!options.materialProperties){
     options.materialProperties = {
@@ -41,11 +41,15 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options, call
     var materialOptions = {
       name: assetName 
     };
+    var i;
     for (i in options.materialOptions) {
       materialOptions[i] = options.materialOptions[i];
     }
     for (i in materialMaps) {
       materialOptions[materialMaps[i]+'Node'] = data[materialMaps[i]];
+    }
+    for (i in data) {
+      materialOptions[i] = data[i];
     }
     var graphNode = scene.constructNode(materialType, materialOptions);
     materialLibrary[assetName] = graphNode;
@@ -107,6 +111,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options, call
         if (!materialNames || materialNames.indexOf(materialName) !== -1) {
           if(!imageLibrary[value]){
           //  console.log(value);
+          
             imageLibrary[value] = scene.constructNode('Image2D', {
               name: value,
               url: options.basePath + '/' + value

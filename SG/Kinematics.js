@@ -119,7 +119,10 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
     };
     transformNode.readData = function(sceneDeserializer, nodeData) {
       if(nodeData.parentTransformNode){
-        transformNode.pub.setParentNode(sceneDeserializer.getNode(nodeData.parentTransformNode));
+        var parentTransformNode = sceneDeserializer.getNode(nodeData.parentTransformNode);
+        if(parentTransformNode){
+          transformNode.pub.setParentNode(parentTransformNode);
+        }
         if(nodeData.localXfo){
           transformNode.pub.setLocalXfo(nodeData.localXfo);
         }

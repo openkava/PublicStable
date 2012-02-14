@@ -178,9 +178,6 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
               }
             }
             str += '\n    }';
-            if(i%100==0){
-              FABRIC.flush();
-            }
           }
           str += '\n  ]';
           str += '\n}';
@@ -199,9 +196,6 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
               if(binaryStorageNode){
                 binaryStorageNode.storeDGNodes( name, storedDGNodes[name]);
               }
-            }
-            if(i%100==0){
-              FABRIC.flush();
             }
           }
           writer.writeBinary();
