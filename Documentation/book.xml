@@ -31,71 +31,190 @@
         objects such as a <emphasis role="bold">Dependency Graph Node</emphasis>, <emphasis
           role="bold">Operators</emphasis> and other elements. The <emphasis role="bold"
           >SceneGraph</emphasis> however is an abstraction layer for the core. It provides <emphasis
-          role="italic">presets</emphasis> for <emphasis role="bold">Dependency Graph
-          Node</emphasis> setups, called the <emphasis role="bold">SceneGraphNodes</emphasis>. The
-          <emphasis role="bold">SceneGraph</emphasis> is purely implemented in JavaScript, and
-        therefore can be customized easily for any specialized purpose.</para>
-      <para>The <emphasis role="bold">SceneGraph</emphasis> is provided as a series of JavaScript
-        files which implement <emphasis role="bold">SceneGraphNodes</emphasis> for a certain usage
-        field, for example the file <emphasis role="italic">Images.js</emphasis> contains several
-          <emphasis role="bold">SceneGraphNodes</emphasis> implementing 2D images, 3D images and
-        video.</para>
-      <para><emphasis role="bold">SceneGraphNodes</emphasis> encapsulate the core objects necessary
-        to provide a certain functionality. The <emphasis role="bold">VideoNode</emphasis>, for
-        example, contains the <emphasis role="bold">Dependency Graph Nodes</emphasis> to store all
-        of the video related data, as well as all of the <emphasis role="bold">Operators</emphasis>
-        to read and manipulate the video stream. Moreover it provides JavaScript functions to access
-        and manipulate the video. </para>
-      <para><emphasis role="bold">SceneGraphNodes</emphasis> that don't contain any <emphasis
-          role="bold">Dependency Graph Node</emphasis>, and are used mainly to provide utility
-        functionality, are called <emphasis role="bold">Managers</emphasis>. One example of a
-        manager is the <emphasis role="bold">UndoManager</emphasis>.</para>
-      <para>The <emphasis role="bold">SceneGraph</emphasis> furthermore provides graphical
-        utilities, such as the <emphasis role="bold">Debugger</emphasis>, which allows to inspect
-        the constructed core <emphasis role="bold">Dependency Graph</emphasis>, and other tools, for
-        example the <emphasis role="bold">Curve Editor</emphasis>, which allows to inspect and edit
-        FCurve animation.</para>
+          role="italic">presets</emphasis> for Dependency Graph Node setups, called the
+        SceneGraphNodes. The SceneGraph is purely implemented in JavaScript, and therefore can be
+        customized easily for any specialized purpose.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_introduction_01.png" width="40%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The SceneGraph is a factory which is used to create SceneGraphNodes. Each type of
+        SceneGraphNode is registered with the SceneGraph on load. The factory function is
+        responsible for constructing the underlying dependency graph, and returning an public
+        interface. All data associated with the scene graph node is contained in the closure defined
+        by the factory function. </para>
+      <para>A good understanding of closures and how they work in JavaScript is essential for
+        understanding the Fabric SceneGraph.</para>
+      <para>The SceneGraph is provided as a series of JavaScript files which implement factory
+        functions for a certain usage field, for example the file <emphasis role="italic"
+          >Images.js</emphasis> contains several factory functions implementing 2D images, 3D images
+        and video SceneGraphNodes.</para>
+      <para>SceneGraphNodes encapsulate the core objects necessary to provide a certain
+        functionality. The VideoNode, for example, contains the Dependency Graph Nodes to store all
+        of the video related data, as well as all of the Operators to read and manipulate the video
+        stream. Moreover it provides JavaScript functions to access and manipulate the video. </para>
+      <para>SceneGraphNodes that don't contain any Dependency Graph Node, and are used mainly to
+        provide utility functionality, are called <emphasis role="bold">Managers</emphasis>. One
+        example of a manager is the UndoManager.</para>
+      <para>The SceneGraph furthermore provides graphical utilities, such as the <emphasis
+          role="bold">Debugger</emphasis>, which allows to inspect the constructed core Dependency
+        Graph, and other tools, for example the <emphasis role="bold">Curve Editor</emphasis>, which
+        allows to inspect and edit FCurve animation.</para>
     </section>
     <section>
-      <title>SceneGraphNode Construction</title>
-      <para>All <emphasis role="bold">SceneGraphNodes</emphasis> implemented in the <emphasis
-          role="bold">SceneGraph</emphasis> are registered by providing their type as well as a
-        constructor function. A node of a registered type can be constructed by using JavaScript
-        like this:</para>
-      <para><emphasis role="italic">var sgNode = scene.constructNode('Image2D', { name:
-          'myImageNode' } );</emphasis></para>
-      <para>The options supported by each <emphasis role="bold">SceneGraphNode</emphasis> can be
-        found in the following chapters, respectively in the <emphasis role="bold">SceneGraphNode
-          Reference</emphasis> of this document. </para>
+      <title>Abstraction of the Dependency Graph</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_introduction_02.png" width="75%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The goal of the SceneGraph layer is to present an interface to developers focused on
+        SceneGraph construction. The interfaces exposed follow common SceneGraph conventions. </para>
+      <para>SceneGraphs can be setup in a few lines of code, and provide a rich array of features,
+        from shader management and rendering, to manipulation and animation.</para>
+      <para>The SceneGraph is written entirely in JavaScript, and it abstracts the notion of the
+        dependency graph away from the user. The JavaScript code assembles a lower level dependency
+        graph. </para>
+    </section>
+    <section>
+      <title>Scene Object and SceneGraphNode Construction</title>
+      <para>The <emphasis role="bold">scene</emphasis> object is the accessor for the SceneGraph
+        factory, and is used to construct any SceneGraphNode.</para>
+      <para>
+        <programlisting>var scene = FABRIC.SceneGraph.createScene();</programlisting>
+      </para>
+      <para>The first SceneGraph object to be constructed is usually the scene object. The scene
+        object creates a Fabric dependency graph context, a dependency graph node for containing
+        globals, and some event handlers that are used in rendering. It returns an interface for
+        constructing SceneGrapNodes. </para>
+      <para>All SceneGraphNodes implemented in the SceneGraph are registered by providing their type
+        as well as a constructor function. A node of a registered type can be constructed by using
+        JavaScript like this:</para>
+      <para>
+        <programlisting>var sgNode = scene.constructNode('Image2D', { name: 'myImageNode' } );</programlisting>
+      </para>
+      <para>The options supported by each SceneGraphNode can be found in the following chapters,
+        respectively in the <emphasis role="bold">SceneGraphNode Reference</emphasis> of this
+        document. </para>
     </section>
     <section>
       <title>Public and Private Interfaces</title>
-      <para><emphasis role="bold">SceneGraphNodes</emphasis> provide a private as well as a public
-        interface. Outside of constructor functions it's only possible to access the public
-        interface, while inside of constructor functions it's possible to access the private
-        interface. This allows to include helper functions in the each node, such as setter
-        functions for private members for example, that are only accessible in constructor functions
-        of other nodes. Since the options used for the construction of a node can contain references
-        to a public interface, you can retrieve the private interface by using this call:</para>
-      <para><emphasis role="italic">var privateInterface =
-          scene.getPrivateInterface(publicInterface);</emphasis></para>
+      <para>SceneGraphNodes provide a private as well as a public interface. Outside of constructor
+        functions it's only possible to access the public interface, while inside of constructor
+        functions it's possible to access the private interface. This allows to include helper
+        functions in the each node, such as setter functions for private members for example, that
+        are only accessible in constructor functions of other nodes. Since the options used for the
+        construction of a node can contain references to a public interface, you can retrieve the
+        private interface by using this call:</para>
+      <programlisting>var privateInterface = scene.getPrivateInterface(publicInterface);</programlisting>
       <para>To access the public interface from a private one, you simply need to access the
           <emphasis role="italic">.pub</emphasis> member of the private interface.<emphasis
-          role="bold"> Managers</emphasis> can also access private interfaces, allowing them to
+          role="bold"> </emphasis>Managers can also access private interfaces, allowing them to
         perform changes to the private data, for example.</para>
+      <programlisting language="JavaScript">var sgNode = {
+  pub: {
+    publicMethod: function () {}
+  },
+  privateMethod: function () {}
+};</programlisting>
     </section>
     <section>
       <title>Custom SceneGraphNodes and Inheritance</title>
-      <para>Applications can register their own, custom <emphasis role="bold"
-          >SceneGraphNodes</emphasis>. This can be useful and necessary when extending an existing
-        node, for example, or providing a completely new one. Inside the constructor function of the
-        custom node all other nodes can be accessed through their private interfaces, allowing to
-        modify and access the inner workings of the <emphasis role="bold">SceneGraph</emphasis>.
-        Extending the private or the public interface allows to inherit features of another
-          <emphasis role="bold">SceneGraphNode</emphasis>. It is also possible to override an
-        existing function on each interface by simply setting it to different function inside the
-        custom node's constructor. For further details refer to the tutorials sections of this
-        document.</para>
+      <para>Applications can register their own, custom SceneGraphNodes. This can be useful and
+        necessary when extending an existing node, for example, or providing a completely new one.
+        Inside the constructor function of the custom node all other nodes can be accessed through
+        their private interfaces, allowing to modify and access the inner workings of the
+        SceneGraph. Extending the private or the public interface allows to inherit features of
+        another SceneGraphNode. It is also possible to override an existing function on each
+        interface by simply setting it to different function inside the custom node's constructor.
+        For further details refer to the tutorials sections of this document.</para>
+    </section>
+  </section>
+  <section>
+    <title>SceneGraph Type System</title>
+    <section>
+      <title>Introduction to types</title>
+      <para>Fabric Engine can work with any type of data. To define the structure of data, you need
+        to introduce <emphasis role="bold">Types</emphasis>. Types are very similar to structs in
+        C++. Core types, such as <emphasis role="bold">Integer</emphasis>, <emphasis role="bold"
+          >Boolean</emphasis> or <emphasis role="bold">String</emphasis> are defined by the core.
+        More complex types, such as the <emphasis role="bold">Vec3</emphasis>, for example, are
+        defined by the SceneGraph.</para>
+    </section>
+    <section>
+      <title>Querying types</title>
+      <para>You can access all of the currently registered types, by calling on the <emphasis
+          role="bold">RegisteredTypesManager</emphasis>. The manager is only accessible in the scope
+        of a SceneGraphNode factory function, but you can access a dictionary of all current types
+        by accessing the <emphasis role="bold">RT</emphasis> object:</para>
+      <programlisting language="JavaScript">console.log(FABRIC.RT);</programlisting>
+      <para>Types are typically implemented in separate JavaScript files. The ones provided by the
+        SceneGraph can be found in the RT directory. The SceneGraph uses a <emphasis role="bold"
+          >require</emphasis> framework which ensures that all required scripts are automatically
+        included into the application. You can find more details about this in the tutorials section
+        of this document, covering the creation of a custom SceneGraphNode.</para>
+    </section>
+    <section>
+      <title>JavaScript and KL</title>
+      <para>Types can provide extra functionality both in JavaScript as well as Fabric Engine's
+        kernel language (<emphasis role="bold">KL</emphasis>). The type below implements an
+          <emphasis role="bold">Address</emphasis>, and implements both a JavaScript file as well as
+        a KL file providing the additional functions, called the <emphasis role="bold"
+          >bindings</emphasis>. The content of the JavaScript file looks like this: (the first array
+        parameter is the list of requirements. this could include other types, for example.)</para>
+      <programlisting language="JavaScript">FABRIC.define([], function() {
+
+  // Constructor:
+  FABRIC.RT.Address = function(options) {
+    if(!options) options = {};
+    this.street = options.street != undefined ? options.street : '';
+    this.number = options.number != undefined ? options.number : 1;
+    this.city = options.city != undefined ? options.city : '';
+    this.zip = options.zip != undefined ? options.zip : 1000;
+    this.country = options.country != undefined ? options.country : '';
+  };
+  
+  // Prototype, providing additional methods
+  FABRIC.RT.Address.prototype = {
+    getPrintable: function() {
+      return this.street + ' ' + this.number + ' in ' + this.zip + ' ' + this.city + ', ' + this.country;
+    }
+  };
+  
+  // Append this type to be loaded once the Fabric context exists
+  FABRIC.appendOnCreateContextCallback(function(context) {
+    context.RegisteredTypesManager.registerType('Address', {
+      members: {
+        street: 'String', number: 'Integer', city: 'String', zip: 'Integer', country: 'String'
+      },
+      constructor: FABRIC.RT.Address,
+      klBindings: {
+        filename: 'Address.kl',
+        sourceCode: FABRIC.loadResourceURL('RT/Address.kl')
+      }
+    });
+  });
+
+  return FABRIC.RT.Address;
+});</programlisting>
+      <para>The KL file mentioned in the appendOnCreateContextCallback above, <emphasis role="bold"
+          >RT/Address.kl</emphasis> could look like this:</para>
+      <programlisting language="JavaScript">function String Address.getPrintable() {
+  return this.street + ' ' + this.number + ' in ' + this.zip + ' ' + this.city + ', ' + this.country;
+}</programlisting>
+      <para>This will make the <emphasis role="bold">getPrintable</emphasis> method available both
+        in JavaScript as well as in KL. As you can see, you can specify any type of data. You can of
+        course include custom types as members of other custom types, and therefore build very
+        complex structures, which then can be used for computation inside the dependency graph or
+        MapReduce.</para>
+    </section>
+  </section>
+  <section>
+    <title>Kinematics Guide</title>
+    <section>
+      <title>Overview</title>
+      <para>The SceneGraph's Kinematics systems </para>
     </section>
   </section>
 </article>
