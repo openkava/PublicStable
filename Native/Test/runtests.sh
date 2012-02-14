@@ -14,8 +14,12 @@ EOF
   exit 1
 fi
 
+if [ -f "valgrind.suppressions.$FABRIC_BUILD_OS" ]; then
+  EXTRA_VALGRIND_SUPP="--suppressions=valgrind.suppressions.$FABRIC_BUILD_OS"
+fi
+
 if [ -n "$FABRIC_TEST_WITH_VALGRIND" ]; then
-  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$FABRIC_BUILD_OS --leak-check=full -q"
+  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$FABRIC_BUILD_OS --leak-check=full -q $EXTRA_VALGRIND_SUPP"
 else
   VALGRIND_CMD=
 fi
@@ -46,7 +50,7 @@ for f in "$@"; do
   if [ -f ${f%.$TEST_SUFFIX}.novalgrind ]; then
     CMD="$TEST_CMD $f"
   else
-    CMD="$VALGRIND_CMD $TEST_CMD $f"
+    CMD="$VALGRIND_CMD $VALGRIND_EXTRA $TEST_CMD $f"
   fi
 
   $CMD 2>&1 \
