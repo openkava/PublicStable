@@ -46,11 +46,8 @@ namespace Fabric
       m_functions.push_back( function );
     }
     
-    Function const &PencilSymbol::getFunction( CG::Location const &location, ExprTypeVector const &argTypes ) const
+    Function const *PencilSymbol::maybeGetFunction( ModuleBuilder const &moduleBuilder, Location const &location, ExprTypeVector const &argTypes ) const
     {
-      if ( m_functions.empty() )
-        throw Error( location, m_friendlyName + " not found" );
-      
       Function const *function = maybeGetPreciseFunction( argTypes );
       
       if ( !function )
@@ -67,7 +64,7 @@ namespace Fabric
           function = candidates[0];
         else if ( candidates.size() > 1 )
         {
-          std::string message = "cannot resolve call for " + m_friendlyName + "(" + argTypes.desc() + ")";
+          std::string message = "ambiguous call for " + m_friendlyName + "(" + argTypes.desc() + ")";
           message += "\ncandidates are:";
           for ( std::vector<Function const *>::const_iterator it=candidates.begin(); it!=candidates.end(); ++it )
             message += "\n  " + m_friendlyName + "(" + (*it)->paramsDesc() + ")";
@@ -77,28 +74,56 @@ namespace Fabric
       
       if ( !function )
       {
-        std::string message = "cannot resolve call for " + m_friendlyName + "(" + argTypes.desc() + ")";
-        message += "\ncandidates are:";
+        size_t lowestCost = SIZE_MAX;
+        std::vector<Function const *> candidates;
+        
         for ( FunctionVector::const_iterator it=m_functions.begin(); it!=m_functions.end(); ++it )
-          message += "\n  " + m_friendlyName + "(" + it->paramsDesc() + ")";
-        throw CG::Error( location, message );
+        {
+          size_t thisCost;
+          if ( it->isImplicitCastMatch( argTypes, moduleBuilder, thisCost ) )
+          {
+            if ( thisCost < lowestCost )
+            {
+              candidates.clear();
+              lowestCost = thisCost;
+            }
+            if ( thisCost == lowestCost )
+              candidates.push_back( &*it );
+          }
+        }
+        
+        if ( candidates.size() == 1 )
+          function = candidates[0];
+        else if ( candidates.size() > 1 )
+        {
+          std::string message = "ambiguous call for " + m_friendlyName + "(" + argTypes.desc() + ")";
+          message += "\ncandidates are:";
+          for ( std::vector<Function const *>::const_iterator it=candidates.begin(); it!=candidates.end(); ++it )
+            message += "\n  " + m_friendlyName + "(" + (*it)->paramsDesc() + ")";
+          throw CG::Error( location, message );
+        }
       }
         
-      return *function;
+      return function;
     }
-
+    
+    Function const *PencilSymbol::getFunction( ModuleBuilder const &moduleBuilder, Location const &location, ExprTypeVector const &argTypes ) const
+    {
+      Function const *result = maybeGetFunction( moduleBuilder, location, argTypes );
+      if ( !result )
+        throw CG::Error( location, "no such " + m_friendlyName + "(" + argTypes.desc() + ")" );
+      return result;
+    }
       
-    Function const &PencilSymbol::getUniqueFunction(
-      CG::Location const &location
-      ) const
+    Function const *PencilSymbol::getUniqueFunction( Location const &location ) const
     {
       if ( m_functions.empty() )
-        throw CG::Error( location, "no such function " + _(m_friendlyName) );
+        throw CG::Error( location, "no such " + m_friendlyName );
       
       if ( m_functions.size() > 1 )
-        throw CG::Error( location, _(m_friendlyName) + " is not a unique function" );
+        throw CG::Error( location, m_friendlyName + " is not unique" );
       
-      return m_functions[0];
+      return &m_functions[0];
     }
   }
 }

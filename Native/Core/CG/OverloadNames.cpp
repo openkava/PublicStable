@@ -26,7 +26,7 @@ namespace Fabric
     static std::string EncodeParametersForDefaultSymbolName( ExprTypeVector const &paramTypes )
     {
       std::string result;
-      for ( ExprTypeVector::const_iterator it=paramExprTypes.begin(); it!=paramExprTypes.end(); ++it )
+      for ( ExprTypeVector::const_iterator it=paramTypes.begin(); it!=paramTypes.end(); ++it )
         result += "__" + std::string( EncodeUsage( it->getUsage() ) ) + "_" + it->getAdapter()->getCodeName();
       return result;
     }
@@ -37,12 +37,12 @@ namespace Fabric
     }
 
     std::string ConstructorDefaultSymbolName(
-      RC::ConstHandle<CG::Adapter> const &≈,
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
       std::vector< RC::ConstHandle<CG::Adapter> > const &otherParamAdapters
       )
     {
       CG::ExprTypeVector paramTypes;
-      paramTypes.push_back( CG::ExprType( paramTypes, CG::USAGE_LVALUE ) );
+      paramTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
       for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = otherParamAdapters.begin(); it != otherParamAdapters.end(); ++it )
         paramTypes.push_back( CG::ExprType( *it, CG::USAGE_RVALUE ) );
       return "__constructor" + EncodeParametersForDefaultSymbolName( paramTypes );
@@ -51,7 +51,7 @@ namespace Fabric
     std::string DestructorDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter )
     {
       CG::ExprTypeVector paramTypes;
-      paramTypes.push_back( CG::ExprType( paramTypes, CG::USAGE_LVALUE ) );
+      paramTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
       return "__destructor" + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
@@ -92,7 +92,7 @@ namespace Fabric
       paramTypes.push_back( thisType );
       for ( CG::ExprTypeVector::const_iterator it=otherParamTypes.begin(); it!=otherParamTypes.end(); ++it )
         paramTypes.push_back( *it );
-      return "__method_" + name + EncodeParametersForDefaultSymbolName( paramTypes );
+      return "__method_" + methodName + EncodeParametersForDefaultSymbolName( paramTypes );
     }
   }
 }

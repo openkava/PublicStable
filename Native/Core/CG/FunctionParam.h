@@ -135,6 +135,19 @@ namespace Fabric
         push_back( param3 );
       }
       
+      ParamVector(
+        FunctionParam const &param1,
+        FunctionParam const &param2,
+        FunctionParam const &param3,
+        FunctionParam const &param4
+        )
+      {
+        push_back( param1 );
+        push_back( param2 );
+        push_back( param3 );
+        push_back( param4 );
+      }
+      
       ParamVector( ParamVector const &that )
       {
         reserve( that.size() );

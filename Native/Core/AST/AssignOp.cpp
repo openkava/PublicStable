@@ -9,10 +9,11 @@
 
 #include <Fabric/Core/AST/AssignOp.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Core/CG/Error.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -73,28 +74,28 @@ namespace Fabric
           return lhsExprValue;
         }
 
-        std::string pencilName = CG::AssignOpPencilName( adapter, m_assignOpType );
-        RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
-        if ( pencilSymbol )
+        CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
+          CG::AssignOpPencilName( adapter, m_assignOpType ),
+          lhsExprValue.getExprType(),
+          rhsExprValue.getExprType()
+          );
+        if ( function )
         {
-          CG::Function const &function = pencilSymbol->getFunction( getLocation(), lhsExprValue.getExprType(), rhsExprValue.getExprType() );
-          function.llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
+          function->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
           return lhsExprValue;
         }
         
         // [pzion 20110202] Fall back on binOp + simple assignOp composition              
-        std::string binOpPencilName = CG::BinOpPencilName( CG::binOpForAssignOp( m_assignOpType ) );
-        RC::ConstHandle<CG::PencilSymbol> binOpPencilSymbol = basicBlockBuilder.maybeGetPencil( binOpPencilName );
-        if ( binOpPencilSymbol )
-        {
-          CG::Function const &function = binOpPencilSymbol->getFunction( getLocation(), lhsExprValue.getExprType(), rhsExprValue.getExprType() );
-          CG::ExprValue binOpResultExprValue = function.llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
-          llvm::Value *rhsCastedRValue = adapter->llvmCast( basicBlockBuilder, binOpResultExprValue );
-          adapter->llvmAssign( basicBlockBuilder, lhsExprValue.getValue(), rhsCastedRValue );
-          return lhsExprValue;
-        }
-        
-        throw CG::Error( getLocation(), "assignment operator " + std::string( CG::assignOpUserName( m_assignOpType ) ) + " not supported for expressions of type " + lhsExprValue.getTypeUserName() );
+        function = basicBlockBuilder.getModuleBuilder().getFunction(
+          getLocation(),
+          CG::BinOpPencilName( CG::binOpForAssignOp( m_assignOpType ) ),
+          lhsExprValue.getExprType(),
+          rhsExprValue.getExprType()
+          );
+        CG::ExprValue binOpResultExprValue = function->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
+        llvm::Value *rhsCastedRValue = adapter->llvmCast( basicBlockBuilder, binOpResultExprValue );
+        adapter->llvmAssign( basicBlockBuilder, lhsExprValue.getValue(), rhsCastedRValue );
+        return lhsExprValue;
       }
       catch ( CG::Error e )
       {

@@ -1,19 +1,20 @@
 operator entry() {
   Float64 x = 0.1;
-  report sqrt64(x);
-  report abs64(x);
-  report round64(x);
-  report ceil64(x);
-  report floor64(x);
-  report pow64(x, x);
-  report sin64(x);
-  report cos64(x);
-  report tan64(x);
-  report log1064(x);
-  report log64(x);
-  report exp64(x);
-  report asin64( sin64(x) );
-  report acos64( cos64(x) );
-  report atan64( tan64(x) );
-  report atan264( tan64(x), 1.0 );
+  Float64 y = 1.0;
+  report sqrt(x);
+  report abs(x);
+  report round(x);
+  report ceil(x);
+  report floor(x);
+  report pow(x, x);
+  report sin(x);
+  report cos(x);
+  report tan(x);
+  report log10(x);
+  report log(x);
+  report exp(x);
+  report asin( sin(x) );
+  report acos( cos(x) );
+  report atan( tan(x) );
+  report atan2( tan(x), y );
 }

@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_AST_CALL_H
@@ -49,7 +46,7 @@ namespace Fabric
       
       virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
-      CG::Function const &getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const;
+      CG::Function const *getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const;
 
     private:
     

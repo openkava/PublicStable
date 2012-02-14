@@ -65,8 +65,8 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
-      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
+      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[1].getAdapter();
       RC::ConstHandle<CG::ValueProducerAdapter> outputValueProducerAdapter = basicBlockBuilder.getManager()->getValueProducerOf( outputAdapter );
       return CG::ExprType( outputValueProducerAdapter, CG::USAGE_RVALUE );
@@ -86,8 +86,8 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
-      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
+      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
 
       CG::ExprType inputExprType = m_input->getExprType( basicBlockBuilder );
       if ( !RT::isValueProducer( inputExprType.getAdapter()->getType() ) )
@@ -131,7 +131,7 @@ namespace Fabric
         basicBlockBuilder->CreateCall4(
           func,
           basicBlockBuilder->CreateBitCast(
-            function.getLLVMFunction(),
+            function->getLLVMFunction(),
             llvm::Type::getInt8PtrTy( llvmContext )
             ),
           inputExprRValue.getValue(),
@@ -169,7 +169,7 @@ namespace Fabric
         basicBlockBuilder->CreateCall5(
           func,
           basicBlockBuilder->CreateBitCast(
-            function.getLLVMFunction(),
+            function->getLLVMFunction(),
             llvm::Type::getInt8PtrTy( llvmContext )
             ),
           inputExprRValue.getValue(),

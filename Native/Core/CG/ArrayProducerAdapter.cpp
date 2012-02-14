@@ -124,7 +124,12 @@ namespace Fabric
       }
 
       {
-        MethodBuilder functionBuilder( moduleBuilder, m_elementVariableArrayAdapter, this, USAGE_RVALUE, "produce" );
+        MethodBuilder functionBuilder(
+          moduleBuilder,
+          m_elementVariableArrayAdapter,
+          this, USAGE_RVALUE,
+          "produce"
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );

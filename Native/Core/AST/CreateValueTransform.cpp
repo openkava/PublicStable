@@ -82,8 +82,8 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
-      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
+      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       CG::ExprValue inputExprRValue = m_input->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
       llvm::Value *resultLValue = valueProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
       valueProducerAdapter->llvmInit( basicBlockBuilder, resultLValue );
@@ -116,7 +116,7 @@ namespace Fabric
         basicBlockBuilder->CreateCall3(
           func,
           basicBlockBuilder->CreateBitCast(
-            function.getLLVMFunction(),
+            function->getLLVMFunction(),
             llvm::Type::getInt8PtrTy( llvmContext )
             ),
           inputExprRValue.getValue(),
@@ -151,7 +151,7 @@ namespace Fabric
         basicBlockBuilder->CreateCall4(
           func,
           basicBlockBuilder->CreateBitCast(
-            function.getLLVMFunction(),
+            function->getLLVMFunction(),
             llvm::Type::getInt8PtrTy( llvmContext )
             ),
           inputExprRValue.getValue(),

@@ -5,6 +5,7 @@
 #ifndef _FABRIC_RT_OVERLOAD_NAMES_H
 #define _FABRIC_RT_OVERLOAD_NAMES_H
 
+#include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/ExprType.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OpTypes.h>
@@ -62,6 +63,45 @@ namespace Fabric
       return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
     }
     inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter,
+      RC::ConstHandle<CG::Adapter> const &param4Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      paramAdapters.push_back( param4Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
       RC::Handle<CG::Manager> const &cgManager,
       std::string const &thisTypeName,
       std::vector< RC::ConstHandle<CG::Adapter> > const &paramAdapters
@@ -80,6 +120,60 @@ namespace Fabric
     {
       std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
       paramAdapters.push_back( param1Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter,
+      RC::ConstHandle<CG::Adapter> const &param4Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      paramAdapters.push_back( param4Adapter );
       return ConstructorDefaultSymbolName(
         cgManager,
         dstType,

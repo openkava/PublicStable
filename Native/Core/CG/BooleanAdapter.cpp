@@ -10,7 +10,11 @@
 #include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
+#include "AssOpBuilder.h"
+#include "BinOpBuilder.h"
 #include "ConstructorBuilder.h"
+#include "MethodBuilder.h"
+#include "UniOpBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
@@ -120,10 +124,7 @@ namespace Fabric
       */
       
       {
-        std::string name = uniOpOverloadName( UNI_OP_BIT_NOT, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        UniOpBuilder functionBuilder( moduleBuilder, this, UNI_OP_BIT_NOT, this, USAGE_RVALUE );
         if ( buildFunctions )
         {
           llvm::Value *rValue = functionBuilder[0];
@@ -135,11 +136,7 @@ namespace Fabric
       }
       
       {
-        std::string name = binOpOverloadName( BIN_OP_BIT_OR, this, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        BinOpBuilder functionBuilder( moduleBuilder, this, BIN_OP_BIT_OR, this, this );
         if ( buildFunctions )
         {
           llvm::Value *lhsRValue = functionBuilder[0];
@@ -152,11 +149,7 @@ namespace Fabric
       }
       
       {
-        std::string name = binOpOverloadName( BIN_OP_BIT_AND, this, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        BinOpBuilder functionBuilder( moduleBuilder, this, BIN_OP_BIT_AND, this, this );
         if ( buildFunctions )
         {
           llvm::Value *lhsRValue = functionBuilder[0];
@@ -169,11 +162,7 @@ namespace Fabric
       }
       
       {
-        std::string name = binOpOverloadName( BIN_OP_BIT_XOR, this, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        BinOpBuilder functionBuilder( moduleBuilder, this, BIN_OP_BIT_XOR, this, this );
         if ( buildFunctions )
         {
           llvm::Value *lhsRValue = functionBuilder[0];
@@ -186,11 +175,7 @@ namespace Fabric
       }
       
       {
-        std::string name = binOpOverloadName( BIN_OP_EQ, this, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        BinOpBuilder functionBuilder( moduleBuilder, this, BIN_OP_EQ, this, this );
         if ( buildFunctions )
         {
           llvm::Value *lhsRValue = functionBuilder[0];
@@ -203,11 +188,7 @@ namespace Fabric
       }
       
       {
-        std::string name = binOpOverloadName( BIN_OP_NE, this, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        BinOpBuilder functionBuilder( moduleBuilder, this, BIN_OP_NE, this, this );
         if ( buildFunctions )
         {
           llvm::Value *lhsRValue = functionBuilder[0];
@@ -220,10 +201,11 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "hash", CG::ExprType( this, USAGE_RVALUE ) );
-        ParamVector params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+        MethodBuilder functionBuilder(
+          moduleBuilder, sizeAdapter,
+          this, USAGE_RVALUE,
+          "hash"
+          );
         if ( buildFunctions )
         {
           llvm::Value *rValue = functionBuilder[0];
@@ -239,11 +221,13 @@ namespace Fabric
       }
       
       {
-        std::string name = methodOverloadName( "compare", CG::ExprType( this, CG::USAGE_RVALUE ), CG::ExprType( this, CG::USAGE_RVALUE ) );
-        ParamVector params;
-        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( integerAdapter, USAGE_RVALUE ), params );
+        MethodBuilder functionBuilder(
+          moduleBuilder,
+          integerAdapter,
+          this, USAGE_RVALUE,
+          "compare",
+          "that", this, USAGE_RVALUE
+          );
         if ( buildFunctions )
         {
           llvm::Value *lhsRValue = functionBuilder[0];

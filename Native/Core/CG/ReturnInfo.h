@@ -17,21 +17,12 @@ namespace Fabric
     
       ReturnInfo( ExprType const &exprType, llvm::Value *returnLValue = NULL )
         : m_exprType( exprType )
-        , m_returnsStaticDataPtr( false )
         , m_returnLValue( returnLValue )
-      {
-      }
-
-      ReturnInfo( ExprType const &exprType, bool returnsStaticDataPtr = false )
-        : m_exprType( exprType )
-        , m_returnsStaticDataPtr( returnsStaticDataPtr )
-        , m_returnLValue( NULL )
       {
       }
 
       ReturnInfo( ReturnInfo const &that )
         : m_exprType( that.m_exprType )
-        , m_returnsStaticDataPtr( that.m_returnsStaticDataPtr )
         , m_returnLValue( that.m_returnLValue )
       {
       }
@@ -39,7 +30,6 @@ namespace Fabric
       ReturnInfo &operator =( ReturnInfo const &that )
       {
         m_exprType = that.m_exprType;
-        m_returnsStaticDataPtr = that.m_returnsStaticDataPtr;
         m_returnLValue = that.m_returnLValue;
         return *this;
       }
@@ -71,20 +61,19 @@ namespace Fabric
 
       bool usesReturnLValue() const
       {
-        if ( m_exprType.isValid() && !m_returnsStaticDataPtr )
+        if ( m_exprType.isValid() )
           return m_exprType.getAdapter()->usesReturnLValue();
         else return false;
       }
 
       llvm::Value *getReturnLValue( ) const
       {
-        return( m_returnLValue );
+        return m_returnLValue;
       }
 
     private:
 
       ExprType m_exprType;
-      bool m_returnsStaticDataPtr;
       llvm::Value *m_returnLValue;
     };
   }

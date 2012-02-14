@@ -30,7 +30,9 @@ namespace Fabric
     public:
     
       static const size_t ExportSymbol = 0x01;
-      static const size_t ReturnsStaticDataPtr = 0x02;
+      static const size_t ImportSymbol = 0x01;
+      static const size_t DirectlyReturnLValue = 0x02;
+      static const size_t DirectlyReturnRValue = 0x04;
     
       FunctionBuilder( 
         ModuleBuilder &moduleBuilder,
@@ -38,7 +40,8 @@ namespace Fabric
         std::string const &symbolName,
         RC::ConstHandle<Adapter> const &returnAdapter, 
         ParamVector const &params,
-        size_t flags
+        size_t flags,
+        size_t cost = 0
         );
       
       FunctionBuilder( 
@@ -53,6 +56,29 @@ namespace Fabric
         ModuleBuilder &moduleBuilder,
         llvm::FunctionType const *llvmFunctionType,
         llvm::Function *llvmFunction
+        );
+      
+      FunctionBuilder(
+        ModuleBuilder &moduleBuilder, 
+        RC::ConstHandle<CG::Adapter> const &returnAdapter,
+        std::string const &functionName,
+        std::string const &param1Name,
+        RC::ConstHandle<CG::Adapter> const &param1Adapter,
+        Usage param1Usage,
+        size_t flags = 0
+        );
+      
+      FunctionBuilder(
+        ModuleBuilder &moduleBuilder, 
+        RC::ConstHandle<CG::Adapter> const &returnAdapter,
+        std::string const &functionName,
+        std::string const &param1Name,
+        RC::ConstHandle<CG::Adapter> const &param1Adapter,
+        Usage param1Usage,
+        std::string const &param2Name,
+        RC::ConstHandle<CG::Adapter> const &param2Adapter,
+        Usage param2Usage,
+        size_t flags = 0
         );
       
       ~FunctionBuilder();
@@ -70,12 +96,36 @@ namespace Fabric
       llvm::Argument *operator[]( size_t index );
       
       FunctionScope &getScope();
-      RC::ConstHandle<PencilSymbol> maybeGetPencil( std::string const &entryName ) const;
 
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location ) const;
       
       RC::ConstHandle<CG::PencilSymbol> getPencil() const;
+    
+    protected:
+
+      static inline FunctionParam FriendlyFunctionParam(
+        std::string const &paramName,
+        RC::ConstHandle<Adapter> const &paramAdapter,
+        Usage paramUsage
+        )
+      {
+        std::string friendlyParamName;
+        switch ( paramUsage )
+        {
+          case USAGE_LVALUE:
+            friendlyParamName = paramName + "LValue";
+            break;
+          case USAGE_RVALUE:
+            friendlyParamName = paramName + "RValue";
+            break;
+          default:
+            FABRIC_ASSERT( false );
+            friendlyParamName = paramName;
+            break;
+        }
+        return FunctionParam( friendlyParamName, paramAdapter, paramUsage );
+      }
       
     private:
     
@@ -84,7 +134,8 @@ namespace Fabric
         std::string const &symbolName, 
         RC::ConstHandle<Adapter> const &returnAdapter, 
         ParamVector const &params, 
-        size_t flags
+        size_t flags,
+        size_t cost = 0
         );
                 
       ModuleBuilder &m_moduleBuilder;
@@ -92,8 +143,10 @@ namespace Fabric
       llvm::Function *m_llvmFunction;
       FunctionScope *m_functionScope;
       RC::ConstHandle<CG::PencilSymbol> m_pencil;
+      
+      bool m_haveHiddenReturnLValue;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_CG_FUNCTION_BUILDER_H

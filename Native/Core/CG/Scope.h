@@ -125,23 +125,9 @@ namespace Fabric
         {
           FABRIC_ASSERT( exprValue );
           RC::ConstHandle<Adapter> returnAdapter = returnExprType.getAdapter();
-          llvm::Value *returnValue = 0;
-          switch ( returnExprType.getUsage() )
-          {
-            case USAGE_RVALUE:
-              returnValue = returnAdapter->llvmCast( bbb, exprValue );
-              break;
-            case USAGE_LVALUE:
-              if ( exprValue.getExprType() != returnExprType )
-                throw Exception( "cannot return l-value through casting" );
-              returnValue = exprValue.getValue();
-              break;
-            case USAGE_UNSPECIFIED:
-              FABRIC_ASSERT( false );
-              throw Exception( "unspecified usage" );
-          }
+          llvm::Value *returnRValue = returnAdapter->llvmCast( bbb, exprValue );
           llvm::Value *returnLValue = llvmGetReturnLValue();
-          returnAdapter->llvmAssign( bbb, returnLValue, returnValue );
+          returnAdapter->llvmAssign( bbb, returnLValue, returnRValue );
         }
         else FABRIC_ASSERT( !exprValue );
         llvmReturn( bbb );

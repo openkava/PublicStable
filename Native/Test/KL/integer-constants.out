@@ -1,1 +1,2 @@
-integer-constants.kl:4:3: error: unary operator '-' not supported for expressions of type 'Size'
+2147483647
+-2147483648
