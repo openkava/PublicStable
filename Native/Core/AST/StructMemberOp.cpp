@@ -8,6 +8,7 @@
 #include "StructMemberOp.h"
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Function.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
@@ -55,12 +56,14 @@ namespace Fabric
         }
       }
       
-      std::string pencilName = CG::MethodPencilName( structExprType.getAdapter(), m_memberName );
-      RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
-      if ( !pencilSymbol )
+      CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetFunction(
+        getLocation(),
+        CG::MethodPencilName( structExprType.getAdapter(), m_memberName ),
+        structExprType
+        );
+      if ( !function )
         throw CG::Error( getLocation(), "type " + structExprType.getUserName() + " has no member or method named " + _(m_memberName) );
-      CG::Function const &function = pencilSymbol->getFunction( getLocation(), structExprType );
-      RC::ConstHandle<CG::Adapter> returnAdapter = function.getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> returnAdapter = function->getReturnInfo().getAdapter();
       returnAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       return CG::ExprType( returnAdapter, CG::USAGE_RVALUE );
     }
@@ -107,21 +110,15 @@ namespace Fabric
           }
         }
 
-        std::string pencilName = CG::MethodPencilName( adapter, m_memberName );
-        RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
-        if ( pencilSymbol )
-        {
-          CG::Function const &function = pencilSymbol->getFunction( getLocation(), CG::ExprType( adapter, CG::USAGE_RVALUE ) );
-          CG::ParamVector const &functionParams = function.getParams();
+        CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
+          getLocation(),
+          CG::MethodPencilName( adapter, m_memberName ),
+          exprType
+          );
+        CG::ParamVector const &functionParams = function->getParams();
           
-          if ( functionParams.size() != 1 )
-            throw CG::Error( getLocation(), "method "+_(m_memberName)+" of type +"+_(adapter->getUserName())+" takes one or more parameters" );
-          
-          CG::ExprValue structExprValue = m_structExpr->buildExprValue( basicBlockBuilder, functionParams[0].getUsage(), lValueErrorDesc );
-          return function.llvmCreateCall( basicBlockBuilder, structExprValue );
-        }
-
-        throw CG::Error( getLocation(), _(adapter->getUserName()) + " has no member or method named " + _(m_memberName) );
+        CG::ExprValue structExprValue = m_structExpr->buildExprValue( basicBlockBuilder, functionParams[0].getUsage(), lValueErrorDesc );
+        return function->llvmCreateCall( basicBlockBuilder, structExprValue );
       }
       catch ( Exception e )
       {

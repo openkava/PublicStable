@@ -13,7 +13,8 @@
 #include "OpaqueAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
-#include "FunctionBuilder.h"
+#include "ConstructorBuilder.h"
+#include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
@@ -66,11 +67,7 @@ namespace Fabric
       static const bool buildFunctions = true;
       
       {
-        std::string name = constructorOverloadName( stringAdapter, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        ConstructorBuilder functionBuilder( moduleBuilder, stringAdapter, this );
         if ( buildFunctions )
         {
           llvm::Value *stringLValue = functionBuilder[0];
@@ -87,11 +84,7 @@ namespace Fabric
       }
    
       {
-        std::string name = constructorOverloadName( booleanAdapter, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        ConstructorBuilder functionBuilder( moduleBuilder, booleanAdapter, this );
         if ( buildFunctions )
         {
           llvm::Value *booleanLValue = functionBuilder[0];
@@ -108,10 +101,12 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "produce", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        ParamVector params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_valueAdapter, USAGE_RVALUE ), params );
+        MethodBuilder functionBuilder(
+          moduleBuilder,
+          m_valueAdapter,
+          this, USAGE_RVALUE,
+          "produce"
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -132,10 +127,12 @@ namespace Fabric
       }
  
       {
-        std::string name = methodOverloadName( "flush", CG::ExprType( this, CG::USAGE_RVALUE ) );
-        ParamVector params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        MethodBuilder functionBuilder(
+          moduleBuilder,
+          0,
+          this, USAGE_RVALUE,
+          "flush"
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );

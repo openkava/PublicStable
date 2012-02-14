@@ -14,29 +14,6 @@ namespace Fabric
   {
     class MethodBuilder : public FunctionBuilder
     {
-      static inline FunctionParam FriendlyFunctionParam(
-        std::string const &paramName,
-        RC::ConstHandle<Adapter> const &paramAdapter,
-        Usage paramUsage
-        )
-      {
-        std::string friendlyParamName;
-        switch ( paramUsage )
-        {
-          case USAGE_LVALUE:
-            friendlyParamName = paramName + "LValue";
-            break;
-          case USAGE_RVALUE:
-            friendlyParamName = paramName + "RValue";
-            break;
-          default:
-            FABRIC_ASSERT( false );
-            friendlyParamName = paramName;
-            break;
-        }
-        return FunctionParam( friendlyParamName, paramAdapter, paramUsage );
-      }
-        
     public:
     
       MethodBuilder( 
@@ -83,7 +60,8 @@ namespace Fabric
             ),
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
-            methodName
+            methodName,
+            ExprType( paramAdapter, paramUsage )
             ),
           returnAdapter,
           ParamVector(
@@ -116,7 +94,9 @@ namespace Fabric
             ),
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
-            methodName
+            methodName,
+            ExprType( param1Adapter, param1Usage ),
+            ExprType( param2Adapter, param2Usage )
             ),
           returnAdapter,
           ParamVector(

@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include <Fabric/Core/AST/Call.h>
@@ -10,6 +7,7 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -47,7 +45,7 @@ namespace Fabric
       m_args->appendJSON( jsonObjectEncoder.makeMember( "args" ), includeLocation );
     }
     
-    CG::Function const &Call::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::Function const *Call::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       CG::ExprTypeVector argExprTypes;
       m_args->appendExprTypes( basicBlockBuilder, argExprTypes );
@@ -55,24 +53,14 @@ namespace Fabric
       RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( m_name );
       if ( !symbol )
       {
-        std::string functionDesc = m_name + "(";
-        for ( size_t i=0; i<argExprTypes.size(); ++i )
-        {
-          if ( i > 0 )
-            functionDesc += ", ";
-          if ( argExprTypes[i].getUsage() == CG::USAGE_LVALUE )
-            functionDesc += "io ";
-          functionDesc += argExprTypes[i].getUserName();
-        }
-        functionDesc += ")";
-        
-        throw Exception( "function " + _(functionDesc) + " not found" );
+        std::string pencilName = CG::FunctionPencilName( m_name );
+        throw CG::Error( getLocation(), "no such " + pencilName + "(" + argExprTypes.desc() + ")" );
       }
 
       if ( !symbol->isPencil() )
         throw Exception( _(m_name) + " is not a function" );
       RC::ConstHandle<CG::PencilSymbol> pencilSymbol = RC::ConstHandle<CG::PencilSymbol>::StaticCast( symbol );
-      return pencilSymbol->getFunction( getLocation(), argExprTypes );
+      return pencilSymbol->getFunction( basicBlockBuilder.getModuleBuilder(), getLocation(), argExprTypes );
     }
     
     CG::ExprType Call::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
@@ -80,8 +68,8 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
       if ( !adapter )
       {
-        CG::Function const &function = getFunction( basicBlockBuilder );
-        adapter = function.getReturnInfo().getAdapter();
+        CG::Function const *function = getFunction( basicBlockBuilder );
+        adapter = function->getReturnInfo().getAdapter();
       }
       
       CG::ExprType exprType;
@@ -127,33 +115,17 @@ namespace Fabric
         }
         else
         {
-          std::string pencilName = ConstructorPencilName( result.getAdapter() );
-            
-          RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
-          if ( !pencilSymbol )
-          {
-            if ( argAdapters.size() == 1 )
-              throw CG::Error( getLocation(), "no cast exists from " + argAdapters[0]->getUserName() + " to " + adapter->getUserName() );
-            else
-            {
-              std::string initializerName = adapter->getUserName() + "(";
-              for ( size_t i=0; i<argAdapters.size(); ++i )
-              {
-                if ( i > 0 )
-                  initializerName += ", ";
-                initializerName += argAdapters[i]->getUserName();
-              }
-              initializerName += ")";
-              
-              throw CG::Error( getLocation(), "initializer " + initializerName + " not found" );
-            }
-          }
-
           CG::ExprTypeVector argTypes;
           argTypes.push_back( result.getExprType() );
           m_args->appendExprTypes( basicBlockBuilder, argTypes );
-          CG::Function const &function = pencilSymbol->getFunction( getLocation(), argTypes );
-          CG::ParamVector const functionParams = function.getParams();
+
+          CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
+            getLocation(),
+            ConstructorPencilName( result.getAdapter() ),
+            argTypes
+            );
+
+          CG::ParamVector const functionParams = function->getParams();
           
           std::vector<CG::Usage> argUsages;
           for ( size_t i=1; i<functionParams.size(); ++i )
@@ -163,7 +135,7 @@ namespace Fabric
           exprValues.push_back( result );
           m_args->appendExprValues( basicBlockBuilder, argUsages, exprValues, "cannot be used as an io argument" );
           
-          function.llvmCreateCall( basicBlockBuilder, exprValues );
+          function->llvmCreateCall( basicBlockBuilder, exprValues );
         }
         
         result.castTo( basicBlockBuilder, usage );
@@ -171,14 +143,14 @@ namespace Fabric
       }
       else
       {
-        CG::Function const &function = getFunction( basicBlockBuilder );
-        if ( usage == CG::USAGE_LVALUE && function.getReturnInfo().getUsage() != CG::USAGE_LVALUE )
+        CG::Function const *function = getFunction( basicBlockBuilder );
+        if ( usage == CG::USAGE_LVALUE && function->getReturnInfo().getUsage() != CG::USAGE_LVALUE )
           throw Exception( "result of function "+_(m_name)+" is not an l-value" );
         
         CG::ExprValue result( basicBlockBuilder.getContext() );
         try
         {
-          CG::ParamVector const functionParams = function.getParams();
+          CG::ParamVector const functionParams = function->getParams();
 
           std::vector<CG::Usage> paramUsages;
           for ( size_t i=0; i<functionParams.size(); ++i )
@@ -190,7 +162,7 @@ namespace Fabric
           std::vector<CG::ExprValue> args;
           m_args->appendExprValues( basicBlockBuilder, paramUsages, args, "cannot be an io argument" );
           
-          result = function.llvmCreateCall( basicBlockBuilder, args );
+          result = function->llvmCreateCall( basicBlockBuilder, args );
         }
         catch ( CG::Error e )
         {

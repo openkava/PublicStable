@@ -59,8 +59,6 @@ namespace Fabric
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location ) const;
 
-      RC::ConstHandle<PencilSymbol> maybeGetPencil( std::string const &entryName ) const;
-
       RC::ConstHandle<RT::Desc> getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const;
 
     private:

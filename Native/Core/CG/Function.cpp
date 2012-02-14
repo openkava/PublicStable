@@ -3,6 +3,9 @@
  */
  
 #include <Fabric/Core/CG/Function.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Symbol.h>
 #include <Fabric/Core/RT/Desc.h>
@@ -43,6 +46,42 @@ namespace Fabric
         if ( argTypes[i].getAdapter() == m_params[i].getAdapter()
           && argTypes[i].getUsage() == CG::USAGE_LVALUE && m_params[i].getUsage() == CG::USAGE_RVALUE )
           continue;
+          
+        return false;
+      }
+      
+      return true;
+    }
+    
+    bool Function::isImplicitCastMatch( ExprTypeVector const &argTypes, ModuleBuilder const &moduleBuilder, size_t &maxCost ) const
+    {
+      if ( argTypes.size() != m_params.size() )
+        return false;
+     
+      maxCost = 0;
+       
+      for ( size_t i=0; i<argTypes.size(); ++i )
+      {
+        if ( argTypes[i] == m_params[i].getExprType() )
+          continue;
+        
+        if ( m_params[i].getUsage() == CG::USAGE_RVALUE )
+        {
+          if ( argTypes[i].getAdapter() == m_params[i].getAdapter()
+            && argTypes[i].getUsage() == CG::USAGE_LVALUE )
+            continue;
+          
+          Function const *function = moduleBuilder.maybeGetPreciseFunction(
+            ConstructorPencilName( m_params[i].getAdapter() ),
+            ExprType( m_params[i].getAdapter(), USAGE_LVALUE ),
+            ExprType( argTypes[i].getAdapter(), USAGE_RVALUE )
+            );
+          if ( function )
+          {
+            maxCost = std::max( function->getCost(), maxCost );
+            continue;
+          }
+        }
           
         return false;
       }

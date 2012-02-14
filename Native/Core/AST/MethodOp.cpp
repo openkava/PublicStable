@@ -1,7 +1,12 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+
 #include <Fabric/Core/AST/MethodOp.h>
 #include <Fabric/Core/AST/ExprVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
@@ -44,22 +49,18 @@ namespace Fabric
       m_args->appendJSON( jsonObjectEncoder.makeMember( "args" ), includeLocation );
     }
     
-    CG::Function const &MethodOp::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::Function const *MethodOp::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       CG::ExprType thisType = m_expr->getExprType( basicBlockBuilder );
-      
-      CG::ExprTypeVector nonThisArgTypes;
-      m_args->appendExprTypes( basicBlockBuilder, nonThisArgTypes );
-      
-      std::string pencilName = CG::MethodPencilName( thisType.getAdapter(), m_name );
-      RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( pencilName );
-      if ( !pencilSymbol )
-        throw CG::Error( getLocation(), "type " + thisType.getUserName() + " has no method " + m_name + "(" + nonThisArgTypes.desc() + ")" );
       
       CG::ExprTypeVector argTypes;
       argTypes.push_back( thisType );
       m_args->appendExprTypes( basicBlockBuilder, argTypes );
-      return pencilSymbol->getFunction( getLocation(), argTypes );
+      return basicBlockBuilder.getModuleBuilder().getFunction(
+        getLocation(),
+        CG::MethodPencilName( thisType.getAdapter(), m_name ),
+        argTypes
+        );
     }
     
     void MethodOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
@@ -70,7 +71,7 @@ namespace Fabric
     
     CG::ExprType MethodOp::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = getFunction( basicBlockBuilder ).getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunction( basicBlockBuilder )->getReturnInfo().getAdapter();
       if ( adapter )
       {
         adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
@@ -81,8 +82,8 @@ namespace Fabric
     
     CG::ExprValue MethodOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
-      CG::Function const &function = getFunction( basicBlockBuilder );
-      CG::ParamVector const &functionParams = function.getParams();
+      CG::Function const *function = getFunction( basicBlockBuilder );
+      CG::ParamVector const &functionParams = function->getParams();
       
       try
       {
@@ -96,10 +97,10 @@ namespace Fabric
         argExprValues.push_back( thisExprValue );
         m_args->appendExprValues( basicBlockBuilder, argUsages, argExprValues, "cannot be used as an io argument" );
         
-        CG::ExprValue callResultExprValue = function.llvmCreateCall( basicBlockBuilder, argExprValues );
+        CG::ExprValue callResultExprValue = function->llvmCreateCall( basicBlockBuilder, argExprValues );
 
         CG::ExprValue result( basicBlockBuilder.getContext() );
-        if ( function.getReturnInfo().getExprType() )
+        if ( function->getReturnInfo().getExprType() )
           result = callResultExprValue;
         else result = thisExprValue;
 

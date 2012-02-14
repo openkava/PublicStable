@@ -84,6 +84,17 @@ namespace Fabric
       {
       }
       
+      ExprTypeVector( ExprType const &exprType1 )
+      {
+        push_back( exprType1 );
+      }
+      
+      ExprTypeVector( ExprType const &exprType1, ExprType const &exprType2 )
+      {
+        push_back( exprType1 );
+        push_back( exprType2 );
+      }
+      
       std::string desc() const;
     };
   }

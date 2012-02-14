@@ -79,11 +79,6 @@ namespace Fabric
       return m_functionBuilder.getContext();
     }
 
-    RC::ConstHandle<PencilSymbol> BasicBlockBuilder::maybeGetPencil( std::string const &entryName ) const
-    {
-      return m_functionBuilder.maybeGetPencil( entryName );
-    }
-
     RC::ConstHandle<RT::Desc> BasicBlockBuilder::getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const
     {
       return getManager()->getStrongerTypeOrNone( lhsDesc, rhsDesc );

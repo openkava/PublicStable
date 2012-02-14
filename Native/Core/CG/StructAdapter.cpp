@@ -9,7 +9,8 @@
 #include "OpaqueAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
-#include "FunctionBuilder.h"
+#include "ConstructorBuilder.h"
+#include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
@@ -74,7 +75,7 @@ namespace Fabric
         ParamVector params;
         params.push_back( FunctionParam( "dstLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "srcRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType(), params );
+        FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "", name, 0, params, 0 );
         basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
       }
       else basicBlockBuilder->CreateStore( basicBlockBuilder->CreateLoad( srcRValue ), dstLValue );
@@ -115,7 +116,7 @@ namespace Fabric
           ParamVector params;
           params.push_back( FunctionParam( "dstLValue", this, USAGE_LVALUE ) );
           params.push_back( FunctionParam( "srcRValue", this, USAGE_RVALUE ) );
-          FunctionBuilder functionBuilder( moduleBuilder, "__" + getCodeName() + "__DefaultAssign", ExprType(), params );
+          FunctionBuilder functionBuilder( moduleBuilder, "", "__" + getCodeName() + "__DefaultAssign", 0, params, 0 );
           if ( buildFunctions )
           {
             llvm::Value *dstLValue = functionBuilder[0];
@@ -136,11 +137,7 @@ namespace Fabric
       }
       
       {
-        std::string name = constructorOverloadName( stringAdapter, this );
-        ParamVector params;
-        params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "structRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        ConstructorBuilder functionBuilder( moduleBuilder, stringAdapter, this );
         if ( buildFunctions )
         {
           llvm::Value *stringLValue = functionBuilder[0];
@@ -156,10 +153,12 @@ namespace Fabric
       if ( getDesc()->isShallow() )
       {
         {
-          std::string name = methodOverloadName( "dataSize", CG::ExprType( this, CG::USAGE_RVALUE ) );
-          ParamVector params;
-          params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
-          FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+          MethodBuilder functionBuilder(
+            moduleBuilder,
+            sizeAdapter,
+            this, USAGE_RVALUE,
+            "dataSize"
+            );
           if ( buildFunctions )
           {
             BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -170,10 +169,12 @@ namespace Fabric
         }
         
         {
-          std::string name = methodOverloadName( "data", CG::ExprType( this, CG::USAGE_RVALUE ) );
-          ParamVector params;
-          params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
-          FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
+          MethodBuilder functionBuilder(
+            moduleBuilder,
+            dataAdapter,
+            this, USAGE_LVALUE,
+            "data"
+            );
           if ( buildFunctions )
           {
             llvm::Value *thisLValue = functionBuilder[0];

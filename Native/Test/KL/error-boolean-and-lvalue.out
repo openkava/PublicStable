@@ -1,3 +1,1 @@
-error-boolean-and-lvalue.kl:10:3: error: cannot resolve call for foo(Integer)
-candidates are:
-  foo(io Integer)
+error-boolean-and-lvalue.kl:10:3: error: no such function foo(Integer)
