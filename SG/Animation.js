@@ -3,12 +3,12 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.define(["SG/SceneGraph", "RT/KeyframeTrack"], function() {
+FABRIC.define(["SG/SceneGraph", "RT/KeyframeTrack", "RT/LinearKeyframe", "RT/BezierKeyframe"], function() {
   
 
-FABRIC.SceneGraph.registerNodeType('Animation', {
-  briefDesc: 'The AnimationTrack node implements an array of animation tracks.',
-  detailedDesc: 'The AnimationTrack node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
+FABRIC.SceneGraph.registerNodeType('AnimationContainer', {
+  briefDesc: 'The AnimationContainer node implements an array of animation tracks.',
+  detailedDesc: 'The AnimationContainer node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
     keyframetype: 'Specified by the derrived node, this option specifies the type of the keyframe tract that will be interpollated.',
@@ -63,9 +63,9 @@ FABRIC.SceneGraph.registerNodeType('Animation', {
 
 
 
-FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
-  briefDesc: 'The AnimationTrack node implements an array of animation tracks.',
-  detailedDesc: 'The AnimationTrack node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
+FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
+  briefDesc: 'The TrackAnimationContainer node implements an array of animation tracks.',
+  detailedDesc: 'The TrackAnimationContainer node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
     keyframetype: 'Specified by the derrived node, this option specifies the type of the keyframe tract that will be interpollated.',
@@ -76,12 +76,12 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
         keyframetype: undefined
       });
     
-    var animationTrackNode = scene.constructNode('Animation', options);
-    var dgnode = animationTrackNode.constructDGNode('DGNode');
-    dgnode.addMember('track', animationTrackNode.getTrackType());
+    var trackAnimationContainerNode = scene.constructNode('AnimationContainer', options);
+    var dgnode = trackAnimationContainerNode.constructDGNode('DGNode');
+    dgnode.addMember('track', trackAnimationContainerNode.getTrackType());
     
     var firstTrackAdded = false;
-    animationTrackNode.pub.addTrack = function(track) {
+    trackAnimationContainerNode.pub.addTrack = function(track) {
       var trackId;
       if(!firstTrackAdded){
         // Nodes default to having 1 slice, so we use up the first slot here.
@@ -95,7 +95,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       dgnode.setData('track', trackId, track);
       return trackId;
     };
-    animationTrackNode.pub.getTimeRange = function() {
+    trackAnimationContainerNode.pub.getTimeRange = function() {
       var range = new FABRIC.RT.Vec2();
       var numTracks = dgnode.getCount();
       for(var i=0; i<numTracks; i++){
@@ -113,20 +113,20 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       return range;
     };
     
-    animationTrackNode.pub.getTrack = function(trackId) {
+    trackAnimationContainerNode.pub.getTrack = function(trackId) {
       return dgnode.getData('track', trackId);
     };
-    animationTrackNode.pub.setTrack = function(track, trackId) {
+    trackAnimationContainerNode.pub.setTrack = function(track, trackId) {
       dgnode.setData('track', trackId ? trackId : 0, track);
     };
-    animationTrackNode.pub.getTracks = function() {
+    trackAnimationContainerNode.pub.getTracks = function() {
       return dgnode.getMemberBulkData('track');
     };
-    animationTrackNode.pub.setTracks = function(tracks) {
+    trackAnimationContainerNode.pub.setTracks = function(tracks) {
       return dgnode.setMemberBulkData(trackSet, trackSetId);
     };
     
-    animationTrackNode.pub.getTrackCount = function() {
+    trackAnimationContainerNode.pub.getTrackCount = function() {
       return dgnode.getCount();
     };
     
@@ -135,17 +135,17 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     // now is to disable track evaluation while manipulating, and only store
     // the tracks once manipulaiton is complete. 
     var m_track, m_trackId, m_newUndoTransaction;
-    animationTrackNode.pub.setValues = function(time, trackIds, values) {
+    trackAnimationContainerNode.pub.setValues = function(time, trackIds, values) {
     //  var trackSet = this.getTrackSet(trackSetId);
     //  trackSet.setValues(time, trackIds, values);
     //  this.setTrackSet(trackSet, trackSetId);
-    //  animationTrackNode.pub.fireEvent('keyframetrackchanged', {});
+    //  trackAnimationContainerNode.pub.fireEvent('keyframetrackchanged', {});
     
       m_track.setValues(time, trackIds, values);
     };
-    animationTrackNode.beginManipulation = function(trackId) {
+    trackAnimationContainerNode.beginManipulation = function(trackId) {
       m_trackId = trackId;
-      m_track = animationTrackNode.pub.getTrack(trackId);
+      m_track = trackAnimationContainerNode.pub.getTrack(trackId);
       
       var undoManager = scene.getManager('UndoManager');
       if(undoManager){
@@ -154,41 +154,41 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
           undoManager.openUndoTransaction();
           m_newUndoTransaction = true;
         }
-        var newTrackSet, prevTrackSet = animationTrackNode.pub.getTrack(m_trackId);
+        var newTrackSet, prevTrackSet = trackAnimationContainerNode.pub.getTrack(m_trackId);
         undoManager.addAction({
           onClose: function() {
-            newTrackSet = m_track;//animationTrackNode.pub.getTrack(m_trackId);
+            newTrackSet = m_track;//trackAnimationContainerNode.pub.getTrack(m_trackId);
           },
           onUndo: function() {
-            animationTrackNode.pub.setTrack(prevTrackSet, m_trackId);
+            trackAnimationContainerNode.pub.setTrack(prevTrackSet, m_trackId);
           },
           onRedo: function() {
-            animationTrackNode.pub.setTrack(newTrackSet, m_trackId);
+            trackAnimationContainerNode.pub.setTrack(newTrackSet, m_trackId);
           }
         });
       }
     }
-    animationTrackNode.endManipulation = function() {
-      animationTrackNode.pub.setTrack(m_track, m_trackId);
+    trackAnimationContainerNode.endManipulation = function() {
+      trackAnimationContainerNode.pub.setTrack(m_track, m_trackId);
       
       var undoManager = scene.getManager('UndoManager');
       if(undoManager && m_newUndoTransaction){
         undoManager.closeUndoTransaction();
       }
-      animationTrackNode.pub.fireEvent('keyframetrackchanged', {});
+      trackAnimationContainerNode.pub.fireEvent('keyframetrackchanged', {});
     }
         
-    animationTrackNode.getEvaluateCurveOperator = function() {
+    trackAnimationContainerNode.getEvaluateCurveOperator = function() {
       return scene.constructOperator({
-          operatorName: 'evaluate'+animationTrackNode.pub.getKeyframeType()+'Curve',
+          operatorName: 'evaluate'+trackAnimationContainerNode.pub.getKeyframeType()+'Curve',
           srcFile: 'FABRIC_ROOT/SG/KL/evaluateKeyframeAnimationTrack.kl',
           preProcessorDefinitions: {
-            KEYFRAMETYPE: animationTrackNode.pub.getKeyframeType(),
-            KEYFRAME_EVALUATEDTYPE: animationTrackNode.pub.getValueType()
+            KEYFRAMETYPE: trackAnimationContainerNode.pub.getKeyframeType(),
+            KEYFRAME_EVALUATEDTYPE: trackAnimationContainerNode.pub.getValueType()
           },
           entryFunctionName: 'evaluateTrackCurve',
           parameterLayout: [
-            'animationlibrary.track<>',
+            'characteranimationcontainer.track<>',
             'parameters.timeRange',
             'parameters.segmentCount',
             'self.values',
@@ -198,18 +198,18 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
         });
     };
     
-    animationTrackNode.pub.bindNodeMembersToTracks = function(targetnode, memberBindings, trackSetId, targetName) {
+    trackAnimationContainerNode.pub.bindNodeMembersToTracks = function(targetnode, memberBindings, trackSetId, targetName) {
       // Generate a unique operator that binds this 
       // animation curves to the target node's members.
       trackSetId = trackSetId ? trackSetId : 0;
 
       targetnode = scene.getPrivateInterface(targetnode);
-      targetnode.getDGNode().setDependency(dgnode, 'animationTracks');
+      targetnode.getDGNode().setDependency(dgnode, 'trackAnimationContainers');
       targetnode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
       var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
 
       var targetNodeMembers = targetnode.getDGNode().getMembers();
-      var trackDataType = animationTrackNode.pub.getValueType();
+      var trackDataType = trackAnimationContainerNode.pub.getValueType();
       var operatorName;
       if(targetName){
         operatorName = 'bindKeyframeTracksTo' + targetName;
@@ -219,13 +219,13 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       }
       var operatorBodySrc = '';
       var operatorHeaderSrc = '\nuse Vec3, Euler, Quat, RotationOrder;\n';
-      operatorHeaderSrc += 'use '+animationTrackNode.pub.getKeyframeType() +';\n';
-      operatorHeaderSrc += 'use '+animationTrackNode.getTrackType()+';\n';
+      operatorHeaderSrc += 'use '+trackAnimationContainerNode.pub.getKeyframeType() +';\n';
+      operatorHeaderSrc += 'use '+trackAnimationContainerNode.getTrackType()+';\n';
       operatorHeaderSrc += '\n\noperator ' + operatorName + '(\n';
       operatorHeaderSrc += '  io Scalar time,\n';
-      operatorHeaderSrc += '  io ' + animationTrackNode.getTrackType() + ' tracks<>';
+      operatorHeaderSrc += '  io ' + trackAnimationContainerNode.getTrackType() + ' tracks<>';
       var operatorArraySrc = {};
-      var parameterLayout = ['globals.time', 'animationTracks.track<>'];
+      var parameterLayout = ['globals.time', 'trackAnimationContainers.track<>'];
       var numEvaluatedTracks = 0;
       var addTrackEvaluation = function(trackid){
         numEvaluatedTracks++;
@@ -364,14 +364,14 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       }
     };
     
-    animationTrackNode.pub.openCurveEditor = function(options) {
+    trackAnimationContainerNode.pub.openCurveEditor = function(options) {
       options = options ? options : {};
       var curveEditorWindow = window.open(
         FABRIC.processURL('FABRIC_ROOT/SG/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
-        'Fabric Curve Editor:' + (options.name ? options.name : animationTrackNode.pub.getName()),
+        'Fabric Curve Editor:' + (options.name ? options.name : trackAnimationContainerNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
-      curveEditorWindow.animationLibraryNode = animationTrackNode.pub;
+      curveEditorWindow.characterAnimationContainerNode = trackAnimationContainerNode.pub;
       curveEditorWindow.trackSetId = options.trackSetId ? options.trackSetId : 0;
       curveEditorWindow.drawKeys = options.drawKeys ? options.drawKeys : true;
       curveEditorWindow.trackFilters = options.trackFilters ? options.trackFilters : [];
@@ -379,17 +379,17 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       return curveEditorWindow;
     }
     
-    scene.addEventHandlingFunctions(animationTrackNode);
+    scene.addEventHandlingFunctions(trackAnimationContainerNode);
     
-    var parentWriteData = animationTrackNode.writeData;
-    var parentReadData = animationTrackNode.readData;
-    animationTrackNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+    var parentWriteData = trackAnimationContainerNode.writeData;
+    var parentReadData = trackAnimationContainerNode.readData;
+    trackAnimationContainerNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
       nodeData.numTracks = dgnode.getCount();
       nodeData.tracks = dgnode.getBulkData('track');
     };
-    animationTrackNode.readData = function(sceneDeserializer, nodeData) {
+    trackAnimationContainerNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
       dgnode.setCount(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
@@ -397,15 +397,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       }
     };
     
-    return animationTrackNode;
+    return trackAnimationContainerNode;
   }});
 
 
 
-FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
-  briefDesc: 'The AnimationTrack node implements an array of animation tracks.',
-  detailedDesc: 'The AnimationTrack node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
-  parentNodeDesc: 'SceneGraphNode',
+FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
+  briefDesc: 'The CharacterAnimationContainer node implements an array of animation tracks.',
+  detailedDesc: 'The CharacterAnimationContainer node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
+  parentNodeDesc: 'AnimationContainer',
   optionsDesc: {
     keyframetype: 'Specified by the derrived node, this option specifies the type of the keyframe tract that will be interpollated.',
     name:'The name of the track. This value is displayed in the curve Editor'
@@ -416,17 +416,17 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       });
 
     
-    var animationLibraryNode = scene.constructNode('Animation', options);
-    var dgnode = animationLibraryNode.constructDGNode('DGNode');
+    var characterAnimationContainerNode = scene.constructNode('AnimationContainer', options);
+    var dgnode = characterAnimationContainerNode.constructDGNode('DGNode');
     
-    var keyframeTrackSetType = animationLibraryNode.pub.getKeyframeType()+'TrackSet';
-    var keyframeTrackSetBindingsType = animationLibraryNode.pub.getKeyframeType()+'TrackSetBindings';
+    var keyframeTrackSetType = characterAnimationContainerNode.pub.getKeyframeType()+'TrackSet';
+    var keyframeTrackSetBindingsType = characterAnimationContainerNode.pub.getKeyframeType()+'TrackSetBindings';
     
     dgnode.addMember('trackSet', keyframeTrackSetType);
     dgnode.addMember('bindings', keyframeTrackSetBindingsType);
     
     var firstTrackAdded = false;
-    animationLibraryNode.pub.addTrackSet = function(trackset, bindings) {
+    characterAnimationContainerNode.pub.addTrackSet = function(trackset, bindings) {
       var trackSetId;
       if(!firstTrackAdded){
         // Nodes default to having 1 slice, so we use up the first slot here.
@@ -443,7 +443,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       return trackSetId;
     };
-    animationLibraryNode.pub.getTimeRange = function(trackSetId) {
+    characterAnimationContainerNode.pub.getTimeRange = function(trackSetId) {
       var calcTimeRange = function(trackSet){
         var range = new FABRIC.RT.Vec2();
         for(var i=0; i<trackSet.tracks.length; i++){
@@ -463,41 +463,41 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       return calcTimeRange(dgnode.getData('trackSet', trackSetId ? trackSetId : 0));
     };
 
-    animationLibraryNode.getTrackSetType = function() {
+    characterAnimationContainerNode.getTrackSetType = function() {
       return keyframeTrackSetType;
     };
 
-    animationLibraryNode.newTrackSet = function(trackSetName) {
+    characterAnimationContainerNode.newTrackSet = function(trackSetName) {
       return new FABRIC.RT[keyframeTrackSetType](trackSetName);
     };
     
-    animationLibraryNode.pub.getTrackSetCount = function() {
+    characterAnimationContainerNode.pub.getTrackSetCount = function() {
       return dgnode.getCount();
     };
-    animationLibraryNode.pub.getTrackSet = function(trackSetId) {
+    characterAnimationContainerNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
     };
-    animationLibraryNode.pub.setTrackSet = function(trackSet, trackSetId) {
+    characterAnimationContainerNode.pub.setTrackSet = function(trackSet, trackSetId) {
       return dgnode.getData('trackSet', trackSetId, trackSet);
     };
     
-    animationLibraryNode.getBindings = function(trackSetId) {
+    characterAnimationContainerNode.getBindings = function(trackSetId) {
       return dgnode.getData('bindings', trackSetId);
     };
     
-    animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
+    characterAnimationContainerNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;
     };
     
-    animationLibraryNode.pub.getTracks = function(trackSetId) {
+    characterAnimationContainerNode.pub.getTracks = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).tracks;
     };
-    animationLibraryNode.pub.setTracks = function(tracks, trackSetId) {
+    characterAnimationContainerNode.pub.setTracks = function(tracks, trackSetId) {
       var trackSet = dgnode.getData('trackSet', trackSetId);
       trackSet.tracks = tracks;
       dgnode.setData('trackSet', trackSetId, trackSet);
     };
-    animationLibraryNode.pub.setTrack = function(track, trackId, trackSetId) {
+    characterAnimationContainerNode.pub.setTrack = function(track, trackId, trackSetId) {
       var trackSet = dgnode.getData('trackSet', trackSetId);
       trackSet.tracks[trackId] = track;
       dgnode.setData('trackSet', trackSetId, trackSet);
@@ -508,10 +508,10 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     // now is to disable track evaluation while manipulating, and only store
     // the tracks once manipulaiton is complete. 
     var m_trackSet, m_trackSetId, m_newUndoTransaction;
-    animationLibraryNode.pub.setValues = function(trackSetId, time, value, index, xfoTrackFilter) {
+    characterAnimationContainerNode.pub.setValues = function(trackSetId, time, value, index, xfoTrackFilter) {
       
       var type = (typeof value == 'number') ? 'Number' : value.getType();
-      var bindings = animationLibraryNode.getBindings(trackSetId);
+      var bindings = characterAnimationContainerNode.getBindings(trackSetId);
       var findBinding = function(bindingsList){
         for(var i=0; i<bindingsList.length; i++){
           if(bindingsList[i].varId == index){
@@ -587,11 +587,11 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     //  var trackSet = this.getTrackSet(trackSetId);
     //  trackSet.setValues(time, trackIds, values);
     //  this.setTrackSet(trackSet, trackSetId);
-    //  animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
+    //  characterAnimationContainerNode.pub.fireEvent('keyframetrackchanged', {});
     
       m_trackSet.setValues(time, trackIds, values);
     };
-    animationLibraryNode.beginManipulation = function(trackSetId) {
+    characterAnimationContainerNode.beginManipulation = function(trackSetId) {
       m_trackSetId = trackSetId;
       m_trackSet = dgnode.getData('trackSet', trackSetId);
       
@@ -604,26 +604,26 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
             undoManager.openUndoTransaction();
             m_newUndoTransaction = true;
           }
-          var newTrackSet, prevTrackSet = animationLibraryNode.pub.getTrackSet(m_trackSetId);
+          var newTrackSet, prevTrackSet = characterAnimationContainerNode.pub.getTrackSet(m_trackSetId);
           undoManager.addAction({
             onClose: function() {
-              newTrackSet = m_trackSet;//animationLibraryNode.pub.getTrackSet(m_trackId);
+              newTrackSet = m_trackSet;//characterAnimationContainerNode.pub.getTrackSet(m_trackId);
             },
             onUndo: function() {
               m_trackSet = prevTrackSet;
               dgnode.setData('trackSet', m_trackSetId, prevTrackSet);
-              animationLibraryNode.pub.fireEvent('keyframetrackchanged', { trackSetId: m_trackSetId });
+              characterAnimationContainerNode.pub.fireEvent('keyframetrackchanged', { trackSetId: m_trackSetId });
             },
             onRedo: function() {
               m_trackSet = newTrackSet;
               dgnode.setData('trackSet', m_trackSetId, newTrackSet);
-              animationLibraryNode.pub.fireEvent('keyframetrackchanged', { trackSetId: m_trackSetId });
+              characterAnimationContainerNode.pub.fireEvent('keyframetrackchanged', { trackSetId: m_trackSetId });
             }
           });
         }
       }
     }
-    animationLibraryNode.endManipulation = function() {
+    characterAnimationContainerNode.endManipulation = function() {
       dgnode.setData('trackSet', m_trackSetId, m_trackSet);
       
       var undoManager = scene.getManager('UndoManager');
@@ -631,11 +631,11 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         undoManager.closeUndoTransaction();
         m_newUndoTransaction = false;
       }
-      animationLibraryNode.pub.fireEvent('keyframetrackchanged', {});
+      characterAnimationContainerNode.pub.fireEvent('keyframetrackchanged', {});
     }
     
     var paramsdgnode;
-    animationLibraryNode.pub.bindToRig = function(rigNode, trackSetId){
+    characterAnimationContainerNode.pub.bindToRig = function(rigNode, trackSetId){
       if (!rigNode.isTypeOf('CharacterRig')) {
         throw ('Incorrect type. Must be a CharacterRig');
       }
@@ -643,7 +643,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       rigNode = scene.getPrivateInterface(rigNode);
         
       if(!paramsdgnode){
-        paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
+        paramsdgnode = characterAnimationContainerNode.constructDGNode('ParamsDGNode');
         
         dgnode.setDependency(paramsdgnode, 'params');
         paramsdgnode.addMember('boundTrack', 'Integer', trackSetId);
@@ -652,7 +652,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
     //  dgnode.setData('bindings', trackSetId, trackBindings);
       
-      animationLibraryNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
+      characterAnimationContainerNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
         var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
         dgnode.setDependency(variablesNode.getDGNode(), 'variables');
         dgnode.setDependency(scene.getGlobalsNode(), 'globals');
@@ -688,19 +688,19 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     //  return trackBindings;
     }
         
-    animationLibraryNode.getEvaluateCurveOperator = function() {
+    characterAnimationContainerNode.getEvaluateCurveOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluate'+options.keyframetype+'Curve',
           srcFile: 'FABRIC_ROOT/SG/KL/evaluateKeyframeAnimationTrackSet.kl',
           preProcessorDefinitions: {
-            KEYFRAMETYPE: animationLibraryNode.pub.getKeyframeType(),
-            TRACKTYPE: animationLibraryNode.getTrackType(),
-            TRACKSETTYPE: animationLibraryNode.getTrackSetType(),
-            KEYFRAME_EVALUATEDTYPE: animationLibraryNode.pub.getValueType()
+            KEYFRAMETYPE: characterAnimationContainerNode.pub.getKeyframeType(),
+            TRACKTYPE: characterAnimationContainerNode.getTrackType(),
+            TRACKSETTYPE: characterAnimationContainerNode.getTrackSetType(),
+            KEYFRAME_EVALUATEDTYPE: characterAnimationContainerNode.pub.getValueType()
           },
           entryFunctionName: 'evaluateTrackSetCurve',
           parameterLayout: [
-            'animationlibrary.trackSet<>',
+            'characteranimationcontainer.trackSet<>',
             'parameters.trackSetId',
             'parameters.timeRange',
             'parameters.segmentCount',
@@ -711,14 +711,14 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         });
     };
     
-    animationLibraryNode.pub.openCurveEditor = function(options) {
+    characterAnimationContainerNode.pub.openCurveEditor = function(options) {
       options = options ? options : {};
       var curveEditorWindow = window.open(
         FABRIC.processURL('FABRIC_ROOT/SG/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
-        'Fabric Curve Editor:' + (options.name ? options.name : animationLibraryNode.pub.getName()),
+        'Fabric Curve Editor:' + (options.name ? options.name : characterAnimationContainerNode.pub.getName()),
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
-      curveEditorWindow.animationLibraryNode = animationLibraryNode.pub;
+      curveEditorWindow.characterAnimationContainerNode = characterAnimationContainerNode.pub;
       curveEditorWindow.trackSetId = options.trackSetId!=undefined ? options.trackSetId : 0;
       curveEditorWindow.drawKeys = options.drawKeys!=undefined ? options.drawKeys : true;
       curveEditorWindow.trackFilters = options.trackFilters!=undefined ? options.trackFilters : [];
@@ -726,15 +726,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       return curveEditorWindow;
     }
     
-    scene.addEventHandlingFunctions(animationLibraryNode);
+    scene.addEventHandlingFunctions(characterAnimationContainerNode);
     
     
-    var parentWriteData = animationLibraryNode.writeData;
-    var parentReadData = animationLibraryNode.readData;
-    animationLibraryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+    var parentWriteData = characterAnimationContainerNode.writeData;
+    var parentReadData = characterAnimationContainerNode.readData;
+    characterAnimationContainerNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
-      nodeData.numTracks = animationLibraryNode.pub.getTrackSetCount();
+      nodeData.numTracks = characterAnimationContainerNode.pub.getTrackSetCount();
       nodeData.trackSets = [];
       nodeData.bindings = [];
       for(var i=0; i<nodeData.numTracks; i++){
@@ -742,7 +742,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         nodeData.bindings.push(dgnode.getData('bindings', i));
       }
     };
-    animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
+    characterAnimationContainerNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
       dgnode.setCount(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
@@ -751,60 +751,60 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
     };
     
-    return animationLibraryNode;
+    return characterAnimationContainerNode;
   }});
 
 
-FABRIC.SceneGraph.registerNodeType('LinearKeyAnimationTrack', {
-  briefDesc: 'The LinearKeyAnimationTrack node implements an array of linear keyframe animation tracks.',
-  detailedDesc: 'The LinearKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'LinearKeyframes\'',
-  parentNodeDesc: 'AnimationTrack',
+FABRIC.SceneGraph.registerNodeType('LinearTrackAnimationContainer', {
+  briefDesc: 'The LinearTrackAnimationContainer node implements an array of linear keyframe animation tracks.',
+  detailedDesc: 'The LinearTrackAnimationContainer node derrives from TrackAnimationContainer and specifies that the tracks should contains \'LinearKeyframes\'',
+  parentNodeDesc: 'TrackAnimationContainer',
   factoryFn: function(options, scene) {
     options.keyframetype = 'LinearKeyframe';
-    return scene.constructNode('AnimationTrack', options);
+    return scene.constructNode('TrackAnimationContainer', options);
   }});
 
-FABRIC.SceneGraph.registerNodeType('LinearKeyAnimationLibrary', {
-  briefDesc: 'The LinearKeyAnimationTrack node implements an array of linear keyframe animation tracks.',
-  detailedDesc: 'The LinearKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'LinearKeyframes\'',
-  parentNodeDesc: 'AnimationTrack',
+FABRIC.SceneGraph.registerNodeType('LinearCharacterAnimationContainer', {
+  briefDesc: 'The LinearCharacterAnimationContainer node implements an array of linear keyframe animation tracks.',
+  detailedDesc: 'The LinearCharacterAnimationContainer node derrives from TrackAnimationContainer and specifies that the tracks should contains \'LinearKeyframes\'',
+  parentNodeDesc: 'CharacterAnimationContainer',
   factoryFn: function(options, scene) {
     options.keyframetype = 'LinearKeyframe';
-    return scene.constructNode('AnimationLibrary', options);
+    return scene.constructNode('CharacterAnimationContainer', options);
   }});
 
 
-FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationTrack', {
-  briefDesc: 'The BezierKeyAnimationTrack node implements an array of bezier keyframe animation tracks.',
-  detailedDesc: 'The BezierKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'BezierKeyframe\'',
-  parentNodeDesc: 'AnimationTrack',
+FABRIC.SceneGraph.registerNodeType('BezierTrackAnimationContainer', {
+  briefDesc: 'The BezierTrackAnimationContainer node implements an array of bezier keyframe animation tracks.',
+  detailedDesc: 'The BezierTrackAnimationContainer node derrives from TrackAnimationContainer and specifies that the tracks should contains \'BezierKeyframe\'',
+  parentNodeDesc: 'TrackAnimationContainer',
   factoryFn: function(options, scene) {
     options.keyframetype = 'BezierKeyframe';
-    return scene.constructNode('AnimationTrack', options);
+    return scene.constructNode('TrackAnimationContainer', options);
   }});
 
-FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationLibrary', {
-  briefDesc: 'The BezierKeyAnimationTrack node implements an array of bezier keyframe animation tracks.',
-  detailedDesc: 'The BezierKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'BezierKeyframe\'',
-  parentNodeDesc: 'AnimationTrack',
+FABRIC.SceneGraph.registerNodeType('BezierCharacterAnimationContainer', {
+  briefDesc: 'The BezierCharacterAnimationContainer node implements an array of bezier keyframe animation tracks.',
+  detailedDesc: 'The BezierCharacterAnimationContainer node derrives from TrackAnimationContainer and specifies that the tracks should contains \'BezierKeyframe\'',
+  parentNodeDesc: 'CharacterAnimationContainer',
   factoryFn: function(options, scene) {
     options.keyframetype = 'BezierKeyframe';
-    return scene.constructNode('AnimationLibrary', options);
+    return scene.constructNode('CharacterAnimationContainer', options);
   }});
 
 
-FABRIC.SceneGraph.registerNodeType('ColorKeyAnimationTrack', {
-  briefDesc: 'The ColorKeyAnimationLibrary node implements an array of color keyframe animation tracks.',
-  detailedDesc: 'The ColorKeyAnimationLibrary node derrives from AnimationTrack and specifies that the tracks should contains \'ColorKeyframe\'',
-  parentNodeDesc: 'AnimationTrack',
+FABRIC.SceneGraph.registerNodeType('ColorTrackAnimationContainer', {
+  briefDesc: 'The ColorTrackAnimationContainer node implements an array of color keyframe animation tracks.',
+  detailedDesc: 'The ColorTrackAnimationContainer node derrives from TrackAnimationContainer and specifies that the tracks should contains \'ColorKeyframe\'',
+  parentNodeDesc: 'TrackAnimationContainer',
   factoryFn: function(options, scene) {
     options.keyframetype = 'ColorKeyframe';
-    return scene.constructNode('AnimationTrack', options);
+    return scene.constructNode('TrackAnimationContainer', options);
   }});
 
 
 FABRIC.SceneGraph.registerNodeType('AnimationController', {
-  briefDesc: 'The AnimationController node controls the time at which an AnimationTrack is evaluated.',
+  briefDesc: 'The AnimationController node controls the time at which an TrackAnimationContainer is evaluated.',
   detailedDesc: 'The Animation Controller only maintains time values which can be used by'+
                 'animation evaluators. Many evaluators can share an Animation Controller',
   parentNodeDesc: 'SceneGraphNode',
@@ -870,19 +870,19 @@ FABRIC.SceneGraph.registerNodeType('AnimationController', {
 
 
 FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
-  briefDesc: 'The TrackDisplay evaluates AnimationTracks across time ranges ready for display in the CurveEditor.',
-  detailedDesc: 'The TrackDisplay evaluates AnimationTracks across time ranges ready for display in the CurveEditor.',
+  briefDesc: 'The TrackDisplay evaluates TrackAnimationContainers across time ranges ready for display in the CurveEditor.',
+  detailedDesc: 'The TrackDisplay evaluates TrackAnimationContainers across time ranges ready for display in the CurveEditor.',
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
-      animationLibraryNode: 'The AnimationLibrary node to evaluate.',
-      trackIndex: 'The index of the track in the AnimationTrack node to evaluate.',
+      characterAnimationContainerNode: 'The CharacterAnimationContainer node to evaluate.',
+      trackIndex: 'The index of the track in the TrackAnimationContainer node to evaluate.',
       timeRange: 'The time rage to evaluate.',
       segmentCount: 'The number of steps to divide the timeRange by.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        animationTrackNode: undefined,
-        animationLibraryNode: undefined,
+        trackAnimationContainerNode: undefined,
+        characterAnimationContainerNode: undefined,
         segmentCount: 100,
         timeRange: new FABRIC.RT.Vec2(0, 1),
         trackSetId: 0
@@ -891,7 +891,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     var trackDisplayNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = trackDisplayNode.constructDGNode('DGNode');
     var parametersdgnode = trackDisplayNode.constructDGNode('ParametersDGNode');
-    var animationLibraryNode;
+    var characterAnimationContainerNode;
 
     parametersdgnode.addMember('trackSetId', 'Integer', options.trackSetId);
     parametersdgnode.addMember('timeRange', 'Vec2', options.timeRange);
@@ -903,29 +903,29 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true, true);
     trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true, true);
 
-    trackDisplayNode.addReferenceInterface('AnimationLibrary', 'Animation',
+    trackDisplayNode.addReferenceInterface('CharacterAnimationContainer', 'AnimationContainer',
       function(nodePrivate, trackSetId){
-        animationLibraryNode = nodePrivate;
-        var trackDataType = animationLibraryNode.pub.getValueType();
-        var tracks = animationLibraryNode.pub.getTracks(trackSetId);
-        dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
+        characterAnimationContainerNode = nodePrivate;
+        var trackDataType = characterAnimationContainerNode.pub.getValueType();
+        var tracks = characterAnimationContainerNode.pub.getTracks(trackSetId);
+        dgnode.setDependency(characterAnimationContainerNode.getDGNode(), 'characteranimationcontainer');
   
         dgnode.addMember('values', trackDataType+'[]');
         parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
         dgnode.setCount(tracks.length);
   
-        dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
+        dgnode.bindings.append(characterAnimationContainerNode.getEvaluateCurveOperator());
       });
     trackDisplayNode.pub.getCurveData = function(trackIndex) {
       dgnode.evaluate();
       return dgnode.getData('values', trackIndex);
     }
 
-    if (options.animationTrackNode) {
-      trackDisplayNode.pub.setAnimationLibraryNode(options.animationTrackNode);
+    if (options.trackAnimationContainerNode) {
+      trackDisplayNode.pub.setCharacterAnimationContainerNode(options.trackAnimationContainerNode);
     }
-    if (options.animationLibraryNode) {
-      trackDisplayNode.pub.setAnimationLibraryNode(options.animationLibraryNode, options.trackSetId);
+    if (options.characterAnimationContainerNode) {
+      trackDisplayNode.pub.setCharacterAnimationContainerNode(options.characterAnimationContainerNode, options.trackSetId);
     }
     return trackDisplayNode;
   }});

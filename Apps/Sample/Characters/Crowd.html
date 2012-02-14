@@ -173,7 +173,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         displayDebugging: crowdParams.displayDebugging
       });
     rigFile = 'Assets/Spiedel.json';
-    animationLibraryFile = 'Assets/SpiedelAnimation.json';
+    characterAnimationContainerFile = 'Assets/SpiedelAnimation.json';
     minFrequency = 0.75;
     break;
   case 'CMan0005':
@@ -201,7 +201,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         enableDebugging: false
       });
     rigFile = 'Assets/CMan0005.json';
-    animationLibraryFile = 'Assets/CMan0005Animation.json';
+    characterAnimationContainerFile = 'Assets/CMan0005Animation.json';
     minFrequency = 0.75;
     break;
   case 'USWolf':
@@ -229,7 +229,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         enableDebugging: false
       });
     rigFile = 'Assets/USWolf.json';
-    animationLibraryFile = 'Assets/USWolfAnimation.json';
+    characterAnimationContainerFile = 'Assets/USWolfAnimation.json';
     minFrequency = 0.75;
     break;
   }
@@ -268,10 +268,10 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
     ikrig.setVariablesNode(locomotionVariables);
   
-    var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
+    var storage = new FABRIC.SceneGraph.XHRReader(characterAnimationContainerFile);
     rigLoader.load(storage, function(nodeMap){
       var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
-      locomotionVariables.setAnimationLibraryNode(libraryAnimations);
+      locomotionVariables.setCharacterAnimationContainerNode(libraryAnimations);
     });
     
     for(var i in characterInstances){
