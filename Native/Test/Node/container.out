@@ -1,9 +1,9 @@
 [FABRIC] [MT] Container string: testDGNode Count: 1 Is valid: true
 [FABRIC] [MT] Uninitialized Container string: (uninitialized Container) Is valid: false
-[FABRIC] [MT] Member sizes: 1
+[FABRIC] [MT] Before resize: Member sizes: 1
 [FABRIC] [MT] Members: [0] [""]
 [FABRIC] [MT] Container string: testDGNode Count: 3 Is valid: true
-[FABRIC] [MT] To fix: i.size is wrong! LLVM doesn't know about aliasing!
+[FABRIC] [MT] After resize: Member sizes: 3
 [FABRIC] [MT] Member sizes: 3
 [FABRIC] [MT] Members: [0,0,1] ["","","test"]
 Runtime eval error (uninit container access): Fabric core exception: DG.testDGNode.evaluate(): Calling getCount on an uninitialized Container
