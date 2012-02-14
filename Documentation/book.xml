@@ -262,16 +262,55 @@ var hierarchicalTransform = scene.constructNode('Transform', {
         the SceneGraph provides a specialized transform node called the <emphasis role="bold"
           >AimTransform</emphasis>. It adds an additional option to the factory function, which
         allows you to specify the target position.</para>
-      <programlisting language="JavaScript">var globalTransform = scene.constructNode('Transform', {
-  hierarchical: false
-});
-var hierarchicalTransform = scene.constructNode('Transform', {
-  hierarchical: true,
-  parentTransformNode: globalTransform
+      <programlisting language="JavaScript">var aimTransform = scene.constructNode('AimTransform', {
+  globalXfo: new FABRIC.RT.Xfo({
+      tr: new FABRIC.RT.Vec3(1.0, 2.0, 3.0)
+  }),
+  target: new FABRIC.RT.Vec3(10.0, 0.0, 0.0)
 });</programlisting>
+      <para>The upvector direction used for the AimTransform is always the positive Y axis.</para>
     </section>
   </section>
   <section>
     <title>Animation Guide</title>
+    <section>
+      <title>Introduction to Animation in Fabric Engine</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_animation_01.png"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The animation pipeline in Fabric Engine's SceneGraph is heavily inspired by the
+        animation systems commonly found in game engines. The SceneGraphNodes in the animation
+        pipeline are:</para>
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Animation Controller</emphasis></para>
+        </listitem>
+        <listitem>
+          <para><emphasis role="bold">Animation Track</emphasis></para>
+        </listitem>
+        <listitem>
+          <para><emphasis role="bold">Animation Library</emphasis></para>
+        </listitem>
+      </itemizedlist>
+      <para>The actual evaluation of the animation is done in KL operators on the target nodes. In
+        the image above the animation is driving a transform node, but any node can be driven by
+        animation in Fabric Engine's SceneGraph.</para>
+    </section>
+    <section>
+      <title>The Animation Controller node</title>
+      <para>An Animation Controller is responsible for computing a time value from given inputs.
+        This allows to simulate the time in a controller, loop or ping-pong the time or do any kind
+        of manipulation on the time inside the controller. A single controller can be used by many
+        evaluators. The default Animation Controller node is bound to the globals SceneGraph node
+        storing the global scene time.</para>
+      <para>animation track is a basic library for animation that's used like in our basic demos.
+        basically each slice on a node stores an individual track. 15 slices = 15 tracks of
+        animation. nice and simple.</para>
+      <db:para>animation library is all about characters. with animation lib, each slice stores a
+        trackset. an array of tracks and a name. keyframetrack. this is for storing a large
+        collection of animations for a complete character. a trackset is </db:para>
+    </section>
   </section>
 </article>
