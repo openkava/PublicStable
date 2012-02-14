@@ -309,12 +309,6 @@ var hierarchicalTransform = scene.constructNode('Transform', {
   timeRange: new FABRIC.RT.Vec2(0.0, 10.0), // ten seconds
   outOfRange: 1 // looping
 });</programlisting>
-      <para>animation track is a basic library for animation that's used like in our basic demos.
-        basically each slice on a node stores an individual track. 15 slices = 15 tracks of
-        animation. nice and simple.</para>
-      <db:para>animation library is all about characters. with animation lib, each slice stores a
-        trackset. an array of tracks and a name. keyframetrack. this is for storing a large
-        collection of animations for a complete character. a trackset is </db:para>
     </section>
     <section>
       <title>The TrackAnimationContainer</title>
@@ -328,10 +322,89 @@ var hierarchicalTransform = scene.constructNode('Transform', {
         such as the <emphasis role="bold">LinearTrackAnimationContainer</emphasis> containing linear
         keys or <emphasis role="bold">BezierTrackAnimationContainer</emphasis> containing bezier
         keys.</para>
-      <programlisting language="JavaScript">var trackContainer = scene.constructNode('LinearAnimationTrackContainer', {
-  timeRange: new FABRIC.RT.Vec2(0.0, 10.0), // ten seconds
-  outOfRange: 1 // looping
-});</programlisting>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_animation_02.png" width="30%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The TrackAnimationContainer represents a single animation using multiple tracks. The
+        benefit of the TrackAnimationContainer is that tracks are stores in slices, and processing
+        on the tracks can happen in a multi-threaded fashion.</para>
+      <programlisting language="JavaScript">var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
+
+var trackContainer = scene.constructNode('LinearTrackAnimationContainer', {});
+
+trackContainer.addTrack(new FABRIC.RT.LinearKeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
+  linearkey(0, 0), linearkey(50, 0), linearkey(75, 50), linearkey(100, 0)
+]));
+trackContainer.addTrack(new FABRIC.RT.LinearKeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
+  linearkey(0, 0), linearkey(50, 10), linearkey(75, 00), linearkey(100, 0)
+]));
+trackContainer.addTrack(new FABRIC.RT.LinearKeyframeTrack('tr.z', FABRIC.RT.rgb(0, 0, 1), [
+  linearkey(0, 0), linearkey(50, 30), linearkey(75, 00), linearkey(100, 30)
+]));</programlisting>
+      <para>The code above create a small helper function for creating a linear key frame, then the
+        track animation container is created. Once the container exists tracks can be pushed to it,
+        providing the name of the track, a color for the UI as well as an array of keys for the
+        track.</para>
+    </section>
+    <section>
+      <title>The CharacterAnimationContainer</title>
+      <para>The <emphasis role="bold">CharacterAnimationContainer</emphasis> on the other hand is
+        quite different from the TrackAnimationContainer. It stores a complete animation containing
+        several tracks per slice, allowing to store a large number of complete animations on a
+        single node. This container can be understood as a library of animations. Each animation is
+        stored as a <emphasis role="bold">TrackSet</emphasis>, which is essentially an array of
+        tracks as well as a name for the TrackSet.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_animation_03.png" width="70%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The CharacterAnimationContainer is used for the character pipeline, and will be
+        discussed in more detail in the characters related section of this document. Essentially
+        though, this is how you create a CharacterAnimationContainer:</para>
+      <programlisting language="JavaScript">var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
+
+var characterContainer = scene.constructNode('LinearCharacterAnimationContainer', {});
+
+var walking = characterContainer.newTrackSet('walking');
+walking.tracks.push(new FABRIC.RT.LinearKeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
+  linearkey(0, 0), linearkey(50, 0), linearkey(75, 50), linearkey(100, 0)
+]));
+walking.tracks.push(new FABRIC.RT.LinearKeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
+  linearkey(0, 0), linearkey(50, 10), linearkey(75, 00), linearkey(100, 0)
+]));
+walking.tracks.push(new FABRIC.RT.LinearKeyframeTrack('tr.z', FABRIC.RT.rgb(0, 0, 1), [
+  linearkey(0, 0), linearkey(50, 30), linearkey(75, 00), linearkey(100, 30)
+]));
+
+characterContainer.addTrackSet(walking, [0,1,2]);</programlisting>
+    </section>
+    <section>
+      <title>Binding animation to target nodes</title>
+      <para>To use the animation on a target node, such as a transform node, for example, you can
+        call the <emphasis role="bold">bindNodeMembersToTracks</emphasis> method of the animation
+        container. You need to specify the target binding which includes the name of the member on
+        the target node as well as the tracks that need to be bound to it. This you can drive
+        complex types, as as a <emphasis role="bold">Vec3</emphasis> for example, you can bind
+        multiple tracks to the same member. In the case of a Vec3 the first track will go to the x
+        component, the second track to the y component and so on.</para>
+      <programlisting language="JavaScript">trackContainer.bindNodeMembersToTracks(transform, {
+  'globalXfo.tr': [0, 1, 2] // representing the tracks tr.x, tr.y and tr.z
+}, controller);</programlisting>
+      <para>Binding the animation on the target node will create an operator on the target's
+        dependency graph node which evaluates the animation provided in the animation container and
+        writes to the target node's member data. The operator also binds in the animation controller
+        which was used during the construction of the animation container. If you don't provide a
+        controller to the bindNodeMembersToTracks method the generated operator will simply bind to
+        the global time. So in the case discussed in the code snippets in the animation guide, the
+        resulting graph will look like this:</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_animation_04.png" width="80%"/>
+          </imageobject>
+        </inlinemediaobject></para>
     </section>
   </section>
 </article>
