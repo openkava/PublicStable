@@ -174,6 +174,20 @@ namespace Fabric
 
       m_functionScope = new FunctionScope( m_moduleBuilder.getScope(), returnInfo );
 
+      bool haveContainer = false;
+      llvm::Function::arg_iterator savedAI = ai;
+      for ( size_t i=0; i<params.size(); ++i, ++ai )
+      {
+        FunctionParam const &param = params[i];
+        if ( param.getUsage() == USAGE_LVALUE
+          && RT::isContainer( param.getAdapter()->getType() ) )
+        {
+          haveContainer = true;
+          break;
+        }
+      }
+      ai = savedAI;
+      
       for ( size_t i=0; i<params.size(); ++i, ++ai )
       {
         FunctionParam const &param = params[i];
@@ -182,7 +196,10 @@ namespace Fabric
           || param.getAdapter()->isPassByReference()  )
         {
           ai->addAttr( llvm::Attribute::NoCapture );
-          ai->addAttr( llvm::Attribute::NoAlias );
+          if ( !haveContainer
+            || ( !RT::isSlicedArray( param.getAdapter()->getType() )
+              && !RT::isContainer( param.getAdapter()->getType() ) ) )
+            ai->addAttr( llvm::Attribute::NoAlias );
         }
         m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), context, ai ) ) );
       }
