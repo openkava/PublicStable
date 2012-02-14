@@ -277,7 +277,7 @@ var hierarchicalTransform = scene.constructNode('Transform', {
       <title>Introduction to Animation in Fabric Engine</title>
       <para><inlinemediaobject>
           <imageobject>
-            <imagedata fileref="images/sg_animation_01.png"/>
+            <imagedata fileref="images/sg_animation_01.png" width="60%"/>
           </imageobject>
         </inlinemediaobject></para>
       <para>The animation pipeline in Fabric Engine's SceneGraph is heavily inspired by the
@@ -285,13 +285,13 @@ var hierarchicalTransform = scene.constructNode('Transform', {
         pipeline are:</para>
       <itemizedlist>
         <listitem>
-          <para><emphasis role="bold">Animation Controller</emphasis></para>
+          <para><emphasis role="bold">AnimationController</emphasis></para>
         </listitem>
         <listitem>
-          <para><emphasis role="bold">Animation Track</emphasis></para>
+          <para><emphasis role="bold">TrackAnimationContainer</emphasis></para>
         </listitem>
         <listitem>
-          <para><emphasis role="bold">Animation Library</emphasis></para>
+          <para><emphasis role="bold">CharacterAnimationContainer</emphasis></para>
         </listitem>
       </itemizedlist>
       <para>The actual evaluation of the animation is done in KL operators on the target nodes. In
@@ -305,12 +305,33 @@ var hierarchicalTransform = scene.constructNode('Transform', {
         of manipulation on the time inside the controller. A single controller can be used by many
         evaluators. The default Animation Controller node is bound to the globals SceneGraph node
         storing the global scene time.</para>
+      <programlisting language="JavaScript">var controller = scene.constructNode('AnimationController', {
+  timeRange: new FABRIC.RT.Vec2(0.0, 10.0), // ten seconds
+  outOfRange: 1 // looping
+});</programlisting>
       <para>animation track is a basic library for animation that's used like in our basic demos.
         basically each slice on a node stores an individual track. 15 slices = 15 tracks of
         animation. nice and simple.</para>
       <db:para>animation library is all about characters. with animation lib, each slice stores a
         trackset. an array of tracks and a name. keyframetrack. this is for storing a large
         collection of animations for a complete character. a trackset is </db:para>
+    </section>
+    <section>
+      <title>The TrackAnimationContainer</title>
+      <para>Both the <emphasis role="bold">TrackAnimationContainer</emphasis> as well as the
+          <emphasis role="bold">CharacterAnimationContainer</emphasis> inherit from the <emphasis
+          role="bold">AnimationContainer</emphasis>. The AnimationContainer SceneGraph node
+        represents a container for any kind of animation. The TrackAnimationContainer uses a sliced
+        dependency graph node to store many animation tracks in a single node. All tracks on the
+        TrackAnimationContainer have to contain the same type of keys, which is why you can't
+        construct a TrackAnimationContainer as is, you need to instantiate inherited nodes of it,
+        such as the <emphasis role="bold">LinearTrackAnimationContainer</emphasis> containing linear
+        keys or <emphasis role="bold">BezierTrackAnimationContainer</emphasis> containing bezier
+        keys.</para>
+      <programlisting language="JavaScript">var trackContainer = scene.constructNode('LinearAnimationTrackContainer', {
+  timeRange: new FABRIC.RT.Vec2(0.0, 10.0), // ten seconds
+  outOfRange: 1 // looping
+});</programlisting>
     </section>
   </section>
 </article>
