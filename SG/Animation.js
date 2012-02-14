@@ -16,7 +16,8 @@ FABRIC.SceneGraph.registerNodeType('AnimationContainer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        keyframetype: undefined
+        keyframetype: undefined,
+        controllerNode: undefined
       });
     
     if (options.keyframetype == undefined) {
@@ -45,6 +46,18 @@ FABRIC.SceneGraph.registerNodeType('AnimationContainer', {
     };
     animationNode.getTrackType = function() {
       return keyframeTrackType;
+    };
+    
+    animationNode.getControllerDGNode = function() {
+      if(options.controllerNode)
+        return scene.getPrivateInterface(options.controllerNode).getDGNode();
+      return scene.getGlobalsNode();
+    };
+
+    animationNode.getControllerBinding = function() {
+      if(options.controllerNode)
+        return 'controller.localTime';
+      return 'controller.time';
     };
     
     animationNode.pub.getValueType = function(trackid) {
@@ -205,7 +218,7 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
 
       targetnode = scene.getPrivateInterface(targetnode);
       targetnode.getDGNode().setDependency(dgnode, 'trackAnimationContainers');
-      targetnode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
+      targetnode.getDGNode().setDependency(trackAnimationContainerNode.getControllerDGNode(), 'controller');
       var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
 
       var targetNodeMembers = targetnode.getDGNode().getMembers();
@@ -225,7 +238,7 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
       operatorHeaderSrc += '  io Scalar time,\n';
       operatorHeaderSrc += '  io ' + trackAnimationContainerNode.getTrackType() + ' tracks<>';
       var operatorArraySrc = {};
-      var parameterLayout = ['globals.time', 'trackAnimationContainers.track<>'];
+      var parameterLayout = [trackAnimationContainerNode.getControllerBinding(), 'trackAnimationContainers.track<>'];
       var numEvaluatedTracks = 0;
       var addTrackEvaluation = function(trackid){
         numEvaluatedTracks++;
@@ -655,7 +668,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
       characterAnimationContainerNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
         var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
         dgnode.setDependency(variablesNode.getDGNode(), 'variables');
-        dgnode.setDependency(scene.getGlobalsNode(), 'globals');
+        dgnode.setDependency(characterAnimationContainerNode.getControllerDGNode(), 'controller');
         
         paramsdgnode.setData('boundTrack', 0, trackSetId);
         dgnode.bindings.append(scene.constructOperator({
@@ -666,7 +679,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
           },
           entryFunctionName: 'keyCurvesFromVariables',
           parameterLayout: [
-            'globals.time',
+            characterAnimationContainerNode.getControllerBinding(),
             'variables.poseVariables',
             'params.boundTrack',
             'self.trackSet<>',
@@ -682,7 +695,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
         }
         dgnode.bindings.remove(0);
         dgnode.removeDependency('variables');
-        dgnode.removeDependency('globals');
+        dgnode.removeDependency('controller');
         scene.pub.animation.setTime(0, false);
       }
     //  return trackBindings;
