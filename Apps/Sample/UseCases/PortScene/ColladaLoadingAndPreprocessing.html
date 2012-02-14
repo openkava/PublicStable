@@ -58,7 +58,7 @@ FABRIC.require(["SG/SceneGraph",
     direction: (new FABRIC.RT.Vec3(-1, -1, -1)).unit(),
     farDistance: 16000,
     resolution: 2048,
-    castShadows: true,
+    castShadows: false,
     display: true,
     size: 1800
   });
@@ -95,7 +95,7 @@ FABRIC.require(["SG/SceneGraph",
       }
       var imageUrl = remapPath(textureData.path);
       var ext = imageUrl.split('.')[1];
-      if(ext === 'gif'){
+      if(ext === 'gif' || ext === 'bmp'){
         return undefined;
       }
       if(!imageLibrary[imageUrl]){
@@ -153,15 +153,13 @@ FABRIC.require(["SG/SceneGraph",
     materialConstructorCallback: materialCallback
   };
   
-  // There is something wrong with this file. we get an assert during redraw.
-//  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstances);
+  
   /*
-  
-  
-  */
   var fileName = 'Cranes';
   scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstances);
   scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstances);
+    DONE
+  */
   
   
   /*
@@ -185,7 +183,7 @@ FABRIC.require(["SG/SceneGraph",
   DONE
   */
 
-  /*
+  
   var fileName = 'Buildings';
   scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstances);
   scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstances);
@@ -193,9 +191,7 @@ FABRIC.require(["SG/SceneGraph",
   scene.importAssetFile('Models/Buildings2.DAE', parseOptions, collectInstances);
   scene.importAssetFile('Models/GARAGE.DAE', parseOptions, collectInstances);
 //  scene.importAssetFile('Models/Buros.OBJ', parseOptions, collectInstances);
-DONE
-*/
-  
+
   /*
   var fileName = 'Rafinery_K1';
   scene.importAssetFile('Models/Rafinery_K1.mtl', { materialOptions: { lightNode: light } },
@@ -223,16 +219,15 @@ DONE
             materialNode: material,
             transformNode: scene.constructNode('Transform', {
                 hierarchical: false,
-                globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+                globalXfo: new FABRIC.RT.Xfo()
               }),
           });
           presetSaver.addNode(instance);
         }
       });
     });
-    DONE
+DONE
   */
-  
   
   /*
   var fileName = 'Terrain';
@@ -298,6 +293,10 @@ DONE
           throw (errors.toString());
         }
         viewport.redraw();
+        setInterval(function() {
+            document.getElementById('numDrawnGeometries').childNodes[0].data = 'Num Drawn Geometries:' + viewport.getNumDrawnGeometries();
+            document.getElementById('numDrawnTriangles').childNodes[0].data = 'Num Drawn Triangles:' + viewport.getNumDrawnTriangles();
+          }, 1600);
         return true;
       }
     });
@@ -326,15 +325,12 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <div class="box">
-            <h2>INFO</h2>
-            <div class="content">
-            </div><!--content-->
-          </div><!--box-->
 
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <div id="numDrawnGeometries">Num Drawn Geometries:</div><p></p>
+              <div id="numDrawnTriangles">Num Drawn Triangles:</div><p></p>
               <button id="saveResource" style="margin-top:10px;">Save</button>
             </div><!--content-->
           </div><!--box-->
