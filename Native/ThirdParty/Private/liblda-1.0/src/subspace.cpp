@@ -20,6 +20,12 @@
 #include "subspace.hpp"
 #include "helper.hpp"
 
+#if defined( WIN32 )
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
+
 using namespace Eigen;
 using namespace cv;
 
@@ -84,8 +90,8 @@ void subspace::LinearDiscriminantAnalysis::compute(const Mat& src, const vector<
 	// holds the mean over all classes
 	Mat meanTotal = Mat::zeros(1, D, data.type());
 	// holds the mean for each class
-	Mat meanClass[C];
-	int numClass[C];
+	Mat* meanClass = (Mat*)alloca(sizeof(Mat)*C);
+	int* numClass = (int*)alloca(sizeof(int)*C);
 	// initialize
 	for (int i = 0; i < C; i++) {
 		numClass[i] = 0;
