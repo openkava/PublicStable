@@ -16,12 +16,12 @@ operator op(\n\
   report "Container string: " + c + " Count: " + c.getCount() + " Is valid: " + Boolean(c);\n\
   Container otherC;\n\
   report "Uninitialized Container string: " + otherC + " Is valid: " + Boolean(otherC);\n\
-  report "Member sizes: " + i.size;\n\
+  report "Before resize: Member sizes: " + i.size;\n\
   report "Members: " + i + " " + s;\n\
   otherC = c;\n\
   otherC.setCount(Size(3));\n\
   report "Container string: " + otherC + " Count: " + otherC.getCount() + " Is valid: " + Boolean(otherC);\n\
-  report "To fix: i.size is wrong! LLVM doesn\'t know about aliasing!";\n\
+  report "After resize: Member sizes: " + i.size;\n\
   i[2] = 1;\n\
   s[2] = "test";\n\
   report "Member sizes: " + s.size;\n\
