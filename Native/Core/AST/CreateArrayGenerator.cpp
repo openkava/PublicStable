@@ -69,8 +69,8 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
-      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
+      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       if ( operatorParams.size() < 1 )
         throw MR::ArrayGeneratorOperator::GetPrototypeException();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[0].getAdapter();
@@ -93,8 +93,8 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = pencil->getUniqueFunction( getLocation() );
-      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
+      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       if ( operatorParams.size() < 1 )
         throw MR::ArrayGeneratorOperator::GetPrototypeException();
 
@@ -172,7 +172,7 @@ namespace Fabric
             
             std::vector<llvm::Value *> args;
             args.push_back( basicBlockBuilder->CreateBitCast(
-              function.getLLVMFunction(),
+              function->getLLVMFunction(),
               llvm::Type::getInt8PtrTy( llvmContext )
               ) );
             args.push_back( sizeAdapter->llvmConst( context, operatorParams.size() ) );
@@ -200,7 +200,7 @@ namespace Fabric
         
         std::vector<llvm::Value *> args;
         args.push_back( basicBlockBuilder->CreateBitCast(
-          function.getLLVMFunction(),
+          function->getLLVMFunction(),
           llvm::Type::getInt8PtrTy( llvmContext )
           ) );
         args.push_back( sizeAdapter->llvmConst( context, operatorParams.size() ) );

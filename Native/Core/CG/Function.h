@@ -28,11 +28,13 @@ namespace Fabric
       Function(
         llvm::Function *llvmFunction,
         ReturnInfo const &returnInfo,
-        ParamVector const &params
+        ParamVector const &params,
+        size_t cost
         )
         : m_llvmFunction( llvmFunction )
         , m_returnInfo( returnInfo )
         , m_params( params )
+        , m_cost( cost )
       {
       }
       
@@ -40,6 +42,7 @@ namespace Fabric
         : m_llvmFunction( that.m_llvmFunction )
         , m_returnInfo( that.m_returnInfo )
         , m_params( that.m_params )
+        , m_cost( that.m_cost )
       {
       }
       
@@ -48,6 +51,7 @@ namespace Fabric
         m_llvmFunction = that.m_llvmFunction;
         m_returnInfo = that.m_returnInfo;
         m_params = that.m_params;
+        m_cost = that.m_cost;
         return *this;
       }
       
@@ -64,6 +68,11 @@ namespace Fabric
       ParamVector const &getParams() const
       {
         return m_params;
+      }
+      
+      size_t getCost() const
+      {
+        return m_cost;
       }
       
       void appendParamTypes( ExprTypeVector &paramTypes ) const
@@ -85,6 +94,7 @@ namespace Fabric
       
       bool isExactMatch( ExprTypeVector const &argTypes ) const;
       bool isLValueToRValueMatch( ExprTypeVector const &argTypes ) const;
+      bool isImplicitCastMatch( ExprTypeVector const &argTypes, ModuleBuilder const &moduleBuilder, size_t &maxCost ) const;
       
       ExprValue llvmCreateCall( BasicBlockBuilder &basicBlockBuilder, std::vector< ExprValue > &args ) const;
       
@@ -108,6 +118,7 @@ namespace Fabric
       llvm::Function *m_llvmFunction;
       ReturnInfo m_returnInfo;
       ParamVector m_params;
+      size_t m_cost;
     };
     
     typedef std::vector<Function> FunctionVector;

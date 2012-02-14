@@ -39,7 +39,7 @@ namespace Fabric
       
       virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
       
-      CG::Function const &getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const;
+      CG::Function const *getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const;
 
     private:
     

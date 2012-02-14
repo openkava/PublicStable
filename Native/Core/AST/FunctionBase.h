@@ -29,6 +29,7 @@ namespace Fabric
     {
     public:
           
+      virtual bool isFunctionBase() const { return true; }
       virtual bool isFunction() const { return false; }
       virtual bool isDestructor() const { return false; }
       

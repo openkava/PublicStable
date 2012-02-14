@@ -105,7 +105,7 @@ namespace Fabric
       RC::ConstHandle<AST::ParamVector> params = getParams( cgManager );
       params->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
       size_t flags = 0;
-      if ( m_exportSymbol )
+      if ( m_exportSymbol || !m_body )
         flags |= CG::FunctionBuilder::ExportSymbol;
       CG::FunctionBuilder functionBuilder( moduleBuilder, pencilName, symbolName, returnAdapter, params->getFunctionParams( moduleBuilder.getManager() ), flags );
       if ( buildFunctionBodies && m_body )

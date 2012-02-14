@@ -17,6 +17,7 @@
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
@@ -118,20 +119,13 @@ namespace Fabric
           
           CG::ExprValue caseExprValue = case_->getExpr()->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
 
-          std::string eqPencilName = CG::BinOpPencilName( CG::BIN_OP_EQ );
-          RC::ConstHandle<CG::PencilSymbol> pencilSymbol = basicBlockBuilder.maybeGetPencil( eqPencilName );
-          if ( !pencilSymbol )
-          {
-            eqPencilName = CG::BinOpPencilName( CG::BIN_OP_EQ );
-            pencilSymbol = basicBlockBuilder.maybeGetPencil( eqPencilName );
-            if ( !pencilSymbol )
-              throw Exception( "binary operator " + _(CG::binOpUserName(CG::BIN_OP_EQ)) + " not supported for types " + _(exprValue.getTypeUserName()) + " and " + _(caseExprValue.getTypeUserName()) );
-            CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, basicBlockBuilder.getContext(), exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
-            caseExprValue = newCaseExprValue;
-          }
-          
-          CG::Function const &function = pencilSymbol->getFunction( getLocation(), exprValue.getExprType(), caseExprValue.getExprType() );
-          CG::ExprValue cmpExprValue = function.llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
+          CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
+            getLocation(),
+            CG::BinOpPencilName( CG::BIN_OP_EQ ),
+            exprValue.getExprType(),
+            caseExprValue.getExprType()
+            );
+          CG::ExprValue cmpExprValue = function->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );
           
           basicBlockBuilder->CreateCondBr( cmpBooleanRValue, caseBodyBBs[caseIndex], caseTestBBs[i] );

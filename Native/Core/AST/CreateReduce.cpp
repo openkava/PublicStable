@@ -69,9 +69,9 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not a function" );
       RC::ConstHandle<CG::PencilSymbol> operator_ = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = operator_->getUniqueFunction( getLocation() );
+      CG::Function const *function = operator_->getUniqueFunction( getLocation() );
       
-      std::vector<CG::FunctionParam> const &operatorParams = function.getParams();
+      std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[1].getAdapter();
       RC::ConstHandle<CG::ValueProducerAdapter> outputValueProducerAdapter = basicBlockBuilder.getManager()->getValueProducerOf( outputAdapter );
       return CG::ExprType( outputValueProducerAdapter, CG::USAGE_RVALUE );
@@ -92,8 +92,8 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> operator_ = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const &function = operator_->getUniqueFunction( getLocation() );
-      CG::ParamVector const &operatorParams = function.getParams();
+      CG::Function const *function = operator_->getUniqueFunction( getLocation() );
+      CG::ParamVector const &operatorParams = function->getParams();
       if ( operatorParams.size() < 2 )
         throw MR::ArrayMapOperator::GetPrototypeException();
 
@@ -173,7 +173,7 @@ namespace Fabric
             
             std::vector<llvm::Value *> args;
             args.push_back( basicBlockBuilder->CreateBitCast(
-              function.getLLVMFunction(),
+              function->getLLVMFunction(),
               llvm::Type::getInt8PtrTy( llvmContext )
               ) );
             args.push_back( sizeAdapter->llvmConst( context, operatorParams.size() ) );
@@ -201,7 +201,7 @@ namespace Fabric
         
         std::vector<llvm::Value *> args;
         args.push_back( basicBlockBuilder->CreateBitCast(
-          function.getLLVMFunction(),
+          function->getLLVMFunction(),
           llvm::Type::getInt8PtrTy( llvmContext )
           ) );
         args.push_back( sizeAdapter->llvmConst( context, operatorParams.size() ) );

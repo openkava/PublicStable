@@ -54,7 +54,52 @@ namespace Fabric
         std::string const &pencilName,
         CG::Function const &function
         );
-      RC::ConstHandle<PencilSymbol> maybeGetPencil( std::string const &pencilName ) const;
+        
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName, ExprTypeVector const &argTypes ) const;
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName ) const
+      {
+        return maybeGetPreciseFunction( pencilName, ExprTypeVector() );
+      }
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName, ExprType const &arg1 ) const
+      {
+        return maybeGetPreciseFunction( pencilName, ExprTypeVector( arg1 ) );
+      }
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName, ExprType const &arg1, ExprType const &arg2 ) const
+      {
+        return maybeGetPreciseFunction( pencilName, ExprTypeVector( arg1, arg2 ) );
+      }
+        
+      CG::Function const *getPreciseFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const;
+
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const;
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName ) const
+      {
+        return maybeGetFunction( location, pencilName, ExprTypeVector() );
+      }
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1 ) const
+      {
+        return maybeGetFunction( location, pencilName, ExprTypeVector( arg1 ) );
+      }
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1, ExprType const &arg2 ) const
+      {
+        return maybeGetFunction( location, pencilName, ExprTypeVector( arg1, arg2 ) );
+      }
+
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const;
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName ) const
+      {
+        return getFunction( location, pencilName, ExprTypeVector() );
+      }
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1 ) const
+      {
+        return getFunction( location, pencilName, ExprTypeVector( arg1 ) );
+      }
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1, ExprType const &arg2 ) const
+      {
+        return getFunction( location, pencilName, ExprTypeVector( arg1, arg2 ) );
+      }
+      
+      CG::Function const *getUniqueFunction( CG::Location const &location, std::string const &pencilName ) const;
 
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location );
@@ -72,7 +117,7 @@ namespace Fabric
       {
         return m_compileOptions;
       }
-      
+    
     private:
     
       typedef std::map< std::string, RC::Handle<PencilSymbol> > Pencils;
