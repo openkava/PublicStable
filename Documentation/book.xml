@@ -130,6 +130,19 @@
         interface by simply setting it to different function inside the custom node's constructor.
         For further details refer to the tutorials sections of this document.</para>
     </section>
+    <section>
+      <title>The SceneGraph Debugger</title>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/sg_debugger_01.png" width="100%"/>
+        </imageobject>
+      </mediaobject>
+      <para>The debugger is a useful tool to inspect the dependency graph contructed by the
+        SceneGraph. Especially when building custom SceneGraphNodes this can be very helpful. The
+        debugger is described in more detail in the section on the Drawing Pipeline Guide in this
+        document. You can open the debugger by using executing this code in JavaScript:</para>
+      <programlisting language="JavaScript">FABRIC.displayDebugger();</programlisting>
+    </section>
   </section>
   <section>
     <title>SceneGraph Type System</title>
@@ -213,8 +226,52 @@
   <section>
     <title>Kinematics Guide</title>
     <section>
-      <title>Overview</title>
-      <para>The SceneGraph's Kinematics systems </para>
+      <title>Basic Transform</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_kinematics_01.png" width="45%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The SceneGraph's basic transform can represent a global or a hierarchical transform. It
+        can be contructed like this:</para>
+      <programlisting language="JavaScript">var globalTransform = scene.constructNode('Transform', {
+  hierarchical: false
+});
+var hierarchicalTransform = scene.constructNode('Transform', {
+  hierarchical: true,
+  parentTransformNode: globalTransform
+});</programlisting>
+      <para>When contructed in global mode (hierarchical: false), the transform simply uses a global
+        matrix. When contructed in hierarchical mode, the construction options need to contain a
+        parent transform. An operator will be attached to the transform node, which computes the
+        global matrix based on the parent as well as a local matrix. This way hierarchies of
+        transforms can be constructed.</para>
+      <para>When creating the transform node, you can specify the global resp. the local matrix by a
+          <emphasis role="bold">FABRIC.RT.Xfo</emphasis>, like this:</para>
+      <programlisting language="JavaScript">var globalTransform = scene.constructNode('Transform', {
+  hierarchical: false,
+  globalXfo: new FABRIC.RT.Xfo({
+    tr: new FABRIC.RT.Vec3(1.0, 2.0, 3.0)
+  })
+});</programlisting>
     </section>
+    <section>
+      <title>Aimed Transform</title>
+      <para>For the typical <emphasis role="italic">lookat</emphasis> behaviour of a transform, for
+        example used for a camera with an lookat position, or a spot light with a target position,
+        the SceneGraph provides a specialized transform node called the <emphasis role="bold"
+          >AimTransform</emphasis>. It adds an additional option to the factory function, which
+        allows you to specify the target position.</para>
+      <programlisting language="JavaScript">var globalTransform = scene.constructNode('Transform', {
+  hierarchical: false
+});
+var hierarchicalTransform = scene.constructNode('Transform', {
+  hierarchical: true,
+  parentTransformNode: globalTransform
+});</programlisting>
+    </section>
+  </section>
+  <section>
+    <title>Animation Guide</title>
   </section>
 </article>
