@@ -387,8 +387,8 @@ $(document).ready(function() {
   ///////////////////////////////////////////////////////////
   // Opacity Mapping
   var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
-  var opacityKeyAnimationTrack = scene.constructNode('LinearKeyAnimationTrack');
-  opacityKeyAnimationTrack.addTrack(new FABRIC.RT.LinearKeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+  var opacityKeyTrackAnimationContainer = scene.constructNode('LinearTrackAnimationContainer');
+  opacityKeyTrackAnimationContainer.addTrack(new FABRIC.RT.LinearKeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(.1, 0),
       linearkey(.2, 0.75),
       linearkey(.4, 0.05),
@@ -396,7 +396,7 @@ $(document).ready(function() {
     ]));
   
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
-      animationTrackNode: opacityKeyAnimationTrack,
+      trackAnimationContainerNode: opacityKeyTrackAnimationContainer,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
@@ -404,7 +404,7 @@ $(document).ready(function() {
   ///////////////////////////////////////////////////////////
   // Color Mapping
   var colorkey = function(time, value){ return new FABRIC.RT.ColorKeyframe(time, value); };
-  var gradientKeyTrack = scene.constructNode('ColorKeyAnimationTrack');
+  var gradientKeyTrack = scene.constructNode('ColorTrackAnimationContainer');
   gradientKeyTrack.addTrack(new FABRIC.RT.ColorKeyframeTrack('GradientKeyTrack', FABRIC.RT.rgb(0, 1, 0), [
       colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
       colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
@@ -415,7 +415,7 @@ $(document).ready(function() {
     ]));
   
   var gradientDisplayNode = scene.constructNode('TrackDisplay', {
-      animationTrackNode: gradientKeyTrack,
+      trackAnimationContainerNode: gradientKeyTrack,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
@@ -647,7 +647,7 @@ $(document).ready(function() {
 
   $( "#tabs" ).tabs();
 
-  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationTrack, {
+  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyTrackAnimationContainer, {
     timeStripe: false,
     draggable: false,
     zoomable: false,
@@ -698,7 +698,7 @@ $(document).ready(function() {
   var savePreset = function(){
     var presetSaver = scene.constructManager('SceneSerializer');
     presetSaver.addNode(camera);
-    presetSaver.addNode(opacityKeyAnimationTrack);
+    presetSaver.addNode(opacityKeyTrackAnimationContainer);
     presetSaver.addNode(gradientKeyTrack);
     presetSaver.addNode(volumeNode);
     presetSaver.addNode(opacityTexture);
