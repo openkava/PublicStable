@@ -75,12 +75,16 @@ installerEnv.DistZip(
 )
 
 xpiUpdateKey = baseEnv.File("xpi-update.pem")
+if buildOS == 'Windows':
+  perlCmd = 'c:\\cygwin\\bin\\perl'
+else:
+  perlCmd = 'perl'
 updateFile = baseEnv.Command(
   distDir.File("xpi-update-"+buildOS+"-"+buildArch+".rdf"),
   installerFile,
-  [['uhura', '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_VERSION + '/' + installerName + '.xpi']],
+  [[perlCmd, baseEnv.File('#/ThirdParty/Private/uhura.pl'), '-o', '$TARGET', '-k', '$KEY', '$SOURCE', 'http://dist.fabric-engine.com/' + FABRIC_VERSION + '/' + installerName + '.xpi']],
   KEY=xpiUpdateKey
-  )
+  )[0]
 baseEnv.Depends( updateFile, xpiUpdateKey )
 
 firefoxInstaller = [installerFile, updateFile]

@@ -138,23 +138,29 @@ Export('generateDistZip')
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
+import itertools
+
 Import( 'baseEnv', 'buildOS' )
 
 if 'dist' in COMMAND_LINE_TARGETS:
-  chromeInstaller = SConscript( 'Chrome/SConscript' )
-  firefoxInstaller = SConscript( 'Firefox/SConscript' )
-  nodeInstaller = SConscript( 'Node/SConscript' )
-  pythonInstaller = SConscript( 'Python/SConscript' )
-  installers = [chromeInstaller, firefoxInstaller, nodeInstaller, pythonInstaller]
+  installers = []
+  installers += SConscript( 'Chrome/SConscript' )
+  installers += SConscript( 'Firefox/SConscript' )
+  if buildOS != 'Windows':
+    installers += SConscript( 'Node/SConscript' )
+    installers += SConscript( 'Python/SConscript' )
   Alias( 'dist', installers )
   if 'upload' in COMMAND_LINE_TARGETS:
     if buildOS == 'Windows':
-      uploadCommand = [[ 'scp', '$SOURCES', 'fabric-engine.com:' ]]
+      unixInstallers = ['/c'+'/'.join(str(item).split('\\'))[2:] for item in installers]
+      uploadCommand = [ 'scp', '-i', os.environ['HOME'] + '/.ssh/id_rsa' ]
+      uploadCommand += unixInstallers
+      uploadCommand += [ 'fabric-engine.com:' ]
     else:
-      uploadCommand = [[ 'rsync', '-e', 'ssh', '--progress', '$SOURCES', 'fabric-engine.com:' ]]
+      uploadCommand = [ 'rsync', '-e', 'ssh', '--progress', '$SOURCES', 'fabric-engine.com:' ]
     upload = baseEnv.AlwaysBuild( baseEnv.Command(
       'upload',
       installers,
-      uploadCommand
+      [uploadCommand]
       ) )
     Alias( 'upload', upload )
