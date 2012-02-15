@@ -46,7 +46,7 @@ namespace Fabric
     
       CG::ParamVector getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<std::string> getTypes() const;
-      std::vector< RC::ConstHandle<CG::Adapter> > getAdapters( RC::Handle<CG::Manager> const &cgManager ) const;
+      CG::AdapterVector getAdapters( RC::Handle<CG::Manager> const &cgManager ) const;
       CG::ExprTypeVector getExprTypes( RC::Handle<CG::Manager> const &cgManager ) const;
       
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;

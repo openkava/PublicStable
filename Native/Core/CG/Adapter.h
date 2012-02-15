@@ -12,6 +12,7 @@
 #include <Fabric/Base/Util/Assert.h>
 
 #include <stdint.h>
+#include <vector>
 
 namespace llvm
 {
@@ -120,6 +121,68 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> m_desc;
       Flags m_flags;
       std::string m_codeName;
+    };
+    
+    class AdapterVector : public std::vector< RC::ConstHandle<Adapter> >
+    {
+    public:
+    
+      AdapterVector()
+      {
+      }
+      
+      AdapterVector( RC::ConstHandle<Adapter> const &adapter1 )
+      {
+        push_back( adapter1 );
+      }
+      
+      AdapterVector(
+        RC::ConstHandle<Adapter> const &adapter1,
+        RC::ConstHandle<Adapter> const &adapter2
+        )
+      {
+        push_back( adapter1 );
+        push_back( adapter2 );
+      }
+      
+      AdapterVector(
+        RC::ConstHandle<Adapter> const &adapter1,
+        RC::ConstHandle<Adapter> const &adapter2,
+        RC::ConstHandle<Adapter> const &adapter3
+        )
+      {
+        push_back( adapter1 );
+        push_back( adapter2 );
+        push_back( adapter3 );
+      }
+      
+      AdapterVector(
+        RC::ConstHandle<Adapter> const &adapter1,
+        RC::ConstHandle<Adapter> const &adapter2,
+        RC::ConstHandle<Adapter> const &adapter3,
+        RC::ConstHandle<Adapter> const &adapter4
+        )
+      {
+        push_back( adapter1 );
+        push_back( adapter2 );
+        push_back( adapter3 );
+        push_back( adapter4 );
+      }
+      
+      AdapterVector( AdapterVector const &that )
+      {
+        reserve( that.size() );
+        for ( const_iterator it=that.begin(); it!=that.end(); ++it )
+          push_back( *it );
+      }
+      
+      AdapterVector &operator =( AdapterVector const &that )
+      {
+        reserve( that.size() );
+        for ( const_iterator it=that.begin(); it!=that.end(); ++it )
+          push_back( *it );
+        return *this;
+      }
     };
   }
 }

@@ -31,7 +31,8 @@ namespace Fabric
             ),
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
-            methodName
+            methodName,
+            ExprTypeVector()
             ),
           returnAdapter,
           ParamVector(
@@ -61,7 +62,9 @@ namespace Fabric
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
             methodName,
-            ExprType( paramAdapter, paramUsage )
+            ExprTypeVector(
+              ExprType( paramAdapter, paramUsage )
+              )
             ),
           returnAdapter,
           ParamVector(
@@ -95,8 +98,10 @@ namespace Fabric
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
             methodName,
-            ExprType( param1Adapter, param1Usage ),
-            ExprType( param2Adapter, param2Usage )
+            ExprTypeVector(
+              ExprType( param1Adapter, param1Usage ),
+              ExprType( param2Adapter, param2Usage )
+              )
             ),
           returnAdapter,
           ParamVector(
