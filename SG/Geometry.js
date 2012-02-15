@@ -167,10 +167,10 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       return uniformsdgnode.setData(name, 0, value);
     };
     geometryNode.pub.getVertexCount = function(count) {
-      return attributesdgnode.getCount();
+      return attributesdgnode.size();
     };
     geometryNode.pub.setVertexCount = function(count) {
-      attributesdgnode.setCount(count);
+      attributesdgnode.resize(count);
     };
     geometryNode.pub.getBulkAttributeData = function( pointIds ) {
       return attributesdgnode.getSlicesBulkData( pointIds );
@@ -197,7 +197,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         }
       }
       if (attributeData.positions) {
-        attributesdgnode.setCount(attributeData.positions.length);
+        attributesdgnode.resize(attributeData.positions.length);
       }
       attributesdgnode.setBulkData(attributeData);
     };
@@ -217,7 +217,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     /*
     geometryNode.writeGeometryData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.attributes = attributes;
-      nodeData.sliceCount = attributesdgnode.getCount();
+      nodeData.sliceCount = attributesdgnode.size();
       nodeData.attributeData = attributesdgnode.getBulkData();
       var uniformMembers = uniformsdgnode.getMembers();
       if(uniformMembers.indices){
@@ -238,7 +238,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         }
       }
       if(nodeData.sliceCount){
-        attributesdgnode.setCount(nodeData.sliceCount);
+        attributesdgnode.resize(nodeData.sliceCount);
       }
       if(nodeData.attributeData){
         attributesdgnode.setBulkData(nodeData.attributeData);
@@ -319,7 +319,7 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
     // as the original geometry node.
     geometryDataCopyNode.getAttributesDGNode().bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.setCount( parentContainer.getCount() ); }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
         'parentattributes',
@@ -687,7 +687,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
 
     var assignLoadTransformOperators = function() {
       // check if we have a sliced transform!
-      if(options.transformNodeIndex == undefined && transformNode.getDGNode().getCount() > 1) {
+      if(options.transformNodeIndex == undefined && transformNode.getDGNode().size() > 1) {
         options.transformNodeIndex = 0
       }
       var transformdgnode = transformNode.getDGNode();

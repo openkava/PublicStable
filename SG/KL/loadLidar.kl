@@ -26,6 +26,6 @@ operator lidarGetPoints(
 ) {
   Size count;
   lidar.getCount(count);
-  container.setCount(count);
+  container.resize(count);
   lidar.getPoints(positions,colors);
 }

@@ -10,7 +10,7 @@ operator generateAxes(
   io Integer indices[],
   io Scalar size
 ) {
-  container.setCount(Size(19));
+  container.resize(Size(19));
   indices.resize(23);
 
   Integer iidx = 0;

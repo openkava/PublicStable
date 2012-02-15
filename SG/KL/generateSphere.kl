@@ -19,7 +19,7 @@ operator generateSphere(
   Integer sides = (detail >= 0) ? (detail * 2 + 3) : 3;
   Integer loops = (detail >= 0) ? (detail + 1) : 1;
 
-  container.setCount(Size(2 * sides * (2 + loops)));
+  container.resize(Size(2 * sides * (2 + loops)));
 
   Integer numTriangles, nbSides, nbLoops;
 

@@ -165,12 +165,12 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     dgnode.bindings.append(crowdNode.getCharacterControllerOp());
     
     crowdNode.pub.setCrowdXfos = function(xfos){
-      dgnode.setCount(xfos.length);
+      dgnode.resize(xfos.length);
       dgnode.setBulkData({ xfo: xfos});
     }
     
     crowdNode.pub.setCrowdGoals = function(goals){
-      dgnode.setCount(goals.length);
+      dgnode.resize(goals.length);
       dgnode.setBulkData({ goal: goals});
     }
     

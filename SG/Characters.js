@@ -157,11 +157,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
       }
       return result;
     };
-    characterSkeletonNode.pub.getCount = function() {
-      return dgnode.getCount();
+    characterSkeletonNode.pub.size = function() {
+      return dgnode.size();
     };
-    characterSkeletonNode.pub.setCount = function(count) {
-      dgnode.setCount(count);
+    characterSkeletonNode.pub.resize = function(count) {
+      dgnode.resize(count);
     };
     characterSkeletonNode.pub.addBone = function(boneOptions, skeletonId) {
       var bones = characterSkeletonNode.pub.getBones(),
@@ -659,7 +659,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.setCount( parentContainer.getCount() ); }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
         'charactercontroller',

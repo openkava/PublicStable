@@ -41,7 +41,7 @@ operator getKinectCameraColorPixels(
   io Size height,
   io RGBA pixels<>
 ){
-  container.setCount(width*height);
+  container.resize(width*height);
   if(pixels.size() == camera.colorData.size() && camera.initiated && camera.supportsColor){
     for(Size i=0;i<pixels.size();i++)
     {
@@ -80,7 +80,7 @@ operator getKinectCameraDepthAsColorPixels(
   io Integer depthMin,
   io Integer depthMax
 ){  
-  container.setCount(width*height);
+  container.resize(width*height);
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
     for(Size i=0;i<pixels.size();i++){
       if(camera.depthData[i] == 0){

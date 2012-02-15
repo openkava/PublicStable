@@ -12,7 +12,7 @@ operator generateCircle(
   io Scalar arcAngle,
   io Integer numSegments
 ) {
-  container.setCount(Size(numSegments));
+  container.resize(Size(numSegments));
   indices.resize(numSegments * 2);
 
   // +z-plane

@@ -212,7 +212,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           'self'
         ],
         entryFunctionName: 'initCount',
-        srcCode: 'operator initCount(io Size depth, io Container container){container.setCount( depth );}',
+        srcCode: 'operator initCount(io Size depth, io Container container){container.resize( depth );}',
         mainThreadOnly: true
       }));
 

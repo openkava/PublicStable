@@ -734,7 +734,7 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     
     // check if we are using multiple rigid bodies
     if(options.rigidBody.constructor.toString().indexOf("Array") != -1)
-      dgnode.setCount(options.rigidBody.length);
+      dgnode.resize(options.rigidBody.length);
       
     // create the query transform op
     dgnode.bindings.append(scene.constructOperator({

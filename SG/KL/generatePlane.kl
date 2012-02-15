@@ -27,7 +27,7 @@ operator generatePlane(
     widthSections = 1;
   }
 
-  container.setCount(Size((lengthSections + 1) * (widthSections + 1)));
+  container.resize(Size((lengthSections + 1) * (widthSections + 1)));
   
   Integer numTriangles;
 

@@ -23,7 +23,7 @@ operator generateGrid(
     if (numYsections > 1) numlineSegments += (numXsections * numZsections);
     if (numXsections > 1) numlineSegments += (numYsections * numZsections);
 
-  container.setCount(Size(numlineSegments * 2));
+  container.resize(Size(numlineSegments * 2));
   indices.resize(numlineSegments * 2);
   var Integer i, j, k, indexid = 0;
   var Scalar x, y, z;

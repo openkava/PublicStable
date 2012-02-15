@@ -19,7 +19,7 @@ operator generateVolumeSlices(
   io Vec3 positions<>,
   io Vec3 normals<>
 ){
-  container.setCount( Size(nbSlices*6) );//First approximation (upper bound)
+  container.resize( Size(nbSlices*6) );//First approximation (upper bound)
   Size i, j, k;
   indices.resize(0);
 
@@ -324,7 +324,7 @@ operator generateVolumeSlices(
     currDepth -= step;
     ++currSlice;
   }
-  container.setCount( Size(currPosIndex) );//Clamp to final count
+  container.resize( Size(currPosIndex) );//Clamp to final count
 }
 
 operator setNbSlicesFrom3DImage(
@@ -640,7 +640,7 @@ operator updateTransferFunctionImage(
   io Color opacityColors[],
   io Color pixels<>
 ){
-  container.setCount(opacityColors.size());
+  container.resize(opacityColors.size());
   for(Size i = 0; i < pixels.size(); ++i) {
     pixels[i].r = opacityColors[i].r;
     pixels[i].g = opacityColors[i].g;

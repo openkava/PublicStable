@@ -32,7 +32,7 @@ operator generateCylinder(
   if (caps) {
     numTriangles += (nbSides * 2) * 2;
   }
-  container.setCount(Size(numTriangles));
+  container.resize(Size(numTriangles));
   indices.resize(numTriangles * 3);
   
   Integer voff = 0;

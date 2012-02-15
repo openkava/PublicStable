@@ -46,5 +46,5 @@ operator secureContainerResize(
   io Integer elementIndex,
   io SecureElement elements[]
 ) {
-  container.setCount( elements[elementIndex].slicecount );
+  container.resize( elements[elementIndex].slicecount );
 }

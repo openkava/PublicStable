@@ -89,15 +89,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
         firstTrackAdded = true;
       }
       else{
-        trackId = dgnode.getCount();
-        dgnode.setCount(trackId+1);
+        trackId = dgnode.size();
+        dgnode.resize(trackId+1);
       }
       dgnode.setData('track', trackId, track);
       return trackId;
     };
     animationTrackNode.pub.getTimeRange = function() {
       var range = new FABRIC.RT.Vec2();
-      var numTracks = dgnode.getCount();
+      var numTracks = dgnode.size();
       for(var i=0; i<numTracks; i++){
         var track = dgnode.getData('track', i);
         if(track.keys.length<=1){
@@ -127,7 +127,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     };
     
     animationTrackNode.pub.getTrackCount = function() {
-      return dgnode.getCount();
+      return dgnode.size();
     };
     
     // Because we store all tracks in a track set, getting and setting the
@@ -360,12 +360,12 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
     animationTrackNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
-      nodeData.numTracks = dgnode.getCount();
+      nodeData.numTracks = dgnode.size();
       nodeData.tracks = dgnode.getBulkData('track');
     };
     animationTrackNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      dgnode.setCount(nodeData.numTracks);
+      dgnode.resize(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
         dgnode.setData('track', i, nodeData.tracks[i]);
       }
@@ -408,8 +408,8 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         firstTrackAdded = true;
       }
       else{
-        trackSetId = dgnode.getCount();
-        dgnode.setCount(trackSetId+1);
+        trackSetId = dgnode.size();
+        dgnode.resize(trackSetId+1);
       }
       dgnode.setData('trackSet', trackSetId, trackset);
       if(bindings){
@@ -446,7 +446,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     };
     
     animationLibraryNode.pub.getTrackSetCount = function() {
-      return dgnode.getCount();
+      return dgnode.size();
     };
     animationLibraryNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
@@ -606,7 +606,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     };
     animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      dgnode.setCount(nodeData.numTracks);
+      dgnode.resize(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
         dgnode.setData('trackSet', i, nodeData.trackSets[i]);
         dgnode.setData('bindings', i, nodeData.bindings[i]);
@@ -774,7 +774,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
   
         dgnode.addMember('values', trackDataType+'[]');
         parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
-        dgnode.setCount(tracks.length);
+        dgnode.resize(tracks.length);
   
         dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
       });

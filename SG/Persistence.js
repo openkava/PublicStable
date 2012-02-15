@@ -162,7 +162,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
                     str += ',';
                   }
                   str += '\n        \"'+dgnodename+'\":{';
-                  str += '\n          \"sliceCount\":' + dgnode.getCount();
+                  str += '\n          \"sliceCount\":' + dgnode.size();
                   if(dgnodeDataDesc.members){
                     str += ',\n          \"memberData\":' + JSON.stringify(dgnode.getMembersBulkData(dgnodeDataDesc.members));
                   }
@@ -281,7 +281,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           for(var dgnodename in desc){
             var data = nodeData.dgnodedata[dgnodename];
             var dgnode = desc[dgnodename].dgnode;
-            dgnode.setCount(data.sliceCount);
+            dgnode.resize(data.sliceCount);
             var members = dgnode.getMembers();
             var memberData = {};
             for(var memberName in members){

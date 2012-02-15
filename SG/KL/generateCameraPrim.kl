@@ -12,7 +12,7 @@ operator generateCameraPrim(
 ) {
   Integer iidx = 0;
   Integer vidx = 0;
-  container.setCount(Size(13));
+  container.resize(Size(13));
 
   var Scalar bodySize = 0.85;
   var Scalar lensSize = 0.6;

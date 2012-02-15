@@ -20,7 +20,7 @@ operator loadSlicedImagePIXELFORMAT(
     PIXELFORMAT bitmap[];
     decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
     Size newSize = bitmap.size();
-    container.setCount( newSize );
+    container.resize( newSize );
     for( Size i = 0; i < newSize; ++i )
       slicedBitmap[i] = bitmap[i];
     resource.data.resize(0);
@@ -83,7 +83,7 @@ operator initImageFromPIXELFORMAT(
   io PIXELFORMAT pixels<>
 ) {
   if(!initiated) {
-    container.setCount( width * height );
+    container.resize( width * height );
     for(var Size i=0;i<pixels.size();i++)
       pixels[i] = color;
     initiated = true;
