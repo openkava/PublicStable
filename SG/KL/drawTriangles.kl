@@ -9,7 +9,10 @@ use FabricOGL;
 operator drawTriangles(
   io OGLShaderProgram shaderProgram,
   io OGLBuffer indicesBuffer,
-  io Boolean drawToggle
+  io Boolean drawToggle,
+  io Size numDrawnVerticies,
+  io Size numDrawnTriangles,
+  io Size numDrawnGeometries
 ) {
   if(shaderProgram.debug){
     report("drawTriangles:"+shaderProgram.name);
@@ -31,11 +34,19 @@ operator drawTriangles(
     }
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer.bufferID);
+    Size numTriangles = Size(Scalar(indicesBuffer.elementCount) / 3.0);
     if(shaderProgram.numInstances>1){
       glDrawElementsInstanced(drawMode, indicesBuffer.elementCount, GL_UNSIGNED_INT, NULL, shaderProgram.numInstances);
+      
+      numDrawnVerticies += indicesBuffer.elementCount * shaderProgram.numInstances;
+      numDrawnTriangles += numTriangles * shaderProgram.numInstances;
+      numDrawnGeometries += shaderProgram.numInstances;
     }
     else{
       glDrawElements(drawMode, indicesBuffer.elementCount, GL_UNSIGNED_INT, NULL);
+      numDrawnVerticies += indicesBuffer.elementCount;
+      numDrawnTriangles += numTriangles;
+      numDrawnGeometries++;
     }
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
