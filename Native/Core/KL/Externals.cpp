@@ -429,27 +429,44 @@ namespace Fabric
 
         // LLVM intrinsics
         symbolNameToAddressMap["sinf"] = (void *)&sinf;
-        symbolNameToAddressMap["sin"] = (void *)&sin;
         symbolNameToAddressMap["cosf"] = (void *)&cosf;
-        symbolNameToAddressMap["cos"] = (void *)&cos;
         symbolNameToAddressMap["fmodf"] = (void *)&fmodf;
+#if defined(FABRIC_OS_WINDOWS)
+        symbolNameToAddressMap["sin"] = (void *)(double (*)(double))&sin;
+        symbolNameToAddressMap["cos"] = (void *)(double (*)(double))&cos;
+        symbolNameToAddressMap["fmod"] = (void *)(double (*)(double,double))&fmod;
+#else
+        symbolNameToAddressMap["sin"] = (void *)&sin;
+        symbolNameToAddressMap["cos"] = (void *)&cos;
         symbolNameToAddressMap["fmod"] = (void *)&fmod;
+#endif
 
         // Exposed math functions
         symbolNameToAddressMap["__function_acos__in_Scalar"] = (void *)&acosf;
-        symbolNameToAddressMap["__function_acos__in_Float64"] = (void *)&acos;
         symbolNameToAddressMap["__function_asin__in_Scalar"] = (void *)&asinf;
-        symbolNameToAddressMap["__function_asin__in_Float64"] = (void *)&asin;
         symbolNameToAddressMap["__function_atan__in_Scalar"] = (void *)&atanf;
-        symbolNameToAddressMap["__function_atan__in_Float64"] = (void *)&atan;
         symbolNameToAddressMap["__function_atan2__in_Scalar__in_Scalar"] = (void *)&atan2f;
-        symbolNameToAddressMap["__function_atan2__in_Float64__in_Float64"] = (void *)&atan2;
         symbolNameToAddressMap["__function_sin__in_Scalar"] = (void *)&sinf;
-        symbolNameToAddressMap["__function_sin__in_Float64"] = (void *)&sin;
         symbolNameToAddressMap["__function_cos__in_Scalar"] = (void *)&cosf;
-        symbolNameToAddressMap["__function_cos__in_Float64"] = (void *)&cos;
         symbolNameToAddressMap["__function_tan__in_Scalar"] = (void *)&tanf;
+#if defined(FABRIC_OS_WINDOWS)
+        symbolNameToAddressMap["__function_acos__in_Float64"] = (void *)(double (*)(double))&acos;
+        symbolNameToAddressMap["__function_asin__in_Float64"] = (void *)(double (*)(double))&asin;
+        symbolNameToAddressMap["__function_atan__in_Float64"] = (void *)(double (*)(double))&atan;
+        symbolNameToAddressMap["__function_atan2__in_Float64__in_Float64"] = (void *)(double (*)(double,double))&atan2;
+        symbolNameToAddressMap["__function_sin__in_Float64"] = (void *)(double (*)(double))&sin;
+        symbolNameToAddressMap["__function_cos__in_Float64"] = (void *)(double (*)(double))&cos;
+        symbolNameToAddressMap["__function_tan__in_Float64"] = (void *)(double (*)(double))&tan;
+#else
+        symbolNameToAddressMap["__function_acos__in_Float64"] = (void *)&acos;
+        symbolNameToAddressMap["__function_asin__in_Float64"] = (void *)&asin;
+        symbolNameToAddressMap["__function_atan__in_Float64"] = (void *)&atan;
+        symbolNameToAddressMap["__function_atan2__in_Float64__in_Float64"] = (void *)&atan2;
+        symbolNameToAddressMap["__function_sin__in_Float64"] = (void *)&sin;
+        symbolNameToAddressMap["__function_cos__in_Float64"] = (void *)&cos;
         symbolNameToAddressMap["__function_tan__in_Float64"] = (void *)&tan;
+#endif
+
 #if defined(FABRIC_OS_WINDOWS)
         symbolNameToAddressMap["__function_round__in_Scalar"] = (void *)&imp_roundf;
         symbolNameToAddressMap["__function_round__in_Float64"] = (void *)&imp_round;
@@ -458,27 +475,25 @@ namespace Fabric
         symbolNameToAddressMap["__function_round__in_Float64"] = (void *)&round;
 #endif
         symbolNameToAddressMap["__function_ceil__in_Scalar"] =( void *)&ceilf;
-        symbolNameToAddressMap["__function_ceil__in_Float64"] =( void *)&ceil;
         symbolNameToAddressMap["__function_floor__in_Scalar"] =( void *)&floorf;
-        symbolNameToAddressMap["__function_floor__in_Float64"] =( void *)&floor;
         symbolNameToAddressMap["__function_pow__in_Scalar__in_Scalar"] = (void *)&powf;
-        symbolNameToAddressMap["__function_pow__in_Float64__in_Float64"] = (void *)&pow;
-        symbolNameToAddressMap["__function_log10__in_Scalar"] = (void *)&log10f;
-#if defined(FABRIC_OS_WINDOWS)
-        symbolNameToAddressMap["__function_log10__in_Float64"] = (void *)&log10l;
-#else
-        symbolNameToAddressMap["__function_log10__in_Float64"] = (void *)&log10;
-#endif
         symbolNameToAddressMap["__function_log__in_Scalar"] = (void *)&logf;
-#if defined(FABRIC_OS_WINDOWS)
-        symbolNameToAddressMap["__function_log__in_Float64"] = (void *)&logl;
-#else
-        symbolNameToAddressMap["__function_log__in_Float64"] = (void *)&log;
-#endif
+        symbolNameToAddressMap["__function_log10__in_Scalar"] = (void *)&log10f;
         symbolNameToAddressMap["__function_exp__in_Scalar"] = (void *)&expf;
+
 #if defined(FABRIC_OS_WINDOWS)
-        symbolNameToAddressMap["__function_exp__in_Float64"] = (void *)&expl;
+        symbolNameToAddressMap["__function_ceil__in_Float64"] =( void *)(double (*)(double))&ceil;
+        symbolNameToAddressMap["__function_floor__in_Float64"] =( void *)(double (*)(double))&floor;
+        symbolNameToAddressMap["__function_pow__in_Float64__in_Float64"] = (void *)(double (*)(double,double))&pow;
+        symbolNameToAddressMap["__function_log10__in_Float64"] = (void *)(double (*)(double))&log10;
+        symbolNameToAddressMap["__function_log__in_Float64"] = (void *)(double (*)(double))&log;
+        symbolNameToAddressMap["__function_exp__in_Float64"] = (void *)(double (*)(double))&exp;
 #else
+        symbolNameToAddressMap["__function_ceil__in_Float64"] =( void *)&ceil;
+        symbolNameToAddressMap["__function_floor__in_Float64"] =( void *)&floor;
+        symbolNameToAddressMap["__function_pow__in_Float64__in_Float64"] = (void *)&pow;
+        symbolNameToAddressMap["__function_log10__in_Float64"] = (void *)&log10;
+        symbolNameToAddressMap["__function_log__in_Float64"] = (void *)&log;
         symbolNameToAddressMap["__function_exp__in_Float64"] = (void *)&exp;
 #endif
 
