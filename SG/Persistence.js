@@ -271,7 +271,6 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               return;
             }
             dataObj = data;
-            var sceneDeserializerInterface = { getNode: sceneDeserializer.getNode }
             if(dataObj.metadata.binaryStorage){
               
               var binaryFilePath;
@@ -287,10 +286,15 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               var loadNodeBinaryFileNode = scene.constructNode('LoadBinaryDataNode', {
                 url: binaryFilePath
               });
-              // Assign the function for interfacing with the binary node.
-              // by assigning the function here, the closure contains the binary data node.
-              sceneDeserializerInterface.loadDGNodesData = function(sgnodeName, desc) {
-                sgnodeName = sgnodeDataMap[nodeNameToStoredNameRemapping[sgnodeName]];
+            }
+            
+            // Assign the function for interfacing with the binary node.
+            // by assigning the function here, the closure contains the binary data node.
+            
+            var sceneDeserializerInterface = {
+              getNode: sceneDeserializer.getNode,
+              loadDGNodesData: function(sgnodeName, desc) {
+                sgnodeName = nodeNameToStoredNameRemapping[sgnodeName];
                 if(dataObj.metadata.binaryStorage){
                   loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
                     loadNodeBinaryFileNode.pub.loadDGNodes(sgnodeName, desc);
@@ -317,8 +321,9 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                     dgnode.setBulkData(memberData);
                   }
                 }
-              };
+              }
             }
+              
             var remainingNodes = dataObj.sceneGraphNodes.length;
             var loadDGNode = function(nodeData){
               nodeDataMap[nodeData.name] = nodeData;

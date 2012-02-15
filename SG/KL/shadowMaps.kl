@@ -84,9 +84,12 @@ operator bindShadowMapBuffer(
   io Size textureUnit,
   io OGLRenderTarget depthRenderTarget
 ) {
-  Integer depthTextureID = depthRenderTarget.textures[depthRenderTarget.depthBuffer].texture.bufferID;
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_2D, depthTextureID);
+//  report "bindShadowMapBuffer";
+  if(depthRenderTarget.depthBuffer >= 0){
+    Integer depthTextureID = depthRenderTarget.textures[depthRenderTarget.depthBuffer].texture.bufferID;
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_2D, depthTextureID);
+  }
 }
 
 operator debugShadowMapBuffer(

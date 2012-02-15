@@ -84,8 +84,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnGeometries', false);
             
     windowRedrawEventHandler.setScope('window', fabricwindow.windowNode);
-    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
-    windowRedrawEventHandler.appendChildEventHandler(redrawEventHandler);
     windowRedrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'windowBeginRender',
           srcFile: 'FABRIC_ROOT/SG/KL/window.kl',
@@ -96,6 +94,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             'window.numDrawnGeometries'
           ]
         }));
+    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
     
     var initialLoad = true;
     var visible = false;
@@ -110,6 +109,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             if(scene.getScenePreRedrawEventHandler()){
               windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
+            windowRedrawEventHandler.appendChildEventHandler(redrawEventHandler);
             if(scene.getScenePostRedrawEventHandler()){
               windowRedrawEventHandler.appendChildEventHandler(scene.getScenePostRedrawEventHandler());
             }
