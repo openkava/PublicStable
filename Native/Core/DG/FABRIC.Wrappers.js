@@ -904,12 +904,7 @@ function (fabricClient, logCallback, debugLogCallback) {
 
       var parentHandleNotification = result.handle;
       result.handle = function(cmd, arg) {
-        if (cmd == 'didFire') {
-          if (result.didFireCallback)
-            result.didFireCallback.call(result.pub);
-        }
-        else
-          parentHandleNotification(cmd, arg);
+        parentHandleNotification(cmd, arg);
       };
 
       result.pub.getType = function() {
@@ -955,15 +950,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         executeQueuedCommands();
         return results;
       };
-
-      result.pub.getDidFireCallback = function() {
-        return result.didFireCallback;
-      };
-
-      result.pub.setDidFireCallback = function(didFireCallback) {
-        result.didFireCallback = didFireCallback;
-      };
-
+      
       return result;
     };
 
