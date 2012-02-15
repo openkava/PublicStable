@@ -682,7 +682,7 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////
   // Preset Saving and Loading
-  var currPresetName = 'Default';
+  var currPresetName = 'Chest';
   var presetsFound = false;
   var rebuildPresetNamesList = function(){
     $('#resourceSelector').empty();
@@ -713,6 +713,7 @@ $(document).ready(function() {
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
+  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
   var loadPreset = function(){
 
     savedCropMin = undefined;
@@ -728,8 +729,7 @@ $(document).ready(function() {
     loadPresetTask = FABRIC.addAsyncTask("Loading preset");
     
     loadPresetTask( true );
-
-    var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
+    
     var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
     presetLoader.load(storage, function(nodeMap){
       
