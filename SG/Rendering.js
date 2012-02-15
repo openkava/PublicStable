@@ -57,13 +57,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       redrawEventHandler = viewportNode.constructEventHandlerNode('Redraw');
       
     dgnode.addMember('backgroundColor', 'Color', options.backgroundColor);
+    
+    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
 
     redrawEventHandler.setScope('viewPort', dgnode);
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'viewPortBeginRender',
-          srcFile: 'FABRIC_ROOT/SG/KL/viewPortBeginRender.kl',
-          entryFunctionName: 'viewPortBeginRender',
+          operatorName: 'viewportBeginRender',
+          srcFile: 'FABRIC_ROOT/SG/KL/viewport.kl',
+          entryFunctionName: 'viewportBeginRender',
           parameterLayout: [
             'window.width',
             'window.height',
@@ -71,8 +73,29 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           ]
         }));
 
-
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
+    var windowRedrawEventHandler = viewportNode.constructEventHandlerNode('WindowRedraw');
+    
+    fabricwindow.windowNode.addMember('numDrawnVerticies', 'Size');
+    fabricwindow.windowNode.addMember('numDrawnTriangles', 'Size');
+    fabricwindow.windowNode.addMember('numDrawnGeometries', 'Size');
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnVerticies', false);
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnTriangles', false);
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnGeometries', false);
+            
+    windowRedrawEventHandler.setScope('window', fabricwindow.windowNode);
+    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
+    windowRedrawEventHandler.appendChildEventHandler(redrawEventHandler);
+    windowRedrawEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'windowBeginRender',
+          srcFile: 'FABRIC_ROOT/SG/KL/window.kl',
+          entryFunctionName: 'windowBeginRender',
+          parameterLayout: [
+            'window.numDrawnVerticies',
+            'window.numDrawnTriangles',
+            'window.numDrawnGeometries'
+          ]
+        }));
     
     var initialLoad = true;
     var visible = false;
@@ -84,13 +107,11 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(initialLoad) {
             initialLoad = false;
             loading = false;
-            redrawEventHandler.setScope('window', fabricwindow.windowNode);
             if(scene.getScenePreRedrawEventHandler()){
-              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
+              windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
-            fabricwindow.redrawEvent.appendEventHandler(redrawEventHandler);
             if(scene.getScenePostRedrawEventHandler()){
-              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
+              windowRedrawEventHandler.appendChildEventHandler(scene.getScenePostRedrawEventHandler());
             }
             if(raycastingEnabled){
               // the sceneRaycastEventHandler propogates the event throughtout the scene.
@@ -102,11 +123,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             // during the 1st redraw.
             viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
-            viewportNode.pub.show = function(){ fabricwindow.show(); visible = true; };
-            viewportNode.pub.hide = function(){ fabricwindow.hide(); visible = false; };
-
-            viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
-            viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
           }
 
@@ -116,6 +132,27 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       });
     };
     startLoadMode();
+    
+    
+    var windowWidth, windowHeight;
+    var retrieveWidthHeight = function(){
+      windowWidth = fabricwindow.windowNode.getData('width');
+      windowHeight = fabricwindow.windowNode.getData('height');
+    }
+    viewportNode.pub.show = function(){
+      fabricwindow.show();
+      retrieveWidthHeight();
+      visible = true;
+    };
+    viewportNode.pub.hide = function(){
+      fabricwindow.hide();
+      visible = false;
+    };
+    window.addEventListener('resize', retrieveWidthHeight);
+    
+
+    viewportNode.pub.getWidth = function(){ return windowWidth; };
+    viewportNode.pub.getHeight = function(){ return windowHeight; };
     
     var propagationRedrawEventHandler = viewportNode.constructEventHandlerNode('DrawPropagation');
     redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
@@ -147,9 +184,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           // this operator calculates the rayOri and rayDir from the scopes collected so far.
           // The scopes should be the window, viewport, camera and projection.
           viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-            operatorName: 'ViewportRaycast',
-            srcFile: 'FABRIC_ROOT/SG/KL/viewPortUpdateRayCast.kl',
-            entryFunctionName: 'viewPortUpdateRayCast',
+            operatorName: 'viewportUpdateRayCast',
+            srcFile: 'FABRIC_ROOT/SG/KL/viewport.kl',
+            entryFunctionName: 'viewportUpdateRayCast',
             parameterLayout: [
               'camera.cameraMat44',
               'camera.projectionMat44',
@@ -186,7 +223,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
-      var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
+      var browserZoom = windowWidth / evt.target.clientWidth;
       if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
@@ -209,7 +246,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return fabricwindow;
     };
     
-    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
     viewportNode.addReferenceInterface('Camera', 'Camera',
       function(nodePrivate){
       // remove the child event handler first
@@ -290,6 +326,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       });
     
     viewportNode.pub.rayCast = function(evt, options) {
+      if(!visible){
+        return;
+      }
       var result = {
         rayData: undefined
       };
@@ -301,16 +340,18 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         viewPortRayCastDgNode.setData('x', elementCoords.x);
         viewPortRayCastDgNode.setData('y', elementCoords.y);
         var nodes = viewPortRaycastEvent.select();
-        result.rayData = viewPortRayCastDgNode.getData('ray');
-
-        if (options.returnOnlyClosestNode) {
-          for (var i = 0; i < nodes.length; i++) {
-            if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
-              result.closestNode = nodes[i];
+        if(nodes.length > 0){
+          result.rayData = viewPortRayCastDgNode.getData('ray');
+  
+          if (options.returnOnlyClosestNode) {
+            for (var i = 0; i < nodes.length; i++) {
+              if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
+                result.closestNode = nodes[i];
+              }
             }
+          }else {
+            result.nodes = nodes;
           }
-        }else {
-          result.nodes = nodes;
         }
       }
       return result;
