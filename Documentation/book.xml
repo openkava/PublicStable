@@ -616,6 +616,80 @@ alembicLoadNode.addEventListener('loadSuccess', function(){
   </section>
   <section>
     <title>Images and Video Guide</title>
-    <para/>
+    <para>The SceneGraph supports reading and using external image resource files as well as
+      external video streams. Typically images are never loaded onto dependency graph nodes or
+      stored in the main memory, they are rather pushed directly to the GPU. When drawing textures
+      there is no need to keep the image in the RAM, however if you want to modify the image using
+      the CPU the images has to be stored in the dependency graph. Fabric Engine supports 2D images
+      as well as 3D images.</para>
+    <section>
+      <title>Anatomy of an Image node</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_images_01.png" width="45%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Similar to the Geometry node, an image node is split into two dependency graph nodes.
+        The <emphasis role="bold">Uniforms</emphasis> node stores all of the non-per-pixel data,
+        such as the width and height of the image. These values are typically exposed to the
+        SceneGraph node as getter function. The <emphasis role="bold">Attributes</emphasis> node
+        contains the per pixel data, however only if the Attributes dependency node is required at
+        all. As mentioned above the per pixel data is normally directly pushed to the GPU.</para>
+    </section>
+    <section>
+      <title>Loading 2D Images</title>
+      <para>Currently the SceneGraph supports loading 2d images of the types <emphasis role="bold"
+          >JPG</emphasis>, <emphasis role="bold">PNG</emphasis>, <emphasis role="bold"
+          >BMP</emphasis>, <emphasis role="bold">TIF</emphasis>, <emphasis role="bold"
+          >EXR</emphasis>, and <emphasis role="bold">HDR</emphasis>. The last two are stores as
+        floating point images, while the other formats are stored as byte images. 2d images are
+        always stored as RGBA, even if the original image data doesn't contain an alpha
+        channel.</para>
+      <programlisting language="JavaScript">var image2D = scene.constructNode('Image2D', {
+  url: 'Resources/tomatoes_960_640.png',
+  createDgNodes: false
+});</programlisting>
+      <para>If you want the image to be loaded into the RAM and accessible in the dependency graph,
+        you need to set the <emphasis role="bold">createDgNodes</emphasis> option to true. You can
+        then attach operators to the Attributes node to perform per pixel calculations in a
+        multi-threaded fashion.</para>
+      <para>Note: The <emphasis role="italic">BackgroundTexture.html<emphasis role="bold"
+          > </emphasis></emphasis>sample application contains a simple example of an image node in
+        use.</para>
+    </section>
+    <section>
+      <title>Loading 3D Images</title>
+      <para>Currently the SceneGraph only supports loading 3d images of the type <emphasis
+          role="bold">NRRD</emphasis>. 3d images are always stored as USHORT with RGBA
+        channels.</para>
+      <programlisting language="JavaScript">var image3D = scene.constructNode('Image3D', {
+  url: 'Resources/threed_texture.nrrd',
+  createDgNodes: false
+});</programlisting>
+      <para>As with 2d iamges, if you want the image to be loaded into the RAM and accessible in the
+        dependency graph, you need to set the <emphasis role="bold">createDgNodes</emphasis> option
+        to true.</para>
+      <para>Note: The <emphasis role="italic">MedicalImaging.html<emphasis role="bold"
+          > </emphasis></emphasis>use-case application contains an example of a 3d image node in
+        use.</para>
+    </section>
+    <section>
+      <title>Loading Video</title>
+      <para>Video nodes are pretty much the same as Image2D nodes, except that they have operators
+        attached which pull frames out of the external video file resource. For that, the current
+        frame is stored on the Attributes dependency graph node and is constantly pushed to the GPU
+        if the time of the video changes. Fabric Engine utilizes the <emphasis role="bold"
+          >FFMPEG</emphasis> library to offer support for a wide variety of video formats. Aside
+        from other formats, the SceneGraph's video node supports: <emphasis role="bold"
+          >AVI</emphasis>, <emphasis role="bold">MOV</emphasis> and <emphasis role="bold"
+          >MP4</emphasis>. </para>
+      <programlisting language="JavaScript">var videoNode = scene.constructNode('Video', {
+  url: 'Resources/bee_960.mov',
+  loop: true
+});</programlisting>
+      <para>Note: The <emphasis role="italic">Video.html<emphasis role="bold"
+          > </emphasis></emphasis>sample application contains a simple example of a video node in
+        use.</para>
+    </section>
   </section>
 </article>
