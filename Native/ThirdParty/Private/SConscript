@@ -128,7 +128,10 @@ Export( 'libpngFlags' )
 
 jpegFlags = {}
 jpegFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'jpeg' ), os.path.join( osArchIncludeBaseDir, 'jpeg' )]
-jpegFlags['LIBS'] = [archLibs( 'jpeg', ['jpeg'] )]
+if buildOS == 'Windows':
+  jpegFlags['LIBS'] = [archLibs( 'jpeg', ['libjpeg'] )]
+else:
+  jpegFlags['LIBS'] = [archLibs( 'jpeg', ['jpeg'] )]
 Export('jpegFlags')
 
 tiffFlags = {}
@@ -158,7 +161,11 @@ else:
 Export( 'ffmpegFlags' )
 
 # opencv
-opencvOSLibs = ['z']
+opencvOSLibs = []
+if buildOS == 'Windows':
+  opencvOSLibs = archLibs( 'zlib', ['zlib'] )
+else:
+  opencvOSLibs = ['z']
 if buildOS == 'Linux':
   opencvOSLibs.append('rt')
 opencvFlags = {}
