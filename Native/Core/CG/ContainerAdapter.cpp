@@ -119,7 +119,7 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "setCount", this, sizeAdapter );
+        std::string name = methodOverloadName( "resize", this, sizeAdapter );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "selfLValue", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
@@ -136,7 +136,7 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "getCount", this );
+        std::string name = methodOverloadName( "size", this );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );

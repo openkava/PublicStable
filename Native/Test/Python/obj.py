@@ -45,7 +45,7 @@ operator resize(\n\
 {\n\
   Size newSize;\n\
   FabricOBJGetNbEntityPoints(objParseHandle, -1, newSize);\n\
-  container.setCount(newSize);\n\
+  container.resize(newSize);\n\
   report "rlnode: resized to " + newSize + " points";\n\
 }\n\
 ')
