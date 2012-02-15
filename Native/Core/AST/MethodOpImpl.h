@@ -36,10 +36,12 @@ namespace Fabric
         std::string const &thisTypeName,
         std::string const &methodName,
         RC::ConstHandle<ParamVector> const &params,
+        std::string const *symbolName,
         RC::ConstHandle<CompoundStatement> const &body
         );
           
-      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getPencilName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
               
     protected:
@@ -50,6 +52,7 @@ namespace Fabric
         std::string const &thisTypeName,
         std::string const &methodName,
         RC::ConstHandle<ParamVector> const &params,
+        std::string const *symbolName,
         RC::ConstHandle<CompoundStatement> const &body
         );
       

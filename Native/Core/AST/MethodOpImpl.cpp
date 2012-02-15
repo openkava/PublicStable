@@ -25,10 +25,11 @@ namespace Fabric
       std::string const &thisTypeName,
       std::string const &methodName,
       RC::ConstHandle<ParamVector> const &params,
+      std::string const *symbolName,
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new MethodOpImpl( location, returnTypeName, thisTypeName, methodName, params, body );
+      return new MethodOpImpl( location, returnTypeName, thisTypeName, methodName, params, symbolName, body );
     }
     
     MethodOpImpl::MethodOpImpl(
@@ -37,12 +38,15 @@ namespace Fabric
       std::string const &thisTypeName,
       std::string const &methodName,
       RC::ConstHandle<ParamVector> const &params,
+      std::string const *symbolName,
       RC::ConstHandle<CompoundStatement> const &body
       )
       : FunctionBase(
         location,
         returnTypeName,
-        body
+        symbolName,
+        body,
+        false
         )
       , m_selfTypeName( thisTypeName )
       , m_methodName( methodName )
@@ -57,18 +61,29 @@ namespace Fabric
       jsonObjectEncoder.makeMember( "methodName" ).makeString( m_methodName );
       m_params->appendJSON( jsonObjectEncoder.makeMember( "params" ), includeLocation );
     }
-          
-    std::string MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    
+    std::string MethodOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::methodOverloadName( m_methodName, cgManager->getAdapter( m_selfTypeName ), m_params->getAdapters( cgManager ) );
+      RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( m_selfTypeName );
+      return CG::MethodPencilName( adapter, m_methodName );
+    }
+    
+    std::string MethodOpImpl::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( m_selfTypeName );
+      return CG::MethodDefaultSymbolName(
+        CG::ExprType( adapter, CG::USAGE_RVALUE ),
+        m_methodName,
+        m_params->getExprTypes( cgManager )
+        );
     }
     
     RC::ConstHandle<ParamVector> MethodOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return ParamVector::Create(
-        Param::Create( getLocation(), "this", m_selfTypeName, !getReturnType().empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE ),
+        Param::Create( getLocation(), "this", m_selfTypeName, !getReturnTypeName().empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE ),
         m_params
         );
     }
-  };
-};
+  }
+}
