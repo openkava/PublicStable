@@ -6,6 +6,7 @@
 #define _FABRIC_UTIL_PARSE_H
 
 #include <string>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
