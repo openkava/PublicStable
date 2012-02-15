@@ -144,10 +144,10 @@ def main():
   for name in registeredConstants:
     value = registeredConstants[name]
     if value.startswith('0x'):
-      jsonConstants.append('const Integer '+name+' = '+value+';')
+      jsonConstants.append('const Size '+name+' = '+value+';')
       sceneGraphConstants.append('\\"'+name+'\\":'+str(int(value,0)))
     elif value.isdigit():
-      jsonConstants.append('const Integer '+name+' = '+value+';')
+      jsonConstants.append('const Size '+name+' = '+value+';')
       sceneGraphConstants.append('\\"'+name+'\\":'+value)
     
   # DEFINE A MAPPING FOR THE DATATYPE
