@@ -49,12 +49,23 @@ namespace Fabric
     return std::string( buffer );
   }
   
+  inline std::string _( uint32_t uint32 )
+  {
+    char buffer[32];
+    snprintf( buffer, 32, "%d", (unsigned int)uint32 );
+    return std::string( buffer );
+  }
+
+// [andrew 20120215] size_t is the same as either uint32_t or uint64_t
+// so this causes a compile error on Linux
+#if !defined(FABRIC_OS_LINUX)
   inline std::string _( size_t size )
   {
     char buffer[32];
     snprintf( buffer, 32, "%lu", (unsigned long)size );
     return std::string( buffer );
   }
+#endif
   
   inline std::string _( uint64_t uint64 )
   {
