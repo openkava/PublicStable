@@ -63,9 +63,9 @@ namespace Fabric
       m_rhs->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
-    std::string BinOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string BinOpImpl::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::BinOpPencilName(
+      return CG::BinOpPencilKey(
         m_binOpType
         );
     }

@@ -28,7 +28,7 @@ namespace Fabric
       
       std::string getThisTypeName() const;
       
-      virtual std::string getPencilName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       

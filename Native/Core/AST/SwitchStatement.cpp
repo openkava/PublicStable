@@ -121,7 +121,7 @@ namespace Fabric
 
           CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
             getLocation(),
-            CG::BinOpPencilName( CG::BIN_OP_EQ ),
+            CG::BinOpPencilKey( CG::BIN_OP_EQ ),
             exprValue.getExprType(),
             caseExprValue.getExprType()
             );

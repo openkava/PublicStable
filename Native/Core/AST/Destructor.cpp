@@ -54,9 +54,9 @@ namespace Fabric
       return m_thisTypeName;
     }
     
-    std::string Destructor::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string Destructor::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::DestructorPencilName( cgManager->getAdapter( m_thisTypeName ) );
+      return CG::DestructorPencilKey( cgManager->getAdapter( m_thisTypeName ) );
     }
     
     std::string Destructor::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const

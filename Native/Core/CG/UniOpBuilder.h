@@ -25,7 +25,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          UniOpPencilName(
+          UniOpPencilKey(
             type
             ),
           UniOpDefaultSymbolName(

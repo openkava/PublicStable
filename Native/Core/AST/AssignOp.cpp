@@ -75,7 +75,7 @@ namespace Fabric
         }
 
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
-          CG::AssignOpPencilName( adapter, m_assignOpType ),
+          CG::AssignOpPencilKey( adapter, m_assignOpType ),
           lhsExprValue.getExprType(),
           rhsExprValue.getExprType()
           );
@@ -88,7 +88,7 @@ namespace Fabric
         // [pzion 20110202] Fall back on binOp + simple assignOp composition              
         function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
-          CG::BinOpPencilName( CG::binOpForAssignOp( m_assignOpType ) ),
+          CG::BinOpPencilKey( CG::binOpForAssignOp( m_assignOpType ) ),
           lhsExprValue.getExprType(),
           rhsExprValue.getExprType()
           );

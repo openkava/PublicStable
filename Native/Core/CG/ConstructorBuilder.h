@@ -31,7 +31,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
             thatAdapter
@@ -54,7 +54,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
             param1Adapter
@@ -77,7 +77,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
             param1Adapter,
@@ -103,7 +103,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
             param1Adapter,

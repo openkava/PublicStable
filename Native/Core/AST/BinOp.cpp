@@ -53,7 +53,7 @@ namespace Fabric
       
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::BinOpPencilName( m_binOpType ),
+        CG::BinOpPencilKey( m_binOpType ),
         lhsType,
         rhsType
         );
