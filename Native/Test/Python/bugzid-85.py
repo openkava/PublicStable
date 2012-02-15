@@ -27,8 +27,8 @@ bindingInit.setParameterLayout([
 
 operatorInit2 = F.DG.createOperator("initiate2")
 operatorInit2.setSourceCode(
-  'operator initiate2(in Size count, io Size a<>[]) {\n'+
-  '  for (Size i=0; i<count; ++i)\n'+
+  'operator initiate2(in Container container, io Size a<>[]) {\n'+
+  '  for (Size i=0; i<container.size; ++i)\n'+
   '    a[i].push(Size(2*i));\n'+
   '}\n')
 operatorInit2.setEntryFunctionName('initiate2')
@@ -41,7 +41,7 @@ if len( operatorInit2.getErrors() ) > 0:
 bindingInit2 = F.DG.createBinding()
 bindingInit2.setOperator(operatorInit2)
 bindingInit2.setParameterLayout([
-  'self.size',
+  'self',
   'self.a<>'
 ])
 
