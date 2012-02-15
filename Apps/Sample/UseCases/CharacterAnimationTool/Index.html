@@ -234,7 +234,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     
   var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
   var skeletonGeometryNode;
-  scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
+  scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false, constructMaterialNodes:false }, function(assetNodes){
     
     rigNode = assetNodes.BodyCharacterRig;
     
