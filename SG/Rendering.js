@@ -150,9 +150,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
     window.addEventListener('resize', retrieveWidthHeight);
     
-
-    viewportNode.pub.getWidth = function(){ return windowWidth; };
-    viewportNode.pub.getHeight = function(){ return windowHeight; };
+    viewportNode.pub.getWidth = function(){ if(windowWidth<=1) retrieveWidthHeight(); return windowWidth; };
+    viewportNode.pub.getHeight = function(){ if(windowHeight<=1) retrieveWidthHeight(); return windowHeight; };
     
     var propagationRedrawEventHandler = viewportNode.constructEventHandlerNode('DrawPropagation');
     redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
@@ -223,7 +222,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
-      if(windowWidth == 0) retrieveWidthHeight();
+      if(windowWidth<=1) retrieveWidthHeight();
       var browserZoom = windowWidth / evt.target.clientWidth;
       if (evt.offsetX != undefined) {
         // Webkit
@@ -455,7 +454,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseMoveEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
