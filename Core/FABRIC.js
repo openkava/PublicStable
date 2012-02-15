@@ -2389,7 +2389,7 @@ var requirejs, require, define;
       }
       element.appendChild(embedTag);
 
-      var onDOMWindowResize = function() {
+      var showViewport = function() {
         if (options.aspectRatio) {
           embedTag.width = '100%';
           embedTag.height = element.offsetWidth * options.aspectRatio;
@@ -2398,8 +2398,11 @@ var requirejs, require, define;
           embedTag.height = '100%';
         }
       };
-      embedTag.width = 1;
-      embedTag.height = 1;
+      var hideViewport = function(){
+        embedTag.width = 1;
+        embedTag.height = 1;
+      }
+      hideViewport();
       
       var result = {
         RT: context.RT,
@@ -2414,17 +2417,10 @@ var requirejs, require, define;
         windowNode: context.VP.viewPort.getWindowNode(),
         redrawEvent: context.VP.viewPort.getRedrawEvent(),
         hide: function(){
-          embedTag.width = 1;
-          embedTag.height = 1;
-          // the element will get resized to the correct size
-          // by the client (Viewport) when it is ready
-          window.removeEventListener('resize', onDOMWindowResize, false);
+          hideViewport();
         },
         show: function(){
-          onDOMWindowResize();
-          // the element will get resized to the correct size
-          // by the client (Viewport) when it is ready
-          window.addEventListener('resize', onDOMWindowResize, false);
+          showViewport();
         },
         needsRedraw: function() {
           context.VP.viewPort.needsRedraw();

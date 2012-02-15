@@ -134,24 +134,26 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     startLoadMode();
     
     
-    var windowWidth, windowHeight;
-    var retrieveWidthHeight = function(){
-      windowWidth = fabricwindow.windowNode.getData('width');
-      windowHeight = fabricwindow.windowNode.getData('height');
+    var browserZoom = 1.0;
+    var retrieveBrowserZoom = function(){
+      browserZoom = fabricwindow.windowNode.getData('width') / windowElement.clientWidth;
     }
     viewportNode.pub.show = function(){
       fabricwindow.show();
-      retrieveWidthHeight();
+      setTimeout(function(){
+        retrieveBrowserZoom();
+      }, 1)
       visible = true;
+      fabricwindow.needsRedraw();
     };
     viewportNode.pub.hide = function(){
       fabricwindow.hide();
       visible = false;
     };
-    window.addEventListener('resize', retrieveWidthHeight);
+    window.addEventListener('resize', retrieveBrowserZoom);
     
-    viewportNode.pub.getWidth = function(){ if(windowWidth<=1) retrieveWidthHeight(); return windowWidth; };
-    viewportNode.pub.getHeight = function(){ if(windowHeight<=1) retrieveWidthHeight(); return windowHeight; };
+    viewportNode.pub.getWidth = function(){  return windowElement.offsetWidth * browserZoom;  };
+    viewportNode.pub.getHeight = function(){ return windowElement.offsetHeight * browserZoom; };
     
     var propagationRedrawEventHandler = viewportNode.constructEventHandlerNode('DrawPropagation');
     redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
@@ -222,8 +224,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
-      if(windowWidth<=1) retrieveWidthHeight();
-      var browserZoom = windowWidth / evt.target.clientWidth;
       if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
