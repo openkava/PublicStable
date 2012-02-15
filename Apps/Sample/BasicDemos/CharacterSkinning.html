@@ -63,7 +63,7 @@ FABRIC.require(["SG/SceneGraph",
   });
 
   var characterAnimationContainerNode;
-  scene.importAssetFile('Models/envelope.dae', {}, function(assetNodes){
+  scene.importAssetFile('Models/envelope.dae', { constructMaterialNodes:false }, function(assetNodes){
      
     var rigNode = assetNodes.polymshCharacterRig;
     var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
