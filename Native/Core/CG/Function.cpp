@@ -93,8 +93,10 @@ namespace Fabric
 
           Function const *function = moduleBuilder.maybeGetPreciseFunction(
             ConstructorPencilKey( paramAdapter ),
-            ExprType( paramAdapter, USAGE_LVALUE ),
-            ExprType( argAdapter, USAGE_RVALUE )
+            ExprTypeVector(
+              ExprType( paramAdapter, USAGE_LVALUE ),
+              ExprType( argAdapter, USAGE_RVALUE )
+              )
             );
           if ( function )
           {

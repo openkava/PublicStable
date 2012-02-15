@@ -122,8 +122,10 @@ namespace Fabric
           CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
             getLocation(),
             CG::BinOpPencilKey( CG::BIN_OP_EQ ),
-            exprValue.getExprType(),
-            caseExprValue.getExprType()
+            CG::ExprTypeVector(
+              exprValue.getExprType(),
+              caseExprValue.getExprType()
+              )
             );
           CG::ExprValue cmpExprValue = function->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );

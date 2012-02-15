@@ -130,8 +130,10 @@ namespace Fabric
       ExprValue srcExprValue = ExprValue( this, USAGE_RVALUE, basicBlockBuilder.getContext(), srcRValue );
       Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
         CG::AssignOpPencilKey( this, ASSIGN_OP ),
-        dstExprValue.getExprType(),
-        srcExprValue.getExprType()
+        CG::ExprTypeVector(
+          dstExprValue.getExprType(),
+          srcExprValue.getExprType()
+          )
         );
       if ( function )
         function->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );

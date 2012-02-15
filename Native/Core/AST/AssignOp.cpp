@@ -76,8 +76,10 @@ namespace Fabric
 
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
           CG::AssignOpPencilKey( adapter, m_assignOpType ),
-          lhsExprValue.getExprType(),
-          rhsExprValue.getExprType()
+          CG::ExprTypeVector(
+            lhsExprValue.getExprType(),
+            rhsExprValue.getExprType()
+            )
           );
         if ( function )
         {
@@ -89,8 +91,10 @@ namespace Fabric
         function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
           CG::BinOpPencilKey( CG::binOpForAssignOp( m_assignOpType ) ),
-          lhsExprValue.getExprType(),
-          rhsExprValue.getExprType()
+          CG::ExprTypeVector(
+            lhsExprValue.getExprType(),
+            rhsExprValue.getExprType()
+            )
           );
         CG::ExprValue binOpResultExprValue = function->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
         llvm::Value *rhsCastedRValue = adapter->llvmCast( basicBlockBuilder, binOpResultExprValue );
