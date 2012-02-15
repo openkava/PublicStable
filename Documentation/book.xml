@@ -407,4 +407,101 @@ characterContainer.addTrackSet(walking, [0,1,2]);</programlisting>
         </inlinemediaobject></para>
     </section>
   </section>
+  <section>
+    <title>Geometry Guide</title>
+    <section>
+      <title>Introduction to Geometry</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_geometry_01.png" width="75%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The geometry hierarchy in Fabric Engine's SceneGraph follows a classical inheritance
+        model. Each node in the hierarchy adds functionality the the constructed SceneGraph node.
+        Geometry can be created in several ways:</para>
+      <para>1. A base geometry type can be constructed, and its geometry data can be populated from
+        JavaScript:</para>
+      <programlisting language="JavaScript">var geometryNode = scene.pub.constructNode('Triangles');
+geometryNode.loadGeometryData({
+  positions: [FABRIC.RT.vec3(0, 0, 0), FABRIC.RT.vec3(0, 0, 1.0), FABRIC.RT.vec3(1.0, 0, 0)], 
+  indices: [0, 1, 2]
+}); </programlisting>
+      <para>2. Geometry can be constructed by loading an external resource file, such as an OBJ
+        file, for example:</para>
+      <programlisting language="JavaScript">scene.importAssetFile('Models/cow.obj',{ splitMaterials: true } );</programlisting>
+      <para>3. A primitive can be constructed. The primitive constructor assigns geometry generation
+        operators which create all of the vertices and other data such as normals based on options
+        on the primitive.</para>
+      <programlisting language="JavaScript">var primitiveNode = scene.constructNode('Circle', { radius: 7 });</programlisting>
+    </section>
+    <section>
+      <title>Anatomy of a Geometry Node</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_geometry_02.png" width="40%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>A geometry SceneGraphNode contains several dependency graph nodes. Fabric Engine's
+        slicing scheme is used to represent the data, and to allow high performance operations such
+        as deformation on the geometry using multi-threading.</para>
+      <para>The <emphasis role="bold">Uniforms</emphasis> node stores single values that are
+        associated with the geometry, but don't vary per component. Primitives assign uniform values
+        that are often exposed from the scene graph node as modifiable parameters. Triangles and
+        Lines also store an array of Integers on the Uniforms node called <emphasis role="bold"
+          >indexList</emphasis> which defines the connectivity of points for lines and
+        triangles.</para>
+      <para>The <emphasis role="bold">Attributes</emphasis> node stores all the ‘per-component’
+        information. Attributes can easily be added and removed from geometry by simply adding and
+        removing members from this node. The Attributes node is sliced, so the number of slices
+        matches the number of vertices, for example.</para>
+      <para>The <emphasis role="bold">BoundingBox</emphasis> node is generated using the attributes,
+        and is used to accelerate interaction with the geometry such as raycasting.</para>
+    </section>
+    <section>
+      <title>Geometry Generation</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_geometry_03.png" width="40%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Note: this are will be re-structured slightly once we have support for node
+        nesting.</para>
+      <para>The purpose of a generator operator is to generate the vertex information that is stored
+        in the attributes node, and the indexList (for Triangles and Lines), which is stored in the
+        ‘Uniforms’ node. First we calculate the number of vertices in the <emphasis role="bold"
+          >setCount</emphasis> operator, and then populate the attributes node in the second
+        operator. The second operator also writes the indexList which is stored on the Uniforms
+        node.</para>
+    </section>
+    <section>
+      <title>Geometry Services</title>
+      <para>A key service that the the Geometry node provides is integration with the rendering
+        pipeline. The design of Fabric Engine's SceneGraph is based heavily on OpenGL shading
+        language GLSL, and all rendering in the OpenGL viewport is performed via shaders. </para>
+      <para>The geometry node constructs an event handler and binds operators to it for loading all
+        the various vertex attributes into the GPU and storing the buffer ids. This means that you
+        can add a new vertex attributes to a geometry, then use that data in a shader and the
+        geometry node will take care of loading the data so it is ready for the shader. This is
+        discussed in more detail in the <emphasis role="bold">Drawing Pipeling Guide</emphasis>
+        section of this document.</para>
+    </section>
+    <section>
+      <title>Geometry Data Copies</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_geometry_04.png" width="60%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Geometry data copies provide a way to split the definition of a rendered geometry into
+        multiple sections. A Geometry data copy is used to extend a base geometry, usually by adding
+        deformation operators. The base geometry represents the original undeformed geometry, and
+        the data copy is used to apply changes. The Geometry data copy contains only members
+        required for the modification. During rendering, uniforms and attributes are loaded from the
+        base geometry and the data copy.</para>
+      <para>Since the Attributes node is sliced, deformation can be performed using
+        multi-threading.</para>
+      <programlisting language="JavaScript">var geometryCopyNode = scene.constructNode('GeometryDataCopy', {baseGeometryNode: geometryNode} );
+geometryCopyNode.addVertexAttributeValue('positions', 'Vec3', { genVBO:true, dynamic:true } );</programlisting>
+    </section>
+  </section>
 </article>
