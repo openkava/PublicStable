@@ -156,7 +156,7 @@ namespace Fabric
     }
 
 
-    size_t ContainerImpl::GetCount( void const *data )
+    size_t ContainerImpl::size( void const *data )
     {
       RC::WeakHandle<DG::Container> const *bits = *static_cast<RC::WeakHandle<DG::Container> const * const *>( data );
       if( !bits )
@@ -165,7 +165,7 @@ namespace Fabric
       return bits->makeStrong()->size();
     }
 
-    void ContainerImpl::SetCount( void *data, size_t count )
+    void ContainerImpl::resize( void *data, size_t count )
     {
       RC::WeakHandle<DG::Container> *bits = *static_cast<RC::WeakHandle<DG::Container> * const *>( data );
       if( !bits )
