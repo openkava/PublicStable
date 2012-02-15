@@ -144,17 +144,14 @@
       <programlisting language="JavaScript">FABRIC.displayDebugger();</programlisting>
     </section>
   </section>
-  <section>
+  <section role="">
     <title>SceneGraph Type System</title>
-    <section>
-      <title>Introduction to types</title>
-      <para>Fabric Engine can work with any type of data. To define the structure of data, you need
-        to introduce <emphasis role="bold">Types</emphasis>. Types are very similar to structs in
-        C++. Core types, such as <emphasis role="bold">Integer</emphasis>, <emphasis role="bold"
-          >Boolean</emphasis> or <emphasis role="bold">String</emphasis> are defined by the core.
-        More complex types, such as the <emphasis role="bold">Vec3</emphasis>, for example, are
-        defined by the SceneGraph.</para>
-    </section>
+    <para>Fabric Engine can work with any type of data. To define the structure of data, you need to
+      introduce <emphasis role="bold">Types</emphasis>. Types are very similar to structs in C++.
+      Core types, such as <emphasis role="bold">Integer</emphasis>, <emphasis role="bold"
+        >Boolean</emphasis> or <emphasis role="bold">String</emphasis> are defined by the core. More
+      complex types, such as the <emphasis role="bold">Vec3</emphasis>, for example, are defined by
+      the SceneGraph.</para>
     <section>
       <title>Querying types</title>
       <para>You can access all of the currently registered types, by calling on the <emphasis
@@ -273,31 +270,28 @@ var hierarchicalTransform = scene.constructNode('Transform', {
   </section>
   <section>
     <title>Animation Guide</title>
-    <section>
-      <title>Introduction to Animation in Fabric Engine</title>
-      <para><inlinemediaobject>
-          <imageobject>
-            <imagedata fileref="images/sg_animation_01.png" width="60%"/>
-          </imageobject>
-        </inlinemediaobject></para>
-      <para>The animation pipeline in Fabric Engine's SceneGraph is heavily inspired by the
-        animation systems commonly found in game engines. The SceneGraphNodes in the animation
-        pipeline are:</para>
-      <itemizedlist>
-        <listitem>
-          <para><emphasis role="bold">AnimationController</emphasis></para>
-        </listitem>
-        <listitem>
-          <para><emphasis role="bold">TrackAnimationContainer</emphasis></para>
-        </listitem>
-        <listitem>
-          <para><emphasis role="bold">CharacterAnimationContainer</emphasis></para>
-        </listitem>
-      </itemizedlist>
-      <para>The actual evaluation of the animation is done in KL operators on the target nodes. In
-        the image above the animation is driving a transform node, but any node can be driven by
-        animation in Fabric Engine's SceneGraph.</para>
-    </section>
+    <para><inlinemediaobject>
+        <imageobject>
+          <imagedata fileref="images/sg_animation_01.png" width="60%"/>
+        </imageobject>
+      </inlinemediaobject></para>
+    <para>The animation pipeline in Fabric Engine's SceneGraph is heavily inspired by the animation
+      systems commonly found in game engines. The SceneGraphNodes in the animation pipeline
+      are:</para>
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">AnimationController</emphasis></para>
+      </listitem>
+      <listitem>
+        <para><emphasis role="bold">TrackAnimationContainer</emphasis></para>
+      </listitem>
+      <listitem>
+        <para><emphasis role="bold">CharacterAnimationContainer</emphasis></para>
+      </listitem>
+    </itemizedlist>
+    <para>The actual evaluation of the animation is done in KL operators on the target nodes. In the
+      image above the animation is driving a transform node, but any node can be driven by animation
+      in Fabric Engine's SceneGraph.</para>
     <section>
       <title>The Animation Controller node</title>
       <para>An Animation Controller is responsible for computing a time value from given inputs.
@@ -409,31 +403,28 @@ characterContainer.addTrackSet(walking, [0,1,2]);</programlisting>
   </section>
   <section>
     <title>Geometry Guide</title>
-    <section>
-      <title>Introduction to Geometry</title>
-      <para><inlinemediaobject>
-          <imageobject>
-            <imagedata fileref="images/sg_geometry_01.png" width="75%"/>
-          </imageobject>
-        </inlinemediaobject></para>
-      <para>The geometry hierarchy in Fabric Engine's SceneGraph follows a classical inheritance
-        model. Each node in the hierarchy adds functionality the the constructed SceneGraph node.
-        Geometry can be created in several ways:</para>
-      <para>1. A base geometry type can be constructed, and its geometry data can be populated from
-        JavaScript:</para>
-      <programlisting language="JavaScript">var geometryNode = scene.pub.constructNode('Triangles');
+    <para>The geometry hierarchy in Fabric Engine's SceneGraph follows a classical inheritance
+      model. Each node in the hierarchy adds functionality the the constructed SceneGraph node.
+      Geometry can be created in several ways:</para>
+    <para><inlinemediaobject>
+        <imageobject>
+          <imagedata fileref="images/sg_geometry_01.png" width="75%"/>
+        </imageobject>
+      </inlinemediaobject></para>
+    <para>1. A base geometry type can be constructed, and its geometry data can be populated from
+      JavaScript:</para>
+    <programlisting language="JavaScript">var geometryNode = scene.pub.constructNode('Triangles');
 geometryNode.loadGeometryData({
   positions: [FABRIC.RT.vec3(0, 0, 0), FABRIC.RT.vec3(0, 0, 1.0), FABRIC.RT.vec3(1.0, 0, 0)], 
   indices: [0, 1, 2]
 }); </programlisting>
-      <para>2. Geometry can be constructed by loading an external resource file, such as an OBJ
-        file, for example:</para>
-      <programlisting language="JavaScript">scene.importAssetFile('Models/cow.obj',{ splitMaterials: true } );</programlisting>
-      <para>3. A primitive can be constructed. The primitive constructor assigns geometry generation
-        operators which create all of the vertices and other data such as normals based on options
-        on the primitive.</para>
-      <programlisting language="JavaScript">var primitiveNode = scene.constructNode('Circle', { radius: 7 });</programlisting>
-    </section>
+    <para>2. Geometry can be constructed by loading an external resource file, such as an OBJ file,
+      for example:</para>
+    <programlisting language="JavaScript">scene.importAssetFile('Models/cow.obj',{ splitMaterials: true } );</programlisting>
+    <para>3. A primitive can be constructed. The primitive constructor assigns geometry generation
+      operators which create all of the vertices and other data such as normals based on options on
+      the primitive.</para>
+    <programlisting language="JavaScript">var primitiveNode = scene.constructNode('Circle', { radius: 7 });</programlisting>
     <section>
       <title>Anatomy of a Geometry Node</title>
       <para><inlinemediaobject>
@@ -502,6 +493,129 @@ geometryNode.loadGeometryData({
         multi-threading.</para>
       <programlisting language="JavaScript">var geometryCopyNode = scene.constructNode('GeometryDataCopy', {baseGeometryNode: geometryNode} );
 geometryCopyNode.addVertexAttributeValue('positions', 'Vec3', { genVBO:true, dynamic:true } );</programlisting>
+      <para>Note: The <emphasis role="italic">PerPointDeformation.html</emphasis> sample application
+        contains an example of this.</para>
     </section>
+  </section>
+  <section>
+    <title>Parsers Guide</title>
+    <para>Fabric Engine's SceneGraph comes with several parsers for importing external resource
+      files. Since the loading of external data happens asynchronously, you will need to provide
+      callback functions to the parsers, which will executed once the content is loaded, parsed and
+      ready for use. Parsers are automatically invoked and chosen based on the file extension of the
+      resource to load.</para>
+    <section>
+      <title>The OBJ Parser</title>
+      <para>The OBJ file format can store polygonal meshes with UV coordinates as well as basic
+        material settings. You can use the OBJ parser like this:</para>
+      <programlisting language="JavaScript">scene.importAssetFile('Models/cow.obj', {splitMaterials: false}, function(assetNodes) {
+  for(var name in assetNodes) {
+    console.log(assetNodes[name]);
+  }
+});</programlisting>
+      <para>The last argument to the <emphasis role="bold">importAssetFile</emphasis> method is the
+        function to execute once the parsed result is ready for consumption. The OBJ parser returns
+        a dictionary of triangle geometry nodes representing all of the geometries which are part of
+        the OBJ file. If the <emphasis role="bold">splitMaterials</emphasis> option is set to true,
+        the polygon material assignments of the OBJ file will further split the meshes, to enable
+        the SceneGraph's drawing pipeline to render them with separate shaders.</para>
+      <para>Note: The <emphasis role="italic">ModelViewer.html<emphasis role="bold"
+          > </emphasis></emphasis>sample application contains an example of the OBJ parser in
+        use.</para>
+    </section>
+    <section>
+      <title>The Collada Parser</title>
+      <para>Collada's DAE file format can store complex types of data, including polygonal meshes,
+        transform hierarchies, point clouds as well as other complex 3D data structures. The
+        SceneGraph's collada parser currently supports:<itemizedlist>
+          <listitem>
+            <para>Polygonal Meshes including UV coordinates and skinning weights, imported as
+              Triangles nodes</para>
+          </listitem>
+          <listitem>
+            <para>Character Hierarchies used for skinning, imported as CharacterRig nodes</para>
+          </listitem>
+          <listitem>
+            <para>FCurve animation on hierarchies, imported as CharacterAnimationContainer
+              nodes</para>
+          </listitem>
+          <listitem>
+            <para>Cameras including focal length and aperture settings, imported as Camera
+              nodes</para>
+          </listitem>
+        </itemizedlist></para>
+      <para>The Collada parser can be deployed like this:</para>
+      <programlisting language="JavaScript">scene.importAssetFile('Models/character.dae', {
+    constructRigFromHierarchy: true
+}, function(assetNodes) {
+  for(var name in assetNodes) {
+    console.log(assetNodes[name]);
+  }
+});</programlisting>
+      <para>The last argument of the parser's invocation is a function to be called once the collada
+        data is parsed and ready for consumption. In the example above we simply log the data to the
+        console. For further details on the character related nodes please see the <emphasis
+          role="bold">Character Guide</emphasis> section of this document.</para>
+      <para>Note: The <emphasis role="italic">CharacterSkeleton.html<emphasis role="bold"
+          > </emphasis></emphasis>sample application contains an example of the Collada parser in
+        use.</para>
+    </section>
+    <section>
+      <title>The Alembic Parser</title>
+      <para>Alembic ABC file format can store several kinds of data. The SceneGraph's Alembic
+        intergration currently supports:<itemizedlist>
+          <listitem>
+            <para>Polygonal Meshes including UV coordinates and normals, imported as Triangle
+              nodes</para>
+          </listitem>
+          <listitem>
+            <para>Curve lists including width and color values, imported as Lines nodes</para>
+          </listitem>
+          <listitem>
+            <para>Cameras with proper focal length and aperture settings, imported as Camera
+              nodes</para>
+          </listitem>
+          <listitem>
+            <para>Point clouds including full transform support, color values, imported as Points
+              nodes</para>
+          </listitem>
+        </itemizedlist></para>
+      <para>Since Alembic stores animation as discrete samples the parser doesn't load all of the
+        data to memory, but rather constructs operators which re-evaluate based on time changes.
+        This way animation can be loaded into Fabric Engine and synchronized with the SceneGraph's
+        global time or a different AnimationController.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_parsers_01.png" width="80%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The Alembic resource node holds what is called a <emphasis role="bold"
+          >AlembicHandle</emphasis> to the original resource file, which is forwarded through the
+        dependency graph and used by all of the ABC operators to pull the relevant data out of the
+        Alembic file. Per se there is no parsing happening in JavaScript, so once the resource is
+        loaded, the <emphasis role="bold">loadSuccess</emphasis> event fires. The sample code below
+        shows how to load data from an Alembic resource. For more details on event handling please
+        refer to the <emphasis role="bold">Event Guide</emphasis> section of this document.</para>
+      <programlisting language="JavaScript">var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+  url: 'Models/cow.abc'
+});
+alembicLoadNode.addEventListener('loadSuccess', function(){
+  var assetNodes = alembicLoadNode.getParsedNodes(); 
+  for(var name in assetNodes) {
+    console.log(assetNodes[name]);
+  }
+});</programlisting>
+      <para>Note: The <emphasis role="italic">Alembic/Primitives.html<emphasis role="bold"
+          > </emphasis></emphasis>sample application contains an example of the Alembic parser in
+        use.</para>
+    </section>
+  </section>
+  <section>
+    <title>Characters Guide</title>
+    <para>This is do be done for Phil!</para>
+  </section>
+  <section>
+    <title>Images and Video Guide</title>
+    <para/>
   </section>
 </article>
