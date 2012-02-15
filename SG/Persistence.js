@@ -238,7 +238,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     var dataObj;
   
     var constructedNodeMap = {};
-    var nodeNameRemapping = {};
+    var nodeNameToStoredNameRemapping = {};
+    var nodeStoredNameToNodeRemapping = {};
     var nodeDataMap = {};
     
     if(options.preLoadScene){
@@ -250,8 +251,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     var nodeData;
     var sgnodeDataMap = {};
     var sceneDeserializer = {
-      getNode: function(nodeName) {
-        nodeName = nodeNameRemapping[ nodeName ]
+      getNode: function(storedNodeName) {
+        var nodeName = nodeStoredNameToNodeRemapping[ storedNodeName ]
         if (constructedNodeMap[nodeName]) {
           return constructedNodeMap[nodeName];
         }else {
@@ -288,6 +289,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               // Assign the function for interfacing with the binary node.
               // by assigning the function here, the closure contains the binary data node.
               sceneDeserializerInterface.loadDGNodesData = function(sgnodeName, desc) {
+                sgnodeName = sgnodeDataMap[nodeNameToStoredNameRemapping[sgnodeName]];
                 if(dataObj.metadata.binaryStorage){
                   loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
                     loadNodeBinaryFileNode.pub.loadDGNodes(sgnodeName, desc);
@@ -325,7 +327,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                   node = scene.pub.constructNode(nodeData.type, nodeData.options);
                 }
                 // in case a name collision occured, store a name remapping table.
-                nodeNameRemapping[ nodeData.name ] = node.getName();
+                nodeStoredNameToNodeRemapping[ nodeData.name ] = node.getName();
+                nodeNameToStoredNameRemapping[ node.getName() ] = nodeData.name;
                 var nodePrivate = scene.getPrivateInterface(node);
                 nodePrivate.readData(sceneDeserializerInterface, nodeData.data);
                 constructedNodeMap[node.getName()] = node;

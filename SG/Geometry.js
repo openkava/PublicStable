@@ -288,7 +288,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           );
         }
       }
-      sceneDeserializer.loadDGNodesData(options.name, {
+      sceneDeserializer.loadDGNodesData(geometryNode.pub.getName(), {
         uniforms:{
           dgnode: uniformsdgnode
         },
