@@ -63,23 +63,6 @@ namespace Fabric
     
       unsigned m_index;
     };
-    
-    class Prototype::SizeParam : public Prototype::Param
-    {
-    public:
-    
-      SizeParam( unsigned index )
-        : Param( index )
-      {
-      }
-    
-      virtual bool isSizeParam() const { return true; }
-
-      virtual std::string desc() const
-      {
-        return "size";
-      }
-    };
 
     class Prototype::ContainerParam : public Prototype::Param
     {
@@ -219,9 +202,7 @@ namespace Fabric
               throw Exception( "missing member name" );
             memberName = desc.substr( memberNameStart, memberNameEnd - memberNameStart );
           
-            if ( memberName == "size" )
-              param = new SizeParam(i);
-            else if ( memberName == "index" )
+            if ( memberName == "index" )
               param = new IndexParam(i);
             else if ( desc.substr( memberNameEnd ) == "<>" )
               param = new ArrayParam( i, memberName );
@@ -295,7 +276,6 @@ namespace Fabric
           std::set<void *> arrayAccessSet;
 
           bool haveLValueContainerAccess = false;
-          bool haveSize = false;
           
           for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           {
@@ -319,15 +299,6 @@ namespace Fabric
                   haveLValueContainerAccess = true;
 
                 result->setBaseAddress( prefixCount+param->index(), container->getRTContainerData() );
-              }
-              else if ( param->isSizeParam() )
-              {
-                if ( astParamImpl != m_rtSizeImpl )
-                  errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getUserName()) );
-                if ( astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  errors.push_back( parameterErrorPrefix + "'size' cannot be an 'io' parmeter" );
-                result->setBaseAddress( prefixCount+param->index(), (void *)container->size() );
-                haveSize = true;
               }
               else if ( param->isIndexParam() )
               {
@@ -421,8 +392,6 @@ namespace Fabric
           {
             if( !elementAccessSet.empty() )
               errors.push_back( nodeErrorPrefix + "cannot have both per-slice data parameters and an 'io' Container parameter (calling Container::resize() would invalidate the data)" );
-            if( haveSize )
-              errors.push_back( nodeErrorPrefix + "cannot have both 'size' parameter and an 'io' Container parameter (calling Container::resize() would invalidate 'size')" );
           }
         }
       }

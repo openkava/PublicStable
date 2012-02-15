@@ -9,6 +9,8 @@
 #include "Manager.h"
 #include "ModuleBuilder.h"
 #include "FunctionBuilder.h"
+#include "ConstructorBuilder.h"
+#include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
@@ -59,11 +61,7 @@ namespace Fabric
       
       llvm::Function *toStringFunction = 0;
       {
-        std::string name = constructOverloadName( stringAdapter, this );
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "stringLValue", stringAdapter, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "arrayRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        ConstructorBuilder functionBuilder( moduleBuilder, stringAdapter, this );
         if ( buildFunctions )
         {
           llvm::Value *stringLValue = functionBuilder[0];
@@ -77,30 +75,8 @@ namespace Fabric
         }
       }
 
-/*      {
-        std::string name = methodOverloadName( "getName", this );
-        std::vector<FunctionParam> params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( stringAdapter, USAGE_RVALUE ), params );
-        if ( buildFunctions )
-        {
-          llvm::Value *containerRValue = functionBuilder[0];
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-          basicBlockBuilder->SetInsertPoint( basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" ) );
-          CG::FunctionScope &functionScope = functionBuilder.getScope();
-          functionScope.llvmPrepareReturnLValue( basicBlockBuilder );
-          llvm::Value *resultLValue = functionBuilder.getScope().llvmGetReturnLValue();
-          basicBlockBuilder->CreateCall2( toStringFunction, resultLValue, containerRValue );
-          basicBlockBuilder->CreateRetVoid();
-        }
-      }*/
-
       {
-        std::string name = constructOverloadName( booleanAdapter, this );
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "booleanLValue", booleanAdapter, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "containerRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        ConstructorBuilder functionBuilder( moduleBuilder, booleanAdapter, this );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -119,11 +95,13 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "resize", this, sizeAdapter );
-        std::vector<FunctionParam> params;
-        params.push_back( FunctionParam( "selfLValue", this, CG::USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params, false, 0, true );
+        MethodBuilder functionBuilder(
+          moduleBuilder,
+          0,
+          this, USAGE_LVALUE,
+          "resize",
+          "newSize", sizeAdapter, USAGE_RVALUE
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -136,10 +114,12 @@ namespace Fabric
       }
 
       {
-        std::string name = methodOverloadName( "size", this );
-        std::vector<FunctionParam> params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+        MethodBuilder functionBuilder(
+          moduleBuilder,
+          sizeAdapter,
+          this, USAGE_RVALUE,
+          "size"
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
