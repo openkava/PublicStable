@@ -759,8 +759,8 @@ class _DG( _NAMESPACE ):
       if 'members' in diff:
         self.__members = diff[ 'members' ]
 
-      if 'count' in diff:
-        self.__count = diff[ 'count' ]
+      if 'size' in diff:
+        self.__count = diff[ 'size' ]
 
     def _handle( self, cmd, arg ):
       if cmd == 'dataChange':
@@ -775,8 +775,17 @@ class _DG( _NAMESPACE ):
         self._dg._executeQueuedCommands()
       return self.__count
 
+    def size( self ):
+      if self.__count is None:
+        self._dg._executeQueuedCommands()
+      return self.__count
+
     def setCount( self, count ):
-      self._nObjQueueCommand( 'setCount', count )
+      self._nObjQueueCommand( 'resize', count )
+      self.__count = None
+
+    def resize( self, count ):
+      self._nObjQueueCommand( 'resize', count )
       self.__count = None
 
     def getMembers( self ):
