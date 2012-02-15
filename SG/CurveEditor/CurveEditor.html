@@ -24,11 +24,11 @@
 
 $(document).ready(function() {
 
-  if(!animationLibraryNode){
-    alert("this page must be opened from a running demo, passing it the correct animationLibraryNode");
+  if(!characterAnimationContainerNode){
+    alert("this page must be opened from a running demo, passing it the correct characterAnimationContainerNode");
   }
 
-  curveEditor = constructCurveEditor('curveContainer', scene, animationLibraryNode, {
+  curveEditor = constructCurveEditor('curveContainer', scene, characterAnimationContainerNode, {
     trackSetId: trackSetId,
     drawKeys: drawKeys,
     trackFilters: trackFilters

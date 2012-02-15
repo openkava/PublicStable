@@ -229,7 +229,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      preLoadScene: false
+      preLoadScene: false,
+      typeRemappings: {}
     });
     
     // Preloading nodes enables data to be loaded into existing nodes.
@@ -324,7 +325,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               FABRIC.createAsyncTask(function(){
                 var node = preLoadedNodes[nodeData.name];
                 if (!node) {
-                  node = scene.pub.constructNode(nodeData.type, nodeData.options);
+                  var type = options.typeRemappings[nodeData.type] || nodeData.type;
+                  node = scene.pub.constructNode(type, nodeData.options);
                 }
                 // in case a name collision occured, store a name remapping table.
                 nodeStoredNameToNodeRemapping[ nodeData.name ] = node.getName();
