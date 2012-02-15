@@ -7,7 +7,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>

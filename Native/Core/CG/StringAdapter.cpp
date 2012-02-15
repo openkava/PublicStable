@@ -16,7 +16,7 @@
 #include "AssOpBuilder.h"
 #include "BinOpBuilder.h"
 #include "BasicBlockBuilder.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StringImpl.h>

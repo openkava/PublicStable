@@ -12,7 +12,7 @@
 #include "BinOpBuilder.h"
 #include "UniOpBuilder.h"
 #include "BasicBlockBuilder.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/FloatDesc.h>
 #include <Fabric/Core/RT/FloatImpl.h>

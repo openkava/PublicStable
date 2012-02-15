@@ -8,7 +8,7 @@
 #include <Fabric/Core/AST/BinOp.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/OpTypes.h>

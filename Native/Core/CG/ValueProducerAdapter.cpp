@@ -16,7 +16,7 @@
 #include "ConstructorBuilder.h"
 #include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/ValueProducerDesc.h>
 #include <Fabric/Core/RT/StringImpl.h>

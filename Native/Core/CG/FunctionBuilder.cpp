@@ -5,7 +5,7 @@
 #include "FunctionBuilder.h"
 #include "ModuleBuilder.h"
 #include "Manager.h"
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/RT/Manager.h>
 
 #include <llvm/Module.h>

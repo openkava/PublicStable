@@ -16,7 +16,7 @@
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Base/Util/SimpleString.h>

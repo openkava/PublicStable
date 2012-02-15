@@ -7,7 +7,7 @@
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
