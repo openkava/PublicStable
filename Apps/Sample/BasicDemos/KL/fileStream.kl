@@ -99,7 +99,7 @@ operator loadTrianglesFromStream
     stream.setSeek(offset);
     Size newCount;
     stream.readSize(newCount);
-    container.setCount(newCount);
+    container.resize(newCount);
 
     stream.readData(positions.data(),positions.dataSize());
     stream.readData(normals.data(),normals.dataSize());

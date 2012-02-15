@@ -58,7 +58,7 @@ FABRIC.SceneGraph.registerNodeType('Cross', {
 
     var crossNode = scene.constructNode('Lines', options);
     crossNode.pub.addUniformValue('crosssize', 'Scalar', options.size);
-    crossNode.getAttributesDGNode().setCount(6);
+    crossNode.getAttributesDGNode().resize(6);
     crossNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateCross',
@@ -92,7 +92,7 @@ FABRIC.SceneGraph.registerNodeType('Rectangle', {
     var rectangleNode = scene.constructNode('Lines', options);
     rectangleNode.pub.addUniformValue('length', 'Scalar', options.length);
     rectangleNode.pub.addUniformValue('width', 'Scalar', options.width);
-    rectangleNode.getAttributesDGNode().setCount(8);
+    rectangleNode.getAttributesDGNode().resize(8);
     rectangleNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateRectangle',
@@ -129,7 +129,7 @@ FABRIC.SceneGraph.registerNodeType('BoundingBox', {
     var boundingBoxNode = scene.constructNode('Lines', options);
     boundingBoxNode.pub.addUniformValue('bboxmin', 'Vec3', options.bboxmin);
     boundingBoxNode.pub.addUniformValue('bboxmax', 'Vec3', options.bboxmax);
-    boundingBoxNode.getAttributesDGNode().setCount(8);
+    boundingBoxNode.getAttributesDGNode().resize(8);
     boundingBoxNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateBoundingBox',
@@ -394,7 +394,7 @@ FABRIC.SceneGraph.registerNodeType('Cuboid', {
     cubeNode.pub.addUniformValue('length', 'Scalar', options.length);
     cubeNode.pub.addUniformValue('width', 'Scalar', options.width);
     cubeNode.pub.addUniformValue('height', 'Scalar', options.height);
-    cubeNode.getAttributesDGNode().setCount(24);
+    cubeNode.getAttributesDGNode().resize(24);
 
     // getters and setters
     var uniforms = cubeNode.getUniformsDGNode();

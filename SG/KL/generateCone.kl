@@ -25,7 +25,7 @@ operator generateCone(
     numVertices += nbSides + 1;
     numTriangles += nbSides;
   }
-  container.setCount(Size(numVertices));
+  container.resize(Size(numVertices));
 
   indices.resize(numTriangles * 3);
 

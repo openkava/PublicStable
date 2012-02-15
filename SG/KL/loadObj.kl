@@ -106,7 +106,7 @@ operator setObjGeom(
 ) {
   Size count;
   FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, count);
-  container.setCount(count);
+  container.resize(count);
   FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
   FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
   FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );

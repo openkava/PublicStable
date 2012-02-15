@@ -171,7 +171,7 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
         var linesAttributesDGNode = linesNode.getAttributesDGNode();
         linesAttributesDGNode.setDependency(scene.getGlobalsNode(), 'globals');
         linesAttributesDGNode.setDependency(dgnode,'kinect');
-        linesAttributesDGNode.setCount(120); // 6 skeletons, 20 positions
+        linesAttributesDGNode.resize(120); // 6 skeletons, 20 positions
         var indices = [];
         for(var i=0;i<6;i++){
           indices.push(i*20+0);  // KINECT_POSITION_HIP_CENTER
@@ -238,7 +238,7 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
       var pointsAttributesDGNode = pointsNode.getAttributesDGNode();
       pointsAttributesDGNode.setDependency(scene.getGlobalsNode(), 'globals');
       pointsAttributesDGNode.setDependency(dgnode,'kinect');
-      pointsAttributesDGNode.setCount(320*240);
+      pointsAttributesDGNode.resize(320*240);
 
       // create init operator
       pointsAttributesDGNode.bindings.append(scene.constructOperator({

@@ -37,8 +37,8 @@ $(document).ready(function() {
     data.b.push(Math.random() * 100.0);
   }
 
-  // increase the slicecount of the node
-  dgnode.setCount(data.a.length);
+  // increase the size of the node
+  dgnode.resize(data.a.length);
   
   // save the data to the node
   dgnode.setBulkData(data);

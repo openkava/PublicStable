@@ -18,7 +18,7 @@ operator generateTorus(
   var Integer slices = (detail >= 0) ? (detail + 3) : 3;
   var Integer loops = (detail >= 0) ? ((detail * 2) + 3) : 3;
 
-  container.setCount(Size(slices * loops));
+  container.resize(Size(slices * loops));
 
   var Integer nb_vtx = slices * loops;
   var Integer nb_tri = 2 * slices * loops;
