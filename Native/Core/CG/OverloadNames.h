@@ -1,9 +1,15 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+
 #ifndef _FABRIC_RT_OVERLOAD_NAMES_H
 #define _FABRIC_RT_OVERLOAD_NAMES_H
 
+#include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/ExprType.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OpTypes.h>
+
 #include <string>
 #include <vector>
 
@@ -13,52 +19,243 @@ namespace Fabric
   {
     class Adapter;
     
-    std::string constructOverloadName( RC::ConstHandle<CG::Adapter> const &dstAdapter, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
-    inline std::string constructOverloadName( RC::ConstHandle<CG::Adapter> const &dstAdapter, RC::ConstHandle<CG::Adapter> const &param1Type )
+    inline std::string FunctionPencilName( std::string const &functionName )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      paramTypes.push_back( param1Type );
-      return constructOverloadName( dstAdapter, paramTypes );
+      return "function " + functionName;
     }
-    std::string constructOverloadName( RC::Handle<CG::Manager> const &cgManager, std::string const &dstType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
-    inline std::string constructOverloadName( RC::Handle<CG::Manager> const &cgManager, std::string const &dstType, RC::ConstHandle<CG::Adapter> const &param1Type )
+    std::string FunctionDefaultSymbolName( std::string const &functionName, ExprTypeVector const &paramTypes );
+    inline std::string FunctionDefaultSymbolName( std::string const &functionName )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      paramTypes.push_back( param1Type );
-      return constructOverloadName( cgManager, dstType, paramTypes );
+      ExprTypeVector paramTypes;
+      return FunctionDefaultSymbolName( functionName, paramTypes );
     }
-    
-    std::string assignOpMethodName( AssignOpType type );
-    std::string uniOpOverloadName( UniOpType type, RC::ConstHandle< CG::Adapter > const &adapter );
-    std::string binOpOverloadName( BinOpType type, RC::ConstHandle< CG::Adapter > const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter );
-    
-    std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
-    inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType )
+    inline std::string FunctionDefaultSymbolName( std::string const &functionName, ExprType const &paramType )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      return methodOverloadName( name, thisType, paramTypes );
+      ExprTypeVector paramTypes;
+      paramTypes.push_back( paramType );
+      return FunctionDefaultSymbolName( functionName, paramTypes );
     }
-    inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType, RC::ConstHandle<CG::Adapter> const &param1Type )
+    inline std::string FunctionDefaultSymbolName( std::string const &functionName, ExprType const &param1Type, ExprType const &param2Type )
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      paramTypes.push_back( param1Type );
-      return methodOverloadName( name, thisType, paramTypes );
-    }
-    inline std::string methodOverloadName(
-      std::string const &name,
-      RC::ConstHandle<CG::Adapter> const &thisType,
-      RC::ConstHandle<CG::Adapter> const &param1Type,
-      RC::ConstHandle<CG::Adapter> const &param2Type
-      )
-    {
-      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
+      ExprTypeVector paramTypes;
       paramTypes.push_back( param1Type );
       paramTypes.push_back( param2Type );
-      return methodOverloadName( name, thisType, paramTypes );
+      return FunctionDefaultSymbolName( functionName, paramTypes );
     }
     
-    std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisType );
-  };
-};
+    inline std::string ConstructorPencilName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter
+      )
+    {
+      return "constructor " + thisAdapter->getUserName();
+    }
+    std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      std::vector< RC::ConstHandle<CG::Adapter> > const &paramAdapters
+      );
+    inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter,
+      RC::ConstHandle<CG::Adapter> const &param4Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      paramAdapters.push_back( param4Adapter );
+      return ConstructorDefaultSymbolName( thisAdapter, paramAdapters );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &thisTypeName,
+      std::vector< RC::ConstHandle<CG::Adapter> > const &paramAdapters
+      )
+    {
+      return ConstructorDefaultSymbolName(
+        cgManager->getAdapter( thisTypeName ),
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    inline std::string ConstructorDefaultSymbolName(
+      RC::Handle<CG::Manager> const &cgManager,
+      std::string const &dstType,
+      RC::ConstHandle<CG::Adapter> const &param1Adapter,
+      RC::ConstHandle<CG::Adapter> const &param2Adapter,
+      RC::ConstHandle<CG::Adapter> const &param3Adapter,
+      RC::ConstHandle<CG::Adapter> const &param4Adapter
+      )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramAdapters;
+      paramAdapters.push_back( param1Adapter );
+      paramAdapters.push_back( param2Adapter );
+      paramAdapters.push_back( param3Adapter );
+      paramAdapters.push_back( param4Adapter );
+      return ConstructorDefaultSymbolName(
+        cgManager,
+        dstType,
+        paramAdapters
+        );
+    }
+    
+    inline std::string DestructorPencilName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter
+      )
+    {
+      return "destructor ~" + thisAdapter->getUserName();
+    }
+    std::string DestructorDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter
+      );
+    
+    inline std::string AssignOpPencilName( RC::ConstHandle<CG::Adapter> const &thisAdapter, AssignOpType type )
+    {
+      return "assignment operator " + thisAdapter->getUserName() + "." + assignOpUserName(type);
+    }
+    
+    std::string AssignOpDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter, AssignOpType type, RC::ConstHandle<CG::Adapter> const &thatAdapter );
+    
+    inline std::string UniOpPencilName( UniOpType type )
+    {
+      return "unary operator " + uniOpUserName(type);
+    }
+    
+    std::string UniOpDefaultSymbolName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter );
+    
+    inline std::string BinOpPencilName( BinOpType type )
+    {
+      return "binary operator " + binOpUserName(type);
+    }
+    
+    std::string BinOpDefaultSymbolName( BinOpType type, RC::ConstHandle<CG::Adapter> const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter );
+    
+    inline std::string MethodPencilName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      std::string const &name
+      )
+    {
+      return "method " + thisAdapter->getUserName() + "." + name;
+    }
+    
+    std::string MethodDefaultSymbolName(
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprTypeVector const &paramTypes
+      );
+    inline std::string MethodDefaultSymbolName(
+      CG::ExprType const &thisType,
+      std::string const &methodName
+      )
+    {
+      ExprTypeVector paramTypes;
+      return MethodDefaultSymbolName( thisType, methodName, paramTypes );
+    }
+    inline std::string MethodDefaultSymbolName(
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprType const &param1Type
+      )
+    {
+      ExprTypeVector paramTypes;
+      paramTypes.push_back( param1Type );
+      return MethodDefaultSymbolName( thisType, methodName, paramTypes );
+    }
+    inline std::string MethodDefaultSymbolName(
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprType const &param1Type,
+      CG::ExprType const &param2Type
+      )
+    {
+      CG::ExprTypeVector paramTypes;
+      paramTypes.push_back( param1Type );
+      paramTypes.push_back( param2Type );
+      return MethodDefaultSymbolName( thisType, methodName, paramTypes );
+    }
+  }
+}
 
 #endif //_FABRIC_RT_OVERLOAD_NAMES_H
