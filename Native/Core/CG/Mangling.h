@@ -20,16 +20,29 @@ namespace Fabric
     class Adapter;
     
     std::string FunctionPencilKey( std::string const &functionName );
-    std::string FunctionDefaultSymbolName( std::string const &functionName, ExprTypeVector const &paramTypes );
+    std::string FunctionDefaultSymbolName(
+      std::string const &functionName,
+      ExprTypeVector const &paramTypes
+      );
+    std::string FunctionDesc(
+      RC::ConstHandle<Adapter> const &returnAdapter,
+      std::string const &functionName,
+      ExprTypeVector const &paramTypes
+      );
     
     std::string ConstructorPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter );
     std::string ConstructorDefaultSymbolName(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AdapterVector const &paramAdapters
       );
+    std::string ConstructorDesc(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AdapterVector const &paramAdapters
+      );
     
     std::string DestructorPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter );
     std::string DestructorDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter );
+    std::string DestructorDesc( RC::ConstHandle<CG::Adapter> const &thisAdapter );
     
     std::string AssignOpPencilKey(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
@@ -40,9 +53,19 @@ namespace Fabric
       AssignOpType type,
       RC::ConstHandle<CG::Adapter> const &thatAdapter
       );
+    std::string AssignOpDesc(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AssignOpType type,
+      RC::ConstHandle<CG::Adapter> const &thatAdapter
+      );
     
     std::string UniOpPencilKey( UniOpType type );
     std::string UniOpDefaultSymbolName(
+      UniOpType type,
+      RC::ConstHandle<CG::Adapter> const &adapter
+      );
+    std::string UniOpDesc(
+      RC::ConstHandle<Adapter> const &returnAdapter,
       UniOpType type,
       RC::ConstHandle<CG::Adapter> const &adapter
       );
@@ -53,12 +76,24 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> const &lhsAdapter,
       RC::ConstHandle<CG::Adapter> const &rhsAdapter
       );
+    std::string BinOpDesc(
+      RC::ConstHandle<Adapter> const &returnAdapter,
+      BinOpType type,
+      RC::ConstHandle<CG::Adapter> const &lhsAdapter,
+      RC::ConstHandle<CG::Adapter> const &rhsAdapter
+      );
     
     std::string MethodPencilKey(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       std::string const &name
       );
     std::string MethodDefaultSymbolName(
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprTypeVector const &paramTypes
+      );
+    std::string MethodDesc(
+      RC::ConstHandle<Adapter> const &returnAdapter,
       CG::ExprType const &thisType,
       std::string const &methodName,
       CG::ExprTypeVector const &paramTypes
