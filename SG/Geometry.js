@@ -270,7 +270,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         });
       }
     };
-    geometryNode.readData = function(sceneDeserializer, nodeData) {
+    geometryNode.readData = function(sceneDeserializer, nodeData, nodeMeta) {
       parentReadData(sceneDeserializer, nodeData);
       
       var attributeMembers = attributesdgnode.getMembers();
@@ -283,7 +283,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           );
         }
       }
-      sceneDeserializer.loadDGNodesData(options.name, {
+      sceneDeserializer.loadDGNodesData(geometryNode.pub.getName(), {
         uniforms:{
           dgnode: uniformsdgnode
         },

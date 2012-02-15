@@ -244,7 +244,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     var dataObj;
   
     var constructedNodeMap = {};
-    var nodeNameRemapping = {};
+    var nodeNameToStoredNameRemapping = {};
+    var nodeStoredNameToNodeRemapping = {};
     var nodeDataMap = {};
     
     if(options.preLoadScene){
@@ -257,8 +258,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     var loadNodeBinaryFileNode;
     var sgnodeDataMap = {};
     var sceneDeserializer = {
-      getNode: function(nodeName) {
-        nodeName = nodeNameRemapping[ nodeName ]
+      getNode: function(storedNodeName) {
+        var nodeName = nodeStoredNameToNodeRemapping[ storedNodeName ]
         if (constructedNodeMap[nodeName]) {
           return constructedNodeMap[nodeName];
         }else {
@@ -273,7 +274,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           });
         }
         else{
-          var nodeData = sgnodeDataMap[sgnodeName];
+          var nodeData = sgnodeDataMap[nodeNameToStoredNameRemapping[sgnodeName]];
           if(!nodeData.dgnodedata){
             console.warn("missing dgnode data for node:" + sgnodeName);
             return;
@@ -325,7 +326,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                   node = scene.pub.constructNode(nodeData.type, nodeData.options);
                 }
                 // in case a name collision occured, store a name remapping table.
-                nodeNameRemapping[ nodeData.name ] = node.getName();
+                nodeStoredNameToNodeRemapping[ nodeData.name ] = node.getName();
+                nodeNameToStoredNameRemapping[ node.getName() ] = nodeData.name;
                 var nodePrivate = scene.getPrivateInterface(node);
                 nodePrivate.readData(sceneDeserializer, nodeData.data);
                 constructedNodeMap[node.getName()] = node;
