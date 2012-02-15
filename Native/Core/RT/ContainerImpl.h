@@ -48,8 +48,8 @@ namespace Fabric
 
       static void SetData( void const *value, void *data );
       static void DisposeData( void *data );
-      static size_t GetCount( void const *data );
-      static void SetCount( void *data, size_t count );
+      static size_t size( void const *data );
+      static void resize( void *data, size_t count );
       static std::string GetName( void const *data );
       static bool IsValid( void const *data );
 

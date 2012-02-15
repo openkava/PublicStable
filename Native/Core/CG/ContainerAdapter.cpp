@@ -139,9 +139,9 @@ namespace Fabric
       else if ( functionName == "__"+getCodeName()+"__ToBoolean" )
         return (void *)&RT::ContainerImpl::IsValid;
       else if ( functionName == "__"+getCodeName()+"__GetCount" )
-        return (void *)&RT::ContainerImpl::GetCount;
+        return (void *)&RT::ContainerImpl::size;
       else if ( functionName == "__"+getCodeName()+"__SetCount" )
-        return (void *)&RT::ContainerImpl::SetCount;
+        return (void *)&RT::ContainerImpl::resize;
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 

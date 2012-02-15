@@ -5,6 +5,12 @@ node = fabricClient.DependencyGraph.createNode("testDGNode");
 node.addMember("intMember", "Integer");
 node.addMember("stringMember", "String");
 
+try:
+  node.addMember("containerMember", "Container");
+  node.evaluate();
+except Exception as e:
+  print("Runtime eval error (container member): " + str(e));
+
 op = fabricClient.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("op");
 op.setSourceCode('\
@@ -20,8 +26,8 @@ operator op(\n\
   report "Member sizes: " + i.size;\n\
   report "Members: " + i + " " + s;\n\
   otherC = c;\n\
-  otherC.setCount(Size(3));\n\
-  report "Container string: " + otherC + " Count: " + otherC.size() + " Is valid: " + Boolean(otherC);\n\
+  otherC.resize(Size(3));\n\
+  report "Container string: " + otherC + " Count: " + otherC.size + " Is valid: " + Boolean(otherC);\n\
   report "To fix: i.size is wrong! LLVM doesn\'t know about aliasing!";\n\
   i[2] = 1;\n\
   s[2] = "test";\n\

@@ -4,6 +4,16 @@ node = FABRIC.DependencyGraph.createNode("testDGNode");
 node.addMember("intMember", "Integer");
 node.addMember("stringMember", "String");
 
+try
+{
+  node.addMember("containerMember", "Container");
+  node.evaluate();
+}
+catch(e)
+{
+  console.log("Runtime eval error (container member): " + e);
+}
+
 op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("op");
 op.setSourceCode('\
@@ -19,7 +29,7 @@ operator op(\n\
   report "Before resize: Member sizes: " + i.size;\n\
   report "Members: " + i + " " + s;\n\
   otherC = c;\n\
-  otherC.setCount(Size(3));\n\
+  otherC.resize(Size(3));\n\
   report "Container string: " + otherC + " Count: " + otherC.size() + " Is valid: " + Boolean(otherC);\n\
   report "After resize: Member sizes: " + i.size;\n\
   i[2] = 1;\n\
