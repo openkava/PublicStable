@@ -38,11 +38,11 @@ namespace Fabric
       cgManager->getFP32Adapter();
     }
     
-    RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
+    CG::ExprType ConstScalar::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getFP32Adapter();
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
-      return adapter;
+      return CG::ExprType( adapter, CG::USAGE_RVALUE );
     }
     
     CG::ExprValue ConstScalar::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
