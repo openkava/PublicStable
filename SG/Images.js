@@ -603,7 +603,7 @@ FABRIC.SceneGraph.registerNodeType('Video', {
 
     var redrawEventHandler = videoNode.constructEventHandlerNode('Redraw');
     redrawEventHandler.setScope('video', dgnode);
-    redrawEventHandler.addMember('bufferID', 'Size', 0);
+    redrawEventHandler.addMember('bufferID', 'Integer', 0);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
         operatorName: 'videoLoadToGPU',
         srcFile: 'FABRIC_ROOT/SG/KL/loadVideo.kl',
@@ -650,7 +650,7 @@ FABRIC.SceneGraph.registerNodeType('PointSpriteTexture', {
 
     var redrawEventHandler = pointSpriteTextureNode.constructEventHandlerNode('Redraw');
     redrawEventHandler.setScope('image', dgnode);
-    redrawEventHandler.addMember('bufferID', 'Size', 0);
+    redrawEventHandler.addMember('bufferID', 'Integer', 0);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'createSpriteTexture',
             srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl',

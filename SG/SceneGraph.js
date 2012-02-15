@@ -209,13 +209,7 @@ FABRIC.SceneGraph = {
     };
 
     ///////////////////////////////////////////////////////////////////
-    //  Resource File Loading
-    scene.writeResourceFile = function(filepath, fileContents) {
-      throw ' FS has been depreciated ';
-    };
-    scene.readResourceFile = function(filepath) {
-      throw ' FS has been depreciated ';
-    };
+    //  Utility functions
     scene.assignDefaults = assignDefaults;
     
     scene.cloneObj = function(obj, assignedValues) {
@@ -231,9 +225,6 @@ FABRIC.SceneGraph = {
       return clonedobj;
     };
     
-    scene.loadResourceURL = function(url, mimeType, callback) {
-      return FABRIC.loadResourceURL(url, mimeType, callback);
-    };
     //////////////////////////////////////////////////
     // Timers.
     scene.pushTimer = function(name) {
@@ -257,27 +248,28 @@ FABRIC.SceneGraph = {
       return context.DependencyGraph.createNode(name);
     };
     
+    var managers = {};
     scene.constructManager = function(type, options) {
       if (!FABRIC.SceneGraph.managerDescriptions[type]) {
         throw ('Manager Constructor not Registered:' + type);
+      }
+      if (managers[type]) {
+        console.warn ('Manager of this type already constructed:' + type);
       }
       options = (options ? options : {});
       var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
       if (!managerNode) {
         throw (' Factory function method must return an object');
       }
-      var parentTypeOfFn = managerNode.pub.isTypeOf;
-      managerNode.pub.isTypeOf = function(classname) {
-        if (classname == type) {
-          return true;
-        }else if (parentTypeOfFn !== undefined) {
-          return parentTypeOfFn(classname);
-        }else {
-          return false;
-        }
-      }
+      managers[type] = managerNode;
       return managerNode;
     };
+    scene.getManager = function( type ){
+      if(managers[type]){
+        return managers[type].pub;
+      }
+      return undefined;
+    }
     
     scene.constructNode = function(type, options) {
       if (!FABRIC.SceneGraph.nodeDescriptions[type]) {
@@ -822,7 +814,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           return type;
         }
       },
-      addMemberInterface : function(corenode, memberName, defineSetter) {
+      addMemberInterface : function(corenode, memberName, defineSetter, setterCallback) {
         var getterName = 'get' + capitalizeFirstLetter(memberName);
         var getterFn = function(sliceIndex){
           return corenode.getData(memberName, sliceIndex);
@@ -831,17 +823,10 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         if(defineSetter===true){
           var setterName = 'set' + capitalizeFirstLetter(memberName);
           var setterFn = function(value, sliceIndex){
-            var prevalue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
             corenode.setData(memberName, sliceIndex?sliceIndex:0, value);
-            
-            scene.pub.fireEvent('valuechanged', {
-              sgnode: sceneGraphNode.pub,
-              newvalue: value,
-              prevalue: prevalue,
-              sliceIndex: sliceIndex,
-              getterFn: getterFn,
-              setterFn: setterFn
-            });
+            if(setterCallback){
+              setterCallback(value);
+            }
           }
           sceneGraphNode.pub[setterName] = setterFn;
           memberInterfaces[memberName] = { getterFn:getterFn, setterFn:setterFn };
@@ -1069,7 +1054,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      blockRedrawingTillResourceIsLoaded:true,
+      blockRedrawingTillResourceIsLoaded: true,
       redrawOnLoad: true,
       storeDataAsFile: true,
       url: undefined
@@ -1083,6 +1068,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
 
     var lastLoadEventURL = '';
     var lastLoadSucceeded = false;
+    var url;
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
     scene.addEventHandlingFunctions(resourceLoadNode);
@@ -1158,12 +1144,13 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       }
     }
 
-    resourceLoadNode.pub.setUrl = function(url, forceLoad) {
-      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+    resourceLoadNode.pub.setUrl = function(new_url, forceLoad) {
+      if(new_url !== '' && new_url !== url && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ new_url, remainingTaskWeight);
       }
-      dgnode.setData('url', 0, url);
-      if(forceLoad!= false){
+      dgnode.setData('url', 0, new_url);
+      url = new_url;
+      if(forceLoad != false){
         dgnode.evaluate();
       }
     };
@@ -1181,7 +1168,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       if(options.url.folderHandle) {
         dgnode.getResourceFromFile('resource', options.url);
       } else {
-        resourceLoadNode.pub.setUrl(options.url);
+        resourceLoadNode.pub.setUrl(options.url, options.blockRedrawingTillResourceIsLoaded);
       }
     }
 

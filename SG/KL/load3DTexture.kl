@@ -19,6 +19,8 @@ function decode3DImageUShortData(
   if(imageUShortVoxels.size() != 0)
     return;
   String ext = resource.extension ? resource.extension : resource.mimeType;
+  if(ext == "")
+    return;
   switch (ext) {
     case'nrrd':
       if(resource.data.size() > 0)

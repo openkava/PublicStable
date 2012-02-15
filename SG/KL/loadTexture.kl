@@ -92,7 +92,7 @@ operator initImageFromPIXELFORMAT(
 
 operator createSpriteTexture(
   io Integer res,
-  io Size bufferID,
+  io Integer bufferID,
   io Integer textureUnit
 ) {
   if (!bufferID && res > 0) {
@@ -115,8 +115,8 @@ operator createSpriteTexture(
       ty += dt;
     }
 
-    var Size buffers[];
-    buffers.push(Size(bufferID));
+    var Integer buffers[];
+    buffers.push(bufferID);
     glGenTextures(1, buffers);
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_2D, bufferID);
@@ -132,7 +132,7 @@ operator createSpriteTexture(
 }
 
 operator createErrorTexture(
-  io Size bufferID,
+  io Integer bufferID,
   io Integer textureUnit
 ) {
   if (!bufferID) {
@@ -140,7 +140,7 @@ operator createErrorTexture(
     texData.resize(1);
     texData[0].r = 1.0;
     texData[0].g = texData[0].b = texData[0].a = 0.0;
-    var Size buffers[];
+    var Integer buffers[];
     buffers.resize(1);
     glGenTextures(1, buffers);
     bufferID = buffers[0];

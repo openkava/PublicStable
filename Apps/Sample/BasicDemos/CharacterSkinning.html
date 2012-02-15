@@ -62,8 +62,8 @@ FABRIC.require(["SG/SceneGraph",
     } )
   });
 
-  var animationLibraryNode;
-  scene.importAssetFile('Models/envelope.dae', {}, function(assetNodes){
+  var characterAnimationContainerNode;
+  scene.importAssetFile('Models/envelope.dae', { constructMaterialNodes:false }, function(assetNodes){
      
     var rigNode = assetNodes.polymshCharacterRig;
     var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
@@ -79,7 +79,7 @@ FABRIC.require(["SG/SceneGraph",
       boneradius: 0.2
     });
    
-    animationLibraryNode = assetNodes.AnimationLibrary;
+    characterAnimationContainerNode = assetNodes.CharacterAnimationContainer;
   });
   
 
@@ -108,7 +108,7 @@ FABRIC.require(["SG/SceneGraph",
 
   $('#curveEditor').button()
     .click(function() {
-      animationLibraryNode.openCurveEditor(0, false);
+      characterAnimationContainerNode.openCurveEditor(0, false);
     });
     
 

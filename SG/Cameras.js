@@ -59,8 +59,8 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     redrawEventHandler.setScope('camera', dgnode);
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'UpdateCameraProjection',
-      srcFile: 'FABRIC_ROOT/SG/KL/updateCameraProjection.kl',
+      operatorName: 'updateCameraProjection',
+      srcFile: 'FABRIC_ROOT/SG/KL/camera.kl',
       entryFunctionName: 'updateCameraProjection',
       parameterLayout: [
         'camera.projectionMat44',
@@ -202,9 +202,7 @@ FABRIC.SceneGraph.registerNodeType('TargetCamera', {
 
     targetCameraNode.getDGNode().bindings.append(scene.constructOperator({
       operatorName: 'loadFocalDist',
-      srcCode: 'use Xfo, Vec3; operator loadFocalDist(io Xfo xfo, io Vec3 target, io Scalar focalDist){' +
-      '  focalDist = xfo.tr.distanceTo(target);' +
-      '}',
+      srcFile: 'FABRIC_ROOT/SG/KL/camera.kl',
       entryFunctionName: 'loadFocalDist',
       parameterLayout: [
         'transform.globalXfo',

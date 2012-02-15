@@ -16,21 +16,41 @@ FABRIC.define(["SG/Geometry",
 
 FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, callback) {
   
-  if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = false;
+  if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = true;
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
+  if(options.blockRedrawingTillResourceIsLoaded == undefined) options.blockRedrawingTillResourceIsLoaded = true;
   
   // Load animations in the collada file into an animation library using an existing rig.
   if(options.loadAnimationUsingRig == undefined) options.loadAnimationUsingRig = false;
   if(options.loadPoseOntoRig == undefined) options.loadPoseOntoRig = false;
   if(options.constructRigFromHierarchy == undefined) options.constructRigFromHierarchy = false;
   
+  
+  if(!options.materialType){
+    options.materialType = "FlatTextureMaterial";
+  }
+  if(!options.materialProperties){
+    // TODO: provide a mapping from collada values to the given shader parameters. 
+    options.materialProperties = {
+    }
+  }
+  if(!options.materialMaps){
+    // If a texture is to be used in a material, a mapping needs to be provided
+    // to specify the material parameters to use. Here diffuse textures are used
+    // as simply the 'textureNode' on the FlatTexturedMaterial.
+    options.materialMaps = {
+      diffuse: 'textureNode'
+    }
+  }
+  
   // options.rigNode;
   // options.rigHierarchyRootNodeName;
   if(options.flipUVs == undefined) options.flipUVs = true;
-  var animationLibrary = options.animationLibrary;
+  var characterAnimationContainer = options.characterAnimationContainer;
   var controllerNode = options.controllerNode;
+  var imageLibrary = options.imageLibrary || {};
   
   
 
@@ -56,12 +76,254 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     
   //////////////////////////////////////////////////////////////////////////////
   // Collada File Parsing Functions
-
+  
+  
+  var parseImage = function(node){
+    var image = {
+      'name': node.getAttribute('name'),
+      'path': ''
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'init_from':
+          image.path = child.textContent;
+          break;
+        default:
+          warn("Warning in parseImage: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return image;
+  }
+  
+  var parseLibaryImages = function(node) {
+    var libraryImages = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'image':
+          libraryImages[child.getAttribute('id')] = parseImage(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return libraryImages;
+  }
+  
+  var parseScalar = function(node){
+    var child = node.firstElementChild;
+    return parseFloat(child.textContent.split(new RegExp("\\s+")));
+  }
+  
+  var parseColor = function(node){
+    var color_values = [];
+    var text_array = node.textContent.split(new RegExp("\\s+"));
+    for(var i=0; i<text_array.length; i++){
+      if(text_array[i] != ""){
+        color_values.push(parseFloat(text_array[i]));
+      }
+    }
+    return makeRT(FABRIC.RT.Color, color_values);
+  }
+  
+  
+  var parseTextureParam = function(node){
+    var textureParam = {
+      'texture': node.getAttribute('texture'),
+      'texcoord': node.getAttribute('texcoord')
+    };
+    var materialParam = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'extra':
+          var extra_technique = child.firstElementChild;
+          textureParam.extra = {
+            'profile': extra_technique.getAttribute('profile'),
+            'wrapU': extra_technique.getElementsByTagName("wrapU")[0].textContent == 'TRUE',
+            'wrapV': extra_technique.getElementsByTagName("wrapV")[0].textContent == 'TRUE',
+            'blend_mode': extra_technique.getElementsByTagName("blend_mode")[0].textContent 
+          }
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return textureParam;
+  }
+  
+  
+  var parseMaterialParam = function(node){
+    var materialParam = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'color':
+          materialParam.color = parseColor(child);
+          break;
+        case 'texture':
+          materialParam.texture = parseTextureParam(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return materialParam;
+  }
+  
+  var parseEffectTechniquePhong = function(node){
+    var phong = { };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'emission':
+          phong.emission = parseColor(child.firstElementChild);
+          break;
+        case 'ambient':
+          phong.ambient = parseColor(child.firstElementChild);
+          break;
+        case 'diffuse':
+          phong.diffuse = parseMaterialParam(child);
+          break;
+        case 'specular':
+          phong.specular = parseMaterialParam(child);
+          break;
+        case 'shininess':
+          phong.shininess = parseScalar(child);
+          break;
+        case 'reflective':
+          phong.reflective = parseColor(child.firstElementChild);
+          break;
+        case 'reflectivity':
+          phong.reflectivity = parseScalar(child);
+          break;
+        case 'transparent':
+          phong.transparent = parseColor(child.firstElementChild);
+          break;
+        case 'transparency':
+          phong.transparency = parseScalar(child);
+          break;
+        default:
+          warn("Warning in parseEffectTechniquePhong: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return phong;
+  }
+  
+  var parseEffectTechnique = function(node){
+    var technique = {
+      'name': node.getAttribute('name'),
+      'lightingmodel': undefined
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'phong':
+          technique.lightingmodelname = 'phong';
+          technique.lightingmodel = parseEffectTechniquePhong(child);
+          break;
+        default:
+          warn("Warning in parseEffectTechnique: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return technique;
+  }
+  
+  var parseEffectProfile = function(node){
+    var effectprofile = {
+      'name': node.getAttribute('name'),
+      'technique': {}
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'technique':
+          effectprofile.technique = {
+            sid: child.getAttribute('id'),
+            techniquedata: parseEffectTechnique(child)
+          }
+          break;
+        default:
+          warn("Warning in parseEffectProfile: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return effectprofile;
+  }
+  
+  
+  
+  var parseEffect = function(node){
+    var effect = {
+      'name': node.getAttribute('name'),
+      'profiles': {}
+    };
+    var child = node.firstElementChild;
+    while(child){
+      effect.profiles[child.nodeName] = parseEffectProfile(child);
+      child = child.nextElementSibling;
+    }
+    return effect;
+  }
+  
   var parseLibaryEffects = function(node) {
+    var libraryEffects = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'effect':
+          libraryEffects[child.getAttribute('id')] = parseEffect(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return libraryEffects;
+  }
+  
+  var parseMaterial = function(node){
+    var material = {
+      'name': node.getAttribute('name'),
+      'instance_effect': ''
+    };
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'instance_effect':
+          material.instance_effect = child.getAttribute('url');
+          break;
+        default:
+          warn("Warning in parseImage: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return material;
   }
   
   var parseLibaryMaterials = function(node) {
+    var libraryMaterials = {};
+    var child = node.firstElementChild;
+    while(child){
+      switch (child.nodeName) {
+        case 'material':
+          libraryMaterials[child.getAttribute('id')] = parseMaterial(child);
+          break;
+        default:
+          warn("Warning in parseLibaryImages: Unhandled node '" +child.nodeName + "'");
+      }
+      child = child.nextElementSibling;
+    }
+    return libraryMaterials;
   }
+  
   
   var parseAccessor = function(node){
     var accessor = {
@@ -474,9 +736,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   }
   
   var parseInstanceGeometry = function(node) {
-    var instanceController = {
+    var instanceGeometry = {
       url: node.getAttribute('url')
-      };
+    };
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
@@ -485,7 +747,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       }
       child = child.nextElementSibling;
     }
-    return instanceController;
+    return instanceGeometry;
   }
   
   var parseInstanceController = function(node) {
@@ -507,7 +769,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     var nodeData = {
       name:  node.getAttribute('name'),
       type:  node.getAttribute('type'),
-      instance_geometry: undefined,
       xfo: new FABRIC.RT.Xfo(),
       rotationOrder: '',
       children:[]
@@ -623,6 +884,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       switch (child.nodeName) {
         case 'asset': 
           break;
+        case 'library_images': 
+          colladaData.libraryImages = parseLibaryImages(child);
+          break;
         case 'library_effects':
           colladaData.libraryEffects = parseLibaryEffects(child);
           break;
@@ -659,6 +923,69 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   
   //////////////////////////////////////////////////////////////////////////////
   // SceneGraph Construction
+  var remapPath = function(path){
+    if(options.pathRemapping){
+      for(var j in options.pathRemapping){
+        if(path.substring(0, j.length) === j){
+          path = options.pathRemapping[j] + path.substring(j.length);
+          return path;
+        }
+      }
+    }
+    return path;
+  }
+  
+  // TODO: Finish off the construction and assigment of materials.
+  var constructMaterial = function(materialData){
+    var materialNode;
+    var effectData = colladaData.libraryEffects[materialData.instance_effect.slice(1)];
+    if(effectData){
+      // Not sure what shouldhappen here if multiple profiles are supported.
+      var profile = effectData.profiles.profile_COMMON;
+      if(!profile){
+        throw "Unsupported Material Description";
+      }
+      var technique = profile.technique.techniquedata;
+      var lightingmodel = technique.lightingmodel;
+      var materialNode;
+      if(options.materialConstructorCallback){
+        materialNode = options.materialConstructorCallback(lightingmodel, colladaData.libraryImages);
+      }else{
+        
+      var materialOptions = { name: effectData.name };
+      var i;
+      for (i in options.materialOptions) {
+        materialOptions[i] = options.materialOptions[i];
+      }
+      for(i in options.materialProperties){
+        if(lightingmodel[i].color || typeof lightingmodel[i] == 'Number'){
+          materialOptions[options.materialProperties[i]] = lightingmodel[i];
+        }
+      }
+      for (i in options.materialMaps) {
+        if(lightingmodel[i].texture){
+          var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
+          var imageUrl = remapPath(textureData.path);
+          if(!imageLibrary[imageUrl]){
+            imageLibrary[imageUrl] = scene.constructNode('Image2D', {
+              url: imageUrl,
+              blockRedrawingTillResourceIsLoaded: options.blockRedrawingTillResourceIsLoaded
+            });
+          }
+          materialOptions[options.materialMaps[i]] = imageLibrary[imageUrl];
+        }
+      }
+      materialNode = scene.constructNode(options.materialType, materialOptions);
+      }
+      assetNodes[materialNode.getName()] = materialNode;
+    }else{
+      // construct a default material and return it instead.
+    }
+    
+    return materialNode;
+  }
+
+  
   // This method returns an array of values from the given source data. 
   var getSourceData = function(source, id){
     var accessor = source.technique.accessor;
@@ -775,6 +1102,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   
   var constructGeometries = function(geometryData){
     var geometryNodes = [];
+    var materialNodes = [];
     if(geometryData.mesh){
       var meshData = geometryData.mesh;
       var constructGeometryNode = function(polygons){
@@ -791,8 +1119,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
           });
         }
         geometryNode.loadGeometryData(processedData.geometryData);
-        assetNodes[name] = geometryNode;
+        assetNodes[geometryNode.getName()] = geometryNode;
         geometryNodes.push(geometryNode);
+        
+        if(polygons.material && options.constructMaterialNodes && colladaData.libraryMaterials){
+          var materialData = colladaData.libraryMaterials[polygons.material];
+          var materialNode = constructMaterial(materialData);
+          assetNodes[materialNode.getName()] = materialNode;
+          materialNodes.push(materialNode);
+        }
       }
       if(meshData.triangles){
         for(var i=0; i<meshData.triangles.length; i++){
@@ -809,15 +1144,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       alert("This collada importer only supports polygon and triangle meshes.");
       throw "This collada importer only supports polygon and triangle meshes."
     }
-    return geometryNodes;
+    return { geometries: geometryNodes, materials: materialNodes };
   }
 
   
   var loadRigAnimation = function(sceneData, rigNode){
     if(colladaData.libraryAnimations){
-      if(!animationLibrary){
-        animationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
-        assetNodes[animationLibrary.getName()] = animationLibrary;
+      if(!characterAnimationContainer){
+        characterAnimationContainer = scene.constructNode('LinearCharacterAnimationContainer');
+        assetNodes[characterAnimationContainer.getName()] = characterAnimationContainer;
       }
       if(!controllerNode){
         controllerNode = scene.constructNode('AnimationController');
@@ -976,13 +1311,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds, rotationOrder != undefined ? rotationOrder.order : undefined);
       }
       
-      var trackSetID = animationLibrary.addTrackSet(trackSet, trackBindings);
+      var trackSetID = characterAnimationContainer.addTrackSet(trackSet, trackBindings);
       var variablesNode = rigNode.getVariablesNode();
       if(!variablesNode){
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID);
+      variablesNode.setCharacterAnimationContainerNode(characterAnimationContainer);
+      variablesNode.setAnimationControllerNode(controllerNode);
+      variablesNode.setBoundTrack(trackSetID);
       
     }
   }
@@ -1248,7 +1585,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       characterMeshNode.loadGeometryData(processedData.geometryData);
       
       characterMeshNode.setInvMatrices(invmatrices, jointRemapping);
-      assetNodes[name] = characterMeshNode;
+      assetNodes[characterMeshNode.getName()] = characterMeshNode;
       return characterMeshNode;
     }
     
@@ -1258,8 +1595,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       geometries.push(constructSkinnedGeometry(sourceMeshArray[i]));
     }
     
+    var materials = [];
+    if(options.constructMaterialNodes){
+      for(var i=0; i<sourceMeshArray.length; i++){
+        var materialData = colladaData.libraryMaterials[sourceMeshArray[i].material];
+        materials.push(constructMaterial(materialData));
+      }
+    }
+    
     var controllerNodes = {
       geometries: geometries,
+      materials: materials,
       skeletonData: skeletonData,
       controllerData: controllerData
     }
@@ -1283,49 +1629,55 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   var constructScene = function(sceneData){
     
     var constructInstance = function(instanceData, parentTransformNode){
+      
+      var transformNodeOptions = { name: instanceData.name +"Transform" };
+      if(parentTransformNode){
+        transformNodeOptions.hierarchical = true;
+        transformNodeOptions.localXfo = instanceData.xfo;
+        transformNodeOptions.parentTransformNode = parentTransformNode;
+      }else{
+        if(options.parentTransformNode){
+          transformNodeOptions.hierarchical = true;
+          transformNodeOptions.parentTransformNode = options.parentTransformNode;
+        }else{
+          transformNodeOptions.hierarchical = false;
+          transformNodeOptions.globalXfo = instanceData.xfo;
+        }
+      }
+      var transformNode = scene.constructNode('Transform', transformNodeOptions );
+          
       if(instanceData.instance_geometry){
         var url = instanceData.instance_geometry.url.slice(1);
-        var geometries = getGeometryNodes(url);
+        var geometryNodes = getGeometryNodes(url);
+        var geometries = geometryNodes.geometries;
+        var materials = geometryNodes.materials;
         for(var i=0; i<geometries.length; i++){
+          var materialNode = materials[i];
           var geometryNode = geometries[i];
-          var materialNode;
-          if(instanceData.instance_geometry.instance_material){
-            // TODO:
+          if(instanceData.instance_geometry.instance_material && options.constructMaterialNodes && colladaData.libraryMaterials){
+            var materialData = colladaData.libraryMaterials[instanceData.instance_geometry.instance_material];
+            materialNode = constructMaterial(materialData);
           }
           
-          var transformNodeOptions = { name: instanceData.name +"Transform" };
-          if(parentTransformNode){
-            transformNodeOptions.hierarchical = true;
-            transformNodeOptions.localXfo = instanceData.xfo;
-            transformNodeOptions.parentTransformNode = parentTransformNode;
-          }else{
-            if(options.parentTransformNode){
-              transformNodeOptions.hierarchical = true;
-              transformNodeOptions.parentTransformNode = options.parentTransformNode;
-            }else{
-              transformNodeOptions.hierarchical = false;
-              transformNodeOptions.globalXfo = instanceData.xfo;
-            }
-          }
-          var transformNode = scene.constructNode('Transform', transformNodeOptions );
           if(geometryNode/* && materialNode*/){
             var instanceNode = scene.constructNode('Instance', {
               name: instanceData.name, 
               transformNode: transformNode,
               geometryNode: geometryNode,
-              materialNode: materialNode
+              materialNode: materialNode,
+              enableRaycasting: true
             });
-            assetNodes[instanceData.name] = instanceNode;
+            assetNodes[instanceNode.getName()] = instanceNode;
           }
         }
-      
       }
       else if(instanceData.instance_controller){
         var url = instanceData.instance_controller.url.slice(1);
         var controllerNodes = constructController(sceneData, url, instanceData.name);
         
         for(var i=0; i<controllerNodes.geometries.length; i++){
-          geometryNode = controllerNodes.geometries[i];
+          var geometryNode = controllerNodes.geometries[i];
+          var materialNode = controllerNodes.materials[i];
           if(instanceData.instance_controller.instance_material){
             // TODO: materialNode =
           }

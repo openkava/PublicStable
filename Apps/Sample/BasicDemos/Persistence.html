@@ -61,9 +61,8 @@ $(document).ready(function() {
   // create a light
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  var modelName = 'cow';
   var instances = [];
-  scene.importAssetFile('Models/' + modelName + '.obj', {
+  scene.importAssetFile('Models/cow.obj', {
       splitMaterials: true
     },
     function(assetNodes){
@@ -77,7 +76,7 @@ $(document).ready(function() {
           materialNode: material,
           transformNode: scene.constructNode('Transform', {
             hierarchical: false,
-            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+            globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
           }),
         });
         instances.push(instance);
@@ -86,14 +85,13 @@ $(document).ready(function() {
     });
   
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
+  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow2.json');
   presetLoader.load(storage, function(nodeMap){
     // The node map contains a map of all the nodes constructed from the loaded file.
     for(var nodeName in nodeMap){
       console.log("Constructed Node:" + nodeMap[nodeName].getName());
     }
   });
-  
   
   $('#saveResource').button({
       text: true,
@@ -103,11 +101,12 @@ $(document).ready(function() {
     })
     .click(function() {
      
-    //  var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
-      var storage = new FABRIC.SceneGraph.FileWriter(scene, 'PersistenceDemo', 'cow');
+      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
+   //   var storage = new FABRIC.SceneGraph.FileWriter(scene, 'PersistenceDemo', 'cow');
       
       var presetSaver = scene.constructManager('SceneSerializer',{
-        typeRemappings: { ObjTriangles: 'Triangles' } 
+        typeRemappings: { ObjTriangles: 'Triangles' },
+        filteredNodeTypes: ['ObjResource']
       });
       
       for(var i=0; i<instances.length; i++){

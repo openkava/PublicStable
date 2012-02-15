@@ -359,12 +359,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
     dgnode.addMember('poseVariables', 'PoseVariables', options.poseVariables);
-    dgnode.addMember('keyIndices', 'Integer[]');
-    dgnode.addMember('trackSetId', 'Integer', -1);
-    dgnode.addMember('enableTrackEvaluation', 'Boolean', true);
-      
-    characterVariablesNode.addMemberInterface(dgnode, 'enableTrackEvaluation', true);
-    characterVariablesNode.addMemberInterface(dgnode, 'trackSetId', true);
+    dgnode.addMember('boundTrack', 'Integer', -1);
+    
     
     // extend the private interface
     characterVariablesNode.setVariables = function(poseVariables) {
@@ -374,106 +370,88 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     characterVariablesNode.getVariables = function(){
       return dgnode.getData('poseVariables');
     };
-      
-      
-    var boundToAnimationTracks = false;
-    var m_animationLibraryNode;
-    var m_animationControllerNode;
+    
+    var boundToTrackAnimationContainers = false;
+    var m_characterAnimationContainerNode;
     var m_trackSetId;
-    var m_keyframeTrackBindings;
+    var m_animationControllerNode;
     var interactiveManipulation = false;
     
+    characterVariablesNode.addMemberInterface(dgnode, 'boundTrack', true, function(val){
+      m_trackSetId = val;
+    });
     scene.pub.addEventListener('beginmanipulation', function(evt){
-      if(m_animationLibraryNode){
-        characterVariablesNode.pub.setEnableTrackEvaluation(false);
-        m_animationLibraryNode.beginManipulation(m_trackSetId);
+      if(m_characterAnimationContainerNode){
+        dgnode.setData('enableTrackEvaluation', 0, false);
+        m_characterAnimationContainerNode.beginManipulation(dgnode.getData('boundTrack'));
         interactiveManipulation = true;
       }
-      
     });
+    
     scene.pub.addEventListener('endmanipulation', function(evt){
-      if(m_animationLibraryNode){
-        m_animationLibraryNode.endManipulation();
-        characterVariablesNode.pub.setEnableTrackEvaluation(true);
+      if(m_characterAnimationContainerNode){
+        m_characterAnimationContainerNode.endManipulation();
+        dgnode.setData('enableTrackEvaluation', 0, true);
         interactiveManipulation = false;
       }
     });
     
-    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId){
-      if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
-      }
-      if (!animationControllerNode.isTypeOf('AnimationController')) {
-        throw ('Incorrect type assignment. Must assign a AnimationController');
-      }
-      m_animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
-      m_animationControllerNode = scene.getPrivateInterface(animationControllerNode);
-      m_trackSetId = trackSetId;
-      
-      dgnode.setDependency(m_animationLibraryNode.getDGNode(), 'animationlibrary');
-      dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
-      dgnode.setData('trackSetId', 0, m_trackSetId);
-      
-      if(boundToAnimationTracks){
-        return
-      }
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'evaluatePoseTracks',
-        srcFile: 'FABRIC_ROOT/SG/KL/evaluatePoseTracks.kl',
-        preProcessorDefinitions: {
-          KEYFRAMETRACKSETTYPE: m_animationLibraryNode.getTrackSetType()
-        },
-        entryFunctionName: 'evaluatePoseTracks',
-        parameterLayout: [
-          'animationlibrary.trackSet<>',
-          'animationlibrary.bindings<>',
-          'controller.localTime',
-          'self.trackSetId',
-          'self.keyIndices',
-          'self.poseVariables',
-          'self.enableTrackEvaluation'
-        ]
-      }));
-      
-      characterVariablesNode.pub.setBoundTrack = function(trackSetId){
-        m_trackSetId = trackSetId;
-        dgnode.setData('trackSetId', 0, trackSetId);
-      }
-      
-      scene.pub.addEventListener('beginmanipulation', function(evt){
-        characterVariablesNode.pub.setEnableTrackEvaluation(false);
-        m_animationLibraryNode.beginManipulation(m_trackSetId);
+    characterVariablesNode.addReferenceInterface('CharacterAnimationContainer', 'CharacterAnimationContainer',
+      function(nodePrivate){
+        m_characterAnimationContainerNode = nodePrivate;
+        dgnode.setDependency(m_characterAnimationContainerNode.getDGNode(), 'characteranimationcontainer');
         
+        if(boundToTrackAnimationContainers){
+          return
+        }
+        dgnode.addMember('keyIndices', 'Integer[]');
+        dgnode.addMember('enableTrackEvaluation', 'Boolean', true);
+        
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'evaluatePoseTracks',
+          srcFile: 'FABRIC_ROOT/SG/KL/evaluatePoseTracks.kl',
+          preProcessorDefinitions: {
+            KEYFRAMETRACKSETTYPE: m_characterAnimationContainerNode.getTrackSetType()
+          },
+          entryFunctionName: 'evaluatePoseTracks',
+          parameterLayout: [
+            'characteranimationcontainer.trackSet<>',
+            'characteranimationcontainer.bindings<>',
+            'controller.localTime',
+            'self.boundTrack',
+            'self.keyIndices',
+            'self.poseVariables',
+            'self.enableTrackEvaluation'
+          ]
+        }));
+        boundToTrackAnimationContainers = true;
       });
-      scene.pub.addEventListener('endmanipulation', function(evt){
-        m_animationLibraryNode.endManipulation();
-        characterVariablesNode.pub.setEnableTrackEvaluation(true);
+    
+    characterVariablesNode.addReferenceInterface('AnimationController', 'AnimationController',
+      function(nodePrivate){
+        m_animationControllerNode = nodePrivate;
+        dgnode.setDependency(m_animationControllerNode.getDGNode(), 'controller');
       });
-      boundToAnimationTracks = true;
-    }
     
     characterVariablesNode.getValue = function(type, index) {
       var poseVariables = characterVariablesNode.getVariables();
       switch(type){
       case 'Number':
         return poseVariables.scalarValues[index];
-        break;
       case 'FABRIC.RT.Vec3':
         return poseVariables.vec3Values[index];
-        break;
       case 'FABRIC.RT.Quat':
         return poseVariables.quatValues[index];
-        break;
       case 'FABRIC.RT.Xfo':
         return poseVariables.xfoValues[index];
-        break;
       default:
         throw 'Unhandled type:' + val;
       }
-    }
+    };
+    
     characterVariablesNode.setValue = function(value, index, xfoTrackFilter) {
       var type = (typeof value == 'number') ? 'Number' : value.getType();
-    //  if(!boundToAnimationTracks){
+    //  if(!boundToTrackAnimationContainers){
         var poseVariables = characterVariablesNode.getVariables();
         switch(type){
         case 'Number':
@@ -494,84 +472,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         characterVariablesNode.setVariables(poseVariables);
     //  }
     //  else{
-      if(m_animationLibraryNode){
-        m_keyframeTrackBindings = m_animationLibraryNode.getBindings(m_trackSetId);
-        var findBinding = function(bindingsList){
-          for(var i=0; i<bindingsList.length; i++){
-            if(bindingsList[i].varId == index){
-              return bindingsList[i];
-            }
-          }
-          throw "Binding not found";
-        }
-        var binding, values;
-        var trackIds;
-        switch(type){
-        case 'Number':
-          binding = findBinding(m_keyframeTrackBindings.scalarBindings);
-          values = [value];
-          trackIds = binding.trackIds;
-          break;
-        case 'FABRIC.RT.Vec3':
-          binding = findBinding(m_keyframeTrackBindings.vec3Bindings);
-          values = [value.x, value.y, value.z];
-          trackIds = binding.trackIds;
-          break;
-        case 'FABRIC.RT.Quat':
-          binding = findBinding(m_keyframeTrackBindings.quatBindings);
-          if(binding.trackIds.length == 3){
-            var euler = new FABRIC.RT.Euler();
-            euler.setFromQuat(value);
-            values = [euler.x, euler.y, euler.z];
-          }else if(binding.trackIds.length == 4){
-            values = [value.w, value.x, value.y, value.z];
-          }
-          trackIds = binding.trackIds;
-          break;
-        case 'FABRIC.RT.Xfo':
-          binding = findBinding(m_keyframeTrackBindings.xfoBindings);
-          trackIds = binding.trackIds;
-          if(binding.trackIds.length == 6){
-            var euler = new FABRIC.RT.Euler();
-            euler.setFromQuat(value.ori);
-            values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
-          }else if(binding.trackIds.length == 7){
-            
-            if(xfoTrackFilter){
-              var filteredValues = [];
-              var filteredTrackIds = [];
-              if(xfoTrackFilter.tr){
-                filteredValues = [value.tr.x, value.tr.y, value.tr.z];
-                filteredTrackIds = [trackIds[0], trackIds[1], trackIds[2]]
-              }
-              if(xfoTrackFilter.ori){
-                filteredValues = filteredValues.concat([value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w]);
-                filteredTrackIds = filteredTrackIds.concat([trackIds[3], trackIds[4], trackIds[5], trackIds[6]]);
-              }
-              if(xfoTrackFilter.sc){
-                filteredValues = [value.sc.x, value.sc.y, value.sc.z];
-                filteredTrackIds = [trackIds[6], trackIds[7], trackIds[8]]
-              }
-              values = filteredValues;
-              trackIds = filteredTrackIds;
-            }
-            else{
-              values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
-              trackIds = binding.trackIds;
-            }
-          }
-          break;
-        default:
-          throw 'Unhandled type:' + val;
-        }
+      if(m_characterAnimationContainerNode){
         if(!interactiveManipulation){
-          m_animationLibraryNode.beginManipulation(m_trackSetId);
+          m_characterAnimationContainerNode.beginManipulation(m_trackSetId);
         }
-        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
+        m_characterAnimationContainerNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), value, index, xfoTrackFilter);
         if(!interactiveManipulation){
-          m_animationLibraryNode.endManipulation();
+          m_characterAnimationContainerNode.endManipulation();
         }
-        
       }
     }
     characterVariablesNode.setValues = function(values, indices) {
@@ -579,7 +487,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         characterVariablesNode.setValue(values[i], indices[i]);
       }
     }
-    
     
     //////////////////////////////////////////
     // Persistence
@@ -854,19 +761,19 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     //////////////////////////////////////////
     // Animation Tracks
     characterRigNode.pub.generateAnimationTracks = function(node, trackSetName, bindForPlayback, controllerNode){
-      if (!node.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
+      if (!node.isTypeOf('CharacterAnimationContainer')) {
+        throw ('Incorrect type assignment. Must assign a CharacterAnimationContainer');
       }
-      var animationLibrary = scene.getPrivateInterface(node);
+      var characterAnimationContainer = scene.getPrivateInterface(node);
       
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var trackSet = animationLibrary.newTrackSet(trackSetName);
+      var trackSet = characterAnimationContainer.newTrackSet(trackSetName);
       for (var i = 0; i < solvers.length; i++) {
         if(solvers[i].generateTracks){
           solvers[i].generateTracks(trackSet, trackBindings);
         }
       }
-      var trackSetId = animationLibrary.pub.addTrackSet(trackSet, trackBindings);
+      var trackSetId = characterAnimationContainer.pub.addTrackSet(trackSet, trackBindings);
       if(bindForPlayback==true){
         
         if(!poseVariables){
@@ -877,16 +784,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         if(!controllerNode){
           controllerNode = scene.pub.constructNode('AnimationController');
         }
-        variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
-        
+        variablesNode.pub.setCharacterAnimationContainerNode(node);
+        variablesNode.pub.setAnimationControllerNode(controllerNode);
+        variablesNode.pub.setBoundTrack(trackSetId);        
       }
       return trackSetId;
     }
-    characterRigNode.pub.setBoundTrackSet = function(trackSetId){
+    characterRigNode.pub.setBoundTrackSet = function(boundTrack){
       if(!poseVariables){
         throw "animation library not configured yet.";
       }
-      variablesNode.pub.setBoundTrack(trackSetId);
+      variablesNode.pub.setBoundTrack(boundTrack);
     }
     
     //////////////////////////////////////////
