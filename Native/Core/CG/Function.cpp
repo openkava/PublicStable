@@ -24,7 +24,12 @@ namespace Fabric
       
       for ( size_t i=0; i<argTypes.size(); ++i )
       {
-        if ( argTypes[i] == m_params[i].getExprType() )
+        Usage argUsage = argTypes[i].getUsage(), paramUsage = m_params[i].getUsage();
+        RC::ConstHandle<Adapter> argAdapter = argTypes[i].getAdapter(), paramAdapter = m_params[i].getAdapter();
+        
+        if ( argUsage == paramUsage
+          && argAdapter->isEquivalentTo( paramAdapter )
+          )
           continue;
         
         return false;
@@ -40,12 +45,21 @@ namespace Fabric
       
       for ( size_t i=0; i<argTypes.size(); ++i )
       {
-        if ( argTypes[i] == m_params[i].getExprType() )
+        Usage argUsage = argTypes[i].getUsage(), paramUsage = m_params[i].getUsage();
+        RC::ConstHandle<Adapter> argAdapter = argTypes[i].getAdapter(), paramAdapter = m_params[i].getAdapter();
+        
+        if ( argUsage == paramUsage
+          && argAdapter->isEquivalentTo( paramAdapter )
+          )
           continue;
           
-        if ( argTypes[i].getAdapter() == m_params[i].getAdapter()
-          && argTypes[i].getUsage() == CG::USAGE_LVALUE && m_params[i].getUsage() == CG::USAGE_RVALUE )
-          continue;
+        if ( paramUsage == USAGE_RVALUE )
+        {
+          if ( argUsage == USAGE_LVALUE
+            && argAdapter->isEquivalentTo( paramAdapter )
+            )
+            continue;
+        }
           
         return false;
       }
@@ -62,19 +76,25 @@ namespace Fabric
        
       for ( size_t i=0; i<argTypes.size(); ++i )
       {
-        if ( argTypes[i] == m_params[i].getExprType() )
-          continue;
+        Usage argUsage = argTypes[i].getUsage(), paramUsage = m_params[i].getUsage();
+        RC::ConstHandle<Adapter> argAdapter = argTypes[i].getAdapter(), paramAdapter = m_params[i].getAdapter();
         
-        if ( m_params[i].getUsage() == CG::USAGE_RVALUE )
-        {
-          if ( argTypes[i].getAdapter() == m_params[i].getAdapter()
-            && argTypes[i].getUsage() == CG::USAGE_LVALUE )
-            continue;
+        if ( argUsage == paramUsage
+          && argAdapter->isEquivalentTo( paramAdapter )
+          )
+          continue;
           
+        if ( paramUsage == USAGE_RVALUE )
+        {
+          if ( argUsage == USAGE_LVALUE
+            && argAdapter->isEquivalentTo( paramAdapter )
+            )
+            continue;
+
           Function const *function = moduleBuilder.maybeGetPreciseFunction(
-            ConstructorPencilName( m_params[i].getAdapter() ),
-            ExprType( m_params[i].getAdapter(), USAGE_LVALUE ),
-            ExprType( argTypes[i].getAdapter(), USAGE_RVALUE )
+            ConstructorPencilKey( paramAdapter ),
+            ExprType( paramAdapter, USAGE_LVALUE ),
+            ExprType( argAdapter, USAGE_RVALUE )
             );
           if ( function )
           {

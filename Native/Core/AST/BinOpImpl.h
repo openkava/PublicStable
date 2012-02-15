@@ -44,7 +44,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
                   
-      virtual std::string getPencilName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       

@@ -66,7 +66,7 @@ namespace Fabric
         
       CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::ConstructorPencilName( result.getAdapter() ),
+        CG::ConstructorPencilKey( result.getAdapter() ),
         argTypes
         );
 

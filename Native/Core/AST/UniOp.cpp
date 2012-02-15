@@ -49,7 +49,7 @@ namespace Fabric
       CG::ExprType childExprType = m_child->getExprType( basicBlockBuilder );
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::UniOpPencilName( m_uniOpType ),
+        CG::UniOpPencilKey( m_uniOpType ),
         childExprType
         );
     }
