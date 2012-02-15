@@ -384,7 +384,12 @@ $(document).ready(function() {
       }
     }
   
-    var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
+    var animationLoader = scene.constructManager('SceneDeserializer', {
+      preLoadScene:false,
+      typeRemappings:{
+        LocomotionAnimationLibrary: 'LocomotionCharacterAnimationContainer'
+      }
+    } );
     var storage = new FABRIC.SceneGraph.XHRReader(characterAnimationContainerFile);
     animationLoader.load(storage, function(animationLoaderNodeMap){
       var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
