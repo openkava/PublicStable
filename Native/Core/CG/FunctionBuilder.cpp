@@ -208,7 +208,7 @@ namespace Fabric
       , m_llvmFunction( llvmFunction )
       , m_haveHiddenReturnLValue( false )
     {
-      ReturnInfo returnInfo( ExprType() );
+      ReturnInfo returnInfo( ExprType(), 0 );
       m_functionScope = new FunctionScope( m_moduleBuilder.getScope(), returnInfo );
     }
     
