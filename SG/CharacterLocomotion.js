@@ -242,11 +242,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterAnimationContainer', {
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'matchCount',
-        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+        srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
         entryFunctionName: 'matchCount',
         parameterLayout: [
-          'sourceCharacterAnimationContainer.count',
-          'self.newCount'
+          'sourceCharacterAnimationContainer',
+          'self'
         ],
         async: false
       }));
@@ -632,11 +632,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
   
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
-        'charactercontroller.count',
-        'self.newCount'
+        'charactercontroller',
+        'self'
       ],
       async: false
     }));
@@ -708,11 +708,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     locomotionVariables.pub.setMatchCountNode = function(node){
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'matchCount',
-        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; report("matchCount:"+parentCount); }',
+        srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
         entryFunctionName: 'matchCount',
         parameterLayout: [
-          'matchCountNode.count',
-          'self.newCount'
+          'matchCountNode',
+          'self'
         ],
         async: false
       }));

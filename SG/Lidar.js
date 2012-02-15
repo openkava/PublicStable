@@ -72,19 +72,9 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
       pointsAttributeDGNode.setDependency(resourceloaddgnode,'resource');
 
       pointsAttributeDGNode.bindings.append(scene.constructOperator({
-        operatorName: 'lidarGetCount',
-        parameterLayout: [
-          'resource.lidar',
-          'self.newCount'
-        ],
-        entryFunctionName: 'lidarGetCount',
-        srcFile: 'FABRIC_ROOT/SG/KL/loadLidar.kl',
-        async: false
-      }));
-      
-      pointsAttributeDGNode.bindings.append(scene.constructOperator({
         operatorName: 'lidarGetPoints',
         parameterLayout: [
+          'self',
           'resource.lidar',
           'self.positions<>',
           'self.vertexColors<>'

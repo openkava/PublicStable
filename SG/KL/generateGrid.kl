@@ -3,27 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-
-
-operator setGridVertexCount(
-  io Integer numXsections,
-  io Integer numYsections,
-  io Integer numZsections,
-  io Size newCount
-) {
-  if (numXsections < 1) numXsections = 1;
-    if (numYsections < 1) numYsections = 1;
-    if (numZsections < 1) numZsections = 1;
-
-    var Integer numlineSegments = 0;
-  if (numZsections > 1) numlineSegments += (numXsections * numYsections);
-    if (numYsections > 1) numlineSegments += (numXsections * numZsections);
-    if (numXsections > 1) numlineSegments += (numYsections * numZsections);
-
-    newCount = numlineSegments * 2;
-}
-
 operator generateGrid(
+  io Container container,
   io Vec3 positions<>,
   io Integer indices[],
   io Scalar sizeX,
@@ -42,8 +23,8 @@ operator generateGrid(
     if (numYsections > 1) numlineSegments += (numXsections * numZsections);
     if (numXsections > 1) numlineSegments += (numYsections * numZsections);
 
+  container.resize(Size(numlineSegments * 2));
   indices.resize(numlineSegments * 2);
-
   var Integer i, j, k, indexid = 0;
   var Scalar x, y, z;
   var Scalar fNumX = Scalar(numXsections) - 1.0;
