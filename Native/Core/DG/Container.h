@@ -74,8 +74,8 @@ namespace Fabric
         );
 
       void *getRTContainerData();
-      size_t getCount() const;
-      void setCount( size_t count );
+      size_t size() const;
+      void resize( size_t size );
 
       RC::ConstHandle<RT::Desc> getDesc( std::string const &name ) const;
       void const *getConstData( std::string const &name, size_t index ) const;
@@ -94,7 +94,7 @@ namespace Fabric
       virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
       void jsonExecAddMember( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
       void jsonExecRemoveMember( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
-      void jsonSetCount( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      void jsonResize( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
       void jsonExecGetData( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
       void jsonExecGetDataJSON( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
       void jsonExecGetDataSize( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
@@ -111,7 +111,7 @@ namespace Fabric
       void jsonDesc( JSON::Encoder &resultEncoder ) const;
       virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       void jsonDescMembers( JSON::Encoder &resultEncoder ) const;
-      void jsonDescCount( JSON::Encoder &resultEncoder ) const;
+      void jsonDescSize( JSON::Encoder &resultEncoder ) const;
       virtual void jsonGetMemoryUsage( JSON::Encoder &jg ) const;
       
     protected:
@@ -141,7 +141,7 @@ namespace Fabric
     
       Context *m_context;
 
-      size_t m_count;
+      size_t m_size;
       Members m_members;
       void* m_rtContainerData;
     };

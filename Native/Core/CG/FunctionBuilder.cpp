@@ -180,7 +180,7 @@ namespace Fabric
       {
         FunctionParam const &param = params[i];
         if ( param.getUsage() == USAGE_LVALUE
-          && RT::isContainer( param.getAdapter()->getType() ) )
+          && param.getAdapter()->getDesc()->isNoAliasSafe() )
         {
           haveContainer = true;
           break;
@@ -198,7 +198,7 @@ namespace Fabric
           ai->addAttr( llvm::Attribute::NoCapture );
           if ( !haveContainer
             || ( !RT::isSlicedArray( param.getAdapter()->getType() )
-              && !RT::isContainer( param.getAdapter()->getType() ) ) )
+              && param.getAdapter()->getDesc()->isNoAliasSafe() ) )
             ai->addAttr( llvm::Attribute::NoAlias );
         }
         m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), context, ai ) ) );

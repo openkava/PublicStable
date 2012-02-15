@@ -775,8 +775,17 @@ class _DG( _NAMESPACE ):
         self._dg._executeQueuedCommands()
       return self.__count
 
+    def size( self ):
+      if self.__count is None:
+        self._dg._executeQueuedCommands()
+      return self.__count
+
     def setCount( self, count ):
-      self._nObjQueueCommand( 'setCount', count )
+      self._nObjQueueCommand( 'resize', count )
+      self.__count = None
+
+    def setCount( self, count ):
+      self._nObjQueueCommand( 'resize', count )
       self.__count = None
 
     def getMembers( self ):

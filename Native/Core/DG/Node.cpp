@@ -276,13 +276,12 @@ namespace Fabric
             FABRIC_ASSERT( errors.empty() );
           }
 
-          size_t oldCount = getCount();
+          size_t oldCount = size();
           opParallelCall->executeParallel( m_context->getLogCollector(), m_context, binding->getMainThreadOnly() );
-          if( oldCount != getCount() )
+          if( oldCount != size() )
           {
             for ( size_t j=0; j<numBindings; ++j )
               m_runState->m_evaluateParallelCallsPerOperator[j] = 0;
-            setCount( getCount() );
           }
         }
         

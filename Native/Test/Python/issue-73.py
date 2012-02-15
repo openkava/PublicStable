@@ -3,6 +3,6 @@
 import fabric
 F = fabric.createClient()
 node = F.DG.createNode("foo")
-node.setCount(None)
+node.resize(None)
 node.evaluate()
 F.close()

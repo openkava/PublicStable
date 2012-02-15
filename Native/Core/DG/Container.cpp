@@ -30,9 +30,9 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<Member> Create( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
+      static RC::Handle<Member> Create( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t size, void const *defaultMemberData )
       {
-        return new Member( rtManager, memberDesc, count, defaultMemberData );
+        return new Member( rtManager, memberDesc, size, defaultMemberData );
       }
       
       void const *getDefaultData() const
@@ -69,9 +69,9 @@ namespace Fabric
         return m_slicedArrayDesc->getNumMembers( m_slicedArrayData );
       }
       
-      void resize( size_t newCount )
+      void resize( size_t newSize )
       {
-        m_slicedArrayDesc->setNumMembers( m_slicedArrayData, newCount, m_defaultMemberData );
+        m_slicedArrayDesc->setNumMembers( m_slicedArrayData, newSize, m_defaultMemberData );
       }
       
       size_t getMemoryUsage() const
@@ -81,7 +81,7 @@ namespace Fabric
 
     protected:
       
-      Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData );
+      Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t size, void const *defaultMemberData );
       ~Member();
 
     private:
@@ -92,7 +92,7 @@ namespace Fabric
       void *m_slicedArrayData;
     };
 
-    Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
+    Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t size, void const *defaultMemberData )
       : m_memberDesc( memberDesc )
     {
       if ( !defaultMemberData )
@@ -108,7 +108,7 @@ namespace Fabric
       size_t arraySize = m_slicedArrayDesc->getAllocSize();
       m_slicedArrayData = malloc( arraySize );
       memset( m_slicedArrayData, 0, arraySize );
-      m_slicedArrayDesc->setNumMembers( m_slicedArrayData, count, m_defaultMemberData );
+      m_slicedArrayDesc->setNumMembers( m_slicedArrayData, size, m_defaultMemberData );
     }
     
     Container::Member::~Member()
@@ -123,14 +123,15 @@ namespace Fabric
     Container::Container( std::string const &name, RC::Handle<Context> const &context )
       : NamedObject( name, context )
       , m_context( context.ptr() )
-      , m_count( 1 )
+      , m_size( 1 )
       , m_rtContainerData( 0 )
     {
     }
     
     Container::~Container()
     {
-      free( m_rtContainerData );
+      if( m_rtContainerData )
+        free( m_rtContainerData );
     }
     
     Container::MemberDescs Container::getMemberDescs() const
@@ -149,8 +150,11 @@ namespace Fabric
     {
       if ( name.empty() )
         throw Exception( "name must be non-empty" );
+
+      if ( !desc->isNoAliasSafe() )
+        throw Exception( "cannot add member " + name + " of type " + desc->getUserName() + ": members cannot contain Container type" );
       
-      RC::Handle<Member> member = Member::Create( m_context->getRTManager(), desc, m_count, defaultData );
+      RC::Handle<Member> member = Member::Create( m_context->getRTManager(), desc, m_size, defaultData );
       bool insertResult = m_members.insert( Members::value_type( name, member ) ).second;
       if ( !insertResult )
         throw Exception( "node already has a member named '"+name+"'" );
@@ -207,27 +211,27 @@ namespace Fabric
       return m_rtContainerData;
     }
 
-    size_t Container::getCount() const
+    size_t Container::size() const
     {
-      return m_count;
+      return m_size;
     }
     
-    void Container::setCount( size_t count )
+    void Container::resize( size_t size )
     {
-      if ( count != m_count )
+      if ( size != m_size )
       {
         for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
-          it->second->resize( count );
-        m_count = count;
+          it->second->resize( size );
+        m_size = size;
 
         markForRefresh();
       
         Util::SimpleString json;
         {
           JSON::Encoder jg( &json );
-          jsonDescCount( jg );
+          jsonDescSize( jg );
         }
-        jsonNotifyMemberDelta( "count", 5, json );
+        jsonNotifyMemberDelta( "size", 5, json );
       }
     }
     
@@ -255,14 +259,14 @@ namespace Fabric
     
     void const *Container::getConstData( std::string const &name, size_t index ) const
     {
-      if ( index >= m_count )
+      if ( index >= m_size )
         throw Exception( "index out of range" );
       return getImmutableMember( name )->getImmutableElementData( index );
     }
 
     void *Container::getMutableData( std::string const &name, size_t index )
     {
-      if ( index >= m_count )
+      if ( index >= m_size )
         throw Exception( "index out of range" );
         
       setOutOfDate();
@@ -289,7 +293,7 @@ namespace Fabric
     
     void Container::getData( std::string const &name, size_t index, void *dstData ) const
     {
-      if ( index >= m_count )
+      if ( index >= m_size )
         throw Exception( "index out of range" );
       RC::ConstHandle<Member> member = getImmutableMember( name );
       return member->getDesc()->setData( member->getImmutableElementData( index ), dstData );
@@ -297,7 +301,7 @@ namespace Fabric
 
     void Container::getDataJSON( std::string const &name, size_t index, JSON::Encoder &resultEncoder ) const
     {
-      if ( index >= m_count )
+      if ( index >= m_size )
         throw Exception( "index out of range" );
       RC::ConstHandle<Member> member = getImmutableMember( name );
       return member->getDesc()->encodeJSON( member->getImmutableElementData( index ), resultEncoder );
@@ -305,7 +309,7 @@ namespace Fabric
     
     void Container::setData( std::string const &name, size_t index, void const *data )
     {
-      if ( index >= m_count )
+      if ( index >= m_size )
         throw Exception( "index out of range" );
       
       RC::Handle<Member> member = getMutableMember( name );
@@ -340,7 +344,7 @@ namespace Fabric
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         JSON::Encoder memberEncoder = objectEncoder.makeMember( name );
         JSON::ArrayEncoder memberArrayEncoder = memberEncoder.makeArray();
-        for ( size_t i=0; i<m_count; ++i )
+        for ( size_t i=0; i<m_size; ++i )
         {
           JSON::Encoder elementEncoder = memberArrayEncoder.makeElement();
           memberDesc->encodeJSON( member->getImmutableElementData(i), elementEncoder );
@@ -350,8 +354,8 @@ namespace Fabric
     
     void Container::generateSliceJSON( size_t index, JSON::Encoder &encoder ) const
     {
-      if ( index >= m_count )
-        throw Exception( "index "+_(index)+" out of range (slice count is "+_(m_count)+")" );
+      if ( index >= m_size )
+        throw Exception( "index "+_(index)+" out of range (slice size is "+_(m_size)+")" );
         
       JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
@@ -372,9 +376,9 @@ namespace Fabric
       RC::ConstHandle<Member> member = it->second;
       RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
       
-      size_t sliceCount = member->size();
+      size_t size = member->size();
       JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
-      for ( size_t sliceIndex=0; sliceIndex<sliceCount; ++sliceIndex )
+      for ( size_t sliceIndex=0; sliceIndex<size; ++sliceIndex )
       {
         JSON::Encoder elementEncoder = jsonArrayEncoder.makeElement();
         memberDesc->encodeJSON( member->getImmutableElementData( sliceIndex ), elementEncoder );
@@ -385,10 +389,10 @@ namespace Fabric
     {
       if ( entity.isArray() )
       {
-        setCount( entity.arraySize() );
+        resize( entity.arraySize() );
         JSON::ArrayDecoder arrayDecoder( entity );
         JSON::Entity elementEntity;
-        for ( size_t i=0; i<m_count; ++i )
+        for ( size_t i=0; i<m_size; ++i )
         {
           FABRIC_VERIFY( arrayDecoder.getNext( elementEntity ) );
           setSliceJSON( i, elementEntity );
@@ -413,19 +417,19 @@ namespace Fabric
             valueEntity.requireArray();
             if ( first )
             {
-              setCount( valueEntity.arraySize() );
+              resize( valueEntity.arraySize() );
               first = false;
             }
             else
             {
-              if ( valueEntity.arraySize() != m_count )
+              if ( valueEntity.arraySize() != m_size )
                 throw Exception( "inconsistent array length" );
             }
             
             RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
             JSON::ArrayDecoder arrayDecoder( valueEntity );
             JSON::Entity elementEntity;
-            for ( size_t i=0; i<m_count; ++i )
+            for ( size_t i=0; i<m_size; ++i )
             {
               FABRIC_VERIFY( arrayDecoder.getNext( elementEntity ) );
               memberDesc->decodeJSON( elementEntity, member->getMutableElementData(i) );
@@ -444,8 +448,8 @@ namespace Fabric
 
     void Container::setSliceJSON( size_t index, JSON::Entity const &entity )
     {
-      if ( index >= m_count )
-        throw Exception( "index "+_(index)+" out of range (slice count is "+_(m_count)+")" );
+      if ( index >= m_size )
+        throw Exception( "index "+_(index)+" out of range (slice size is "+_(m_size)+")" );
       
       entity.requireObject();
       
@@ -498,9 +502,9 @@ namespace Fabric
       }
     }
       
-    void Container::jsonDescCount( JSON::Encoder &resultEncoder ) const
+    void Container::jsonDescSize( JSON::Encoder &resultEncoder ) const
     {
-      resultEncoder.makeInteger( getCount() );
+      resultEncoder.makeInteger( size() );
     }
       
     void Container::jsonDesc( JSON::Encoder &resultEncoder ) const
@@ -518,8 +522,8 @@ namespace Fabric
       }
       
       {
-        JSON::Encoder countEncoder = resultObjectEncoder.makeMember( "count", 5 );
-        jsonDescCount( countEncoder );
+        JSON::Encoder sizeEncoder = resultObjectEncoder.makeMember( "size", 5 );
+        jsonDescSize( sizeEncoder );
       }
     }
     
@@ -559,8 +563,8 @@ namespace Fabric
         jsonExecAddMember( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "removeMember", 12 ) )
         jsonExecRemoveMember( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "setCount", 8 ) )
-        jsonSetCount( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "resize", 8 ) )
+        jsonResize( arg, resultArrayEncoder );
       else
         NamedObject::jsonExec( cmd, arg, resultArrayEncoder );
     }
@@ -624,13 +628,13 @@ namespace Fabric
       removeMember( name );
     }
 
-    void Container::jsonSetCount( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
+    void Container::jsonResize( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
       arg.requireInteger();
-      int32_t newCount = arg.integerValue();
-      if ( newCount < 0 )
-        throw Exception( "count must be non-negative" );
-      setCount( size_t( newCount ) );
+      int32_t newSize = arg.integerValue();
+      if ( newSize < 0 )
+        throw Exception( "size must be non-negative" );
+      resize( size_t( newSize ) );
     }
     
     void Container::jsonGenerateMemberSliceJSON( JSON::Entity const &arg, JSON::Encoder &resultEncoder ) const
@@ -655,7 +659,7 @@ namespace Fabric
           {
             valueEntity.requireInteger();
             int32_t sliceIndexInt32 = valueEntity.integerValue();
-            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_size )
               throw Exception( "out of range" );
             sliceIndex = size_t( sliceIndexInt32 );
           }
@@ -713,7 +717,7 @@ namespace Fabric
           {
             valueEntity.requireInteger();
             int32_t sliceIndexInt32 = valueEntity.integerValue();
-            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_size )
               throw Exception( "out of range" );
             sliceIndex = size_t( sliceIndexInt32 );
           }
@@ -761,7 +765,7 @@ namespace Fabric
           {
             valueEntity.requireInteger();
             int32_t sliceIndexInt32 = valueEntity.integerValue();
-            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_size )
               throw Exception( "out of range" );
             sliceIndex = size_t( sliceIndexInt32 );
           }
@@ -821,7 +825,7 @@ namespace Fabric
           {
             valueEntity.requireInteger();
             int32_t sliceIndexInt32 = valueEntity.integerValue();
-            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_count )
+            if ( sliceIndexInt32 < 0 || size_t(sliceIndexInt32) > m_size )
               throw Exception( "out of range" );
             sliceIndex = size_t( sliceIndexInt32 );
           }
@@ -898,7 +902,7 @@ namespace Fabric
           elementEntity.requireInteger();
           int32_t indexInt32 = elementEntity.integerValue();
           size_t index = size_t(indexInt32);
-          if ( indexInt32 < 0 || index >= m_count )
+          if ( indexInt32 < 0 || index >= m_size )
             throw Exception( "out of range" );
           
           JSON::Encoder sliceEncoder = slicesArrayEncoder.makeElement();
@@ -961,7 +965,7 @@ namespace Fabric
                 valueEntity.requireInteger();
                 int32_t sliceIndexInt32 = valueEntity.integerValue();
                 sliceIndex = size_t( sliceIndexInt32 );
-                if ( sliceIndexInt32 < 0 || sliceIndex >= m_count )
+                if ( sliceIndexInt32 < 0 || sliceIndex >= m_size )
                   throw Exception( "out of range" );
               }
               else if ( keyString.stringIs( "data", 4 ) )

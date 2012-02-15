@@ -3,7 +3,7 @@ F = fabric.createClient()
 
 dgnode1 = F.DG.createNode("myNode1")
 dgnode1.addMember('a','Size[]')
-dgnode1.setCount(32)
+dgnode1.resize(32)
 
 operatorInit = F.DG.createOperator("initiate")
 operatorInit.setSourceCode(
@@ -41,7 +41,7 @@ if len( operatorInit2.getErrors() ) > 0:
 bindingInit2 = F.DG.createBinding()
 bindingInit2.setOperator(operatorInit2)
 bindingInit2.setParameterLayout([
-  'self.count',
+  'self.size',
   'self.a<>'
 ])
 
