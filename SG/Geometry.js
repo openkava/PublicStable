@@ -60,10 +60,6 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     // beginning of the operator list. if there are operators for
     // generating tangents, or any other data, they should always go after
     // the generator ops.
-    // Currently the generator ops are bound to the attributesdgnode,
-    // but with node nesting, we should put them on the outer node.
-    // this would mean 2 things. We could generate geometry in a
-    // single operator, and we wouldn't need this code here....
     geometryNode.setGeneratorOps = function(opBindings) {
       var i;
       if (attributesdgnode.bindings.empty()) {
