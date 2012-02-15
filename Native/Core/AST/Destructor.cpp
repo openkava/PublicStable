@@ -19,36 +19,33 @@ namespace Fabric
     RC::ConstHandle<Destructor> Destructor::Create(
       CG::Location const &location,
       std::string const &thisTypeName,
-      std::string const &entryName,
+      std::string const *symbolName,
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new Destructor( location, thisTypeName, entryName, body );
+      return new Destructor( location, thisTypeName, symbolName, body );
     }
     
     Destructor::Destructor(
       CG::Location const &location,
       std::string const &thisTypeName,
-      std::string const &entryName,
+      std::string const *symbolName,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : Function(
+      : FunctionBase(
         location,
         "",
-        entryName,
-        "",
-        ParamVector::Create(),
+        symbolName,
         body,
-        !body
+        false
         )
       , m_thisTypeName( thisTypeName )
-      , m_entryName( entryName )
     {
     }
     
     void Destructor::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Function::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      FunctionBase::appendJSONMembers( jsonObjectEncoder, includeLocation );
       jsonObjectEncoder.makeMember( "thisTypeName" ).makeString( m_thisTypeName );
     }
     
@@ -57,16 +54,14 @@ namespace Fabric
       return m_thisTypeName;
     }
     
-    std::string const *Destructor::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string Destructor::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return 0;
+      return CG::DestructorPencilName( cgManager->getAdapter( m_thisTypeName ) );
     }
-
-    std::string Destructor::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    
+    std::string Destructor::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      if ( m_entryName.length() > 0 )
-        return m_entryName;
-      else return CG::destructorOverloadName( cgManager->getAdapter( m_thisTypeName ) );
+      return CG::DestructorDefaultSymbolName( cgManager->getAdapter( m_thisTypeName ) );
     }
 
     RC::ConstHandle<ParamVector> Destructor::getParams( RC::Handle<CG::Manager> const &cgManager ) const
@@ -74,10 +69,14 @@ namespace Fabric
       return ParamVector::Create( Param::Create( getLocation(), "this", m_thisTypeName, CG::USAGE_LVALUE ) );
     }
 
-    void Destructor::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    void Destructor::llvmCompileToModule(
+      CG::ModuleBuilder &moduleBuilder,
+      CG::Diagnostics &diagnostics,
+      bool buildFunctionBodies
+      ) const
     {
       FunctionBase::llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
-      moduleBuilder.setDestructorName( m_thisTypeName, getEntryName( moduleBuilder.getManager() ) );
+      moduleBuilder.setDestructorName( m_thisTypeName, getSymbolName( moduleBuilder.getManager() ) );
     }
-  };
-};
+  }
+}
