@@ -231,7 +231,7 @@ namespace Fabric
           JSON::Encoder jg( &json );
           jsonDescSize( jg );
         }
-        jsonNotifyMemberDelta( "size", 5, json );
+        jsonNotifyMemberDelta( "size", 4, json );
       }
     }
     
@@ -522,7 +522,7 @@ namespace Fabric
       }
       
       {
-        JSON::Encoder sizeEncoder = resultObjectEncoder.makeMember( "size", 5 );
+        JSON::Encoder sizeEncoder = resultObjectEncoder.makeMember( "size", 4 );
         jsonDescSize( sizeEncoder );
       }
     }
@@ -563,7 +563,7 @@ namespace Fabric
         jsonExecAddMember( arg, resultArrayEncoder );
       else if ( cmd.stringIs( "removeMember", 12 ) )
         jsonExecRemoveMember( arg, resultArrayEncoder );
-      else if ( cmd.stringIs( "resize", 8 ) )
+      else if ( cmd.stringIs( "resize", 6 ) )
         jsonResize( arg, resultArrayEncoder );
       else
         NamedObject::jsonExec( cmd, arg, resultArrayEncoder );
