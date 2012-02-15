@@ -249,14 +249,18 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
     paintEvent.setSelectType('CollectedPoints');
     paintEvent.appendEventHandler(paintEventHandler);
     
-    var brushMaterial = scene.constructNode('FlatScreenSpaceMaterial', { color: FABRIC.RT.rgb(0.8, 0, 0) });
+    var brushMaterial = scene.constructNode('FlatScreenSpaceMaterial', { color: FABRIC.RT.rgb(0.8, 0, 0), drawOverlaid: true });
     var brushShapeTransform = scene.constructNode('Transform', { hierarchical: false, globalXfo: new FABRIC.RT.Xfo({
         ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI),
         sc: new FABRIC.RT.Vec3(0, 0, 0)
       }) });
     var brushInstance = scene.constructNode('Instance', {
+        name: paintManipulatorNode.pub.getName() + "BrushInstance",
         transformNode: brushShapeTransform.pub,
-        geometryNode: scene.constructNode('Circle', { radius: 1.0 }).pub,
+        geometryNode: scene.constructNode('Circle', {
+          radius: 1.0, 
+          name: paintManipulatorNode.pub.getName() + "BrushGeometry"
+        }).pub,
         materialNode: brushMaterial.pub,
         enableDrawing: false
       });
@@ -314,8 +318,8 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
 
     var moveBrush = function(evt) {
       var mousepos = getMousePos(evt);
-      width = parseInt(evt.target.width, 10);
-      height = parseInt(evt.target.height, 10);
+      width = parseInt(evt.target.offsetWidth, 10);
+      height = parseInt(evt.target.offsetHeight, 10);
       aspectRatio = width / height;
       brushPos = new FABRIC.RT.Vec3(((mousepos.x / width) - 0.5) * 2.0, ((mousepos.y / height) - 0.5) * -2.0, 0);
 

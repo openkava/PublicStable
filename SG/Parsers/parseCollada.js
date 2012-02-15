@@ -1122,7 +1122,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         assetNodes[geometryNode.getName()] = geometryNode;
         geometryNodes.push(geometryNode);
         
-        if(polygons.material && options.constructMaterialNodes){
+        if(polygons.material && options.constructMaterialNodes && colladaData.libraryMaterials){
           var materialData = colladaData.libraryMaterials[polygons.material];
           var materialNode = constructMaterial(materialData);
           assetNodes[materialNode.getName()] = materialNode;
@@ -1654,7 +1654,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         for(var i=0; i<geometries.length; i++){
           var materialNode = materials[i];
           var geometryNode = geometries[i];
-          if(instanceData.instance_geometry.instance_material && options.constructMaterialNodes){
+          if(instanceData.instance_geometry.instance_material && options.constructMaterialNodes && colladaData.libraryMaterials){
             var materialData = colladaData.libraryMaterials[instanceData.instance_geometry.instance_material];
             materialNode = constructMaterial(materialData);
           }
