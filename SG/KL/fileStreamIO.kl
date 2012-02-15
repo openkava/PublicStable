@@ -111,14 +111,16 @@ operator readSliceCountFromStream(
   io String dataNames[],
   io Size dataSeekOffsets[],
   io String dataName,
-  io Size newCount
+  io Container container
 ){
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
   if(stream.isValid()){
     Size prevDataIndex = -1;
     if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+      Size newCount;
       stream.readSize(newCount);
+      container.resize(newCount);
     }
     stream.close();
   }
