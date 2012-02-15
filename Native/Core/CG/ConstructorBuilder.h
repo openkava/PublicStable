@@ -57,7 +57,9 @@ namespace Fabric
           ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            param1Adapter
+            AdapterVector(
+              param1Adapter
+              )
             ),
           0,
           ParamVector(
@@ -80,8 +82,10 @@ namespace Fabric
           ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            param1Adapter,
-            param2Adapter
+            AdapterVector(
+              param1Adapter,
+              param2Adapter
+              )
             ),
           0,
           ParamVector(
@@ -106,9 +110,11 @@ namespace Fabric
           ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            param1Adapter,
-            param2Adapter,
-            param3Adapter
+            AdapterVector(
+              param1Adapter,
+              param2Adapter,
+              param3Adapter
+              )
             ),
           0,
           ParamVector(

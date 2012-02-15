@@ -48,12 +48,12 @@ namespace Fabric
     
     std::string ConstructorDefaultSymbolName(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
-      std::vector< RC::ConstHandle<CG::Adapter> > const &otherParamAdapters
+      AdapterVector const &otherParamAdapters
       )
     {
       CG::ExprTypeVector paramTypes;
       paramTypes.push_back( CG::ExprType( thisAdapter, CG::USAGE_LVALUE ) );
-      for ( std::vector< RC::ConstHandle<CG::Adapter> >::const_iterator it = otherParamAdapters.begin(); it != otherParamAdapters.end(); ++it )
+      for ( AdapterVector::const_iterator it = otherParamAdapters.begin(); it != otherParamAdapters.end(); ++it )
         paramTypes.push_back( CG::ExprType( *it, CG::USAGE_RVALUE ) );
       return "__constructor" + EncodeParametersForDefaultSymbolName( paramTypes );
     }
