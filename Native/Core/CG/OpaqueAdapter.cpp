@@ -12,7 +12,7 @@
 #include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "Scope.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/Util/Hex.h>

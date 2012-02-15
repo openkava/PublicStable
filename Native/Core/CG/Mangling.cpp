@@ -2,7 +2,7 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 #include "Adapter.h"
 
 namespace Fabric
