@@ -152,7 +152,6 @@ namespace Fabric
       std::vector<std::string> &errors,
       Prototype *prototype,
       Scope const &scope,
-      size_t *newSize,
       unsigned prefixCount,
       void * const *prefixes
       ) const
@@ -170,7 +169,7 @@ namespace Fabric
       
       RC::Handle<MT::ParallelCall> result;
       if ( m_astOperator && m_function )
-        result = prototype->bind( errors, m_astOperator, scope, m_function, newSize, prefixCount, prefixes );
+        result = prototype->bind( errors, m_astOperator, scope, m_function, prefixCount, prefixes );
       return result;
     }
     
