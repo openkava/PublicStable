@@ -116,13 +116,13 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       }
       var mouseDragScreenDelta = evt.mouseScreenPos.subtract(mouseDownScreenPos);
       var newcameraXfo = cameraXfo.clone();
-      var arbit = new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0), mouseDragScreenDelta.x * -options.orbitRate);
-      newcameraXfo.ori = arbit.multiply(newcameraXfo.ori);
+      var orbit = new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0), mouseDragScreenDelta.x * -options.orbitRate);
+      newcameraXfo.ori = orbit.multiply(newcameraXfo.ori);
       
       var pitch = new FABRIC.RT.Quat().setFromAxisAndAngle(newcameraXfo.ori.getXaxis(), mouseDragScreenDelta.y * -options.orbitRate);
       newcameraXfo.ori = pitch.multiply(newcameraXfo.ori);
       
-      var newCameraOffset = arbit.rotateVector(cameraOffset);
+      var newCameraOffset = orbit.rotateVector(cameraOffset);
       newCameraOffset = pitch.rotateVector(newCameraOffset);
       newcameraXfo.tr = cameraTarget.subtract(newCameraOffset);
       

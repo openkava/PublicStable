@@ -223,6 +223,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
+      if(windowWidth == 0) retrieveWidthHeight();
       var browserZoom = windowWidth / evt.target.clientWidth;
       if (evt.offsetX != undefined) {
         // Webkit

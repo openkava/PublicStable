@@ -392,8 +392,6 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
       return curveEditorWindow;
     }
     
-    scene.addEventHandlingFunctions(trackAnimationContainerNode);
-    
     var parentWriteData = trackAnimationContainerNode.writeData;
     var parentReadData = trackAnimationContainerNode.readData;
     trackAnimationContainerNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
@@ -410,7 +408,7 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
       }
     };
     
-    scene.addEventHandlingFunctions(animationTrackNode);
+    scene.addEventHandlingFunctions(trackAnimationContainerNode);
     return trackAnimationContainerNode;
   }});
 
