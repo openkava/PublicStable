@@ -77,7 +77,7 @@ namespace Fabric
 
       virtual std::string desc() const
       {
-        return "count";
+        return "size";
       }
     };
 
@@ -219,7 +219,7 @@ namespace Fabric
               throw Exception( "missing member name" );
             memberName = desc.substr( memberNameStart, memberNameEnd - memberNameStart );
           
-            if ( memberName == "count" )
+            if ( memberName == "size" )
               param = new SizeParam(i);
             else if ( memberName == "index" )
               param = new IndexParam(i);
@@ -295,6 +295,7 @@ namespace Fabric
           std::set<void *> arrayAccessSet;
 
           bool haveLValueContainerAccess = false;
+          bool haveSize = false;
           
           for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           {
@@ -325,7 +326,8 @@ namespace Fabric
                   errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getUserName()) );
                 if ( astParamExprType.getUsage() != CG::USAGE_RVALUE )
                   errors.push_back( parameterErrorPrefix + "'size' cannot be an 'io' parmeter" );
-                result->setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
+                result->setBaseAddress( prefixCount+param->index(), (void *)container->size() );
+                haveSize = true;
               }
               else if ( param->isIndexParam() )
               {
@@ -336,11 +338,11 @@ namespace Fabric
                 else
                 {
                   result->setBaseAddress( prefixCount+param->index(), (void *)0 );
-                  if ( container->getCount() != 1 )
+                  if ( container->size() != 1 )
                   {
                     if ( !haveAdjustmentIndex )
                     {
-                      adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/(4*MT::getNumCores()) ) );
+                      adjustmentIndex = result->addAdjustment( container->size(), std::max<size_t>( 1, container->size()/(4*MT::getNumCores()) ) );
                       haveAdjustmentIndex = true;
                     }
                     result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), 1 );
@@ -385,11 +387,11 @@ namespace Fabric
                           baseAddress = slicedArrayImpl->getMutableMemberData( slicedArrayData, 0 );
                         else baseAddress = 0;
                         result->setBaseAddress( prefixCount+param->index(), baseAddress );
-                        if ( container->getCount() != 1 )
+                        if ( container->size() != 1 )
                         {
                           if ( !haveAdjustmentIndex )
                           {
-                            adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/(4*MT::getNumCores()) ) );
+                            adjustmentIndex = result->addAdjustment( container->size(), std::max<size_t>( 1, container->size()/(4*MT::getNumCores()) ) );
                             haveAdjustmentIndex = true;
                           }
                           result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getAllocSize() );
@@ -415,8 +417,13 @@ namespace Fabric
               }
             }
           }
-          if( !elementAccessSet.empty() && haveLValueContainerAccess )
-            errors.push_back( nodeErrorPrefix + "cannot have both per-slice data parameters and an 'io' Container parameter (calling Container::setCount() would invalidate the data)" );
+          if( haveLValueContainerAccess )
+          {
+            if( !elementAccessSet.empty() )
+              errors.push_back( nodeErrorPrefix + "cannot have both per-slice data parameters and an 'io' Container parameter (calling Container::resize() would invalidate the data)" );
+            if( haveSize )
+              errors.push_back( nodeErrorPrefix + "cannot have both 'size' parameter and an 'io' Container parameter (calling Container::resize() would invalidate 'size')" );
+          }
         }
       }
       return result;

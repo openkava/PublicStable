@@ -90,6 +90,11 @@ namespace Fabric
       return false;
     }
 
+    bool ContainerImpl::isNoAliasSafe() const
+    {
+      return false;
+    }
+
     size_t ContainerImpl::getIndirectMemoryUsage( void const *data ) const
     {
       return 0;
@@ -155,18 +160,18 @@ namespace Fabric
     {
       RC::WeakHandle<DG::Container> const *bits = *static_cast<RC::WeakHandle<DG::Container> const * const *>( data );
       if( !bits )
-        throw Exception( "Calling getCount on an uninitialized Container" );
+        throw Exception( "Calling size() on an uninitialized Container" );
 
-      return bits->makeStrong()->getCount();
+      return bits->makeStrong()->size();
     }
 
     void ContainerImpl::SetCount( void *data, size_t count )
     {
       RC::WeakHandle<DG::Container> *bits = *static_cast<RC::WeakHandle<DG::Container> * const *>( data );
       if( !bits )
-        throw Exception( "Calling setCount on an uninitialized Container" );
+        throw Exception( "Calling resize() on an uninitialized Container" );
 
-      return bits->makeStrong()->setCount( count );
+      return bits->makeStrong()->resize( count );
     }
 
     std::string ContainerImpl::GetName( void const *data )
