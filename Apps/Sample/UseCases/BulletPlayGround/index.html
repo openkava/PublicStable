@@ -578,16 +578,25 @@ $(document).ready(function() {
       });
 
       // ensure to send message for manipulated rigid bodies
-      selectionManager.addEventListener('groupTransformChanged', function(evt){
+      var synchronizeRigidBodies = function(selection){
         var bodiesToSave = {};
-        for(var i=0;i<evt.selection.length;i++) {
-          var key = evt.selection[i].getTransformNode().getName();
+        for(var i=0;i<selection.length;i++) {
+          var key = selection[i].getTransformNode().getName();
           bodiesToSave[key] = {};
           bodiesToSave[key].name = rigidBodies[key].name,
           bodiesToSave[key].type = rigidBodies[key].type,
           bodiesToSave[key].transform = rigidBodies[key].transformNode.getInitialTransform()
         }
         ws.sendMessage("rigidBodiesMoved",bodiesToSave);
+      }
+      selectionManager.addEventListener('selectionManipulated', function(evt){
+        synchronizeRigidBodies(evt.selection);
+      });
+      undoManager.addEventListener('undo', function(evt){
+        synchronizeRigidBodies(selectionManager.getSelection());
+      });
+      undoManager.addEventListener('redo', function(evt){
+        synchronizeRigidBodies(selectionManager.getSelection());
       });
 
     }catch(e){

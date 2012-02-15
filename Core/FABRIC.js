@@ -2286,8 +2286,15 @@ var requirejs, require, define;
     // if you do so then Chrome disables the plugin.
     //embedTag.style.display = 'none';
     document.body.appendChild(embedTag);
-    
-    var context = embedTag.wrapFabricClient(embedTag, function(s) { console.log(s); } );
+  
+    var context;
+    try {
+      context = embedTag.wrapFabricClient(embedTag, function(s) { console.log(s); } );
+    }
+    catch (e) {
+      // [andrew 20120214] should only happen if they pass an invalid contextID
+      throw( 'Creating context failed' );
+    }
 
     //Enable math warnings (comment out this line if you don't want them)
   //  Math.verboseLogFunction = function(s){console.log(s);};
@@ -2384,11 +2391,11 @@ var requirejs, require, define;
 
       var onDOMWindowResize = function() {
         if (options.aspectRatio) {
-          embedTag.width = element.offsetWidth;
+          embedTag.width = '100%';
           embedTag.height = element.offsetWidth * options.aspectRatio;
         } else {
-          embedTag.width = element.offsetWidth;
-          embedTag.height = element.offsetHeight;
+          embedTag.width = '100%';
+          embedTag.height = '100%';
         }
       };
       embedTag.width = 1;

@@ -116,13 +116,13 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       }
       var mouseDragScreenDelta = evt.mouseScreenPos.subtract(mouseDownScreenPos);
       var newcameraXfo = cameraXfo.clone();
-      var arbit = new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0), mouseDragScreenDelta.x * -options.orbitRate);
-      newcameraXfo.ori = arbit.multiply(newcameraXfo.ori);
+      var orbit = new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0), mouseDragScreenDelta.x * -options.orbitRate);
+      newcameraXfo.ori = orbit.multiply(newcameraXfo.ori);
       
       var pitch = new FABRIC.RT.Quat().setFromAxisAndAngle(newcameraXfo.ori.getXaxis(), mouseDragScreenDelta.y * -options.orbitRate);
       newcameraXfo.ori = pitch.multiply(newcameraXfo.ori);
       
-      var newCameraOffset = arbit.rotateVector(cameraOffset);
+      var newCameraOffset = orbit.rotateVector(cameraOffset);
       newCameraOffset = pitch.rotateVector(newCameraOffset);
       newcameraXfo.tr = cameraTarget.subtract(newCameraOffset);
       
@@ -249,14 +249,18 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
     paintEvent.setSelectType('CollectedPoints');
     paintEvent.appendEventHandler(paintEventHandler);
     
-    var brushMaterial = scene.constructNode('FlatScreenSpaceMaterial', { color: FABRIC.RT.rgb(0.8, 0, 0) });
+    var brushMaterial = scene.constructNode('FlatScreenSpaceMaterial', { color: FABRIC.RT.rgb(0.8, 0, 0), drawOverlaid: true });
     var brushShapeTransform = scene.constructNode('Transform', { hierarchical: false, globalXfo: new FABRIC.RT.Xfo({
         ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI),
         sc: new FABRIC.RT.Vec3(0, 0, 0)
       }) });
     var brushInstance = scene.constructNode('Instance', {
+        name: paintManipulatorNode.pub.getName() + "BrushInstance",
         transformNode: brushShapeTransform.pub,
-        geometryNode: scene.constructNode('Circle', { radius: 1.0 }).pub,
+        geometryNode: scene.constructNode('Circle', {
+          radius: 1.0, 
+          name: paintManipulatorNode.pub.getName() + "BrushGeometry"
+        }).pub,
         materialNode: brushMaterial.pub,
         enableDrawing: false
       });
@@ -314,8 +318,8 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
 
     var moveBrush = function(evt) {
       var mousepos = getMousePos(evt);
-      width = parseInt(evt.target.width, 10);
-      height = parseInt(evt.target.height, 10);
+      width = parseInt(evt.target.offsetWidth, 10);
+      height = parseInt(evt.target.offsetHeight, 10);
       aspectRatio = width / height;
       brushPos = new FABRIC.RT.Vec3(((mousepos.x / width) - 0.5) * 2.0, ((mousepos.y / height) - 0.5) * -2.0, 0);
 
@@ -563,8 +567,7 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     scene.assignDefaults(options, {
         targetNode: undefined,
         targetMember: 'globalXfo',
-        localXfo: new FABRIC.RT.Xfo(),
-        undoManager: undefined
+        localXfo: new FABRIC.RT.Xfo()
       });
     if(!options.targetNode)
       options.targetNode = options.parentNode;
@@ -594,25 +597,28 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     options.transformNode = transformNode.pub;
     var manipulatorNode = scene.constructNode('Manipulator', options );
     
+    
     // take care of undo
-    var undoManager = options.undoManager;
-    manipulatorNode.pub.setUndoManager = function(manager) {
-      undoManager = manager;
-    };
+    var undoManager = scene.getManager('UndoManager');
     if(undoManager) {
-      var prevXfo = undefined;
-      var isManipulating = false;
       manipulatorNode.pub.addEventListener('dragstart', function() {
-        prevXfo = manipulatorNode.getTargetXfo().clone();
+        undoManager.openUndoTransaction();
+        var newXfo, prevXfo = manipulatorNode.getTargetXfo();
+        undoManager.addAction({
+          name: 'InstanceManipulation',
+          onClose: function() {
+            newXfo = manipulatorNode.getTargetXfo();
+          },
+          onUndo: function() {
+            manipulatorNode.setTargetXfo(prevXfo);
+          },
+          onRedo: function() {
+            manipulatorNode.setTargetXfo(newXfo);
+          }
+        });
       });
       manipulatorNode.pub.addEventListener('dragend', function() {
-        undoManager.setDataTask({
-          name: 'InstanceManipulation',
-          node: targetNode,
-          member: targetMember,
-          value: manipulatorNode.getTargetXfoCached().clone(),
-          prevValue: prevXfo.clone()
-        });  
+        undoManager.closeUndoTransaction();
       });
     }
     
@@ -626,26 +632,17 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     manipulatorNode.getTargetXfo = function() {
       return targetNode[targetMemberGetter]();
     }
-    var localTargetXfo = undefined;
-    manipulatorNode.getTargetXfoCached = function() {
-      return localTargetXfo;
-    }
     manipulatorNode.setTargetXfo = function(xfo) {
-        targetNode[targetMemberSetter](xfo);
-        localTargetXfo = xfo.clone();
-        manipulatorNode.pub.fireEvent('targetManipulated',{newTargetXfo: xfo});
+      targetNode[targetMemberSetter](xfo);
     }
     manipulatorNode.setTargetOri = function(ori) {
       var xfo = this.getTargetXfo();
       xfo.ori = ori;
       this.setTargetXfo(xfo);
     }
-    
     manipulatorNode.getManipulationSpaceXfo = function() {
       return transformNode.pub.getGlobalXfo();
     }
-    
-    
     // Thia function is used to find the closest local axis to
     // the given vec. The local axis can then be used in manipulation.
     // Manipulators can then determine the best local axis based on the
@@ -1070,6 +1067,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
+        radius: 15
       });
     var xfoManipulator = scene.constructNode('SceneGraphNode', options);
     var name = xfoManipulator.pub.getName();

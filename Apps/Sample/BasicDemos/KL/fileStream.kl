@@ -2,9 +2,10 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricFILESYSTEM;
 use FabricFILESTREAM;
 use FabricFileStream;
+use FabricFILESYSTEM;
+use FabricFileHandleWrapper;
 
 operator initFileStreamFromString
 (
@@ -16,6 +17,7 @@ operator initFileStreamFromString
 {
   if(!stream.isWritable() && path.length() > 0) {
     FabricFileHandleWrapper wrapper;
+    FabricFileHandle_SetAbsolutePath(wrapper,path);
     wrapper.setAbsolutePath(path);
     stream.open(wrapper.getHandle(),"w");
   }
@@ -54,10 +56,10 @@ operator saveTrianglesToStream
     stream.setSeekEnd();
     Size seekOffset = stream.getSeek();
     stream.writeSize(positions.size());
-    stream.writeData(positions.data(),positions.dataSize());
-    stream.writeData(normals.data(),normals.dataSize());
+    stream.writeDataCompressed(positions.data(),positions.dataSize());
+    stream.writeDataCompressed(normals.data(),normals.dataSize());
     stream.writeSize(indices.size());
-    stream.writeData(indices.data(),indices.dataSize());
+    stream.writeDataCompressed(indices.data(),indices.dataSize());
     for(Size i=0;i<names.size();i++) {
       if(name == names[i]) {
         stream.setSeek(seekOffsets[i]);
@@ -101,11 +103,11 @@ operator loadTrianglesFromStream
     stream.readSize(newCount);
     container.resize(newCount);
 
-    stream.readData(positions.data(),positions.dataSize());
-    stream.readData(normals.data(),normals.dataSize());
+    stream.readDataCompressed(positions.data(),positions.dataSize());
+    stream.readDataCompressed(normals.data(),normals.dataSize());
     Size nbIndices = 0;
     stream.readSize(nbIndices);
     indices.resize(nbIndices);
-    stream.readData(indices.data(),indices.dataSize());
+    stream.readDataCompressed(indices.data(),indices.dataSize());
   }
 }
