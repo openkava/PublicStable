@@ -18,7 +18,6 @@ SConscript(
   dirs=[
     'Util',
     'MT',
-    'RT',
     'CG',
     'MR',
     'AST',
@@ -29,5 +28,6 @@ SConscript(
     'GC',
     'KLC',
     'DG',
+    'RT',
   ]
   )
