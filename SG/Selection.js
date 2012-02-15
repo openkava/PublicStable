@@ -459,7 +459,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
     toggleManipulatorsDisplay(false);
     
     if(!options.manipulators){
-      selectionManipulationManager.addManipulator( scene.pub.constructNode('ScreenTranslationManipulator', {
+      selectionManipulationManager.pub.addManipulator( scene.pub.constructNode('ScreenTranslationManipulator', {
           name: options.name + 'ScreenTranslationManipulator',
           color: FABRIC.RT.rgb(0, 0.8, 0, 1),
           parentNode: groupTransform.pub,
@@ -469,7 +469,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         }));
     } else {
       for(var i=0; i < options.manipulators.length; i++) {
-        selectionManipulationManager.addManipulator( options.manipulators[i] );
+        selectionManipulationManager.pub.addManipulator( options.manipulators[i] );
       }
     }
     

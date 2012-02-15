@@ -341,9 +341,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         viewPortRayCastDgNode.setData('x', elementCoords.x);
         viewPortRayCastDgNode.setData('y', elementCoords.y);
         var nodes = viewPortRaycastEvent.select();
+        result.rayData = viewPortRayCastDgNode.getData('ray');
         if(nodes.length > 0){
-          result.rayData = viewPortRayCastDgNode.getData('ray');
-  
           if (options.returnOnlyClosestNode) {
             for (var i = 0; i < nodes.length; i++) {
               if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
