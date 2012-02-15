@@ -75,31 +75,85 @@ namespace Fabric
       return !insertResult;
     }
 
-    void ModuleBuilder::addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName )
+    RC::ConstHandle<PencilSymbol> ModuleBuilder::addFunction(
+      std::string const &pencilName,
+      CG::Function const &function
+      )
     {
-      FABRIC_ASSERT( entryName.length() > 0 );
+      FABRIC_ASSERT( !pencilName.empty() );
       
-      std::pair< Functions::iterator, bool > insertResult = m_functions.insert( Functions::value_type( entryName, functionSymbol ) );
-      if ( !insertResult.second )
+      RC::Handle<PencilSymbol> &pencil = m_pencils[pencilName];
+      if ( !pencil )
+        pencil = PencilSymbol::Create( pencilName );
+      CG::Function const *existingFunction = pencil->maybeGetPreciseFunction( function.getParamTypes() );
+      if ( existingFunction )
       {
-        RC::ConstHandle<FunctionSymbol> const &existingFunctionSymbol = insertResult.first->second;
-        llvm::Function *llvmFunction = functionSymbol->getLLVMFunction();
-        llvm::Function *existingLLVMFunction = existingFunctionSymbol->getLLVMFunction();
-        if ( llvmFunction != existingLLVMFunction )
-          throw Exception( "function with entry name " + _(entryName) + " already exists" );
+        if ( existingFunction->getLLVMFunction() != function.getLLVMFunction() )
+          throw Exception( pencilName + "(" + existingFunction->getParamTypes().desc() + ") already exists" );
       }
+      else pencil->add( function );
       
-      if ( friendlyName )
-        m_moduleScope.put( *friendlyName, functionSymbol );
+      return pencil;
     }
     
-    RC::ConstHandle<FunctionSymbol> ModuleBuilder::maybeGetFunction( std::string const &entryName ) const
+    CG::Function const *ModuleBuilder::maybeGetPreciseFunction( std::string const &pencilName, ExprTypeVector const &argTypes ) const
     {
-      RC::ConstHandle<FunctionSymbol> result;
-      Functions::const_iterator it = m_functions.find( entryName );
-      if ( it != m_functions.end() )
-        result = it->second;
+      FABRIC_ASSERT( !pencilName.empty() );
+      
+      Pencils::const_iterator it = m_pencils.find( pencilName );
+      if ( it == m_pencils.end() )
+        return 0;
+      RC::Handle<PencilSymbol> const &pencil = it->second;
+      FABRIC_ASSERT( pencil );
+      
+      return pencil->maybeGetPreciseFunction( argTypes );
+    }
+    
+    CG::Function const *ModuleBuilder::getPreciseFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const
+    {
+      CG::Function const *result = maybeGetPreciseFunction( pencilName, argTypes );
+      if ( !result )
+        throw CG::Error( location, "no such " + pencilName + "(" + argTypes.desc() + ")" );
       return result;
     }
-  };
-};
+    
+    CG::Function const *ModuleBuilder::maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const
+    {
+      FABRIC_ASSERT( !pencilName.empty() );
+      
+      Pencils::const_iterator it = m_pencils.find( pencilName );
+      if ( it == m_pencils.end() )
+        return 0;
+      RC::Handle<PencilSymbol> const &pencil = it->second;
+      FABRIC_ASSERT( pencil );
+      
+      return pencil->maybeGetFunction( *this, location, argTypes );
+    }
+    
+    CG::Function const *ModuleBuilder::getFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const
+    {
+      FABRIC_ASSERT( !pencilName.empty() );
+      
+      Pencils::const_iterator it = m_pencils.find( pencilName );
+      if ( it == m_pencils.end() )
+        throw CG::Error( location, "no such " + pencilName + "(" + argTypes.desc() + ")" );
+      RC::Handle<PencilSymbol> const &pencil = it->second;
+      FABRIC_ASSERT( pencil );
+      
+      return pencil->getFunction( *this, location, argTypes );
+    }
+    
+    CG::Function const *ModuleBuilder::getUniqueFunction( CG::Location const &location, std::string const &pencilName ) const
+    {
+      FABRIC_ASSERT( !pencilName.empty() );
+      
+      Pencils::const_iterator it = m_pencils.find( pencilName );
+      if ( it == m_pencils.end() )
+        return 0;
+      RC::Handle<PencilSymbol> const &pencil = it->second;
+      FABRIC_ASSERT( pencil );
+      
+      return pencil->getUniqueFunction( location );
+    }
+  }
+}
