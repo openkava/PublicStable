@@ -263,7 +263,7 @@ FABRIC.SceneGraph = {
         throw ('Manager Constructor not Registered:' + type);
       }
       if (managers[type]) {
-        throw ('Manager of this type already constructed:' + type);
+        console.warn ('Manager of this type already constructed:' + type);
       }
       options = (options ? options : {});
       var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
@@ -1063,7 +1063,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      blockRedrawingTillResourceIsLoaded:true,
+      blockRedrawingTillResourceIsLoaded: true,
       redrawOnLoad: true,
       storeDataAsFile: true,
       url: undefined
@@ -1077,6 +1077,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
 
     var lastLoadEventURL = '';
     var lastLoadSucceeded = false;
+    var url;
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
     scene.addEventHandlingFunctions(resourceLoadNode);
@@ -1152,12 +1153,13 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       }
     }
 
-    resourceLoadNode.pub.setUrl = function(url, forceLoad) {
-      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+    resourceLoadNode.pub.setUrl = function(new_url, forceLoad) {
+      if(new_url !== '' && new_url !== url && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ new_url, remainingTaskWeight);
       }
-      dgnode.setData('url', 0, url);
-      if(forceLoad!= false){
+      dgnode.setData('url', 0, new_url);
+      url = new_url;
+      if(forceLoad != false){
         dgnode.evaluate();
       }
     };
@@ -1175,7 +1177,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       if(options.url.folderHandle) {
         dgnode.getResourceFromFile('resource', options.url);
       } else {
-        resourceLoadNode.pub.setUrl(options.url);
+        resourceLoadNode.pub.setUrl(options.url, options.blockRedrawingTillResourceIsLoaded);
       }
     }
 

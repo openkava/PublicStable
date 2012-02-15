@@ -192,10 +192,14 @@ function Boolean decodeRGBAImageData(
   
   switch (ext) {
     case 'jpg':
+    case 'JPG':
     case 'jpeg':
+    case 'JPEG':
     case 'image/jpg':
     case 'tif':
+    case 'TIF':
     case 'tiff':
+    case 'TIFF':
     case 'image/tif':
       if(resource.data.size() > 0) {
         FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), ext, imageWidth, imageHeight, bitmap);
@@ -206,6 +210,7 @@ function Boolean decodeRGBAImageData(
       }
       break;
     case 'png':
+    case 'PNG':
     case 'image/png':
       if(resource.data.size() > 0) {
         FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
@@ -216,6 +221,7 @@ function Boolean decodeRGBAImageData(
       }
       break;
     case 'tga':
+    case 'TGA':
     case 'image/tga':
       if(resource.data.size() > 0) {
         FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
@@ -244,6 +250,7 @@ function Boolean decodeColorImageData(
   String ext = resource.extension ? resource.extension : resource.mimeType;
   switch (ext) {
     case'hdr':
+    case'HDR':
     case'image/hdr':
       if(resource.data.size() > 0) {
         FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
@@ -254,6 +261,7 @@ function Boolean decodeColorImageData(
       }
       break;
     case'exr':
+    case'EXR':
     case'image/exr':
       if(resource.data.size() > 0) {
         FabricEXRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
