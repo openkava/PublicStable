@@ -63,3 +63,5 @@ node.evaluate();
 
 F.close();
 
+require('fs').unlinkSync('test.txt');
+
