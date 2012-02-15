@@ -12,7 +12,7 @@
 #include "FunctionBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OpTypes.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
