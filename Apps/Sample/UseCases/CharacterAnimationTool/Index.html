@@ -258,20 +258,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  bodyMaterial = scene.constructNode('MonsterMaterial', {
-    wireColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
-    lightNode: light,
-    displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
-    diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
-    normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
-    displacementMin: -0.35,
-    displacementMax: 0.35
-  });
-  
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
-    lightNode: light,
-    diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
-  });  
     
    
   var selectedAnimation = 0;
@@ -489,7 +475,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     }
   });
   
-  
   scene.importAssetFile('Resources/Monster.DAE', { flipUVs: false }, function(assetNodes){
     
     rigNode = assetNodes.BodyCharacterRig;
@@ -499,6 +484,51 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     rigInstances['eyes'] = assetNodes.eyesMeshMaterial__56CharacterInstance;
     rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
     
+    var bodyMaterial;
+    if(FABRIC.getOS() == 'Mac'){
+      bodyMaterial = scene.constructNode('PhongBumpReflectSkinningMaterial', {
+          diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
+          specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
+          normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
+          lightNode: light,
+          shininess: 5.0,
+          bumpiness: 0.5
+        })
+    }else{
+      bodyMaterial = scene.constructNode('MonsterMaterial', {
+        wireColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
+        lightNode: light,
+        displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
+        displacementMin: -0.35,
+        displacementMax: 0.35
+      });
+      
+      $("#displayWireframe").attr('checked', false).change(function(event, ui) {
+        var checked = $('#displayWireframe').attr('checked') === 'checked';
+        bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
+        viewport.redraw();
+      });
+      
+      var tesslationSlider = $('#tesslation').slider({
+          min: 1,
+          max: 12.0,
+          step: 1.0,
+          value: bodyMaterial.getTesselationInner()
+      }).bind('slide',
+        function(event, ui) {
+          bodyMaterial.setTesselationInner(ui.value);
+          bodyMaterial.setTesselationOuter(ui.value);
+          viewport.redraw();
+        });
+    }
+    
+    var materialNode = scene.constructNode('PhongSkinningMaterial', {
+      lightNode: light,
+      diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
+    });  
+     
     for(var i in rigInstances){
       if(i=='body'){
 	rigInstances[i].addMaterialNode(bodyMaterial);
@@ -738,23 +768,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     viewport.redraw();
   });
   
-  $("#displayWireframe").attr('checked', false).change(function(event, ui) {
-    var checked = $('#displayWireframe').attr('checked') === 'checked';
-    bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
-    viewport.redraw();
-  });
-  
-  var tesslationSlider = $('#tesslation').slider({
-      min: 1,
-      max: 12.0,
-      step: 1.0,
-      value: bodyMaterial.getTesselationInner()
-  }).bind('slide',
-    function(event, ui) {
-      bodyMaterial.setTesselationInner(ui.value);
-      bodyMaterial.setTesselationOuter(ui.value);
-      viewport.redraw();
-    });
   
   
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -768,16 +781,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
         throw (errors.toString());
       }
       viewport.redraw();
-      
-      if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
-        alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
-        throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
-      }
-      /*
-      setInterval(function() {
-          document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
-        }, 600);
-      */
       return true;
     }
   });
