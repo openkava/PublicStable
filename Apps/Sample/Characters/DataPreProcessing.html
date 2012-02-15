@@ -32,10 +32,10 @@
 #timeControls .ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
 #timeControls .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
 
-  #animationTracksList .ui-selecting { background: #757a9f; }
-  #animationTracksList .ui-selected { background: #4e516a; color: white; }
-  #animationTracksList { list-style-type: none; margin: 0; padding: 0; }
-  #animationTracksList li { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 10px; }
+  #trackAnimationContainersList .ui-selecting { background: #757a9f; }
+  #trackAnimationContainersList .ui-selected { background: #4e516a; color: white; }
+  #trackAnimationContainersList { list-style-type: none; margin: 0; padding: 0; }
+  #trackAnimationContainersList li { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 10px; }
 </style>
 
 
@@ -67,7 +67,7 @@ $(document).ready(function() {
   $('#writeAnimationData').button();
   $('#curveEditor').button()
   
-  $( "#animationTracksList" ).selectable();
+  $( "#trackAnimationContainersList" ).selectable();
   
   $('#play').button({
       text: true,
@@ -115,15 +115,15 @@ $(document).ready(function() {
   var footMovementThreshold = 0.03;
 
   var animationController = scene.constructNode('AnimationController');
-  var libraryFKAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
+  var libraryFKAnimations = scene.constructNode('LinearCharacterAnimationContainer', {
     name: 'LibraryFKAnimations'
   });
-  var libraryIKAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
+  var libraryIKAnimations = scene.constructNode('LinearCharacterAnimationContainer', {
     name: 'LibraryIKAnimations'
   });
   
-  libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
-    name: 'LibraryLocomotionAnimations'
+  libraryLocomotionAnimations = scene.constructNode('LocomotionCharacterAnimationContainer', {
+    name: 'LocomotionCharacterAnimationContainer'
   });
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
@@ -170,9 +170,9 @@ $(document).ready(function() {
       });
     var selectedTrack = 0;
     var selectedTrackTimeRange = 0;
-    $( "#animationTracksList" ).selectable({
+    $( "#trackAnimationContainersList" ).selectable({
       stop: function(event, ui) {
-        var selectedChildren = $("#animationTracksList").children('.ui-selected');
+        var selectedChildren = $("#trackAnimationContainersList").children('.ui-selected');
         selectedTrack = parseInt($(selectedChildren[0]).attr('id'));
         // Set the animation that the FK rig is using.
         fkRigVariablesNode.setBoundTrack(selectedTrack);
@@ -211,7 +211,7 @@ $(document).ready(function() {
         
         
         if(!bound){
-          libraryLocomotionAnimations.bindToSourceAnimationLibrary(
+          libraryLocomotionAnimations.bindToSourceCharacterAnimationContainer(
             libraryIKAnimations,
             bindings,
             ikrigNode,
@@ -291,13 +291,13 @@ $(document).ready(function() {
         constructScene: false,
         loadAnimationUsingRig: true,
         rigNode: fkrigNode,
-        animationLibrary: libraryFKAnimations,
+        characterAnimationContainer: libraryFKAnimations,
         animationController: animationController
       }, function(assetNodes){
-        $("#animationTracksList").children().each(function(){
+        $("#trackAnimationContainersList").children().each(function(){
           $(this).removeClass('ui-selected');
         });
-        $("#animationTracksList").append('<li class="ui-widget-content ui-selected" id="'+trackCount+'">'+file+'</li>');
+        $("#trackAnimationContainersList").append('<li class="ui-widget-content ui-selected" id="'+trackCount+'">'+file+'</li>');
         trackCount++;
         fileImported();
       });
@@ -739,7 +739,7 @@ $(document).ready(function() {
           <div class="box">
             <h2>ANIMATIONS</h2>
             <div class="content">
-              <ol id="animationTracksList">
+              <ol id="trackAnimationContainersList">
               </ol>
               <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
               <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>

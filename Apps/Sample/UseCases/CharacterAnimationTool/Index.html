@@ -272,8 +272,8 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   });
   var rebuildAnimationLibraryList = function(){
     $('#animationLibraryList').empty();
-    for(var i=0; i<bezierKeyAnimationLibrary.getTrackSetCount(); i++){
-      var presetName = bezierKeyAnimationLibrary.getTrackSetName(i);
+    for(var i=0; i<bezierKeyCharacterAnimationContainer.getTrackSetCount(); i++){
+      var presetName = bezierKeyCharacterAnimationContainer.getTrackSetName(i);
       var li = $(document.createElement('li'));
       li.addClass('ui-widget-content'); li.text(presetName); li.val(i);
       if(selectedAnimation == i){
@@ -285,7 +285,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   }
   
   var createNewAnimation = function(name){
-    rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, name, true, controllerNode);
+    rigNode.generateAnimationTracks(bezierKeyCharacterAnimationContainer, name, true, controllerNode);
     rebuildAnimationLibraryList();
   }
   
@@ -315,7 +315,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   
   $('#deleteAnimation').button()
     .click(function() {
-      bezierKeyAnimationLibrary.removeTrackSet(selectedAnimation);
+      bezierKeyCharacterAnimationContainer.removeTrackSet(selectedAnimation);
       if(selectedAnimation>0){
         setSelectedAnimation(selectedAnimation-1);
       }else{
@@ -407,7 +407,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       }
     })
     .click(function() {
-      curveEditorWindow = bezierKeyAnimationLibrary.openCurveEditor({
+      curveEditorWindow = bezierKeyCharacterAnimationContainer.openCurveEditor({
         trackFilters: trackFilters,
         trackSetId: selectedAnimation
       });
@@ -431,12 +431,12 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   var rigNode, rigInstances = {};
   var skeletonGeometryNode;
   
-  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+  var bezierKeyCharacterAnimationContainer = scene.constructNode('BezierCharacterAnimationContainer');
   var presetSaver = scene.constructManager('SceneSerializer');
-  presetSaver.addNode(bezierKeyAnimationLibrary);
+  presetSaver.addNode(bezierKeyCharacterAnimationContainer);
   
   var animationLibraryLoader = scene.constructManager('SceneDeserializer');
-  animationLibraryLoader.setPreLoadedNode(bezierKeyAnimationLibrary);
+  animationLibraryLoader.setPreLoadedNode(bezierKeyCharacterAnimationContainer);
   var localStorage = new FABRIC.SceneGraph.LocalStorage('TestAnimation');
   
   animationLibraryLoader.load(localStorage, function(nodeMap){
@@ -452,7 +452,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   // Set up the Curve Editor in the bottom panel.
   var curveEditor;
   /*
-  var  curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyAnimationLibrary, {
+  var  curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyCharacterAnimationContainer, {
     timeRange : new FABRIC.Vec2(0, 4),
     fitEditorToKeyRanges: false
   });
@@ -468,9 +468,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   scene.addEventListener('endmanipulation', function(evt){
     if(evt.manipulatorNode.getTargetName){
       trackFilters = [evt.manipulatorNode.getTargetName()];
-    //  if(curveEditorWindow){
-	//curveEditorWindow.setCurveFilters(trackFilters);
-    //  }
       curveEditor.setCurveFilters(trackFilters);
     }
   });
@@ -733,24 +730,24 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
 	viewport.redraw();
       });
     
-    rigNode.generateAnimationTracks(bezierKeyAnimationLibrary, 'test', true, controllerNode);
+    rigNode.generateAnimationTracks(bezierKeyCharacterAnimationContainer, 'test', true, controllerNode);
     rebuildAnimationLibraryList();
     
     
-    curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyAnimationLibrary, {
+    curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyCharacterAnimationContainer, {
       timeRange : new FABRIC.Vec2(0, 4),
       fitEditorToKeyRanges: false,
       trackFilters: ['none']
     });
     window.addEventListener('resize', curveEditor.resize, true);
+
     
     $( "#editor" ).bind('resize',
      function(event, ui) {
        curveEditor.resize();
      });
   });
-    
-   
+  
   $("#displaySkeleton").attr('checked', true).change(function() {
     skeletonGeometryNode.getInstanceNode().setDrawToggle($("#displaySkeleton").is(":checked"));
     viewport.redraw();

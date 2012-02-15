@@ -380,8 +380,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       return dgnode.getData('poseVariables');
     };
     
-    var boundToAnimationTracks = false;
-    var m_animationLibraryNode;
+    var boundToTrackAnimationContainers = false;
+    var m_characterAnimationContainerNode;
     var m_trackSetId;
     var m_animationControllerNode;
     var interactiveManipulation = false;
@@ -390,27 +390,27 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       m_trackSetId = val;
     });
     scene.pub.addEventListener('beginmanipulation', function(evt){
-      if(m_animationLibraryNode){
+      if(m_characterAnimationContainerNode){
         dgnode.setData('enableTrackEvaluation', 0, false);
-        m_animationLibraryNode.beginManipulation(dgnode.getData('boundTrack'));
+        m_characterAnimationContainerNode.beginManipulation(dgnode.getData('boundTrack'));
         interactiveManipulation = true;
       }
     });
     
     scene.pub.addEventListener('endmanipulation', function(evt){
-      if(m_animationLibraryNode){
-        m_animationLibraryNode.endManipulation();
+      if(m_characterAnimationContainerNode){
+        m_characterAnimationContainerNode.endManipulation();
         dgnode.setData('enableTrackEvaluation', 0, true);
         interactiveManipulation = false;
       }
     });
     
-    characterVariablesNode.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
+    characterVariablesNode.addReferenceInterface('CharacterAnimationContainer', 'CharacterAnimationContainer',
       function(nodePrivate){
-        m_animationLibraryNode = nodePrivate;
-        dgnode.setDependency(m_animationLibraryNode.getDGNode(), 'animationlibrary');
+        m_characterAnimationContainerNode = nodePrivate;
+        dgnode.setDependency(m_characterAnimationContainerNode.getDGNode(), 'characteranimationcontainer');
         
-        if(boundToAnimationTracks){
+        if(boundToTrackAnimationContainers){
           return
         }
         dgnode.addMember('keyIndices', 'Integer[]');
@@ -420,12 +420,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           operatorName: 'evaluatePoseTracks',
           srcFile: 'FABRIC_ROOT/SG/KL/evaluatePoseTracks.kl',
           preProcessorDefinitions: {
-            KEYFRAMETRACKSETTYPE: m_animationLibraryNode.getTrackSetType()
+            KEYFRAMETRACKSETTYPE: m_characterAnimationContainerNode.getTrackSetType()
           },
           entryFunctionName: 'evaluatePoseTracks',
           parameterLayout: [
-            'animationlibrary.trackSet<>',
-            'animationlibrary.bindings<>',
+            'characteranimationcontainer.trackSet<>',
+            'characteranimationcontainer.bindings<>',
             'controller.localTime',
             'self.boundTrack',
             'self.keyIndices',
@@ -433,7 +433,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
             'self.enableTrackEvaluation'
           ]
         }));
-        boundToAnimationTracks = true;
+        boundToTrackAnimationContainers = true;
       });
     
     characterVariablesNode.addReferenceInterface('AnimationController', 'AnimationController',
@@ -460,7 +460,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     
     characterVariablesNode.setValue = function(value, index, xfoTrackFilter) {
       var type = (typeof value == 'number') ? 'Number' : value.getType();
-    //  if(!boundToAnimationTracks){
+    //  if(!boundToTrackAnimationContainers){
         var poseVariables = characterVariablesNode.getVariables();
         switch(type){
         case 'Number':
@@ -481,13 +481,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         characterVariablesNode.setVariables(poseVariables);
     //  }
     //  else{
-      if(m_animationLibraryNode){
+      if(m_characterAnimationContainerNode){
         if(!interactiveManipulation){
-          m_animationLibraryNode.beginManipulation(m_trackSetId);
+          m_characterAnimationContainerNode.beginManipulation(m_trackSetId);
         }
-        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), value, index, xfoTrackFilter);
+        m_characterAnimationContainerNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), value, index, xfoTrackFilter);
         if(!interactiveManipulation){
-          m_animationLibraryNode.endManipulation();
+          m_characterAnimationContainerNode.endManipulation();
         }
       }
     }
@@ -771,19 +771,19 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     //////////////////////////////////////////
     // Animation Tracks
     characterRigNode.pub.generateAnimationTracks = function(node, trackSetName, bindForPlayback, controllerNode){
-      if (!node.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
+      if (!node.isTypeOf('CharacterAnimationContainer')) {
+        throw ('Incorrect type assignment. Must assign a CharacterAnimationContainer');
       }
-      var animationLibrary = scene.getPrivateInterface(node);
+      var characterAnimationContainer = scene.getPrivateInterface(node);
       
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var trackSet = animationLibrary.newTrackSet(trackSetName);
+      var trackSet = characterAnimationContainer.newTrackSet(trackSetName);
       for (var i = 0; i < solvers.length; i++) {
         if(solvers[i].generateTracks){
           solvers[i].generateTracks(trackSet, trackBindings);
         }
       }
-      var trackSetId = animationLibrary.pub.addTrackSet(trackSet, trackBindings);
+      var trackSetId = characterAnimationContainer.pub.addTrackSet(trackSet, trackBindings);
       if(bindForPlayback==true){
         
         if(!poseVariables){
@@ -794,7 +794,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         if(!controllerNode){
           controllerNode = scene.pub.constructNode('AnimationController');
         }
-        variablesNode.pub.setAnimationLibraryNode(node);
+        variablesNode.pub.setCharacterAnimationContainerNode(node);
         variablesNode.pub.setAnimationControllerNode(controllerNode);
         variablesNode.pub.setBoundTrack(trackSetId);        
       }

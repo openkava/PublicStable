@@ -48,7 +48,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   // options.rigNode;
   // options.rigHierarchyRootNodeName;
   if(options.flipUVs == undefined) options.flipUVs = true;
-  var animationLibrary = options.animationLibrary;
+  var characterAnimationContainer = options.characterAnimationContainer;
   var controllerNode = options.controllerNode;
   var imageLibrary = options.imageLibrary || {};
   
@@ -1150,9 +1150,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   
   var loadRigAnimation = function(sceneData, rigNode){
     if(colladaData.libraryAnimations){
-      if(!animationLibrary){
-        animationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
-        assetNodes[animationLibrary.getName()] = animationLibrary;
+      if(!characterAnimationContainer){
+        characterAnimationContainer = scene.constructNode('LinearCharacterAnimationContainer');
+        assetNodes[characterAnimationContainer.getName()] = characterAnimationContainer;
       }
       if(!controllerNode){
         controllerNode = scene.constructNode('AnimationController');
@@ -1311,13 +1311,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds, rotationOrder != undefined ? rotationOrder.order : undefined);
       }
       
-      var trackSetID = animationLibrary.addTrackSet(trackSet, trackBindings);
+      var trackSetID = characterAnimationContainer.addTrackSet(trackSet, trackBindings);
       var variablesNode = rigNode.getVariablesNode();
       if(!variablesNode){
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.setAnimationLibraryNode(animationLibrary);
+      variablesNode.setCharacterAnimationContainerNode(characterAnimationContainer);
       variablesNode.setAnimationControllerNode(controllerNode);
       variablesNode.setBoundTrack(trackSetID);
       
