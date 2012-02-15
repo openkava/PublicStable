@@ -77,7 +77,10 @@ namespace Fabric
       if ( adapter )
       {
         FABRIC_ASSERT( getReturnTypeName().empty() );
-        return CG::ConstructorDefaultSymbolName( adapter, m_params->getAdapters( cgManager ) );
+        return CG::ConstructorDefaultSymbolName(
+          adapter,
+          m_params->getAdapters( cgManager )
+          );
       }
       else return CG::FunctionDefaultSymbolName( m_functionName, m_params->getExprTypes( cgManager ) );
     }
@@ -92,5 +95,5 @@ namespace Fabric
       }
       else return m_params;
     }
-  };
-};
+  }
+}
