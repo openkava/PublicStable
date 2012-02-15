@@ -2,21 +2,21 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_RT_VALUE_PRODUCER_IMPL_H
-#define _FABRIC_RT_VALUE_PRODUCER_IMPL_H
+#ifndef _FABRIC_RT_CONTAINER_IMPL_H
+#define _FABRIC_RT_CONTAINER_IMPL_H
 
-#include <Fabric/Core/RT/ProducerImpl.h>
+#include <Fabric/Core/RT/Impl.h>
 
 namespace Fabric
 {
-  namespace MR
+  namespace DG
   {
-    class ValueProducer;
+    class Container;
   }
-  
+
   namespace RT
   {
-    class ValueProducerImpl : public ProducerImpl
+    class ContainerImpl : public Impl
     {
       friend class Impl;
       friend class Manager;
@@ -39,19 +39,26 @@ namespace Fabric
       virtual bool isShallow() const;
       virtual bool isNoAliasSafe() const;
     
-      // ValueProducerImpl
+      virtual bool isExportable() const;
+
+      // ContainerImpl
       
-      RC::ConstHandle<Impl> getValueImpl() const;
+      void setValue( RC::Handle<DG::Container> const &container, void *data ) const;
+      RC::Handle<DG::Container> getValue( void const *data ) const;
+
+      static void SetData( void const *value, void *data );
+      static void DisposeData( void *data );
+      static size_t size( void const *data );
+      static void resize( void *data, size_t count );
+      static std::string GetName( void const *data );
+      static bool IsValid( void const *data );
 
     protected:
       
-      ValueProducerImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &valueImpl );
-    
-    private:
-    
-      RC::ConstHandle<Impl> m_valueImpl;
+      ContainerImpl( std::string const &codeName );
+      static std::string undefinedName;
     };
   }
 }
 
-#endif //_FABRIC_RT_VALUE_PRODUCER_IMPL_H
+#endif //_FABRIC_RT_CONTAINER_IMPL_H

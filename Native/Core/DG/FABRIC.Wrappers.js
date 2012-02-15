@@ -491,8 +491,8 @@ function (fabricClient, logCallback, debugLogCallback) {
         if ('members' in diff)
           result.members = diff.members;
 
-        if ('count' in diff)
-          result.count = diff.count;
+        if ('size' in diff)
+          result.size = diff.size;
       };
 
       var parentHandleNotification = result.handle;
@@ -508,14 +508,25 @@ function (fabricClient, logCallback, debugLogCallback) {
       };
 
       result.pub.getCount = function() {
-        if (!('count' in result))
+        if (!('size' in result))
           executeQueuedCommands();
-        return result.count;
+        return result.size;
+      };
+
+      result.pub.size = function() {
+        if (!('size' in result))
+          executeQueuedCommands();
+        return result.size;
       };
 
       result.pub.setCount = function(count) {
-        result.queueCommand('setCount', count);
-        delete result.count;
+        result.queueCommand('resize', count);
+        delete result.size;
+      };
+
+      result.pub.resize = function(count) {
+        result.queueCommand('resize', count);
+        delete result.size;
       };
 
       result.pub.getMembers = function() {

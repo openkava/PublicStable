@@ -222,7 +222,12 @@ namespace Fabric
     {
       return false;
     }
-    
+
+    bool VariableArrayImpl::isNoAliasSafe() const
+    {
+      return isMemberNoAliasSafe();
+    }
+
     bool VariableArrayImpl::isEquivalentTo( RC::ConstHandle<Impl> const &that ) const
     {
       if ( !isVariableArray( that->getType() ) )
