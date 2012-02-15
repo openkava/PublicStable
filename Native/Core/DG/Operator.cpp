@@ -141,8 +141,9 @@ namespace Fabric
       FABRIC_ASSERT( m_code );
       FABRIC_ASSERT( !m_code->getDiagnostics().containsError() );
       FABRIC_ASSERT( m_entryFunctionName.length() > 0 );
+      FABRIC_ASSERT( m_astOperator );
       
-      m_function = Function::Create( m_code, m_entryFunctionName );
+      m_function = Function::Create( m_code, m_astOperator->getSymbolName( m_context->getCGManager() ) );
       
       markForRecompile();
     }
