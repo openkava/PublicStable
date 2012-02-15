@@ -717,7 +717,7 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     
     preBindings.append(scene.constructOperator({
       operatorName: 'UpdateCameraProjection',
-      srcFile: 'FABRIC_ROOT/SG/KL/updateCameraProjection.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/camera.kl',
       entryFunctionName: 'updateCameraProjection',
       parameterLayout: [
         'camera.projectionMat44',
