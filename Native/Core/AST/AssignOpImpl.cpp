@@ -60,10 +60,10 @@ namespace Fabric
       m_rhs->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
-    std::string AssignOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string AssignOpImpl::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
-      return CG::AssignOpPencilName( thisAdapter, m_assignOpType );
+      return CG::AssignOpPencilKey( thisAdapter, m_assignOpType );
     }
     
     std::string AssignOpImpl::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const

@@ -25,7 +25,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          MethodPencilName(
+          MethodPencilKey(
             thisAdapter,
             methodName
             ),
@@ -54,7 +54,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          MethodPencilName(
+          MethodPencilKey(
             thisAdapter,
             methodName
             ),
@@ -88,7 +88,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          MethodPencilName(
+          MethodPencilKey(
             thisAdapter,
             methodName
             ),

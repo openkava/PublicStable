@@ -25,7 +25,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          BinOpPencilName(
+          BinOpPencilKey(
             type
             ),
           BinOpDefaultSymbolName(

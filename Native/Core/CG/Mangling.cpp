@@ -31,11 +31,21 @@ namespace Fabric
       return result;
     }
 
+    std::string FunctionPencilKey( std::string const &functionName )
+    {
+      return "f:" + functionName;
+    }
+
     std::string FunctionDefaultSymbolName( std::string const &functionName, ExprTypeVector const &paramTypes )
     {
       return "__function_" + functionName + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
+    std::string ConstructorPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter )
+    {
+      return "c:" + thisAdapter->getCodeName();
+    }
+    
     std::string ConstructorDefaultSymbolName(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       std::vector< RC::ConstHandle<CG::Adapter> > const &otherParamAdapters
@@ -48,6 +58,11 @@ namespace Fabric
       return "__constructor" + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
+    std::string DestructorPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter )
+    {
+      return "d:" + thisAdapter->getCodeName();
+    }
+    
     std::string DestructorDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter )
     {
       CG::ExprTypeVector paramTypes;
@@ -55,6 +70,11 @@ namespace Fabric
       return "__destructor" + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
+    std::string AssignOpPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter, AssignOpType type )
+    {
+      return "a:" + thisAdapter->getCodeName() + ":" + assignOpCodeName(type);
+    }
+    
     std::string AssignOpDefaultSymbolName(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AssignOpType type,
@@ -67,6 +87,11 @@ namespace Fabric
       return "__assop_" + assignOpCodeName( type ) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
+    std::string UniOpPencilKey( UniOpType type )
+    {
+      return "u:" + uniOpCodeName(type);
+    }
+    
     std::string UniOpDefaultSymbolName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter )
     {
       CG::ExprTypeVector paramTypes;
@@ -74,6 +99,11 @@ namespace Fabric
       return "__uniop_" + uniOpCodeName(type) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
+    std::string BinOpPencilKey( BinOpType type )
+    {
+      return "b:" + binOpCodeName(type);
+    }
+    
     std::string BinOpDefaultSymbolName( BinOpType type, RC::ConstHandle<CG::Adapter> const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter )
     {
       CG::ExprTypeVector paramTypes;
@@ -82,6 +112,14 @@ namespace Fabric
       return "__binop_" + binOpCodeName(type) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
+    std::string MethodPencilKey(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      std::string const &name
+      )
+    {
+      return "m:" + thisAdapter->getCodeName() + ":" + name;
+    }
+    
     std::string MethodDefaultSymbolName(
       CG::ExprType const &thisType,
       std::string const &methodName,

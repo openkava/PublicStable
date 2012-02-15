@@ -58,7 +58,7 @@ namespace Fabric
       
       CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetFunction(
         getLocation(),
-        CG::MethodPencilName( structExprType.getAdapter(), m_memberName ),
+        CG::MethodPencilKey( structExprType.getAdapter(), m_memberName ),
         structExprType
         );
       if ( !function )
@@ -112,7 +112,7 @@ namespace Fabric
 
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
-          CG::MethodPencilName( adapter, m_memberName ),
+          CG::MethodPencilKey( adapter, m_memberName ),
           exprType
           );
         CG::ParamVector const &functionParams = function->getParams();

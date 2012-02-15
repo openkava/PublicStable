@@ -51,55 +51,55 @@ namespace Fabric
       bool haveCompiledToModule( std::string const &codeName );
       
       RC::ConstHandle<PencilSymbol> addFunction(
-        std::string const &pencilName,
+        std::string const &pencilKey,
         CG::Function const &function
         );
         
-      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName, ExprTypeVector const &argTypes ) const;
-      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName ) const
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilKey ) const
       {
-        return maybeGetPreciseFunction( pencilName, ExprTypeVector() );
+        return maybeGetPreciseFunction( pencilKey, ExprTypeVector() );
       }
-      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName, ExprType const &arg1 ) const
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilKey, ExprType const &arg1 ) const
       {
-        return maybeGetPreciseFunction( pencilName, ExprTypeVector( arg1 ) );
+        return maybeGetPreciseFunction( pencilKey, ExprTypeVector( arg1 ) );
       }
-      CG::Function const *maybeGetPreciseFunction( std::string const &pencilName, ExprType const &arg1, ExprType const &arg2 ) const
+      CG::Function const *maybeGetPreciseFunction( std::string const &pencilKey, ExprType const &arg1, ExprType const &arg2 ) const
       {
-        return maybeGetPreciseFunction( pencilName, ExprTypeVector( arg1, arg2 ) );
+        return maybeGetPreciseFunction( pencilKey, ExprTypeVector( arg1, arg2 ) );
       }
         
-      CG::Function const *getPreciseFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const;
+      CG::Function const *getPreciseFunction( CG::Location const &location, std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
 
-      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const;
-      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName ) const
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilKey ) const
       {
-        return maybeGetFunction( location, pencilName, ExprTypeVector() );
+        return maybeGetFunction( location, pencilKey, ExprTypeVector() );
       }
-      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1 ) const
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilKey, ExprType const &arg1 ) const
       {
-        return maybeGetFunction( location, pencilName, ExprTypeVector( arg1 ) );
+        return maybeGetFunction( location, pencilKey, ExprTypeVector( arg1 ) );
       }
-      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1, ExprType const &arg2 ) const
+      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilKey, ExprType const &arg1, ExprType const &arg2 ) const
       {
-        return maybeGetFunction( location, pencilName, ExprTypeVector( arg1, arg2 ) );
+        return maybeGetFunction( location, pencilKey, ExprTypeVector( arg1, arg2 ) );
       }
 
-      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName, ExprTypeVector const &argTypes ) const;
-      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName ) const
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilKey ) const
       {
-        return getFunction( location, pencilName, ExprTypeVector() );
+        return getFunction( location, pencilKey, ExprTypeVector() );
       }
-      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1 ) const
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilKey, ExprType const &arg1 ) const
       {
-        return getFunction( location, pencilName, ExprTypeVector( arg1 ) );
+        return getFunction( location, pencilKey, ExprTypeVector( arg1 ) );
       }
-      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilName, ExprType const &arg1, ExprType const &arg2 ) const
+      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilKey, ExprType const &arg1, ExprType const &arg2 ) const
       {
-        return getFunction( location, pencilName, ExprTypeVector( arg1, arg2 ) );
+        return getFunction( location, pencilKey, ExprTypeVector( arg1, arg2 ) );
       }
       
-      CG::Function const *getUniqueFunction( CG::Location const &location, std::string const &pencilName ) const;
+      CG::Function const *getUniqueFunction( CG::Location const &location, std::string const &pencilKey ) const;
 
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location );

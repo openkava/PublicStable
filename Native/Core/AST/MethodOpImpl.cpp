@@ -62,10 +62,10 @@ namespace Fabric
       m_params->appendJSON( jsonObjectEncoder.makeMember( "params" ), includeLocation );
     }
     
-    std::string MethodOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string MethodOpImpl::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( m_selfTypeName );
-      return CG::MethodPencilName( adapter, m_methodName );
+      return CG::MethodPencilKey( adapter, m_methodName );
     }
     
     std::string MethodOpImpl::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const

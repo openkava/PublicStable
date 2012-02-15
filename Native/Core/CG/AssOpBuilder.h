@@ -24,7 +24,7 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          AssignOpPencilName(
+          AssignOpPencilKey(
             thisAdapter,
             type
             ),

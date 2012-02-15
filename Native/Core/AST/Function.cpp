@@ -60,15 +60,15 @@ namespace Fabric
       else return &m_functionName;
     }
     
-    std::string Function::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string Function::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_functionName );
       if ( adapter )
       {
         FABRIC_ASSERT( getReturnTypeName().empty() );
-        return CG::ConstructorPencilName( adapter );
+        return CG::ConstructorPencilKey( adapter );
       }
-      else return CG::FunctionPencilName( m_functionName );
+      else return CG::FunctionPencilKey( m_functionName );
     }
     
     std::string Function::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const

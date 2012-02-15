@@ -58,7 +58,7 @@ namespace Fabric
       m_args->appendExprTypes( basicBlockBuilder, argTypes );
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::MethodPencilName( thisType.getAdapter(), m_name ),
+        CG::MethodPencilKey( thisType.getAdapter(), m_name ),
         argTypes
         );
     }

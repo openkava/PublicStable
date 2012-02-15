@@ -19,10 +19,7 @@ namespace Fabric
   {
     class Adapter;
     
-    inline std::string FunctionPencilName( std::string const &functionName )
-    {
-      return "function " + functionName;
-    }
+    std::string FunctionPencilKey( std::string const &functionName );
     std::string FunctionDefaultSymbolName( std::string const &functionName, ExprTypeVector const &paramTypes );
     inline std::string FunctionDefaultSymbolName( std::string const &functionName )
     {
@@ -43,12 +40,7 @@ namespace Fabric
       return FunctionDefaultSymbolName( functionName, paramTypes );
     }
     
-    inline std::string ConstructorPencilName(
-      RC::ConstHandle<CG::Adapter> const &thisAdapter
-      )
-    {
-      return "constructor " + thisAdapter->getUserName();
-    }
+    std::string ConstructorPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter );
     std::string ConstructorDefaultSymbolName(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       std::vector< RC::ConstHandle<CG::Adapter> > const &paramAdapters
@@ -181,45 +173,33 @@ namespace Fabric
         );
     }
     
-    inline std::string DestructorPencilName(
-      RC::ConstHandle<CG::Adapter> const &thisAdapter
-      )
-    {
-      return "destructor ~" + thisAdapter->getUserName();
-    }
-    std::string DestructorDefaultSymbolName(
-      RC::ConstHandle<CG::Adapter> const &thisAdapter
+    std::string DestructorPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter );
+    std::string DestructorDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter );
+    
+    std::string AssignOpPencilKey( RC::ConstHandle<CG::Adapter> const &thisAdapter, AssignOpType type );
+    std::string AssignOpDefaultSymbolName(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AssignOpType type,
+      RC::ConstHandle<CG::Adapter> const &thatAdapter
       );
     
-    inline std::string AssignOpPencilName( RC::ConstHandle<CG::Adapter> const &thisAdapter, AssignOpType type )
-    {
-      return "assignment operator " + thisAdapter->getUserName() + "." + assignOpUserName(type);
-    }
+    std::string UniOpPencilKey( UniOpType type );
+    std::string UniOpDefaultSymbolName(
+      UniOpType type,
+      RC::ConstHandle<CG::Adapter> const &adapter
+      );
     
-    std::string AssignOpDefaultSymbolName( RC::ConstHandle<CG::Adapter> const &thisAdapter, AssignOpType type, RC::ConstHandle<CG::Adapter> const &thatAdapter );
+    std::string BinOpPencilKey( BinOpType type );
+    std::string BinOpDefaultSymbolName(
+      BinOpType type,
+      RC::ConstHandle<CG::Adapter> const &lhsAdapter,
+      RC::ConstHandle<CG::Adapter> const &rhsAdapter
+      );
     
-    inline std::string UniOpPencilName( UniOpType type )
-    {
-      return "unary operator " + uniOpUserName(type);
-    }
-    
-    std::string UniOpDefaultSymbolName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter );
-    
-    inline std::string BinOpPencilName( BinOpType type )
-    {
-      return "binary operator " + binOpUserName(type);
-    }
-    
-    std::string BinOpDefaultSymbolName( BinOpType type, RC::ConstHandle<CG::Adapter> const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter );
-    
-    inline std::string MethodPencilName(
+    std::string MethodPencilKey(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       std::string const &name
-      )
-    {
-      return "method " + thisAdapter->getUserName() + "." + name;
-    }
-    
+      );
     std::string MethodDefaultSymbolName(
       CG::ExprType const &thisType,
       std::string const &methodName,

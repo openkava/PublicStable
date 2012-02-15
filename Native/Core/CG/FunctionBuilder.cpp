@@ -18,7 +18,7 @@ namespace Fabric
   {
     FunctionBuilder::FunctionBuilder(
       ModuleBuilder &moduleBuilder, 
-      std::string const &pencilName, 
+      std::string const &pencilKey, 
       std::string const &symbolName,
       RC::ConstHandle<Adapter> const &returnAdapter, 
       ParamVector const &params,
@@ -28,12 +28,12 @@ namespace Fabric
       : m_moduleBuilder( moduleBuilder )
       , m_functionScope( NULL )
     {
-      build( pencilName, symbolName, returnAdapter, params, flags, cost );
+      build( pencilKey, symbolName, returnAdapter, params, flags, cost );
     }
     
     FunctionBuilder::FunctionBuilder( 
       ModuleBuilder &moduleBuilder, 
-      std::string const &pencilName, 
+      std::string const &pencilKey, 
       std::string const &symbolName,
       std::string const &paramLayout,
       size_t flags
@@ -97,11 +97,11 @@ namespace Fabric
         } while( end != std::string::npos );
       }
       
-      build( pencilName, symbolName, returnAdapter, paramList, flags );
+      build( pencilKey, symbolName, returnAdapter, paramList, flags );
     }
     
     void FunctionBuilder::build( 
-      std::string const &pencilName, 
+      std::string const &pencilKey, 
       std::string const &symbolName, 
       RC::ConstHandle<Adapter> const &returnAdapter, 
       ParamVector const &params, 
@@ -211,8 +211,8 @@ namespace Fabric
         m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), context, ai ) ) );
       }
       
-      if ( !pencilName.empty() )
-        m_pencil = m_moduleBuilder.addFunction( pencilName, Function( m_llvmFunction, returnInfo, params, cost ) );
+      if ( !pencilKey.empty() )
+        m_pencil = m_moduleBuilder.addFunction( pencilKey, Function( m_llvmFunction, returnInfo, params, cost ) );
     }
 
     FunctionBuilder::FunctionBuilder(
@@ -308,9 +308,9 @@ namespace Fabric
     {
       ParamVector params;
       params.push_back( FriendlyFunctionParam( param1Name, param1Adapter, param1Usage ) );
-      std::string pencilName = FunctionPencilName( functionName );
+      std::string pencilKey = FunctionPencilKey( functionName );
       std::string symbolName = FunctionDefaultSymbolName( functionName, params.getTypes() );
-      build( pencilName, symbolName, returnAdapter, params, flags );
+      build( pencilKey, symbolName, returnAdapter, params, flags );
       getModuleBuilder().getScope().put( functionName, getPencil() );
     }
 
@@ -332,9 +332,9 @@ namespace Fabric
       ParamVector params;
       params.push_back( FriendlyFunctionParam( param1Name, param1Adapter, param1Usage ) );
       params.push_back( FriendlyFunctionParam( param2Name, param2Adapter, param2Usage ) );
-      std::string pencilName = FunctionPencilName( functionName );
+      std::string pencilKey = FunctionPencilKey( functionName );
       std::string symbolName = FunctionDefaultSymbolName( functionName, params.getTypes() );
-      build( pencilName, symbolName, returnAdapter, params, flags );
+      build( pencilKey, symbolName, returnAdapter, params, flags );
       getModuleBuilder().getScope().put( functionName, getPencil() );
     }
     

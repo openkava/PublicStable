@@ -53,8 +53,8 @@ namespace Fabric
       RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( m_name );
       if ( !symbol )
       {
-        std::string pencilName = CG::FunctionPencilName( m_name );
-        throw CG::Error( getLocation(), "no such " + pencilName + "(" + argExprTypes.desc() + ")" );
+        std::string pencilKey = CG::FunctionPencilKey( m_name );
+        throw CG::Error( getLocation(), "no such " + pencilKey + "(" + argExprTypes.desc() + ")" );
       }
 
       if ( !symbol->isPencil() )
@@ -121,7 +121,7 @@ namespace Fabric
 
           CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
             getLocation(),
-            ConstructorPencilName( result.getAdapter() ),
+            ConstructorPencilKey( result.getAdapter() ),
             argTypes
             );
 
