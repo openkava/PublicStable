@@ -5,6 +5,7 @@
 
 FABRIC.define(["SG/SceneGraph", "SG/Kinematics"], function() {
 
+  var registeredTypes;
 
 FABRIC.SceneGraph.registerNodeType('Geometry', {
   briefDesc: 'The Geometry node is a base abstract node for all geometry nodes.',
@@ -91,7 +92,9 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         geometryNode.addMemberInterface(uniformsdgnode, name, true);
       }
       if(name == 'indices'){
-        var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+        if(!registeredTypes){
+          registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+        }
         var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
         var indicesBuffer = new FABRIC.RT.OGLBuffer(name, attributeID, registeredTypes.Integer);
         indicesBuffer.dynamic = options.dynamicIndices;
@@ -116,7 +119,9 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       attributesdgnode.addMember(name, type, attributeoptions ? attributeoptions.defaultValue : undefined);
       if(attributeoptions){
         if(attributeoptions.genVBO && redrawEventHandler){
-          var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+          if(!registeredTypes){
+            registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+          }
           var typeDesc = registeredTypes[type];
           var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
           var bufferMemberName = name + 'Buffer';
@@ -283,7 +288,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           );
         }
       }
-      sceneDeserializer.loadDGNodesData(options.name, {
+      sceneDeserializer.loadDGNodesData(geometryNode.pub.getName(), {
         uniforms:{
           dgnode: uniformsdgnode
         },
@@ -400,7 +405,9 @@ FABRIC.SceneGraph.registerNodeType('Points', {
         entryFunctionName: 'drawPoints',
         parameterLayout: [
           'shader.shaderProgram',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -451,7 +458,9 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
         parameterLayout: [
           'shader.shaderProgram',
           'self.indicesBuffer',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -558,7 +567,10 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
         parameterLayout: [
           'shader.shaderProgram',
           'self.indicesBuffer',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnTriangles',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -688,10 +700,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       }));
 
     var assignLoadTransformOperators = function() {
-      // check if we have a sliced transform!
-      if(options.transformNodeIndex == undefined && transformNode.getDGNode().getCount() > 1) {
-        options.transformNodeIndex = 0
-      }
       var transformdgnode = transformNode.getDGNode();
       redrawEventHandler.setScope('transform', transformdgnode);
       if(options.transformNodeIndex == undefined){

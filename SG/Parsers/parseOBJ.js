@@ -91,12 +91,21 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
       }catch(e){
         console.warn(e);
       }
-
+      
       resourceLoadNode.pub.addEventListener('objloadsuccess', function(evt){
         var loadedGeometries = {};
         if(evt.objectNames.length > 0){
           for(var i=0; i<evt.objectNames.length; i++){
-            var objectName = evt.objectNames[i].length > 0 ? evt.objectNames[i] : (evt.groupNames[i].length > 0 ? evt.groupNames[i] : options.baseName);
+            var objectName;
+            if(evt.materialNames.length == evt.objectNames.length && evt.materialNames[i].length > 0){
+              objectName = evt.materialNames[i];
+            }else if(evt.groupNames.length == evt.objectNames.length && evt.groupNames[i].length > 0){
+              objectName = evt.groupNames[i];
+            }else if(evt.objectNames[i].length > 0){
+              objectName = evt.objectNames[i];
+            }else{
+              objectName = options.baseName;
+            }
             loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
               resourceLoadNode: resourceLoadNode.pub,
               entityIndex: i,
@@ -111,9 +120,6 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
             entityIndex: -1,
             name: options.baseName
           }).pub;
-        }
-        if(options.callback){
-          options.callback(loadedGeometries);
         }
         resourceLoadNode.pub.fireEvent('objparsesuccess', {
           loadedGeometries: loadedGeometries,
@@ -275,8 +281,11 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
 
 FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options, callback) {
   options.url = assetUrl;
-  options.callback = callback;
-  return scene.constructNode('ObjResource', options );
+  var resourceLoadNode = scene.constructNode('ObjResource', options );
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    callback(evt.loadedGeometries);
+  });
+  return resourceLoadNode;
 });
 
 });

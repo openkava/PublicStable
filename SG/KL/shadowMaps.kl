@@ -44,7 +44,7 @@ operator calcDirectionalLightProjectionMatrices(
   io Mat44 lightProjectionMat,
   io Mat44 shadowMat
 ) {
-    report( "calcDirectionalLightProjectionMatrices" );
+// report( "calcDirectionalLightProjectionMatrices" );
 
   lightProjectionMat = symmetricOrthographicFrustum(size, size, near, far);
 
