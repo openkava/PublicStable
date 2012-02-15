@@ -157,11 +157,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
       }
       return result;
     };
-    characterSkeletonNode.pub.getCount = function() {
-      return dgnode.getCount();
+    characterSkeletonNode.pub.size = function() {
+      return dgnode.size();
     };
-    characterSkeletonNode.pub.setCount = function(count) {
-      dgnode.setCount(count);
+    characterSkeletonNode.pub.resize = function(count) {
+      dgnode.resize(count);
     };
     characterSkeletonNode.pub.addBone = function(boneOptions, skeletonId) {
       var bones = characterSkeletonNode.pub.getBones(),
@@ -304,20 +304,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeletonDebug', {
 
       // now append the operator to create the lines
       characterSkeletonDebug.getAttributesDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'setSkeletonVertexCount',
-          srcFile: 'FABRIC_ROOT/SG/KL/generateSkeleton.kl',
-          entryFunctionName: 'setSkeletonVertexCount',
-          parameterLayout: [
-            'skeleton.bones',
-            'self.newCount'
-          ]
-        }));
-      
-      characterSkeletonDebug.getAttributesDGNode().bindings.append(scene.constructOperator({
           operatorName: 'generateSkeletonOp',
           srcFile: 'FABRIC_ROOT/SG/KL/generateSkeleton.kl',
           entryFunctionName: 'generateSkeleton',
           parameterLayout: [
+            'self',
             'skeleton.bones',
             'rig.pose',
             'self.positions<>',
@@ -573,14 +564,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       
     dgnode.addMember('pose', 'Xfo[]');
     
-    
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
-        'charactercontroller.count',
-        'self.newCount'
+        'charactercontroller',
+        'self'
       ],
       async: false
     }));
