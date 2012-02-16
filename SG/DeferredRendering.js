@@ -24,8 +24,8 @@ FABRIC.SceneGraph.registerNodeType('DeferredPrePassMaterial', {
         var shader = scene.getPrivateInterface(materialNode.getShaderNode());
         nodePrivate.getDeferredPrePassEventHandler().appendChildEventHandler(shader.getRedrawEventHandler());
       });
-    if(options.deferredRendererNode){
-      materialNode.setRendererNode(options.deferredRendererNode);
+    if(options.rendererNode){
+      materialNode.pub.setRendererNode(options.rendererNode);
     }
     return materialNode;
   }});
@@ -45,10 +45,10 @@ FABRIC.SceneGraph.registerNodeType('DeferredPostPassMaterial', {
         
         var oglRenderTargetTextureNames = nodePrivate.getOglRenderTargetTextureNames();
         var renderTargetTextures = nodePrivate.getRenderTargetTextures();
-        for(i = 0; i < nbRenderTargets; ++i) {
+        for(i = 0; i < renderTargetTextures.length; ++i) {
           var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'TextureNode';
-          if(material.pub[setTextureFuncName] !== undefined) {
-            material.pub[setTextureFuncName]( renderTargetTextures[i].pub );
+          if(materialNode.pub[setTextureFuncName] !== undefined) {
+            materialNode.pub[setTextureFuncName]( renderTargetTextures[i].pub );
           }
         }
   
@@ -68,8 +68,8 @@ FABRIC.SceneGraph.registerNodeType('DeferredPostPassMaterial', {
           }),0);
         }
       });
-    if(options.deferredRendererNode){
-      materialNode.setRendererNode(options.deferredRendererNode);
+    if(options.rendererNode){
+      materialNode.pub.setRendererNode(options.rendererNode);
     }
     return materialNode;
   }});
@@ -330,8 +330,8 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
       return scene.pub.constructNode(materialName, options);
     };
 
-    deferredRenderNode.pub.getOglRenderTargetTextureNames = function(){ return oglRenderTargetTextureNames; }
-    deferredRenderNode.pub.getRenderTargetTextures = function(){ return renderTargetTextures; }
+    deferredRenderNode.getOglRenderTargetTextureNames = function(){ return oglRenderTargetTextureNames; }
+    deferredRenderNode.getRenderTargetTextures = function(){ return renderTargetTextures; }
     ///////////////////////////////
     //Forward render mix pass
 
@@ -391,7 +391,6 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
     return deferredRenderNode;
 }});
 
-var definedDeferredPhongMaterials = false;
 
 FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
   briefDesc: '',
@@ -405,9 +404,8 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
       addPhongShadingLayer: true
       });
 
+    var definedDeferredPhongMaterials = false;
     if( definedDeferredPhongMaterials == false ) {
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongShader.xml');
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongInstancingExtShader.xml');
       FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostPhongShader.xml');
       definedDeferredPhongMaterials = true;
     }
@@ -416,24 +414,16 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
     options.addDepth = true;
 
     var deferredRenderNode = scene.constructNode('BaseDeferredRenderer', options);
-   
-    deferredRenderNode.pub.addPhongShadingLayer = function(options) {
-      options.shadeFullScreen = true;
-      deferredRenderNode.pub.addPostPassMaterial('DeferredPostPhongMaterial', options);
-      options.shadeFullScreen = undefined;
-    };
 
-    deferredRenderNode.pub.addPrePassPhongMaterial = function(options) {
-      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongMaterial', options);
-    };
-
-    deferredRenderNode.pub.addPrePassPhongInstancingMaterial = function(options) {
-      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongInstancingExtMaterial', options);
-    };
-
-    if(options.addPhongShadingLayer) {
-      deferredRenderNode.pub.addPhongShadingLayer(options);
-    }
+    // Note: the renderer owns the post render shader.
+    // Persistence will not save the post material,
+    // unless someone explicitly requested it from the
+    // renderer, and then added it to the persistence manager.
+    scene.constructNode('DeferredPostPhongMaterial', {
+      shadeFullScreen: true,
+      rendererNode: deferredRenderNode.pub,
+      lightNode: options.lightNode
+    });
 
     return deferredRenderNode;
 }});
