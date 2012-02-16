@@ -6,7 +6,7 @@
 #define _FABRIC_CG_METHOD_BUILDER_H
 
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 
 namespace Fabric
 {
@@ -25,13 +25,20 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          MethodPencilName(
+          MethodPencilKey(
             thisAdapter,
             methodName
             ),
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
-            methodName
+            methodName,
+            ExprTypeVector()
+            ),
+          MethodFullDesc(
+            returnAdapter,
+            ExprType( thisAdapter, thisUsage ),
+            methodName,
+            ExprTypeVector()
             ),
           returnAdapter,
           ParamVector(
@@ -54,14 +61,24 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          MethodPencilName(
+          MethodPencilKey(
             thisAdapter,
             methodName
             ),
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
             methodName,
-            ExprType( paramAdapter, paramUsage )
+            ExprTypeVector(
+              ExprType( paramAdapter, paramUsage )
+              )
+            ),
+          MethodFullDesc(
+            returnAdapter,
+            ExprType( thisAdapter, thisUsage ),
+            methodName,
+            ExprTypeVector(
+              ExprType( paramAdapter, paramUsage )
+              )
             ),
           returnAdapter,
           ParamVector(
@@ -88,15 +105,26 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          MethodPencilName(
+          MethodPencilKey(
             thisAdapter,
             methodName
             ),
           MethodDefaultSymbolName(
             ExprType( thisAdapter, thisUsage ),
             methodName,
-            ExprType( param1Adapter, param1Usage ),
-            ExprType( param2Adapter, param2Usage )
+            ExprTypeVector(
+              ExprType( param1Adapter, param1Usage ),
+              ExprType( param2Adapter, param2Usage )
+              )
+            ),
+          MethodFullDesc(
+            returnAdapter,
+            ExprType( thisAdapter, thisUsage ),
+            methodName,
+            ExprTypeVector(
+              ExprType( param1Adapter, param1Usage ),
+              ExprType( param2Adapter, param2Usage )
+              )
             ),
           returnAdapter,
           ParamVector(

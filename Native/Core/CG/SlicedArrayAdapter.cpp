@@ -14,7 +14,8 @@
 #include "ConstructorBuilder.h"
 #include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
-#include "OverloadNames.h"
+#include "InternalFunctionBuilder.h"
+#include <Fabric/Core/CG/Mangling.h>
 #include "CompileOptions.h"
 
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
@@ -186,7 +187,12 @@ namespace Fabric
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
         if ( guarded )
           params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "", "__"+getCodeName()+"__ConstIndex", m_memberAdapter, params, FunctionBuilder::DirectlyReturnRValue );
+        InternalFunctionBuilder functionBuilder(
+          moduleBuilder,
+          m_memberAdapter, "__"+getCodeName()+"__ConstIndex",
+          params,
+          FunctionBuilder::DirectlyReturnRValue
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -249,7 +255,12 @@ namespace Fabric
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
         if ( guarded )
           params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "", "__"+getCodeName()+"__NonConstIndex", m_memberAdapter, params, FunctionBuilder::DirectlyReturnLValue );
+        InternalFunctionBuilder functionBuilder(
+          moduleBuilder,
+          m_memberAdapter, "__"+getCodeName()+"__NonConstIndex",
+          params,
+          FunctionBuilder::DirectlyReturnLValue
+          );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -426,7 +437,12 @@ namespace Fabric
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       if ( guarded )
         params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "", "__"+getCodeName()+"__ConstIndex", m_memberAdapter, params, FunctionBuilder::DirectlyReturnRValue );
+      InternalFunctionBuilder functionBuilder(
+        basicBlockBuilder.getModuleBuilder(),
+        m_memberAdapter, "__"+getCodeName()+"__ConstIndex",
+        params,
+        FunctionBuilder::DirectlyReturnRValue
+        );
       std::vector<llvm::Value *> args;
       args.push_back( arrayRValue );
       args.push_back( indexRValue );
@@ -451,7 +467,12 @@ namespace Fabric
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       if ( guarded )
         params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "", "__"+getCodeName()+"__NonConstIndex", m_memberAdapter, params, FunctionBuilder::DirectlyReturnLValue );
+      InternalFunctionBuilder functionBuilder(
+        basicBlockBuilder.getModuleBuilder(),
+        m_memberAdapter, "__"+getCodeName()+"__NonConstIndex",
+        params,
+        FunctionBuilder::DirectlyReturnLValue
+        );
       std::vector<llvm::Value *> args;
       args.push_back( exprLValue );
       args.push_back( indexRValue );

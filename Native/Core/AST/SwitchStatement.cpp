@@ -16,7 +16,7 @@
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -121,9 +121,16 @@ namespace Fabric
 
           CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
             getLocation(),
-            CG::BinOpPencilName( CG::BIN_OP_EQ ),
-            exprValue.getExprType(),
-            caseExprValue.getExprType()
+            CG::BinOpPencilKey( CG::BIN_OP_EQ ),
+            CG::ExprTypeVector(
+              exprValue.getExprType(),
+              caseExprValue.getExprType()
+              ),
+            CG::BinOpQueryDesc(
+              CG::BIN_OP_EQ,
+              exprValue.getAdapter(),
+              caseExprValue.getAdapter()
+              )
             );
           CG::ExprValue cmpExprValue = function->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );

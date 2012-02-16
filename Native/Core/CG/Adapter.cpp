@@ -12,7 +12,7 @@
 #include "FunctionBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OpTypes.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
@@ -34,6 +34,11 @@ namespace Fabric
       , m_flags( flags )
       , m_codeName( desc->getImpl()->getCodeName() )
     {
+    }
+    
+    bool Adapter::isEquivalentTo( RC::ConstHandle<Adapter> const &that ) const
+    {
+      return getImpl() == that->getImpl();
     }
     
     RT::ImplType Adapter::getType() const
@@ -124,9 +129,11 @@ namespace Fabric
       ExprValue dstExprValue = ExprValue( this, USAGE_LVALUE, basicBlockBuilder.getContext(), dstLValue );
       ExprValue srcExprValue = ExprValue( this, USAGE_RVALUE, basicBlockBuilder.getContext(), srcRValue );
       Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
-        CG::AssignOpPencilName( this, ASSIGN_OP ),
-        dstExprValue.getExprType(),
-        srcExprValue.getExprType()
+        CG::AssignOpPencilKey( this, ASSIGN_OP ),
+        CG::ExprTypeVector(
+          dstExprValue.getExprType(),
+          srcExprValue.getExprType()
+          )
         );
       if ( function )
         function->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
@@ -164,12 +171,16 @@ namespace Fabric
       {
         exprValue.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
 
+        CG::ExprType thisType( this, CG::USAGE_LVALUE );
         CG::ExprTypeVector argTypes;
-        argTypes.push_back( CG::ExprType( this, CG::USAGE_LVALUE ) );
         argTypes.push_back( CG::ExprType( exprValue.getAdapter(), CG::USAGE_RVALUE ) );
+        
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
-          CG::ConstructorPencilName( this ),
-          argTypes
+          CG::ConstructorPencilKey( this ),
+          CG::ExprTypeVector(
+            thisType,
+            argTypes
+            )
           );
         if ( !function )
           throw Exception( "no cast exists from " + exprValue.getTypeUserName() + " to " + getUserName() );
