@@ -59,12 +59,15 @@ namespace Fabric
 // [andrew 20120215] size_t is the same as either uint32_t or uint64_t
 // so this causes a compile error on Linux
 #if !defined(FABRIC_OS_LINUX)
+// [phil 20120215] same issue on windows, so diabled it for Windows too
+#if !defined(FABRIC_OS_WINDOWS)
   inline std::string _( size_t size )
   {
     char buffer[32];
     snprintf( buffer, 32, "%lu", (unsigned long)size );
     return std::string( buffer );
   }
+#endif
 #endif
   
   inline std::string _( uint64_t uint64 )
