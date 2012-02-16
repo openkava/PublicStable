@@ -133,7 +133,7 @@ namespace Fabric
       if ( m_floatDesc->getAllocSize() != 4 )
       {
         RC::ConstHandle<FloatAdapter> fp32Adapter = getManager()->getFP32Adapter();
-        ConstructorBuilder functionBuilder( moduleBuilder, fp32Adapter, this );
+        ConstructorBuilder functionBuilder( moduleBuilder, fp32Adapter, this, ConstructorBuilder::MedHighCost );
         if ( buildFunctions )
         {
           llvm::Value *fp32LValue = functionBuilder[0];
@@ -588,11 +588,6 @@ namespace Fabric
     llvm::Constant *FloatAdapter::llvmConst( RC::Handle<Context> const &context, double value ) const
     {
       return llvm::ConstantFP::get( llvmRawType( context ), value );
-    }
-    
-    llvm::Constant *FloatAdapter::llvmConst( RC::Handle<Context> const &context, std::string const &valueString ) const
-    {
-      return llvm::ConstantFP::get( llvmRawType( context ), valueString );
     }
     
     llvm::Constant *FloatAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
