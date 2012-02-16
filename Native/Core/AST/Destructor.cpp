@@ -7,7 +7,7 @@
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -54,14 +54,19 @@ namespace Fabric
       return m_thisTypeName;
     }
     
-    std::string Destructor::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string Destructor::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::DestructorPencilName( cgManager->getAdapter( m_thisTypeName ) );
+      return CG::DestructorPencilKey( cgManager->getAdapter( m_thisTypeName ) );
     }
     
     std::string Destructor::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return CG::DestructorDefaultSymbolName( cgManager->getAdapter( m_thisTypeName ) );
+    }
+    
+    std::string Destructor::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::DestructorDesc( cgManager->getAdapter( m_thisTypeName ) );
     }
 
     RC::ConstHandle<ParamVector> Destructor::getParams( RC::Handle<CG::Manager> const &cgManager ) const

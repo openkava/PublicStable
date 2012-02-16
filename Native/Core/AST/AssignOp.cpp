@@ -11,7 +11,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -75,9 +75,11 @@ namespace Fabric
         }
 
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
-          CG::AssignOpPencilName( adapter, m_assignOpType ),
-          lhsExprValue.getExprType(),
-          rhsExprValue.getExprType()
+          CG::AssignOpPencilKey( adapter, m_assignOpType ),
+          CG::ExprTypeVector(
+            lhsExprValue.getExprType(),
+            rhsExprValue.getExprType()
+            )
           );
         if ( function )
         {
@@ -85,12 +87,20 @@ namespace Fabric
           return lhsExprValue;
         }
         
-        // [pzion 20110202] Fall back on binOp + simple assignOp composition              
+        // [pzion 20110202] Fall back on binOp + simple assignOp composition
+        CG::BinOpType binOpType = CG::binOpForAssignOp( m_assignOpType );   
         function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
-          CG::BinOpPencilName( CG::binOpForAssignOp( m_assignOpType ) ),
-          lhsExprValue.getExprType(),
-          rhsExprValue.getExprType()
+          CG::BinOpPencilKey( binOpType ),
+          CG::ExprTypeVector(
+            lhsExprValue.getExprType(),
+            rhsExprValue.getExprType()
+            ),
+          CG::BinOpQueryDesc(
+            binOpType,
+            lhsExprValue.getAdapter(),
+            rhsExprValue.getAdapter()
+            )
           );
         CG::ExprValue binOpResultExprValue = function->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
         llvm::Value *rhsCastedRValue = adapter->llvmCast( basicBlockBuilder, binOpResultExprValue );

@@ -58,9 +58,9 @@ namespace Fabric
       return result;
     }
     
-    std::vector< RC::ConstHandle<CG::Adapter> > ParamVector::getAdapters( RC::Handle<CG::Manager> const &cgManager ) const
+    CG::AdapterVector ParamVector::getAdapters( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      std::vector< RC::ConstHandle<CG::Adapter> > result;
+      CG::AdapterVector result;
       for ( size_t i=0; i<size(); ++i )
         result.push_back( get(i)->getAdapter( cgManager ) );
       return result;

@@ -7,7 +7,7 @@
 
 #include "NotOp.h"
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
