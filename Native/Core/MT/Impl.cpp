@@ -212,7 +212,6 @@ namespace Fabric
             finishedCallback( task->getFinishedUserdata() );
             delete task;
           }
-
           
           // [pzion 20101108] Must wake waiter because they might be
           // waiting on the task completion
