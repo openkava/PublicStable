@@ -50,7 +50,11 @@ namespace Fabric
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
         CG::UniOpPencilKey( m_uniOpType ),
-        childExprType
+        childExprType,
+        CG::UniOpQueryDesc(
+          m_uniOpType,
+          childExprType
+          )
         );
     }
     

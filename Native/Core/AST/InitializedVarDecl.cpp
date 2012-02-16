@@ -61,13 +61,19 @@ namespace Fabric
       FABRIC_ASSERT( result.getUsage() == CG::USAGE_LVALUE );
       
       CG::ExprTypeVector argTypes;
-      argTypes.push_back( result.getExprType() );
       m_args->appendExprTypes( basicBlockBuilder, argTypes );
         
       CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
         CG::ConstructorPencilKey( result.getAdapter() ),
-        argTypes
+        CG::ExprTypeVector(
+          result.getExprType(),
+          argTypes
+          ),
+        CG::ConstructorQueryDesc(
+          result.getAdapter(),
+          argTypes.getAdapters()
+          )
         );
 
       CG::ParamVector const functionParams = function->getParams();

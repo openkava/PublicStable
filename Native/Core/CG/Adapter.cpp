@@ -171,12 +171,16 @@ namespace Fabric
       {
         exprValue.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
 
+        CG::ExprType thisType( this, CG::USAGE_LVALUE );
         CG::ExprTypeVector argTypes;
-        argTypes.push_back( CG::ExprType( this, CG::USAGE_LVALUE ) );
         argTypes.push_back( CG::ExprType( exprValue.getAdapter(), CG::USAGE_RVALUE ) );
+        
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetPreciseFunction(
           CG::ConstructorPencilKey( this ),
-          argTypes
+          CG::ExprTypeVector(
+            thisType,
+            argTypes
+            )
           );
         if ( !function )
           throw Exception( "no cast exists from " + exprValue.getTypeUserName() + " to " + getUserName() );

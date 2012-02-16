@@ -33,6 +33,11 @@ namespace Fabric
             type,
             thatAdapter
             ),
+          AssignOpFullDesc(
+            thisAdapter,
+            type,
+            thatAdapter
+            ),
           0,
           ParamVector(
             FriendlyFunctionParam( "this", thisAdapter, USAGE_LVALUE ),

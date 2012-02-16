@@ -55,13 +55,37 @@ namespace Fabric
         CG::Function const &function
         );
         
-      CG::Function const *maybeGetPreciseFunction( std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
-      CG::Function const *getPreciseFunction( CG::Location const &location, std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
+      CG::Function const *maybeGetPreciseFunction(
+        std::string const &pencilKey,
+        ExprTypeVector const &argTypes
+        ) const;
+        
+      CG::Function const *getPreciseFunction(
+        CG::Location const &location,
+        std::string const &pencilKey,
+        ExprTypeVector const &argTypes,
+        std::string const &desc
+        ) const;
 
-      CG::Function const *maybeGetFunction( CG::Location const &location, std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
-      CG::Function const *getFunction( CG::Location const &location, std::string const &pencilKey, ExprTypeVector const &argTypes ) const;
+      CG::Function const *maybeGetFunction(
+        CG::Location const &location,
+        std::string const &pencilKey,
+        ExprTypeVector const &argTypes,
+        std::string const &desc
+        ) const;
+        
+      CG::Function const *getFunction(
+        CG::Location const &location,
+        std::string const &pencilKey,
+        ExprTypeVector const &argTypes,
+        std::string const &desc
+        ) const;
       
-      CG::Function const *getUniqueFunction( CG::Location const &location, std::string const &pencilKey ) const;
+      CG::Function const *getUniqueFunction(
+        CG::Location const &location,
+        std::string const &pencilKey,
+        std::string const &desc
+        ) const;
 
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location );

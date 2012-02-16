@@ -24,8 +24,12 @@ namespace Fabric
       std::string const &functionName,
       ExprTypeVector const &paramTypes
       );
-    std::string FunctionDesc(
+    std::string FunctionFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
+      std::string const &functionName,
+      ExprTypeVector const &paramTypes
+      );
+    std::string FunctionQueryDesc(
       std::string const &functionName,
       ExprTypeVector const &paramTypes
       );
@@ -35,7 +39,11 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AdapterVector const &paramAdapters
       );
-    std::string ConstructorDesc(
+    std::string ConstructorFullDesc(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AdapterVector const &paramAdapters
+      );
+    std::string ConstructorQueryDesc(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AdapterVector const &paramAdapters
       );
@@ -53,7 +61,12 @@ namespace Fabric
       AssignOpType type,
       RC::ConstHandle<CG::Adapter> const &thatAdapter
       );
-    std::string AssignOpDesc(
+    std::string AssignOpFullDesc(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AssignOpType type,
+      RC::ConstHandle<CG::Adapter> const &thatAdapter
+      );
+    std::string AssignOpQueryDesc(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AssignOpType type,
       RC::ConstHandle<CG::Adapter> const &thatAdapter
@@ -62,12 +75,16 @@ namespace Fabric
     std::string UniOpPencilKey( UniOpType type );
     std::string UniOpDefaultSymbolName(
       UniOpType type,
-      RC::ConstHandle<CG::Adapter> const &adapter
+      ExprType const &thisExprType
       );
-    std::string UniOpDesc(
+    std::string UniOpFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
       UniOpType type,
-      RC::ConstHandle<CG::Adapter> const &adapter
+      ExprType const &thisExprType
+      );
+    std::string UniOpQueryDesc(
+      UniOpType type,
+      ExprType const &thisExprType
       );
     
     std::string BinOpPencilKey( BinOpType type );
@@ -76,8 +93,13 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> const &lhsAdapter,
       RC::ConstHandle<CG::Adapter> const &rhsAdapter
       );
-    std::string BinOpDesc(
+    std::string BinOpFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
+      BinOpType type,
+      RC::ConstHandle<CG::Adapter> const &lhsAdapter,
+      RC::ConstHandle<CG::Adapter> const &rhsAdapter
+      );
+    std::string BinOpQueryDesc(
       BinOpType type,
       RC::ConstHandle<CG::Adapter> const &lhsAdapter,
       RC::ConstHandle<CG::Adapter> const &rhsAdapter
@@ -92,8 +114,13 @@ namespace Fabric
       std::string const &methodName,
       CG::ExprTypeVector const &paramTypes
       );
-    std::string MethodDesc(
+    std::string MethodFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprTypeVector const &paramTypes
+      );
+    std::string MethodQueryDesc(
       CG::ExprType const &thisType,
       std::string const &methodName,
       CG::ExprTypeVector const &paramTypes

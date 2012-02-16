@@ -47,20 +47,28 @@ namespace Fabric
     
     CG::Function const *Call::getFunction( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      CG::ExprTypeVector argExprTypes;
-      m_args->appendExprTypes( basicBlockBuilder, argExprTypes );
-      
       RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( m_name );
       if ( !symbol )
       {
         std::string pencilKey = CG::FunctionPencilKey( m_name );
-        throw CG::Error( getLocation(), "no such " + pencilKey + "(" + argExprTypes.desc() + ")" );
+        throw CG::Error( getLocation(), "no such function " + _(m_name) );
       }
-
       if ( !symbol->isPencil() )
         throw Exception( _(m_name) + " is not a function" );
+        
+      CG::ExprTypeVector argExprTypes;
+      m_args->appendExprTypes( basicBlockBuilder, argExprTypes );
+      
       RC::ConstHandle<CG::PencilSymbol> pencilSymbol = RC::ConstHandle<CG::PencilSymbol>::StaticCast( symbol );
-      return pencilSymbol->getFunction( basicBlockBuilder.getModuleBuilder(), getLocation(), argExprTypes );
+      return pencilSymbol->getFunction(
+        getLocation(),
+        basicBlockBuilder.getModuleBuilder(),
+        argExprTypes,
+        CG::FunctionQueryDesc(
+          m_name,
+          argExprTypes
+          )
+        );
     }
     
     CG::ExprType Call::getExprType( CG::BasicBlockBuilder &basicBlockBuilder ) const
@@ -116,13 +124,19 @@ namespace Fabric
         else
         {
           CG::ExprTypeVector argTypes;
-          argTypes.push_back( result.getExprType() );
           m_args->appendExprTypes( basicBlockBuilder, argTypes );
 
           CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
             getLocation(),
-            ConstructorPencilKey( result.getAdapter() ),
-            argTypes
+            CG::ConstructorPencilKey( result.getAdapter() ),
+            CG::ExprTypeVector(
+              result.getExprType(),
+              argTypes
+              ),
+            CG::ConstructorQueryDesc(
+              result.getAdapter(),
+              argTypes.getAdapters()
+              )
             );
 
           CG::ParamVector const functionParams = function->getParams();

@@ -57,6 +57,11 @@ namespace Fabric
         CG::ExprTypeVector(
           lhsType,
           rhsType
+          ),
+        CG::BinOpQueryDesc(
+          m_binOpType,
+          lhsType.getAdapter(),
+          rhsType.getAdapter()
           )
         );
     }

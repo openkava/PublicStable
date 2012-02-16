@@ -18,6 +18,7 @@ namespace Fabric
 {
   namespace CG
   {
+    class Adapter;
     class Manager;
   };
   
@@ -38,6 +39,7 @@ namespace Fabric
       virtual std::string const *getScopeName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const = 0;
       virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
+      virtual std::string getDesc( RC::Handle<CG::Manager> const &cgManager ) const = 0;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const = 0;
 
       std::string const &getReturnTypeName() const
@@ -58,6 +60,8 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body,
         bool exportSymbol
         );
+      
+      RC::ConstHandle<CG::Adapter> getReturnAdapter( RC::Handle<CG::Manager> const &cgManager ) const;
       
       virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
     

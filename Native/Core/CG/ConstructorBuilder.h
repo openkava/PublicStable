@@ -34,7 +34,15 @@ namespace Fabric
           ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            thatAdapter
+            AdapterVector(
+              thatAdapter
+              )
+            ),
+          ConstructorFullDesc(
+            thisAdapter,
+            AdapterVector(
+              thatAdapter
+              )
             ),
           0,
           ParamVector(
@@ -56,6 +64,12 @@ namespace Fabric
           moduleBuilder,
           ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
+            thisAdapter,
+            AdapterVector(
+              param1Adapter
+              )
+            ),
+          ConstructorFullDesc(
             thisAdapter,
             AdapterVector(
               param1Adapter
@@ -87,6 +101,13 @@ namespace Fabric
               param2Adapter
               )
             ),
+          ConstructorFullDesc(
+            thisAdapter,
+            AdapterVector(
+              param1Adapter,
+              param2Adapter
+              )
+            ),
           0,
           ParamVector(
             FunctionParam( "thisLValue", thisAdapter, USAGE_LVALUE ),
@@ -109,6 +130,14 @@ namespace Fabric
           moduleBuilder,
           ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
+            thisAdapter,
+            AdapterVector(
+              param1Adapter,
+              param2Adapter,
+              param3Adapter
+              )
+            ),
+          ConstructorFullDesc(
             thisAdapter,
             AdapterVector(
               param1Adapter,

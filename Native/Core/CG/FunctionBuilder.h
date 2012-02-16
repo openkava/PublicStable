@@ -38,6 +38,7 @@ namespace Fabric
         ModuleBuilder &moduleBuilder,
         std::string const &pencilKey,
         std::string const &symbolName,
+        std::string const &desc,
         RC::ConstHandle<Adapter> const &returnAdapter, 
         ParamVector const &params,
         size_t flags,
@@ -48,6 +49,7 @@ namespace Fabric
         ModuleBuilder &moduleBuilder, 
         std::string const &pencilKey,
         std::string const &symbolName,
+        std::string const &desc,
         std::string const &paramLayout,
         size_t flags
         );
@@ -132,6 +134,7 @@ namespace Fabric
       void build( 
         std::string const &pencilKey, 
         std::string const &symbolName, 
+        std::string const &desc,
         RC::ConstHandle<Adapter> const &returnAdapter, 
         ParamVector const &params, 
         size_t flags,

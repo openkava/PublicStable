@@ -9,6 +9,7 @@
 #define _FABRIC_AST_METHOD_OP_IMPL_H
 
 #include <Fabric/Core/AST/FunctionBase.h>
+#include <Fabric/Core/CG/ExprType.h>
 
 namespace llvm
 {
@@ -18,10 +19,6 @@ namespace llvm
 
 namespace Fabric
 {
-  namespace RT
-  {
-  };
-  
   namespace AST
   {
     class MethodOpImpl : public FunctionBase
@@ -42,6 +39,7 @@ namespace Fabric
           
       virtual std::string getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getDesc( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
               
     protected:
@@ -60,11 +58,12 @@ namespace Fabric
         
     private:
     
-      std::string m_selfTypeName;
+      std::string m_thisTypeName;
+      CG::Usage m_thisUsage;
       std::string m_methodName;
       RC::ConstHandle<ParamVector> m_params;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_AST_METHOD_OP_IMPL_H
