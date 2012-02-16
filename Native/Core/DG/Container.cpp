@@ -131,7 +131,11 @@ namespace Fabric
     Container::~Container()
     {
       if( m_rtContainerData )
+      {
+        RC::ConstHandle<RT::ContainerDesc> desc = m_context->getRTManager()->getContainerDesc();
+        desc->disposeData( m_rtContainerData );
         free( m_rtContainerData );
+      }
     }
     
     Container::MemberDescs Container::getMemberDescs() const
