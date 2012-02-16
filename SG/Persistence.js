@@ -731,7 +731,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
             'fileStream.dataNames',
             'fileStream.seekOffsets',
             'self.'+dataName,
-            dgnodeName+'.count'
+            dgnodeName
           ],
           async: false
         }));
