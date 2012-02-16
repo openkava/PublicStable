@@ -65,7 +65,10 @@ namespace Fabric
       uint8_t *data = static_cast<uint8_t *>( dst );
       uint8_t * const dataEnd = data + count * stride;
       while ( data != dataEnd )
+      {
         DisposeData( data );
+        data += stride;
+      }
     }
     
     std::string ContainerImpl::descData( void const *data ) const
