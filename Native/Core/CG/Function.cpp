@@ -78,7 +78,7 @@ namespace Fabric
             );
           if ( function )
           {
-            maxCost = std::max( function->getCost(), maxCost );
+            maxCost += function->getCost();
             continue;
           }
         }

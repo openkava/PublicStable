@@ -31,7 +31,7 @@ namespace Fabric
     }
     inline double parseDouble( std::string const &string )
     {
-      return parseDouble( string.data(), string.length() );
+      return atof( string.c_str() );
     }
 
     std::string parseQuotedString( char const *data, size_t length );
