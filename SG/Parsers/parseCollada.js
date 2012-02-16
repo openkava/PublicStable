@@ -16,7 +16,7 @@ FABRIC.define(["SG/Geometry",
 
 FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, callback) {
   
-  if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = false;
+  if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = true;
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
@@ -1122,7 +1122,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         assetNodes[geometryNode.getName()] = geometryNode;
         geometryNodes.push(geometryNode);
         
-        if(polygons.material){
+        if(polygons.material && options.constructMaterialNodes && colladaData.libraryMaterials){
           var materialData = colladaData.libraryMaterials[polygons.material];
           var materialNode = constructMaterial(materialData);
           assetNodes[materialNode.getName()] = materialNode;
@@ -1596,9 +1596,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     }
     
     var materials = [];
-    for(var i=0; i<sourceMeshArray.length; i++){
-      var materialData = colladaData.libraryMaterials[sourceMeshArray[i].material];
-      materials.push(constructMaterial(materialData));
+    if(options.constructMaterialNodes){
+      for(var i=0; i<sourceMeshArray.length; i++){
+        var materialData = colladaData.libraryMaterials[sourceMeshArray[i].material];
+        materials.push(constructMaterial(materialData));
+      }
     }
     
     var controllerNodes = {
@@ -1652,8 +1654,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         for(var i=0; i<geometries.length; i++){
           var materialNode = materials[i];
           var geometryNode = geometries[i];
-          if(instanceData.instance_geometry.instance_material){
-            // TODO:
+          if(instanceData.instance_geometry.instance_material && options.constructMaterialNodes && colladaData.libraryMaterials){
             var materialData = colladaData.libraryMaterials[instanceData.instance_geometry.instance_material];
             materialNode = constructMaterial(materialData);
           }

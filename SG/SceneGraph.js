@@ -209,13 +209,7 @@ FABRIC.SceneGraph = {
     };
 
     ///////////////////////////////////////////////////////////////////
-    //  Resource File Loading
-    scene.writeResourceFile = function(filepath, fileContents) {
-      throw ' FS has been depreciated ';
-    };
-    scene.readResourceFile = function(filepath) {
-      throw ' FS has been depreciated ';
-    };
+    //  Utility functions
     scene.assignDefaults = assignDefaults;
     
     scene.cloneObj = function(obj, assignedValues) {
@@ -231,9 +225,6 @@ FABRIC.SceneGraph = {
       return clonedobj;
     };
     
-    scene.loadResourceURL = function(url, mimeType, callback) {
-      return FABRIC.loadResourceURL(url, mimeType, callback);
-    };
     //////////////////////////////////////////////////
     // Timers.
     scene.pushTimer = function(name) {

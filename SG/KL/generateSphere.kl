@@ -6,17 +6,8 @@ use Math;
 use Vec2;
 use Vec3;
 
-operator setSphereVertexCount(
-  io Integer detail,
-  io Size newCount
-) {
-  Integer sides = (detail >= 0) ? (detail * 2 + 3) : 3;
-  Integer loops = (detail >= 0) ? (detail + 1) : 1;
-
-  newCount = 2 * sides * (2 + loops);
-}
-
 operator generateSphere(
+  io Container container,
   io Scalar radius,
   io Integer detail,
 
@@ -28,6 +19,7 @@ operator generateSphere(
   Integer sides = (detail >= 0) ? (detail * 2 + 3) : 3;
   Integer loops = (detail >= 0) ? (detail + 1) : 1;
 
+  container.resize(Size(2 * sides * (2 + loops)));
 
   Integer numTriangles, nbSides, nbLoops;
 

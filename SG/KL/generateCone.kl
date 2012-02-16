@@ -5,23 +5,8 @@
 use Math;
 use Vec3;
 
-operator setConeVertexCount(
-  io Boolean cap,
-  io Integer detail,
-  io Size newCount
-) {
-  var Integer nbSides = (detail >= 0) ? (detail + 3) : 3;
-
-  var Integer numVertices = nbSides * 2;
-
-  if (cap) {
-    numVertices += nbSides + 1;
-  }
-
-  newCount = numVertices;
-}
-
 operator generateCone(
+  io Container container,
   io Scalar radius,
   io Scalar height,
   io Boolean cap,
@@ -40,6 +25,7 @@ operator generateCone(
     numVertices += nbSides + 1;
     numTriangles += nbSides;
   }
+  container.resize(Size(numVertices));
 
   indices.resize(numTriangles * 3);
 

@@ -162,7 +162,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
                     str += ',';
                   }
                   str += '\n        \"'+dgnodename+'\":{';
-                  str += '\n          \"sliceCount\":' + dgnode.getCount();
+                  str += '\n          \"sliceCount\":' + dgnode.size();
                   if(dgnodeDataDesc.members){
                     str += ',\n          \"memberData\":' + JSON.stringify(dgnode.getMembersBulkData(dgnodeDataDesc.members));
                   }
@@ -229,7 +229,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      preLoadScene: false
+      preLoadScene: false,
+      typeRemappings: {}
     });
     
     // Preloading nodes enables data to be loaded into existing nodes.
@@ -270,7 +271,6 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               return;
             }
             dataObj = data;
-            var sceneDeserializerInterface = { getNode: sceneDeserializer.getNode }
             if(dataObj.metadata.binaryStorage){
               
               var binaryFilePath;
@@ -286,10 +286,15 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               var loadNodeBinaryFileNode = scene.constructNode('LoadBinaryDataNode', {
                 url: binaryFilePath
               });
-              // Assign the function for interfacing with the binary node.
-              // by assigning the function here, the closure contains the binary data node.
-              sceneDeserializerInterface.loadDGNodesData = function(sgnodeName, desc) {
-                sgnodeName = sgnodeDataMap[nodeNameToStoredNameRemapping[sgnodeName]];
+            }
+            
+            // Assign the function for interfacing with the binary node.
+            // by assigning the function here, the closure contains the binary data node.
+            
+            var sceneDeserializerInterface = {
+              getNode: sceneDeserializer.getNode,
+              loadDGNodesData: function(sgnodeName, desc) {
+                sgnodeName = nodeNameToStoredNameRemapping[sgnodeName];
                 if(dataObj.metadata.binaryStorage){
                   loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
                     loadNodeBinaryFileNode.pub.loadDGNodes(sgnodeName, desc);
@@ -305,7 +310,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                   for(var dgnodename in desc){
                     var data = nodeData.dgnodedata[dgnodename];
                     var dgnode = desc[dgnodename].dgnode;
-                    dgnode.setCount(data.sliceCount);
+                    dgnode.resize(data.sliceCount);
                     var members = dgnode.getMembers();
                     var memberData = {};
                     for(var memberName in members){
@@ -316,15 +321,17 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                     dgnode.setBulkData(memberData);
                   }
                 }
-              };
+              }
             }
+              
             var remainingNodes = dataObj.sceneGraphNodes.length;
             var loadDGNode = function(nodeData){
               nodeDataMap[nodeData.name] = nodeData;
               FABRIC.createAsyncTask(function(){
                 var node = preLoadedNodes[nodeData.name];
                 if (!node) {
-                  node = scene.pub.constructNode(nodeData.type, nodeData.options);
+                  var type = options.typeRemappings[nodeData.type] || nodeData.type;
+                  node = scene.pub.constructNode(type, nodeData.options);
                 }
                 // in case a name collision occured, store a name remapping table.
                 nodeStoredNameToNodeRemapping[ nodeData.name ] = node.getName();
@@ -554,7 +561,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
             'resourceNode.dataNames',
             'resourceNode.seekOffsets',
             'metaData.'+dgnodeName+'sliceCount',
-            'self.newCount'
+            'self'
           ],
           preProcessorDefinitions: {
             DATA_TYPE: 'Vec3'
