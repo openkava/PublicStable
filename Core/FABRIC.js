@@ -6,6 +6,9 @@
 var FABRIC = (function() {
 
   var requiredVersion = [1,0,21];
+  var requiredVersionSuffix = "-beta";
+  var fullRequiredVersionString = requiredVersion.join('.') + requiredVersionSuffix;
+
   // we keep an array of context ids,
   // so we can open the debugger with one
   var contextIDs = [];
@@ -1532,7 +1535,7 @@ var requirejs, require, define;
                     // We decorate the URL with the current version number of Fabric.
                     // this is to ensure that when updated versions are released,
                     // cached versions of the files are not used. 
-                    url = (url.charAt(0) === '/' || url.match(/^\w+:/) ? "" : config.baseUrl) + url + '?ver=' + requiredVersion.join('');
+                    url = (url.charAt(0) === '/' || url.match(/^\w+:/) ? "" : config.baseUrl) + url + '?ver=' + fullRequiredVersionString;
                 }
 
                 return config.urlArgs ? url +
@@ -2245,7 +2248,7 @@ var requirejs, require, define;
   
   var displayPluginInstallPage = function( div ){
     var iframeTag = document.createElement('iframe');
-    iframeTag.setAttributeNS(null, 'src', fabricRootURL+'/Core/pluginInstall.html?ver=' + requiredVersion.join('.'));
+    iframeTag.setAttributeNS(null, 'src', fabricRootURL+'/Core/pluginInstall.html?ver=' + fullRequiredVersionString);
     iframeTag.setAttributeNS(null, 'style', 'position:absolute; left:0; right:0; top:0; bottom:0; z-index:10');
     iframeTag.setAttributeNS(null, 'width', '100%');
     iframeTag.setAttributeNS(null, 'height', '100%');
@@ -2517,9 +2520,9 @@ var requirejs, require, define;
     if (url.split('/')[0] === 'FABRIC_ROOT') {
       // Remove the "FABRIC_ROOT" and replace it with
       // the path to the Fabric SDK.
-      return fabricRootURL + url.split('/').splice(1).join('/') + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
+      return fabricRootURL + url.split('/').splice(1).join('/') + (addVer!==false ? '?ver=' + fullRequiredVersionString : '');
     }else{
-      return url + '?' + requiredVersion.join('') + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
+      return url + (addVer!==false ? '?ver=' + fullRequiredVersionString : '');
     }
   };
 
