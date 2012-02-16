@@ -79,7 +79,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/ConstDecl.h>
 #include <Fabric/Core/AST/ConstDeclStatement.h>
 #include <Fabric/Core/AST/ConstUnsignedInteger.h>
-#include <Fabric/Core/AST/ConstScalar.h>
+#include <Fabric/Core/AST/ConstFloat.h>
 #include <Fabric/Core/AST/ConstString.h>
 #include <Fabric/Core/AST/ContainerLoop.h>
 #include <Fabric/Core/AST/ContinueStatement.h>
@@ -1502,7 +1502,7 @@ primary_expression
   }
   | TOKEN_CONST_FP
   {
-    $$ = AST::ConstScalar::Create( RTLOC, *$1 ).take();
+    $$ = AST::ConstFloat::Create( RTLOC, *$1 ).take();
     delete $1;
   }
   | TOKEN_CONST_STRING_SQUOT
