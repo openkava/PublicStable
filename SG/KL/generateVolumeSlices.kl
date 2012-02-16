@@ -367,10 +367,10 @@ operator computeGradients_depthSliced(
   //In order to avoid too many redundant computations pre pixel, we keep
   //a full row of intermediary results.
   Integer i, j, k, l, dst = 0;
-  Integer iwidth = Integer(width);
-  Integer iheight = Integer(height);
-  Integer idepth = Integer(depth);
-  Integer iindex = Integer(index);
+  Integer iwidth = width;
+  Integer iheight = height;
+  Integer idepth = depth;
+  Integer iindex = index;
 
   Scalar scalingFactor[3];
   Size maxSize = width;
