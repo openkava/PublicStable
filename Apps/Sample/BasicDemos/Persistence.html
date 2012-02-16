@@ -85,7 +85,7 @@ $(document).ready(function() {
     });
   
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
-  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow2.json');
+  var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
   presetLoader.load(storage, function(nodeMap){
     // The node map contains a map of all the nodes constructed from the loaded file.
     for(var nodeName in nodeMap){
