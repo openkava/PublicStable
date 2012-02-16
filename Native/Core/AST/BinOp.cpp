@@ -8,7 +8,7 @@
 #include <Fabric/Core/AST/BinOp.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/OpTypes.h>
@@ -53,9 +53,16 @@ namespace Fabric
       
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::BinOpPencilName( m_binOpType ),
-        lhsType,
-        rhsType
+        CG::BinOpPencilKey( m_binOpType ),
+        CG::ExprTypeVector(
+          lhsType,
+          rhsType
+          ),
+        CG::BinOpQueryDesc(
+          m_binOpType,
+          lhsType.getAdapter(),
+          rhsType.getAdapter()
+          )
         );
     }
     

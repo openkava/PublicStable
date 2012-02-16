@@ -10,7 +10,7 @@
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OpTypes.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -60,10 +60,10 @@ namespace Fabric
       m_rhs->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
-    std::string AssignOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string AssignOpImpl::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
-      return CG::AssignOpPencilName( thisAdapter, m_assignOpType );
+      return CG::AssignOpPencilKey( thisAdapter, m_assignOpType );
     }
     
     std::string AssignOpImpl::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
@@ -71,6 +71,13 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
       RC::ConstHandle<CG::Adapter> thatAdapter = cgManager->getAdapter( m_rhs->getType() );
       return CG::AssignOpDefaultSymbolName( thisAdapter, m_assignOpType, thatAdapter );
+    }
+    
+    std::string AssignOpImpl::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
+      RC::ConstHandle<CG::Adapter> thatAdapter = cgManager->getAdapter( m_rhs->getType() );
+      return CG::AssignOpFullDesc( thisAdapter, m_assignOpType, thatAdapter );
     }
 
     RC::ConstHandle<ParamVector> AssignOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const

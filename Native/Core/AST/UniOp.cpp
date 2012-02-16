@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Function.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -49,8 +49,12 @@ namespace Fabric
       CG::ExprType childExprType = m_child->getExprType( basicBlockBuilder );
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::UniOpPencilName( m_uniOpType ),
-        childExprType
+        CG::UniOpPencilKey( m_uniOpType ),
+        childExprType,
+        CG::UniOpQueryDesc(
+          m_uniOpType,
+          childExprType
+          )
         );
     }
     
