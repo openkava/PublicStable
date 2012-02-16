@@ -15,15 +15,17 @@ operator openFileStreamForWriting(
   stream.open(handle,"w");
   
   if(stream.isValid() && dataNames.size() > 0) {
-    seekOffsets.resize(dataNames.size());
     stream.writeStringArray(dataNames);
     seekOffsetsLocation = stream.getSeek();
     
     // Write an array of 0 so that we have
     // allocated the space for the TOC later
+    seekOffsets.resize(dataNames.size());
     for(Size i=0;i<dataNames.size();i++) {
       stream.writeSize(0);
     }
+  }else{
+    report "ERROR: unable to write file.";
   }
 }
 
