@@ -867,4 +867,68 @@ viewport.redraw();</programlisting>
         binding is what gives the material access to the light's shadow buffer.</para>
     </section>
   </section>
+  <section>
+    <title>Deferred Rendering Guide</title>
+    <para>Deferred rendering describes the process of drawing the viewport's content to several
+      framebuffers, and then doing additional passes of rendering utilizing these framebuffers.
+      Deferred rendering is tremendously different from standard rendering, since all of the GLSL
+      shaders have to store their resulting pixel values into framebuffers. So shaders have to be
+      specifically written for deferred rendering.</para>
+    <para><inlinemediaobject>
+        <imageobject>
+          <imagedata fileref="images/sg_deferred_01.png" width="75%"/>
+        </imageobject>
+      </inlinemediaobject></para>
+    <para>Deferred rendering allows to perform 2D post effects on the GPU, or additional 3D
+      rendering as a post effect.</para>
+    <para>Note: The <emphasis role="italic">ToonRendering.html</emphasis> sample applications
+      contains an example of using the deferred renderer.</para>
+    <section>
+      <title>Setting up the Deferred Renderer</title>
+      <para>The SceneGraph provides a utility node called the <emphasis role="bold"
+          >DeferredRenderer</emphasis>. </para>
+      <programlisting language="JavaScript">var renderer = scene.constructNode('BasicDeferredRenderer', {
+  addDepth: false, // don't add a depth framebuffer
+  colorBuffers: [{name: 'diffuseA, nbChannels: 4}, {name: 'diffuseB', nbChannels: 4}]
+});</programlisting>
+      <para>Once the renderer is setup, you can setup materials through it. This will ensure that
+        the shader and material eventhandlers are connected up correctly within the drawing
+        pipeline. You can create <emphasis role="bold">prePassMaterials</emphasis> (for the initial
+        draw into framebuffers) or <emphasis role="bold">postPassMaterials</emphasis> (for the
+        deferred draw utilizing the framebuffers).</para>
+      <programlisting language="JavaScript">var drawMaterial = renderer.addPrePassMaterial('MyDeferredShader', {});
+var compositingMaterial = renderer.addPostPassMaterial('MyCompositingShader', {});</programlisting>
+    </section>
+    <section>
+      <title>PrePass Deferred Shaders</title>
+      <para>Shaders for a deferred rendering pipline have to write their results in the fragment
+        data in GLSL. This will fill the framebuffers. You need to setup the framebuffers
+        accordingly when constructing the deferred renderer node. Prepass deferred shaders replace
+        the standard shaders from a non-deferred drawing pipeline. Here's an example of a small
+        fragment shader that writes red to the first and blue to the second framebuffer.</para>
+      <programlisting language="JavaScript">void main(){
+  gl_FragData[0] = vec4(1.0,0.0,0.0,1.0);
+  gl_FragData[1] = vec4(0.0,0.0,1.0,1.0);
+}</programlisting>
+    </section>
+    <section>
+      <title>PostPass Deferred Shaders</title>
+      <para>PostPass deferred shaders perform the <emphasis role="bold">compositing</emphasis> of
+        the framebuffers to the final displayed image. Typically postpass shaders perform per pixel
+        compositing, but they can access all pixels of the framebuffers, since the framebuffers are
+        stored as textures on the GPU. Here's an example of a fragment shader which combines both
+        diffuse color from the deferred renderer above:</para>
+      <programlisting language="JavaScript">uniform sampler2D u_samplerDiffuseA;
+uniform sampler2D u_samplerDiffuseB;
+
+void main(){
+  vec2 windowCoord = gl_TexCoord[0].st*0.5+0.5;
+  gl_FragColor = texture2D( u_samplerDiffuseA, windowCoord ) + texture2D( u_samplerDiffuseB, windowCoord ); 
+}</programlisting>
+      <para>This will result in a violet rendering of the 3D scene, combined from two different draw
+        results.</para>
+      <para>Note: Please also see the <emphasis role="italic">DeferredRendering.html</emphasis>
+        sample application for an example of a more advanced scenario.</para>
+    </section>
+  </section>
 </article>
