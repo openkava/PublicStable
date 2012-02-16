@@ -208,10 +208,9 @@ namespace Fabric
         {
           void (*finishedCallback)( void * ) = task->getFinishedCallback();
           if ( finishedCallback )
-          {
             finishedCallback( task->getFinishedUserdata() );
-            delete task;
-          }
+
+          delete task;
           
           // [pzion 20101108] Must wake waiter because they might be
           // waiting on the task completion
