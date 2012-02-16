@@ -110,7 +110,7 @@ namespace Fabric
       }
       
       {
-        ConstructorBuilder functionBuilder( moduleBuilder, scalarAdapter, this );
+        ConstructorBuilder functionBuilder( moduleBuilder, scalarAdapter, this, ConstructorBuilder::MediumCost );
         if ( buildFunctions )
         {
           llvm::Value *scalarLValue = functionBuilder[0];
