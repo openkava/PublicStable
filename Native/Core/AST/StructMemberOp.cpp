@@ -59,7 +59,12 @@ namespace Fabric
       CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetFunction(
         getLocation(),
         CG::MethodPencilKey( structExprType.getAdapter(), m_memberName ),
-        structExprType
+        structExprType,
+        CG::MethodQueryDesc(
+          structExprType,
+          m_memberName,
+          CG::ExprTypeVector()
+          )
         );
       if ( !function )
         throw CG::Error( getLocation(), "type " + structExprType.getUserName() + " has no member or method named " + _(m_memberName) );
@@ -113,7 +118,12 @@ namespace Fabric
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
           CG::MethodPencilKey( adapter, m_memberName ),
-          exprType
+          exprType,
+          CG::MethodQueryDesc(
+            exprType,
+            m_memberName,
+            CG::ExprTypeVector()
+            )
           );
         CG::ParamVector const &functionParams = function->getParams();
           

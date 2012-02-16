@@ -15,6 +15,7 @@
 #include "MethodBuilder.h"
 #include "AssOpBuilder.h"
 #include "BinOpBuilder.h"
+#include "InternalFunctionBuilder.h"
 #include "BasicBlockBuilder.h"
 #include <Fabric/Core/CG/Mangling.h>
 
@@ -114,9 +115,11 @@ namespace Fabric
       }
       
       {
-        ParamVector params;
-        params.push_back( FunctionParam( "string", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "", "__String__Report", 0, params, 0 );
+        InternalFunctionBuilder functionBuilder(
+          moduleBuilder,
+          0, "__String__Report",
+          "string", this, USAGE_RVALUE,
+          0 );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -595,9 +598,12 @@ namespace Fabric
     
     void StringAdapter::llvmReport( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
-      ParamVector params;
-      params.push_back( FunctionParam( "string", this, USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "", "__String__Report", 0, params, 0 );
+      InternalFunctionBuilder functionBuilder(
+        basicBlockBuilder.getModuleBuilder(),
+        0, "__String__Report",
+        "string", this, USAGE_RVALUE,
+        0
+        );
       basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
     }
     

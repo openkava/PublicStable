@@ -26,6 +26,7 @@ namespace Fabric
     public:
       
       Function(
+        std::string const &desc,
         llvm::Function *llvmFunction,
         ReturnInfo const &returnInfo,
         ParamVector const &params,
@@ -39,7 +40,8 @@ namespace Fabric
       }
       
       Function( Function const &that )
-        : m_llvmFunction( that.m_llvmFunction )
+        : m_desc( that.m_desc )
+        , m_llvmFunction( that.m_llvmFunction )
         , m_returnInfo( that.m_returnInfo )
         , m_params( that.m_params )
         , m_cost( that.m_cost )
@@ -48,11 +50,17 @@ namespace Fabric
       
       Function &operator =( Function const &that )
       {
+        m_desc = that.m_desc;
         m_llvmFunction = that.m_llvmFunction;
         m_returnInfo = that.m_returnInfo;
         m_params = that.m_params;
         m_cost = that.m_cost;
         return *this;
+      }
+      
+      std::string const &getDesc() const
+      {
+        return m_desc;
       }
       
       llvm::Function *getLLVMFunction() const
@@ -87,11 +95,6 @@ namespace Fabric
         return result;
       }
       
-      std::string paramsDesc() const
-      {
-        return getParamTypes().desc();
-      }
-      
       bool isExactMatch( ExprTypeVector const &argTypes ) const;
       bool isLValueToRValueMatch( ExprTypeVector const &argTypes ) const;
       bool isImplicitCastMatch( ExprTypeVector const &argTypes, ModuleBuilder const &moduleBuilder, size_t &maxCost ) const;
@@ -115,6 +118,7 @@ namespace Fabric
             
     private:
     
+      std::string m_desc;
       llvm::Function *m_llvmFunction;
       ReturnInfo m_returnInfo;
       ParamVector m_params;

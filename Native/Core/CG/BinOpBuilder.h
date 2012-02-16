@@ -33,6 +33,12 @@ namespace Fabric
             lhsAdapter,
             rhsAdapter
             ),
+          BinOpFullDesc(
+            resultAdapter,
+            type,
+            lhsAdapter,
+            rhsAdapter
+            ),
           resultAdapter,
           ParamVector(
             FriendlyFunctionParam( "lhs", lhsAdapter, USAGE_RVALUE ),

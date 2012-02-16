@@ -54,12 +54,20 @@ namespace Fabric
       CG::ExprType thisType = m_expr->getExprType( basicBlockBuilder );
       
       CG::ExprTypeVector argTypes;
-      argTypes.push_back( thisType );
       m_args->appendExprTypes( basicBlockBuilder, argTypes );
+
       return basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
         CG::MethodPencilKey( thisType.getAdapter(), m_name ),
-        argTypes
+        CG::ExprTypeVector(
+          thisType,
+          argTypes
+          ),
+        CG::MethodQueryDesc(
+          thisType,
+          m_name,
+          argTypes
+          )
         );
     }
     

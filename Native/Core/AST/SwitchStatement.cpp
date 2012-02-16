@@ -125,6 +125,11 @@ namespace Fabric
             CG::ExprTypeVector(
               exprValue.getExprType(),
               caseExprValue.getExprType()
+              ),
+            CG::BinOpQueryDesc(
+              CG::BIN_OP_EQ,
+              exprValue.getAdapter(),
+              caseExprValue.getAdapter()
               )
             );
           CG::ExprValue cmpExprValue = function->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );

@@ -72,6 +72,13 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> thatAdapter = cgManager->getAdapter( m_rhs->getType() );
       return CG::AssignOpDefaultSymbolName( thisAdapter, m_assignOpType, thatAdapter );
     }
+    
+    std::string AssignOpImpl::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->getAdapter( m_thisTypeName );
+      RC::ConstHandle<CG::Adapter> thatAdapter = cgManager->getAdapter( m_rhs->getType() );
+      return CG::AssignOpFullDesc( thisAdapter, m_assignOpType, thatAdapter );
+    }
 
     RC::ConstHandle<ParamVector> AssignOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {

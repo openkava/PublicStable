@@ -84,6 +84,27 @@ namespace Fabric
       }
       else return CG::FunctionDefaultSymbolName( m_functionName, m_params->getExprTypes( cgManager ) );
     }
+    
+    std::string Function::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->maybeGetAdapter( m_functionName );
+      if ( thisAdapter )
+      {
+        FABRIC_ASSERT( getReturnTypeName().empty() );
+        return CG::ConstructorFullDesc(
+          thisAdapter,
+          m_params->getAdapters( cgManager )
+          );
+      }
+      else
+      {
+        return CG::FunctionFullDesc(
+          getReturnAdapter( cgManager ),
+          m_functionName,
+          m_params->getExprTypes( cgManager )
+          );
+      }
+    }
 
     RC::ConstHandle<ParamVector> Function::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {

@@ -63,6 +63,11 @@ namespace Fabric
     {
       return CG::DestructorDefaultSymbolName( cgManager->getAdapter( m_thisTypeName ) );
     }
+    
+    std::string Destructor::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::DestructorDesc( cgManager->getAdapter( m_thisTypeName ) );
+    }
 
     RC::ConstHandle<ParamVector> Destructor::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
