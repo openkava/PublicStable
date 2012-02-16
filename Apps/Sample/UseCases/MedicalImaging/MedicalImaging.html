@@ -647,13 +647,14 @@ $(document).ready(function() {
 
   $( "#tabs" ).tabs();
 
-  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyTrackAnimationContainer, {
+  var curveEditor = constructCurveEditor('opacityMapping', scene, opacityKeyTrackAnimationContainer, {
     timeStripe: false,
     draggable: false,
     zoomable: false,
     valueRange: new FABRIC.RT.Vec2(0, 1),
     timeRange: new FABRIC.RT.Vec2(0, 1),
     fitEditorToKeyRanges: false,
+    constrainKeysWithinRect: true,
     displayTrackNames: false,
     volumerenderdemohack: true
   });

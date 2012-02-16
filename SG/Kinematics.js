@@ -85,7 +85,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
     }else {
       transformNode.pub.setGlobalXfo = function(val) {
         if(val.constructor.name == "Array") {
-          dgnode.setCount(val.length);
+          dgnode.resize(val.length);
           dgnode.setBulkData({ globalXfo: val});
         }
         else {
@@ -157,14 +157,13 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     // create the operator to convert the matrices into a texture
     dgnode.addMember('textureMatrix', 'Mat44');
     
-      
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
-        'transforms.count',
-        'self.newCount'
+        'transforms',
+        'self'
       ],
       async: false
     }));

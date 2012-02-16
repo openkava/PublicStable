@@ -1,5 +1,5 @@
 
-var constructCurveEditor = function(domRootID, characterAnimationContainerNode, options){
+var constructCurveEditor = function(domRootID, scene, characterAnimationContainerNode, options){
   
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
@@ -8,10 +8,11 @@ var constructCurveEditor = function(domRootID, characterAnimationContainerNode, 
   options.draggable = options.draggable!=undefined ? options.draggable : true;
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
   options.drawKeys = options.drawKeys!=undefined ? options.drawKeys : true; 
-  trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
-  trackFilters = options.trackFilters!=undefined ? options.trackFilters : [];
+  var trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
+  var trackFilters = options.trackFilters!=undefined ? options.trackFilters : [];
+  var constrainKeysWithinRect = options.constrainKeysWithinRect!=undefined ? options.constrainKeysWithinRect : false;
   
-  var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
+  var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 2);
   var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
   var fitEditorToKeyRanges = options.fitEditorToKeyRanges!=undefined ? options.fitEditorToKeyRanges : true;
   var displayTrackNames = options.displayTrackNames!=undefined ? options.displayTrackNames : true;
@@ -22,6 +23,7 @@ var constructCurveEditor = function(domRootID, characterAnimationContainerNode, 
   var isBezier = characterAnimationContainerNode.getKeyframeType() == 'BezierKeyframe';
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
+  svgRoot.attr('id', "curveEditorSVGRoot");
   if(options.volumerenderdemohack){
     svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
   }
@@ -34,7 +36,7 @@ var constructCurveEditor = function(domRootID, characterAnimationContainerNode, 
   
   
   var containmentRect;
-  if(!fitEditorToKeyRanges){
+  if(constrainKeysWithinRect){
     containmentRect = graphCenterGroup.createRect().size(windowWidth, windowHeight).translate(0, windowHeight * -0.5);;
     containmentRect.attr('fill', 'none');
     containmentRect.attr('stroke', "black");
@@ -442,8 +444,8 @@ var constructCurveEditor = function(domRootID, characterAnimationContainerNode, 
   }
   
   var fitCurveEditorToWindow = function(){
-    var newWindowWidth = $('#viewer').width();
-    var newWindowHeight = $('#viewer').height();
+    var newWindowWidth = $('#curveViewer').width();
+    var newWindowHeight = $('#curveViewer').height();
     
     // Occasionaly when the window is opened, it has a negative width and
     // then we get sent a resize event. Here, we re-fit the curve to the screen.
@@ -512,9 +514,12 @@ var constructCurveEditor = function(domRootID, characterAnimationContainerNode, 
   var updateGraphEventFn = function(evt){
     updateGraph();
   };
+  
   characterAnimationContainerNode.addEventListener('keyframetrackchanged', updateGraphEventFn);
+//  characterAnimationContainerNode.addEventListener('tracksetadded', updateGraphEventFn);
   window.onunload = function(){
     characterAnimationContainerNode.removeEventListener('keyframetrackchanged', updateGraphEventFn);
+  //  characterAnimationContainerNode.removeEventListener('tracksetadded', updateGraphEventFn);
     if(updateTimeStripe){
       scene.removeEventListener('timechanged', updateTimeStripe);
     }
@@ -539,6 +544,9 @@ var constructCurveEditor = function(domRootID, characterAnimationContainerNode, 
     },
     setCurveFilters: function(filters){
       setCurveFilters(filters);
+    },
+    fitYRange: function(){
+      //
     }
   }
 };

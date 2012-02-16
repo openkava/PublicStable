@@ -5,22 +5,8 @@
 use Vec2;
 use Vec3;
 
-operator setPlaneVertexCount(
-  io Integer lengthSections,
-  io Integer widthSections,
-  io Size newCount
-) {
-  if (lengthSections < 1) {
-    lengthSections = 1;
-  }
-  if (widthSections < 1) {
-    widthSections = 1;
-  }
-
-  newCount = (lengthSections + 1) * (widthSections + 1);
-}
-
 operator generatePlane(
+  io Container container,
   io Integer indices[],
   io Scalar length,
   io Scalar width,
@@ -40,6 +26,8 @@ operator generatePlane(
   if (widthSections < 1) {
     widthSections = 1;
   }
+
+  container.resize(Size((lengthSections + 1) * (widthSections + 1)));
   
   Integer numTriangles;
 

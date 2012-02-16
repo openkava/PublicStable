@@ -102,15 +102,15 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
         firstTrackAdded = true;
       }
       else{
-        trackId = dgnode.getCount();
-        dgnode.setCount(trackId+1);
+        trackId = dgnode.size();
+        dgnode.resize(trackId+1);
       }
       dgnode.setData('track', trackId, track);
       return trackId;
     };
     trackAnimationContainerNode.pub.getTimeRange = function() {
       var range = new FABRIC.RT.Vec2();
-      var numTracks = dgnode.getCount();
+      var numTracks = dgnode.size();
       for(var i=0; i<numTracks; i++){
         var track = dgnode.getData('track', i);
         if(track.keys.length<=1){
@@ -140,7 +140,7 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
     };
     
     trackAnimationContainerNode.pub.getTrackCount = function() {
-      return dgnode.getCount();
+      return dgnode.size();
     };
     
     // Because we store all tracks in a track set, getting and setting the
@@ -392,24 +392,23 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
       return curveEditorWindow;
     }
     
-    scene.addEventHandlingFunctions(trackAnimationContainerNode);
-    
     var parentWriteData = trackAnimationContainerNode.writeData;
     var parentReadData = trackAnimationContainerNode.readData;
     trackAnimationContainerNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
-      nodeData.numTracks = dgnode.getCount();
+      nodeData.numTracks = dgnode.size();
       nodeData.tracks = dgnode.getBulkData('track');
     };
     trackAnimationContainerNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      dgnode.setCount(nodeData.numTracks);
+      dgnode.resize(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
         dgnode.setData('track', i, nodeData.tracks[i]);
       }
     };
     
+    scene.addEventHandlingFunctions(trackAnimationContainerNode);
     return trackAnimationContainerNode;
   }});
 
@@ -447,13 +446,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
         firstTrackAdded = true;
       }
       else{
-        trackSetId = dgnode.getCount();
-        dgnode.setCount(trackSetId+1);
+        trackSetId = dgnode.size();
+        dgnode.resize(trackSetId+1);
       }
       dgnode.setData('trackSet', trackSetId, trackset);
       if(bindings){
         dgnode.setData('bindings', trackSetId, bindings);
       }
+      characterAnimationContainerNode.pub.fireEvent('tracksetadded', { trackSetId: trackSetId } );
       return trackSetId;
     };
     characterAnimationContainerNode.pub.getTimeRange = function(trackSetId) {
@@ -485,7 +485,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
     };
     
     characterAnimationContainerNode.pub.getTrackSetCount = function() {
-      return dgnode.getCount();
+      return dgnode.size();
     };
     characterAnimationContainerNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
@@ -739,7 +739,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
       return curveEditorWindow;
     }
     
-    scene.addEventHandlingFunctions(characterAnimationContainerNode);
     
     
     var parentWriteData = characterAnimationContainerNode.writeData;
@@ -757,13 +756,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
     };
     characterAnimationContainerNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      dgnode.setCount(nodeData.numTracks);
+      dgnode.resize(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
         dgnode.setData('trackSet', i, nodeData.trackSets[i]);
         dgnode.setData('bindings', i, nodeData.bindings[i]);
       }
     };
     
+    scene.addEventHandlingFunctions(characterAnimationContainerNode);
     return characterAnimationContainerNode;
   }});
 
@@ -912,26 +912,29 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
     dgnode.setDependency(parametersdgnode, 'parameters');
     
-    trackDisplayNode.addMemberInterface(parametersdgnode, 'trackSetId', true, true);
-    trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true, true);
-    trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true, true);
-
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'trackSetId', true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true);
+    
+    var tracks;
     trackDisplayNode.addReferenceInterface('CharacterAnimationContainer', 'AnimationContainer',
       function(nodePrivate, trackSetId){
         characterAnimationContainerNode = nodePrivate;
         var trackDataType = characterAnimationContainerNode.pub.getValueType();
-        var tracks = characterAnimationContainerNode.pub.getTracks(trackSetId);
+        tracks = characterAnimationContainerNode.pub.getTracks(trackSetId);
         dgnode.setDependency(characterAnimationContainerNode.getDGNode(), 'characteranimationcontainer');
   
         dgnode.addMember('values', trackDataType+'[]');
         parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
-        dgnode.setCount(tracks.length);
+        dgnode.resize(tracks.length);
   
         dgnode.bindings.append(characterAnimationContainerNode.getEvaluateCurveOperator());
       });
     trackDisplayNode.pub.getCurveData = function(trackIndex) {
-      dgnode.evaluate();
-      return dgnode.getData('values', trackIndex);
+      if(tracks && tracks.length > 0){
+        dgnode.evaluate();
+        return dgnode.getData('values', trackIndex);
+      }
     }
 
     if (options.trackAnimationContainerNode) {
