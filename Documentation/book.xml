@@ -626,7 +626,7 @@ alembicLoadNode.addEventListener('loadSuccess', function(){
       <title>Anatomy of an Image node</title>
       <para><inlinemediaobject>
           <imageobject>
-            <imagedata fileref="images/sg_images_01.png" width="45%"/>
+            <imagedata fileref="images/sg_images_01.png" width="40%"/>
           </imageobject>
         </inlinemediaobject></para>
       <para>Similar to the Geometry node, an image node is split into two dependency graph nodes.
@@ -690,6 +690,181 @@ alembicLoadNode.addEventListener('loadSuccess', function(){
       <para>Note: The <emphasis role="italic">Video.html<emphasis role="bold"
           > </emphasis></emphasis>sample application contains a simple example of a video node in
         use.</para>
+    </section>
+  </section>
+  <section>
+    <title>Drawing Pipeline Guide</title>
+    <para>Fabric Engine's SceneGraph's drawing pipeline is very flexible and customizable. Drawing
+      is performed with as few operations as possible providing high performance rendering.
+      Generally is is important to understand that drawing invokes the evaluation of the dependency
+      graph.</para>
+    <section>
+      <title>Predescend and Postdescend</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_drawing_01.png" width="70%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The drawing pipline is implemented using eventhandlers. The eventhandler tree for
+        drawing listens to the paint event of the canvas resp. the windows. The drawing pipeline
+        evaluates in two phases: the <emphasis role="bold">Predescend</emphasis> and <emphasis
+          role="bold">Postdescent</emphasis>. Predescend happens when the drawing pipline evaluates
+        each event handler from left to right, resp. from the event down to the last eventhandler.
+        Postdescend happens once the descend is done, traveling through the event graph back up to
+        the event. Operators for drawing can be applied on either the <emphasis role="bold"
+          >preDescendBindings</emphasis> or the <emphasis role="bold"
+          >postDescendBindings.</emphasis> When each eventhandler evaluates it pulls on the
+        connected dependency graph nodes. If the dependency graph node itself has dependencies and
+        operators, the execution of the dependencies and operatos will be fired.</para>
+    </section>
+    <section>
+      <title>Windows</title>
+      <para>Each window in Fabric defines a dependency graph node and an Event. The node contains
+        data about the window such as its width and height, and the event is fired when painting of
+        the window is required. The width and height values are driven by the Fabric plugin, and are
+        updated when the window is resized.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_drawing_02.png" width="40%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The Window Event node is an event that is fired whenever the window needs painting. This
+        may occur because the window was resized, revealed, or invalidated in any way. It is also
+        possible to manually trigger a redraw from JavaScript. Redrawing of the window during
+        animation is effected by modifying graph variables such as time, and then manually
+        triggering a redraw. The JavaScript mechanism to fire a redraw manually is accessible
+        through the <emphasis role="bold">Viewport</emphasis> node.</para>
+      <programlisting language="JavaScript">var viewport = scene.constructNode('Viewport', {
+  windowElement: document.getElementById('FabricContainer') // provide the HTML element for the viewport
+});
+// fire a redraw manually
+viewport.redraw();</programlisting>
+      <para>By attaching event handlers to the Window Paint Event node, we can coordinate the
+        drawing of the window using OpenGL. The OpenGL context is set up and bound prior to the
+        paint event being fired. For more information on Events, and Event Handlers, please consult
+        the Core Programming Guide.</para>
+    </section>
+    <section>
+      <title>Setting up the Viewport in OpenGL</title>
+      <para>When the window redraw event is fired, the subgraph is traversed, first visiting the
+        Viewport event handler which has an operator attached called <emphasis role="bold"
+          >viewPortBeginRender</emphasis>. When viewPortBeginRender is executed, the initial OpenGL
+        parameters are set.</para>
+      <programlisting language="JavaScript">operator viewPortBeginRender(io Integer width, io Integer height, io Color backgroundColor) {   
+  glCullFace(GL_BACK);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);   glViewport(0, 0, width, height);
+  glClearColor(backgroundColor.r,
+  backgroundColor.g, backgroundColor.b, backgroundColor.a);
+  glClear(GL_COLOR_BUFFER_BIT |
+  GL_DEPTH_BUFFER_BIT);
+}</programlisting>
+      <para>The camera event handler is then visited, where the camera projection values are
+        computed in the operator <emphasis role="bold">updateCameraProjection</emphasis>.</para>
+    </section>
+    <section>
+      <title>Shaders</title>
+      <para>The Fabric SceneGraph rendering system breaks shaders into 2 components, <emphasis
+          role="bold">shaders</emphasis> and <emphasis role="bold">materials</emphasis>. The shader
+        event handler loads the shader source into the OpenGL driver and compiles the shader
+        program. The specification of the shader also includes some meta-data such as the buffers
+        required by the shader, and any constant values that must be defined. </para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_drawing_03.png" width="70%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Note: To inspect the drawing pipeline you can use the SceneGraph's debugger. Just open
+        the <emphasis role="italic">ModelViewer.html</emphasis> sample application, for example,
+        open the JavaScript console, and type:</para>
+      <programlisting language="JavaScript">FABRIC.displayDebugger();</programlisting>
+    </section>
+    <section>
+      <title>GLSL Uniforms and Attributes</title>
+      <para>GLSL shaders define a set of parameters which must be filled out before the geometry can
+        be drawn on screen. These 2 sets of requirements are stored in 2 arrays called
+        attributeValues, and uniformValues. These arrays are accessible by all child event handlers
+        who can determine what data is required by the shader.</para>
+      <para>
+        <emphasis role="italic">Note: the design of the event handler graph means that 2 different
+          nodes can define the same data under the same 'scope name', and the order of visitation
+          defines which scope is valid. This enables a single geometry to be rendered multiple times
+          using different shaders.</emphasis>
+      </para>
+    </section>
+    <section>
+      <title>Materials</title>
+      <para>Materials define parameters for the shader program and is used to attach image loaders.
+        The Material node in Fabric generated using meta data associated with the shader. XML files
+        are loaded which contain both the GLSL shader code, and meta data that instructs the
+        rendering system how to construct material node instances.</para>
+      <para>Materials provide data to the shader such as shading parameters, and also provide a
+        branch point in the event graph where textures can be loaded and bound prior to traversal
+        continuing to the Instance node.</para>
+    </section>
+    <section>
+      <title>Textures</title>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_drawing_04.png" width="60%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Materials which utilize textures must specify which <emphasis role="bold"
+          >textureUnit</emphasis> to assign each texture. This process is automated using the
+        material system in the SceneGraph. For each textureUnit, a <emphasis role="bold"
+          >stub</emphasis> node is generated. This stub node binds in the texture unit that will be
+        assigned to the texture. This allows multiple textures to be used on the same material, and
+        textures to be shared amongst materials. </para>
+    </section>
+    <section>
+      <title>Instances</title>
+      <para>The <emphasis role="bold">instance</emphasis> node represents a drawn piece of geometry.
+        To be able to draw geometry on screen, several things bust have happened prior to the draw
+        call.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_drawing_05.png" width="60%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Geometry rendering happens in the following order:<orderedlist>
+          <listitem>
+            <para>The shader program is loaded</para>
+          </listitem>
+          <listitem>
+            <para>The the material node is traversed and shader constants set</para>
+          </listitem>
+          <listitem>
+            <para>From the material traversal may continue into the texture stubs and on into the
+              texture nodes where the textures are loaded. </para>
+          </listitem>
+          <listitem>
+            <para>From the material node, traversal continues down to the instance node, where the
+              matrix for the draw is loaded.</para>
+          </listitem>
+          <listitem>
+            <para>From the instance node, traversal continues down to the geometry node where the
+              geometry buffers are loaded and shader uniforms may also be set.</para>
+          </listitem>
+          <listitem>
+            <para>The Geometry is a leaf node, and after the preDescendBindings have been evaluated
+              the postDescendBindings follow immediately, and the draw call is executed.</para>
+          </listitem>
+        </orderedlist></para>
+    </section>
+    <section>
+      <title>Shadows</title>
+      <para>Shadow maps are rendered in a pre-draw stage prior to the camera render pass. For each
+        light, we render the scene from the point of view of the light, and store the depth
+        information in a depth buffer. The depth buffer ID is stored in the light node which is also
+        bound to the material. This gives the material access to the lights shadow buffers, enabling
+        the correct shadowing of geometry.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_drawing_06.png" width="90%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>The red arrow in the diagram represents a binding from the light to the material. This
+        binding is what gives the material access to the light's shadow buffer.</para>
     </section>
   </section>
 </article>
