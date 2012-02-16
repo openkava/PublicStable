@@ -2519,7 +2519,7 @@ var requirejs, require, define;
       // the path to the Fabric SDK.
       return fabricRootURL + url.split('/').splice(1).join('/') + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
     }else{
-      return url + '?' + requiredVersion.join('') + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
+      return url + (addVer!==false ? '?ver=' + requiredVersion.join('') : '');
     }
   };
 
