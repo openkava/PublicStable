@@ -394,9 +394,8 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   
   var path;
   var str = "";
-//  this.querySavePath = function(instr) {
-    path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
-//  }
+  path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
+  
   this.write = function(instr) {
     str = instr;
     FABRIC.IO.putTextFileContent(path.file, str);
@@ -410,7 +409,7 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
   
   var jsonfilehandle = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
   var jsonfilename = FABRIC.IO.getFileHandleInfo( jsonfilehandle.file ).fileName;
-  var binarydatafilehandle = FABRIC.IO.buildFileHandleFromRelativePath(jsonfilehandle.folder+'/'+jsonfilename.split('.')[0]+'.bin');
+  var binarydatafilehandle = FABRIC.IO.buildFileHandleFromRelativePath(jsonfilehandle.folder+'/'+jsonfilename.split('.')[0]+'.feb');
   
   var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', options);
       
