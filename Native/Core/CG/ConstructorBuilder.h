@@ -18,9 +18,10 @@ namespace Fabric
     
       enum Cost
       {
-        LowCost = 0,
-        MediumCost = 1,
-        HighCost = 2
+        LowCost = 10,
+        MedLowCost = 100,
+        MedHighCost = 1000,
+        HighCost = 10000
       };
     
       ConstructorBuilder( 
