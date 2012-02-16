@@ -34,6 +34,12 @@ namespace Fabric
             methodName,
             ExprTypeVector()
             ),
+          MethodFullDesc(
+            returnAdapter,
+            ExprType( thisAdapter, thisUsage ),
+            methodName,
+            ExprTypeVector()
+            ),
           returnAdapter,
           ParamVector(
             FriendlyFunctionParam( "this", thisAdapter, thisUsage )
@@ -60,6 +66,14 @@ namespace Fabric
             methodName
             ),
           MethodDefaultSymbolName(
+            ExprType( thisAdapter, thisUsage ),
+            methodName,
+            ExprTypeVector(
+              ExprType( paramAdapter, paramUsage )
+              )
+            ),
+          MethodFullDesc(
+            returnAdapter,
             ExprType( thisAdapter, thisUsage ),
             methodName,
             ExprTypeVector(
@@ -96,6 +110,15 @@ namespace Fabric
             methodName
             ),
           MethodDefaultSymbolName(
+            ExprType( thisAdapter, thisUsage ),
+            methodName,
+            ExprTypeVector(
+              ExprType( param1Adapter, param1Usage ),
+              ExprType( param2Adapter, param2Usage )
+              )
+            ),
+          MethodFullDesc(
+            returnAdapter,
             ExprType( thisAdapter, thisUsage ),
             methodName,
             ExprTypeVector(

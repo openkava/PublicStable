@@ -68,7 +68,7 @@ namespace Fabric
       return "__function_" + functionName + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string FunctionDesc(
+    std::string FunctionFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
       std::string const &functionName,
       ExprTypeVector const &paramTypes
@@ -79,6 +79,14 @@ namespace Fabric
         result += returnAdapter->getUserName() + " ";
       result += functionName + DescParams( paramTypes );
       return result;
+    }
+
+    std::string FunctionQueryDesc(
+      std::string const &functionName,
+      ExprTypeVector const &paramTypes
+      )
+    {
+      return "function " + functionName + DescParams( paramTypes );
     }
     
     // Constructor
@@ -100,12 +108,20 @@ namespace Fabric
       return "__constructor" + EncodeParametersForDefaultSymbolName( paramTypes );
     }
     
-    std::string ConstructorDesc(
+    std::string ConstructorFullDesc(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AdapterVector const &paramAdapters
       )
     {
       return "function " + thisAdapter->getUserName() + DescParams( paramAdapters );
+    }
+    
+    std::string ConstructorQueryDesc(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AdapterVector const &paramAdapters
+      )
+    {
+      return "constructor " + thisAdapter->getUserName() + DescParams( paramAdapters );
     }
     
     // Destructor
@@ -146,13 +162,22 @@ namespace Fabric
       return "__assop_" + assignOpCodeName( type ) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string AssignOpDesc(
+    std::string AssignOpFullDesc(
       RC::ConstHandle<CG::Adapter> const &thisAdapter,
       AssignOpType type,
       RC::ConstHandle<CG::Adapter> const &thatAdapter
       )
     {
       return "function " + thisAdapter->getUserName() + "." + assignOpUserName( type ) + "(" + thatAdapter->getUserName() + ")";
+    }
+
+    std::string AssignOpQueryDesc(
+      RC::ConstHandle<CG::Adapter> const &thisAdapter,
+      AssignOpType type,
+      RC::ConstHandle<CG::Adapter> const &thatAdapter
+      )
+    {
+      return "assignment operator " + thisAdapter->getUserName() + " " + assignOpUserName( type ) + " " + thatAdapter->getUserName();
     }
     
     // UniOp
@@ -162,24 +187,35 @@ namespace Fabric
       return "u:" + uniOpCodeName(type);
     }
     
-    std::string UniOpDefaultSymbolName( UniOpType type, RC::ConstHandle<CG::Adapter> const &adapter )
+    std::string UniOpDefaultSymbolName(
+      UniOpType type,
+      ExprType const &thisExprType
+      )
     {
       CG::ExprTypeVector paramTypes;
-      paramTypes.push_back( CG::ExprType( adapter, CG::USAGE_RVALUE ) );
+      paramTypes.push_back( thisExprType );
       return "__uniop_" + uniOpCodeName(type) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string UniOpDesc(
+    std::string UniOpFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
       UniOpType type,
-      RC::ConstHandle<CG::Adapter> const &adapter
+      ExprType const &thisExprType
       )
     {
       std::string result = "function ";
       if ( returnAdapter )
         result += returnAdapter->getUserName() + " ";
-      result += uniOpUserName( type ) + "(" + adapter->getUserName() + ")";
+      result += uniOpUserName( type ) + DescParams( ExprTypeVector( thisExprType ) );
       return result;
+    }
+
+    std::string UniOpQueryDesc(
+      UniOpType type,
+      ExprType const &thisExprType
+      )
+    {
+      return "unary operator " + uniOpUserName( type ) + DescParams( ExprTypeVector( thisExprType ) );
     }
 
     // BinOp
@@ -197,7 +233,7 @@ namespace Fabric
       return "__binop_" + binOpCodeName(type) + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string BinOpDesc(
+    std::string BinOpFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
       BinOpType type,
       RC::ConstHandle<CG::Adapter> const &lhsAdapter,
@@ -209,6 +245,15 @@ namespace Fabric
         result += returnAdapter->getUserName() + " ";
       result += binOpUserName( type ) + "(" + lhsAdapter->getUserName() + ", " + rhsAdapter->getUserName() + ")";
       return result;
+    }
+
+    std::string BinOpQueryDesc(
+      BinOpType type,
+      RC::ConstHandle<CG::Adapter> const &lhsAdapter,
+      RC::ConstHandle<CG::Adapter> const &rhsAdapter
+      )
+    {
+      return "binary operation " + lhsAdapter->getUserName() + " " + binOpUserName( type ) + " " + rhsAdapter->getUserName();
     }
     
     // Method
@@ -234,7 +279,7 @@ namespace Fabric
       return "__method_" + methodName + EncodeParametersForDefaultSymbolName( paramTypes );
     }
 
-    std::string MethodDesc(
+    std::string MethodFullDesc(
       RC::ConstHandle<Adapter> const &returnAdapter,
       CG::ExprType const &thisType,
       std::string const &methodName,
@@ -246,6 +291,15 @@ namespace Fabric
         result += returnAdapter->getUserName() + " ";
       result += thisType.getUserName() + "." + methodName + DescParams( paramTypes );
       return result;
+    }
+
+    std::string MethodQueryDesc(
+      CG::ExprType const &thisType,
+      std::string const &methodName,
+      CG::ExprTypeVector const &paramTypes
+      )
+    {
+      return "method " + thisType.getUserName() + "." + methodName + DescParams( paramTypes );
     }
   }
 }

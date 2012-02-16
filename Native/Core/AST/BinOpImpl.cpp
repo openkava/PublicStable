@@ -78,6 +78,16 @@ namespace Fabric
         cgManager->getAdapter( m_rhs->getType() )
         );
     }
+    
+    std::string BinOpImpl::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::BinOpFullDesc(
+        getReturnAdapter( cgManager ),
+        m_binOpType, 
+        cgManager->getAdapter( m_lhs->getType() ),
+        cgManager->getAdapter( m_rhs->getType() )
+        );
+    }
 
     RC::ConstHandle<ParamVector> BinOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {

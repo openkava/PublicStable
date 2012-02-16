@@ -11,6 +11,7 @@
 #include "ModuleBuilder.h"
 #include "ConstructorBuilder.h"
 #include "MethodBuilder.h"
+#include "InternalFunctionBuilder.h"
 #include "BasicBlockBuilder.h"
 #include <Fabric/Core/CG/Mangling.h>
 
@@ -71,11 +72,13 @@ namespace Fabric
     {
       if ( !m_isShallow )
       {
-        std::string name = "__" + getCodeName() + "__DefaultAssign";
-        ParamVector params;
-        params.push_back( FunctionParam( "dstLValue", this, USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "srcRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "", name, 0, params, 0 );
+        InternalFunctionBuilder functionBuilder(
+          basicBlockBuilder.getModuleBuilder(),
+          0, "__" + getCodeName() + "__DefaultAssign",
+          "dst", this, USAGE_LVALUE,
+          "src", this, USAGE_RVALUE,
+          0
+          );
         basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
       }
       else basicBlockBuilder->CreateStore( basicBlockBuilder->CreateLoad( srcRValue ), dstLValue );
@@ -113,10 +116,13 @@ namespace Fabric
       if ( !m_isShallow )
       {
         {
-          ParamVector params;
-          params.push_back( FunctionParam( "dstLValue", this, USAGE_LVALUE ) );
-          params.push_back( FunctionParam( "srcRValue", this, USAGE_RVALUE ) );
-          FunctionBuilder functionBuilder( moduleBuilder, "", "__" + getCodeName() + "__DefaultAssign", 0, params, 0 );
+          InternalFunctionBuilder functionBuilder(
+            moduleBuilder,
+            0, "__" + getCodeName() + "__DefaultAssign",
+            "dst", this, USAGE_LVALUE,
+            "src", this, USAGE_RVALUE,
+            0
+            );
           if ( buildFunctions )
           {
             llvm::Value *dstLValue = functionBuilder[0];

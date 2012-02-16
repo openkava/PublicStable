@@ -93,21 +93,19 @@ namespace Fabric
       if ( !buildFunctionBodies && scopeName && moduleBuilder.getScope().has( *scopeName ) )
         throw CG::Error( getLocation(), "symbol " + _(*scopeName) + " already exists" );
         
-      RC::ConstHandle<CG::Adapter> returnAdapter;
-      if ( !m_returnTypeName.empty() )
-      {
-        returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
+      RC::ConstHandle<CG::Adapter> returnAdapter = getReturnAdapter( cgManager );
+      if ( returnAdapter )
         returnAdapter->llvmCompileToModule( moduleBuilder );
-      }
       
       std::string pencilKey = getPencilKey( cgManager );
       std::string symbolName = getSymbolName( cgManager );
+      std::string desc = getDesc( cgManager );
       RC::ConstHandle<AST::ParamVector> params = getParams( cgManager );
       params->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
       size_t flags = 0;
       if ( m_exportSymbol || !m_body )
         flags |= CG::FunctionBuilder::ExportSymbol;
-      CG::FunctionBuilder functionBuilder( moduleBuilder, pencilKey, symbolName, returnAdapter, params->getFunctionParams( moduleBuilder.getManager() ), flags );
+      CG::FunctionBuilder functionBuilder( moduleBuilder, pencilKey, symbolName, desc, returnAdapter, params->getFunctionParams( moduleBuilder.getManager() ), flags );
       if ( buildFunctionBodies && m_body )
       {
         CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -133,6 +131,23 @@ namespace Fabric
       
       if ( scopeName )
         moduleBuilder.getScope().put( *scopeName, functionBuilder.getPencil() );
+    }
+
+    RC::ConstHandle<CG::Adapter> FunctionBase::getReturnAdapter( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> returnAdapter;
+      if ( !m_returnTypeName.empty() )
+      {
+        try
+        {
+          returnAdapter = cgManager->getAdapter( m_returnTypeName );
+        }
+        catch ( Exception e )
+        {
+          throw CG::Error( getLocation(), e );
+        }
+      }
+      return returnAdapter;
     }
   }
 }

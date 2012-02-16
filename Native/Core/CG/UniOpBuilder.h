@@ -30,7 +30,12 @@ namespace Fabric
             ),
           UniOpDefaultSymbolName(
             type,
-            thisAdapter
+            ExprType( thisAdapter, thisUsage )
+            ),
+          UniOpFullDesc(
+            resultAdapter,
+            type,
+            ExprType( thisAdapter, thisUsage )
             ),
           resultAdapter,
           ParamVector(

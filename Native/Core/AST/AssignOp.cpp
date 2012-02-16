@@ -87,13 +87,19 @@ namespace Fabric
           return lhsExprValue;
         }
         
-        // [pzion 20110202] Fall back on binOp + simple assignOp composition              
+        // [pzion 20110202] Fall back on binOp + simple assignOp composition
+        CG::BinOpType binOpType = CG::binOpForAssignOp( m_assignOpType );   
         function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
-          CG::BinOpPencilKey( CG::binOpForAssignOp( m_assignOpType ) ),
+          CG::BinOpPencilKey( binOpType ),
           CG::ExprTypeVector(
             lhsExprValue.getExprType(),
             rhsExprValue.getExprType()
+            ),
+          CG::BinOpQueryDesc(
+            binOpType,
+            lhsExprValue.getAdapter(),
+            rhsExprValue.getAdapter()
             )
           );
         CG::ExprValue binOpResultExprValue = function->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
