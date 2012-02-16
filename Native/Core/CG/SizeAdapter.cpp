@@ -108,7 +108,7 @@ namespace Fabric
       }
       
       {
-        ConstructorBuilder functionBuilder( moduleBuilder, fp32Adapter, this, ConstructorBuilder::MediumCost );
+        ConstructorBuilder functionBuilder( moduleBuilder, fp32Adapter, this, ConstructorBuilder::MedLowCost );
         if ( buildFunctions )
         {
           llvm::Value *scalarLValue = functionBuilder[0];
@@ -122,7 +122,7 @@ namespace Fabric
       }
       
       {
-        ConstructorBuilder functionBuilder( moduleBuilder, fp64Adapter, this );
+        ConstructorBuilder functionBuilder( moduleBuilder, fp64Adapter, this, ConstructorBuilder::MedHighCost );
         if ( buildFunctions )
         {
           llvm::Value *scalarLValue = functionBuilder[0];
