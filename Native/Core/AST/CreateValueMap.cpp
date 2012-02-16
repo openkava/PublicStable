@@ -65,7 +65,7 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      CG::Function const *function = pencil->getUniqueFunction( getLocation(), "operator " + _(m_operatorName) );
       std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[1].getAdapter();
       RC::ConstHandle<CG::ValueProducerAdapter> outputValueProducerAdapter = basicBlockBuilder.getManager()->getValueProducerOf( outputAdapter );
@@ -86,7 +86,7 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> pencil = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const *function = pencil->getUniqueFunction( getLocation() );
+      CG::Function const *function = pencil->getUniqueFunction( getLocation(), "operator " + _(m_operatorName) );
       std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
 
       CG::ExprType inputExprType = m_input->getExprType( basicBlockBuilder );

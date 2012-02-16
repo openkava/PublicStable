@@ -18,7 +18,7 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<PencilSymbol> Create( std::string const &friendlyName );
+      static RC::Handle<PencilSymbol> Create();
       
       virtual bool isPencil() const;
       
@@ -27,17 +27,29 @@ namespace Fabric
       void add( Function const &function );
       
       Function const *maybeGetPreciseFunction( ExprTypeVector const &argTypes ) const;
-      Function const *maybeGetFunction( ModuleBuilder const &moduleBuilder, Location const &location, ExprTypeVector const &argTypes ) const;
-      Function const *getFunction( ModuleBuilder const &moduleBuilder, Location const &location, ExprTypeVector const &argTypes ) const;
-      Function const *getUniqueFunction( CG::Location const &location ) const;
+      Function const *maybeGetFunction(
+        Location const &location,
+        ModuleBuilder const &moduleBuilder,
+        ExprTypeVector const &argTypes,
+        std::string const &queryDesc
+        ) const;
+      Function const *getFunction(
+        Location const &location,
+        ModuleBuilder const &moduleBuilder,
+        ExprTypeVector const &argTypes,
+        std::string const &queryDesc
+        ) const;
+      Function const *getUniqueFunction(
+        CG::Location const &location,
+        std::string const &queryDesc
+        ) const;
       
     protected:
       
-      PencilSymbol( std::string const &friendlyName );
+      PencilSymbol();
             
     private:
     
-      std::string m_friendlyName;
       FunctionVector m_functions;
     };
   }

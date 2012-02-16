@@ -15,7 +15,7 @@
 #include "ConstructorBuilder.h"
 #include "MethodBuilder.h"
 #include "BasicBlockBuilder.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/DictDesc.h>
 #include <Fabric/Core/RT/DictImpl.h>

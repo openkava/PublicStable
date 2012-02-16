@@ -6,7 +6,7 @@
 #define _FABRIC_CG_CONSTRUCTOR_BUILDER_H
 
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 
 namespace Fabric
 {
@@ -32,10 +32,18 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            thatAdapter
+            AdapterVector(
+              thatAdapter
+              )
+            ),
+          ConstructorFullDesc(
+            thisAdapter,
+            AdapterVector(
+              thatAdapter
+              )
             ),
           0,
           ParamVector(
@@ -55,10 +63,18 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            param1Adapter
+            AdapterVector(
+              param1Adapter
+              )
+            ),
+          ConstructorFullDesc(
+            thisAdapter,
+            AdapterVector(
+              param1Adapter
+              )
             ),
           0,
           ParamVector(
@@ -78,11 +94,20 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            param1Adapter,
-            param2Adapter
+            AdapterVector(
+              param1Adapter,
+              param2Adapter
+              )
+            ),
+          ConstructorFullDesc(
+            thisAdapter,
+            AdapterVector(
+              param1Adapter,
+              param2Adapter
+              )
             ),
           0,
           ParamVector(
@@ -104,12 +129,22 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          ConstructorPencilName( thisAdapter ),
+          ConstructorPencilKey( thisAdapter ),
           ConstructorDefaultSymbolName(
             thisAdapter,
-            param1Adapter,
-            param2Adapter,
-            param3Adapter
+            AdapterVector(
+              param1Adapter,
+              param2Adapter,
+              param3Adapter
+              )
+            ),
+          ConstructorFullDesc(
+            thisAdapter,
+            AdapterVector(
+              param1Adapter,
+              param2Adapter,
+              param3Adapter
+              )
             ),
           0,
           ParamVector(

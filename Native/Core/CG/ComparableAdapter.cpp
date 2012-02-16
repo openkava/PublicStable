@@ -6,7 +6,7 @@
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/MethodBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/RT/ComparableDesc.h>
 
