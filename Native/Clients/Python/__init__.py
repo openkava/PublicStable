@@ -64,7 +64,7 @@ def _normalizeForUnitTests( obj ):
     objdictlist.sort()
     return objdictlist
   elif type( obj ) is float:
-    return format( obj, '.4f' )
+    return format( obj, '.3f' )
   else:
     return obj
 
