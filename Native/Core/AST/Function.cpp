@@ -6,7 +6,7 @@
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -60,15 +60,15 @@ namespace Fabric
       else return &m_functionName;
     }
     
-    std::string Function::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string Function::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_functionName );
       if ( adapter )
       {
         FABRIC_ASSERT( getReturnTypeName().empty() );
-        return CG::ConstructorPencilName( adapter );
+        return CG::ConstructorPencilKey( adapter );
       }
-      else return CG::FunctionPencilName( m_functionName );
+      else return CG::FunctionPencilKey( m_functionName );
     }
     
     std::string Function::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
@@ -77,9 +77,33 @@ namespace Fabric
       if ( adapter )
       {
         FABRIC_ASSERT( getReturnTypeName().empty() );
-        return CG::ConstructorDefaultSymbolName( adapter, m_params->getAdapters( cgManager ) );
+        return CG::ConstructorDefaultSymbolName(
+          adapter,
+          m_params->getAdapters( cgManager )
+          );
       }
       else return CG::FunctionDefaultSymbolName( m_functionName, m_params->getExprTypes( cgManager ) );
+    }
+    
+    std::string Function::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> thisAdapter = cgManager->maybeGetAdapter( m_functionName );
+      if ( thisAdapter )
+      {
+        FABRIC_ASSERT( getReturnTypeName().empty() );
+        return CG::ConstructorFullDesc(
+          thisAdapter,
+          m_params->getAdapters( cgManager )
+          );
+      }
+      else
+      {
+        return CG::FunctionFullDesc(
+          getReturnAdapter( cgManager ),
+          m_functionName,
+          m_params->getExprTypes( cgManager )
+          );
+      }
     }
 
     RC::ConstHandle<ParamVector> Function::getParams( RC::Handle<CG::Manager> const &cgManager ) const
@@ -92,5 +116,5 @@ namespace Fabric
       }
       else return m_params;
     }
-  };
-};
+  }
+}

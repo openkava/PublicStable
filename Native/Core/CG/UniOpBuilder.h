@@ -6,7 +6,7 @@
 #define _FABRIC_CG_UNI_OP_BUILDER_H
 
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 
 namespace Fabric
 {
@@ -25,12 +25,17 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          UniOpPencilName(
+          UniOpPencilKey(
             type
             ),
           UniOpDefaultSymbolName(
             type,
-            thisAdapter
+            ExprType( thisAdapter, thisUsage )
+            ),
+          UniOpFullDesc(
+            resultAdapter,
+            type,
+            ExprType( thisAdapter, thisUsage )
             ),
           resultAdapter,
           ParamVector(

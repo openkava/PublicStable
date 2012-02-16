@@ -8,13 +8,12 @@ namespace Fabric
 {
   namespace CG
   {
-    RC::Handle<PencilSymbol> PencilSymbol::Create( std::string const &friendlyName )
+    RC::Handle<PencilSymbol> PencilSymbol::Create()
     {
-      return new PencilSymbol( friendlyName );
+      return new PencilSymbol();
     }
     
-    PencilSymbol::PencilSymbol( std::string const &friendlyName )
-      : m_friendlyName( friendlyName )
+    PencilSymbol::PencilSymbol()
     {
     }
           
@@ -40,13 +39,35 @@ namespace Fabric
     {
       ExprTypeVector argTypes;
       function.appendParamTypes( argTypes );
-      if ( maybeGetPreciseFunction( argTypes ) )
-        throw Exception( "function " + m_friendlyName + "(" + argTypes.desc() + ") already exists" );
-      
+      FABRIC_ASSERT( !maybeGetPreciseFunction( argTypes ) );
       m_functions.push_back( function );
     }
     
-    Function const *PencilSymbol::maybeGetFunction( ModuleBuilder const &moduleBuilder, Location const &location, ExprTypeVector const &argTypes ) const
+    static Function const *ResolveCandidates(
+      Location const &location,
+      std::string const &queryDesc,
+      std::vector<Function const *> const &candidates
+      )
+    {
+      if ( candidates.size() == 1 )
+        return candidates[0];
+      else if ( candidates.size() > 1 )
+      {
+        std::string message = "ambiguous call for " + queryDesc;
+        message += "\ncandidates are:";
+        for ( std::vector<Function const *>::const_iterator it=candidates.begin(); it!=candidates.end(); ++it )
+          message += "\n  " + (*it)->getDesc();
+        throw CG::Error( location, message );
+      }
+      else return 0;
+    }
+    
+    Function const *PencilSymbol::maybeGetFunction(
+      Location const &location,
+      ModuleBuilder const &moduleBuilder,
+      ExprTypeVector const &argTypes,
+      std::string const &queryDesc
+      ) const
     {
       Function const *function = maybeGetPreciseFunction( argTypes );
       
@@ -60,16 +81,11 @@ namespace Fabric
             candidates.push_back( &*it );
         }
         
-        if ( candidates.size() == 1 )
-          function = candidates[0];
-        else if ( candidates.size() > 1 )
-        {
-          std::string message = "ambiguous call for " + m_friendlyName + "(" + argTypes.desc() + ")";
-          message += "\ncandidates are:";
-          for ( std::vector<Function const *>::const_iterator it=candidates.begin(); it!=candidates.end(); ++it )
-            message += "\n  " + m_friendlyName + "(" + (*it)->paramsDesc() + ")";
-          throw CG::Error( location, message );
-        }
+        function = ResolveCandidates(
+          location,
+          queryDesc,
+          candidates
+          );
       }
       
       if ( !function )
@@ -92,36 +108,39 @@ namespace Fabric
           }
         }
         
-        if ( candidates.size() == 1 )
-          function = candidates[0];
-        else if ( candidates.size() > 1 )
-        {
-          std::string message = "ambiguous call for " + m_friendlyName + "(" + argTypes.desc() + ")";
-          message += "\ncandidates are:";
-          for ( std::vector<Function const *>::const_iterator it=candidates.begin(); it!=candidates.end(); ++it )
-            message += "\n  " + m_friendlyName + "(" + (*it)->paramsDesc() + ")";
-          throw CG::Error( location, message );
-        }
+        function = ResolveCandidates(
+          location,
+          queryDesc,
+          candidates
+          );
       }
         
       return function;
     }
     
-    Function const *PencilSymbol::getFunction( ModuleBuilder const &moduleBuilder, Location const &location, ExprTypeVector const &argTypes ) const
+    Function const *PencilSymbol::getFunction(
+      Location const &location,
+      ModuleBuilder const &moduleBuilder,
+      ExprTypeVector const &argTypes,
+      std::string const &queryDesc
+      ) const
     {
-      Function const *result = maybeGetFunction( moduleBuilder, location, argTypes );
+      Function const *result = maybeGetFunction( location, moduleBuilder, argTypes, queryDesc );
       if ( !result )
-        throw CG::Error( location, "no such " + m_friendlyName + "(" + argTypes.desc() + ")" );
+        throw CG::Error( location, "no definition found for " + queryDesc );
       return result;
     }
       
-    Function const *PencilSymbol::getUniqueFunction( Location const &location ) const
+    Function const *PencilSymbol::getUniqueFunction(
+      Location const &location,
+      std::string const &queryDesc
+      ) const
     {
       if ( m_functions.empty() )
-        throw CG::Error( location, "no such " + m_friendlyName );
+        throw CG::Error( location, "no definition found for " + queryDesc );
       
       if ( m_functions.size() > 1 )
-        throw CG::Error( location, m_friendlyName + " is not unique" );
+        throw CG::Error( location, queryDesc + " is not unique" );
       
       return &m_functions[0];
     }

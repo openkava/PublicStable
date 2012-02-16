@@ -6,7 +6,7 @@
 #define _FABRIC_CG_ASS_OP_BUILDER_H
 
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 
 namespace Fabric
 {
@@ -24,11 +24,16 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          AssignOpPencilName(
+          AssignOpPencilKey(
             thisAdapter,
             type
             ),
           AssignOpDefaultSymbolName(
+            thisAdapter,
+            type,
+            thatAdapter
+            ),
+          AssignOpFullDesc(
             thisAdapter,
             type,
             thatAdapter
