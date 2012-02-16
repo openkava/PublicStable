@@ -188,12 +188,14 @@ $(document).ready(function() {
     }
     switch(BrowserDetect.browser){
       case "Chrome":
+        type = "ChromeExtension";
         ext = "crx";
         message = "1. Press the 'continue' button at the bottom of the screen.\n This will download the extension to your computer.\n\n"+
                   "2. Once the download completes, press 'Install' button. \nThis will install the Fabric Engine extension for your Chrome browser\n\n" +
                   "3. Refresh the page to view the demo.";
         break;
       case "Firefox":
+        type = "FirefoxExtension";
         ext = "xpi";
         message = "1. Press the 'allow' button at the top of the screen.\n This will download the extension to your computer.\n\n"+
                   "2. Once the download completes, press 'Install Now' button. \nThis will install the Fabric Engine extension for your Firefox browser\n\n" +
@@ -211,7 +213,7 @@ $(document).ready(function() {
     else{
       baseURL = "http://dist.fabric-engine.com";
     }
-    url = baseURL+"/"+version+"/FabricEngine-"+os+"-"+arch+"."+ext;
+    url = baseURL+"/"+version+"/FabricEngine-"+type+"-"+os+"-"+arch+"-"+version+"."+ext;
   }
   
   createDownloadURL();
