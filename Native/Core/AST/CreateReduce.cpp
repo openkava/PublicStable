@@ -69,7 +69,7 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not a function" );
       RC::ConstHandle<CG::PencilSymbol> operator_ = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const *function = operator_->getUniqueFunction( getLocation() );
+      CG::Function const *function = operator_->getUniqueFunction( getLocation(), "operator " + _(m_operatorName) );
       
       std::vector<CG::FunctionParam> const &operatorParams = function->getParams();
       RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[1].getAdapter();
@@ -92,7 +92,7 @@ namespace Fabric
       if ( !operatorSymbol->isPencil() )
         throw CG::Error( getLocation(), _(m_operatorName) + ": not an operator" );
       RC::ConstHandle<CG::PencilSymbol> operator_ = RC::ConstHandle<CG::PencilSymbol>::StaticCast( operatorSymbol );
-      CG::Function const *function = operator_->getUniqueFunction( getLocation() );
+      CG::Function const *function = operator_->getUniqueFunction( getLocation(), "operator " + _(m_operatorName) );
       CG::ParamVector const &operatorParams = function->getParams();
       if ( operatorParams.size() < 2 )
         throw MR::ArrayMapOperator::GetPrototypeException();

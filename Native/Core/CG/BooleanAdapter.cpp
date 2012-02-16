@@ -16,7 +16,7 @@
 #include "MethodBuilder.h"
 #include "UniOpBuilder.h"
 #include "BasicBlockBuilder.h"
-#include "OverloadNames.h"
+#include <Fabric/Core/CG/Mangling.h>
 
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Base/Util/Format.h>

@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Function.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/StructAdapter.h>
@@ -58,8 +58,13 @@ namespace Fabric
       
       CG::Function const *function = basicBlockBuilder.getModuleBuilder().maybeGetFunction(
         getLocation(),
-        CG::MethodPencilName( structExprType.getAdapter(), m_memberName ),
-        structExprType
+        CG::MethodPencilKey( structExprType.getAdapter(), m_memberName ),
+        structExprType,
+        CG::MethodQueryDesc(
+          structExprType,
+          m_memberName,
+          CG::ExprTypeVector()
+          )
         );
       if ( !function )
         throw CG::Error( getLocation(), "type " + structExprType.getUserName() + " has no member or method named " + _(m_memberName) );
@@ -112,8 +117,13 @@ namespace Fabric
 
         CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
           getLocation(),
-          CG::MethodPencilName( adapter, m_memberName ),
-          exprType
+          CG::MethodPencilKey( adapter, m_memberName ),
+          exprType,
+          CG::MethodQueryDesc(
+            exprType,
+            m_memberName,
+            CG::ExprTypeVector()
+            )
           );
         CG::ParamVector const &functionParams = function->getParams();
           

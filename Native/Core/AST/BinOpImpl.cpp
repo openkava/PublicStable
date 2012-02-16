@@ -9,7 +9,7 @@
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -63,9 +63,9 @@ namespace Fabric
       m_rhs->appendJSON( jsonObjectEncoder.makeMember( "rhs" ), includeLocation );
     }
     
-    std::string BinOpImpl::getPencilName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string BinOpImpl::getPencilKey( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::BinOpPencilName(
+      return CG::BinOpPencilKey(
         m_binOpType
         );
     }
@@ -73,6 +73,16 @@ namespace Fabric
     std::string BinOpImpl::getDefaultSymbolName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return CG::BinOpDefaultSymbolName(
+        m_binOpType, 
+        cgManager->getAdapter( m_lhs->getType() ),
+        cgManager->getAdapter( m_rhs->getType() )
+        );
+    }
+    
+    std::string BinOpImpl::getDesc( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::BinOpFullDesc(
+        getReturnAdapter( cgManager ),
         m_binOpType, 
         cgManager->getAdapter( m_lhs->getType() ),
         cgManager->getAdapter( m_rhs->getType() )

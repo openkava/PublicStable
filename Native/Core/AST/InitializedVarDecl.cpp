@@ -11,7 +11,7 @@
 #include <Fabric/Core/CG/ExprType.h>
 #include <Fabric/Core/CG/Function.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 #include <Fabric/Core/CG/PencilSymbol.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -61,13 +61,19 @@ namespace Fabric
       FABRIC_ASSERT( result.getUsage() == CG::USAGE_LVALUE );
       
       CG::ExprTypeVector argTypes;
-      argTypes.push_back( result.getExprType() );
       m_args->appendExprTypes( basicBlockBuilder, argTypes );
         
       CG::Function const *function = basicBlockBuilder.getModuleBuilder().getFunction(
         getLocation(),
-        CG::ConstructorPencilName( result.getAdapter() ),
-        argTypes
+        CG::ConstructorPencilKey( result.getAdapter() ),
+        CG::ExprTypeVector(
+          result.getExprType(),
+          argTypes
+          ),
+        CG::ConstructorQueryDesc(
+          result.getAdapter(),
+          argTypes.getAdapters()
+          )
         );
 
       CG::ParamVector const functionParams = function->getParams();

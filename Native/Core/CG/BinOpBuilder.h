@@ -6,7 +6,7 @@
 #define _FABRIC_CG_BIN_OP_BUILDER_H
 
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/CG/Mangling.h>
 
 namespace Fabric
 {
@@ -25,10 +25,16 @@ namespace Fabric
         )
         : FunctionBuilder(
           moduleBuilder,
-          BinOpPencilName(
+          BinOpPencilKey(
             type
             ),
           BinOpDefaultSymbolName(
+            type,
+            lhsAdapter,
+            rhsAdapter
+            ),
+          BinOpFullDesc(
+            resultAdapter,
             type,
             lhsAdapter,
             rhsAdapter
