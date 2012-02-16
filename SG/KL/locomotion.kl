@@ -20,7 +20,7 @@ function activateClip(
 ){
   LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
   LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
-  trackcontroller.time = trackcontroller.activeTrackSetTime;
+  trackcontroller.time = trackcontroller.activateTrackSetTime;
   trackcontroller.stepIds = marker.stepIds;
   trackcontroller.comParams = marker.params;
   
@@ -333,7 +333,7 @@ operator evaluateLocomotionPoseVariables(
               trackcontroller.pivotFoot = j;
               trackcontroller.pivotStepId = l;
               trackcontroller.activeTrackSet = clipId;
-              trackcontroller.activeTrackSetTime = locomotionMarkers[clipId][j][l].time;
+              trackcontroller.activateTrackSetTime = locomotionMarkers[clipId][j][l].time;
               currClipDelta = clipDelta;
             }
           }
@@ -676,7 +676,7 @@ operator evaluateLocomotionPoseVariables(
                     trackcontroller.pivotFoot = j;
                     trackcontroller.pivotStepId = l;
                     trackcontroller.activeTrackSet = clipId;
-                    trackcontroller.activeTrackSetTime = (t - currStep.midPlantTime) + locomotionMarkers[clipId][j][l].time;
+                    trackcontroller.activateTrackSetTime = (t - currStep.midPlantTime) + locomotionMarkers[clipId][j][l].time;
                     
                     currClipDelta = clipDelta;
                   }
@@ -691,7 +691,7 @@ operator evaluateLocomotionPoseVariables(
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
-            trackcontroller.activeTrackSetTime = (t - currStep.midPlantTime) + locomotionMarkers[trackcontroller.activeTrackSet][j][0].time;
+            trackcontroller.activateTrackSetTime = (t - currStep.midPlantTime) + locomotionMarkers[trackcontroller.activeTrackSet][j][0].time;
           }
           if(!trackcontroller.deactivate){
             trackcontroller.stepIds[j]++;
