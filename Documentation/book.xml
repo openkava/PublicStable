@@ -795,9 +795,9 @@ viewport.redraw();</programlisting>
     <section>
       <title>Materials</title>
       <para>Materials define parameters for the shader program and is used to attach image loaders.
-        The Material node in Fabric generated using meta data associated with the shader. XML files
-        are loaded which contain both the GLSL shader code, and meta data that instructs the
-        rendering system how to construct material node instances.</para>
+        The Material node in Fabric Engine is generated using meta data associated with the shader.
+        XML files are loaded which contain both the GLSL shader code, and meta data that instructs
+        the rendering system how to construct material node instances.</para>
       <para>Materials provide data to the shader such as shading parameters, and also provide a
         branch point in the event graph where textures can be loaded and bound prior to traversal
         continuing to the Instance node.</para>
@@ -876,7 +876,7 @@ viewport.redraw();</programlisting>
       specifically written for deferred rendering.</para>
     <para><inlinemediaobject>
         <imageobject>
-          <imagedata fileref="images/sg_deferred_01.png" width="75%"/>
+          <imagedata fileref="images/sg_deferred_01.png" width="90%"/>
         </imageobject>
       </inlinemediaobject></para>
     <para>Deferred rendering allows to perform 2D post effects on the GPU, or additional 3D
@@ -886,7 +886,7 @@ viewport.redraw();</programlisting>
     <section>
       <title>Setting up the Deferred Renderer</title>
       <para>The SceneGraph provides a utility node called the <emphasis role="bold"
-          >DeferredRenderer</emphasis>. </para>
+          >BasicDeferredRenderer</emphasis>. </para>
       <programlisting language="JavaScript">var renderer = scene.constructNode('BasicDeferredRenderer', {
   addDepth: false, // don't add a depth framebuffer
   colorBuffers: [{name: 'diffuseA, nbChannels: 4}, {name: 'diffuseB', nbChannels: 4}]
