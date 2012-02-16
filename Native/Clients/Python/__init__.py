@@ -1123,7 +1123,6 @@ class _DG( _NAMESPACE ):
   class _EVENT( _CONTAINER ):
     def __init__( self, dg, name ):
       super( _DG._EVENT, self ).__init__( dg, name )
-      self.__didFireCallback = None
       self.__eventHandlers = None
       self.__typeName = None
       self.__rt = dg._getClient().rt
@@ -1136,13 +1135,6 @@ class _DG( _NAMESPACE ):
         self.__eventHandlers = []
         for name in diff[ 'eventHandlers' ]:
           self.__eventHandlers.append( self._dg._namedObjects[ name ] )
-
-    def _handle( self, cmd, arg ):
-      if cmd == 'didFire':
-        if self.__didFireCallback is not None:
-          self.__didFireCallback( self )
-      else:
-        super( _DG._EVENT, self )._handle( cmd, arg )
 
     def getType( self ):
       return 'Event'
@@ -1178,12 +1170,6 @@ class _DG( _NAMESPACE ):
       self._nObjQueueCommand( 'select', self.__typeName, None, __callback )
       self._dg._executeQueuedCommands()
       return data
-
-    def getDidFireCallback( self ):
-      return self.__didFireCallback
-
-    def setDidFireCallback( self, callback ):
-      self.__didFireCallback = callback
 
   class _EVENTHANDLER( _CONTAINER ):
     def __init__( self, dg, name ):
