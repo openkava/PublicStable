@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shader>
   <name>DeferredSpotLightInstancingExtMaterial</name>
+  <prototypeMaterialType>DeferredPostPassMaterial</prototypeMaterialType>
   
   <uniforms>
     <uniform name="u_samplerPositionsMap" constant="positionsTexture" type="Integer" owner="texture"/>
