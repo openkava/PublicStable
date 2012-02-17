@@ -798,9 +798,10 @@ $(document).ready(function() {
       if(!presetsFound){
         localStorage.setItem('MedicalImagingPresetsVer1.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
         localStorage.setItem('MedicalImagingPresetsVer1.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
-        currPresetName = 'Chest';
-        loadPreset();
         rebuildPresetNamesList();
+        currPresetName = 'Chest';
+        $("#resourceSelector").val(currPresetName);
+        loadPreset();
       }else{
         currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
         $("#resourceSelector").val(currPresetName);
@@ -839,8 +840,10 @@ $(document).ready(function() {
             <div class="content">
               <h2>PRESETS</h2>
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
+                <!--
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
               <button id="savePreset" style="margin-top:10px;">Save</button>
+              -->
               <button id="aboutButton" style="margin-top:10px;">About</button>
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">
