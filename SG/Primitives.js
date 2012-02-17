@@ -585,7 +585,7 @@ FABRIC.SceneGraph.registerNodeType('Cylinder', {
         height: 5.0,
         caps: true,
         sides: 12,
-        loops: 0
+        loops: 1
       });
 
     options.uvSets = 1;
