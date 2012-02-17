@@ -75,7 +75,10 @@ FABRIC.require(["SG/SceneGraph",
     $('#loadingDialog').dialog({
       modal: true
     });
-    var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
+    var presetLoader = scene.constructManager('SceneDeserializer', {
+		 preLoadScene: false,
+		 filteredNodeTypes: ['PhongTextureSimpleMaterial', 'FlatTextureMaterial', 'PhongMaterial']
+		} );
     presetLoader.setPreLoadedNode(light);
     presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName));
   }
