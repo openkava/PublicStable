@@ -140,9 +140,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     }
     viewportNode.pub.show = function(){
       fabricwindow.show();
-      setTimeout(function(){
-        retrieveBrowserZoom();
-      }, 1)
       visible = true;
       fabricwindow.needsRedraw();
     };
@@ -224,6 +221,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
+      retrieveBrowserZoom();
       if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
