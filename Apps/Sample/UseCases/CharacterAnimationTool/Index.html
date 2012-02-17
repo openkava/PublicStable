@@ -26,7 +26,7 @@
 
 #editor {
   width:100%;
-  height:70%;
+  height:100%;
 }
 /*
   .ui-resizable-handle {
@@ -61,13 +61,10 @@
     
 $(document).ready(function() {
  
+ /*
  var $resizerHandle = $( "#editor" ).resizable({ handles: 's', maxHeight: '95%' }).find( ".ui-resizable-handle" );
  $resizerHandle.css('background', '#78AB46');
- /*
- $resizerHandle.height('#16px');
- $resizerHandle.append( "<span class='ui-icon ui-icon-grip-dotted-horizontal' style='margin-left:50%'></span>" ).parent();
- // .wrap( "<div class='ui-handle-helper-parent'></div>" ).parent();
- */
+
  
  var resizeCurveEditor = function(){
    $( "#curveEditorContainer" ).css( 'top', ($( "#editor" ).height()+8)+'px' );
@@ -81,6 +78,7 @@ $(document).ready(function() {
     resizeCurveEditor();
   };
  resizeCurveEditor();
+ */
  
   $( "#undoRedoSet" ).buttonset();
   
@@ -468,7 +466,9 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
   scene.addEventListener('endmanipulation', function(evt){
     if(evt.manipulatorNode.getTargetName){
       trackFilters = [evt.manipulatorNode.getTargetName()];
-      curveEditor.setCurveFilters(trackFilters);
+			if(curveEditor){
+			 curveEditor.setCurveFilters(trackFilters);
+			}
     }
   });
   
@@ -733,14 +733,14 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     rigNode.generateAnimationTracks(bezierKeyCharacterAnimationContainer, 'test', true, controllerNode);
     rebuildAnimationLibraryList();
     
-    
+    /*
     curveEditor = constructCurveEditor('curveContainer', scene, bezierKeyCharacterAnimationContainer, {
       timeRange : new FABRIC.Vec2(0, 4),
       fitEditorToKeyRanges: false,
       trackFilters: ['none']
     });
     window.addEventListener('resize', curveEditor.resize, true);
-
+		*/
     
     $( "#editor" ).bind('resize',
      function(event, ui) {
@@ -864,22 +864,14 @@ $(document).ready(function() {
         </div><!--timeControls-->
         
       </div> <!--editor-->
+			<!--
       <div id="curveEditorContainer">
-       
       <div id="curveViewer">
         <div id="curveContainer" style="background-color: #696969;">
         </div>
-      </div><!--viewer-->
+      </div><!--viewer- ->
 
       <div id="sidebar">
-        <!--
-        <div class="box">
-        <h2>INFO</h2>
-        <div class="content">
-        KeyFrame Animation.<br>
-        Hold 'Alt' to break the key handles.
-        </div><!--content- ->
-        </div>box-->
         <div class="box">
           <h2>TRACKS</h2>
           <div class="content">
@@ -888,11 +880,11 @@ $(document).ready(function() {
             <button id="frameY">FrameY</button>
             <ul id="keyframeTracks">
             </ul>
-          </div><!--content-->
-        </div><!--box-->
-      </div><!--sidebar-->
-       
-      </div><!--curveEditorContainer-->
+          </div><!--content- ->
+        </div><!--box- ->
+      </div><!--sidebar- ->
+      </div><!--curveEditorContainer->
+       -->
     </div><!--wrapper-->
   </body> 
   </html>
