@@ -94,7 +94,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             'window.numDrawnGeometries'
           ]
         }));
-    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
     
     var initialLoad = true;
     var visible = false;
@@ -106,6 +105,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(initialLoad) {
             initialLoad = false;
             loading = false;
+            fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
             if(scene.getScenePreRedrawEventHandler()){
               windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
