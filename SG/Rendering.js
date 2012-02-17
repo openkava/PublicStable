@@ -141,6 +141,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.pub.show = function(){
       fabricwindow.show();
       visible = true;
+      // without the following line the animation review demo loads with a grey screen on OsX.
+      // TOOD: figure out why this is required. 
+      retrieveBrowserZoom();
       fabricwindow.needsRedraw();
     };
     viewportNode.pub.hide = function(){
