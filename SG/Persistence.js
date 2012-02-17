@@ -480,6 +480,19 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
     resourceloaddgnode.addMember('stream','FabricFileStream');
     resourceloaddgnode.addMember('dataNames','String[]');
     resourceloaddgnode.addMember('seekOffsets','Size[]');
+    // Preconstruct the operator in advance to avoid the bug in chrome.
+    
+      resourceloaddgnode.bindings.append(scene.constructOperator({
+        operatorName: 'readTOCFromStream',
+        parameterLayout: [
+          "self.resource",
+          "self.dataNames",
+          "self.seekOffsets"
+        ],
+        entryFunctionName: 'readTOCFromStream',
+        srcFile: 'FABRIC_ROOT/SG/KL/fileStream.kl',
+        async: false
+      }));
     
     var dataTOC = {};
     loadBinaryDataNode.pub.addEventListener('loadSuccess', function(pub) {
