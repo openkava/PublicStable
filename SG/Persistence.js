@@ -211,6 +211,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       preLoadScene: false,
+      filteredNodeTypes: [],
       typeRemappings: {}
     });
     
@@ -309,6 +310,13 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
             var loadDGNode = function(nodeData){
               nodeDataMap[nodeData.name] = nodeData;
               FABRIC.createAsyncTask(function(){
+                
+                for(var i=0; i<options.filteredNodeTypes.length; i++){
+                  if (options.filteredNodeTypes[i] == nodeData.type) {
+                    return;
+                  }
+                }
+                console.log(nodeData.type);
                 var node = preLoadedNodes[nodeData.name];
                 if (!node) {
                   var type = options.typeRemappings[nodeData.type] || nodeData.type;
