@@ -495,7 +495,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
@@ -512,7 +512,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseUpEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult;
@@ -528,7 +528,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
