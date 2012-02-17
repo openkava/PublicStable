@@ -80,8 +80,10 @@ namespace Fabric
       if( !streamStruct->m_asFile || streamStruct->m_nbReceived != total )
       {
         if( !streamStruct->m_finished )
+        {
           IO::ResourceManager::onProgress( streamStruct->m_mimeType.c_str(), streamStruct->m_nbReceived, total, streamStruct->m_userData );
-        streamStruct->m_finished = streamStruct->m_nbReceived == total;
+          streamStruct->m_finished = streamStruct->m_nbReceived == total;
+        }
       }
 
       return len;
