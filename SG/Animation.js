@@ -404,7 +404,7 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
       parentReadData(sceneDeserializer, nodeData);
       dgnode.resize(nodeData.numTracks);
       for(var i=0; i<nodeData.numTracks; i++){
-        dgnode.setData('track', i, nodeData.tracks[i]);
+        dgnode.setData('track', i, nodeData.tracks.track[i]);
       }
     };
     

@@ -133,8 +133,10 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     cameraNode.readData = function(sceneDeserializer, nodeData) {
-      cameraNode.pub.setTransformNode(sceneDeserializer.getNode(nodeData.transformNode), nodeData.transformNodeMember);
-      
+      var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
+      if(transformNode){
+        cameraNode.pub.setTransformNode(transformNode, nodeData.transformNodeMember);
+      }
       cameraNode.pub.setNearDistance(nodeData.nearDistance);
       cameraNode.pub.setFarDistance(nodeData.farDistance);
       cameraNode.pub.setFovY(nodeData.fovY);
