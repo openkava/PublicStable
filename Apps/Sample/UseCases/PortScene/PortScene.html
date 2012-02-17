@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Port Scene</title> 
+    <title>FABRIC - Collada Viewer</title> 
         
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -89,18 +89,21 @@ FABRIC.require(["SG/SceneGraph",
 	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongTextureShader.xml', 'text/xml');
   
   
-  loadSubScene('Models/Terrain.json');
-  loadSubScene('Models/Cranes.json');
-	
-  loadSubScene('Models/Trailors_Ships_Containers.json');
-  loadSubScene('Models/Tanks.json');
-  loadSubScene('Models/Rafinery_K1.json');
-  loadSubScene('Models/RafineryAndMachinery.json');
-	
-  loadSubScene('Models/Industry.json');
-  loadSubScene('Models/FACTORIES.json');
-  loadSubScene('Models/Buildings.json');
-	
+  $( "#layers" ).selectable();
+  /*
+  $( "#layers" ).bind( "selectableselected", function(event, ui) {
+    loadSubScene('SceneData/'+ui.selected.textContent+'.json');
+  });
+  */
+  
+  loadSubScene('SceneData/Terrain.json');
+  loadSubScene('SceneData/Cranes.json');
+  loadSubScene('SceneData/PortMachinery.json');
+  
+  loadSubScene('SceneData/Buildings.json');
+  loadSubScene('SceneData/Trailors_Ships_Containers.json');
+  loadSubScene('SceneData/Rafinery_K1.json');
+  
   
   $(document).ready(function() {
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -121,10 +124,9 @@ FABRIC.require(["SG/SceneGraph",
             document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
           }, 600);
         
-        setTimeout(function() {
-            document.getElementById('numDrawnGeometries').childNodes[0].data = 'Num Drawn Geometries:' + viewport.getNumDrawnGeometries();
-            document.getElementById('numDrawnTriangles').childNodes[0].data = 'Num Drawn Triangles:' + viewport.getNumDrawnTriangles();
-          }, 1000);
+        document.getElementById('numDrawnGeometries').childNodes[0].data = 'Num Drawn Geometries:' + viewport.getNumDrawnGeometries();
+        document.getElementById('numDrawnTriangles').childNodes[0].data = 'Num Drawn Triangles:' + viewport.getNumDrawnTriangles();
+
         return false;
       }
     });
@@ -144,7 +146,7 @@ $(document).ready(function() {
   <body>
     <div id="loadingDialog" title="Loading Data...">
       <h4 id="loadingDesc"></h4>
-      Warning: Large scene
+      Warning: large scene.s
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
     <div id="wrapper">
@@ -163,8 +165,7 @@ $(document).ready(function() {
               <br>
 	       This demo is a stress test of the rendering pipeline. Many unique geometries are drawn using many loaded textures. The original collada data for this scene is over 500Mb. The collada files are loaded in a separate tool and the scene is exported as a combination of JSON and binary data. The binary data is compressed using Z-Lib, and the resulting data uses only 57Mb. This demo loads these JSON and binary files, along with the textures.
 	       <br>
-		Note that the data is cached by the browser, meaning that if you re-visit the demo,
-		the data does not need to be re-downloaded.
+		Note that the data is cached by the browser, meaning that if you re-visit the demo, the data does not need to be re-downloaded.s
             </div><!--content-->
           </div><!--box-->
 

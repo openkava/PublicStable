@@ -140,9 +140,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     }
     viewportNode.pub.show = function(){
       fabricwindow.show();
-      setTimeout(function(){
-        retrieveBrowserZoom();
-      }, 1)
       visible = true;
       fabricwindow.needsRedraw();
     };
@@ -224,6 +221,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
+      retrieveBrowserZoom();
       if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
@@ -495,7 +493,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
@@ -512,7 +510,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseUpEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult;
@@ -528,7 +526,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
