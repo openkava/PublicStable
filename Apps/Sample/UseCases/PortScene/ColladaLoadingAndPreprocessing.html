@@ -153,51 +153,64 @@ FABRIC.require(["SG/SceneGraph",
     materialConstructorCallback: materialCallback
   };
   
-  
   /*
   var fileName = 'Cranes';
-  scene.importAssetFile('Models/RMG_Crane.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/CRANES.DAE', parseOptions, collectInstances);
-    DONE
+  scene.importAssetFile('ExportedData/RMG_Crane.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/CRANES.DAE', parseOptions, collectInstances);
+  DONE
   */
-  
   
   /*
   var fileName = 'Trailors_Ships_Containers';
-  scene.importAssetFile('Models/Trailors.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/Ships.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/Containers.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/TruckTANKER.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/Trailors.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/Ships.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/Containers.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/TruckTANKER.DAE', parseOptions, collectInstances);
   DONE
   */
   
   /*
-  var fileName = 'PortMachinery';
-  scene.importAssetFile('Models/W_PLANTS.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/OilTank01.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/OilTank02.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/OilTank03.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/Industry.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/RafinerySmall.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/BotrMachinery.DAE', parseOptions, collectInstances);
-  DONE
+  var fileName = 'Tanks';
+  scene.importAssetFile('ExportedData/W_PLANTS.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/OilTank01.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/OilTank02.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/OilTank03.DAE', parseOptions, collectInstances);
+    DONE
+  */
+  
+  /*
+  var fileName = 'RafineryAndMachinery';
+  scene.importAssetFile('ExportedData/RafinerySmall.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/BotrMachinery.DAE', parseOptions, collectInstances);
+      DONE
+  */
+  
+  /*
+  var fileName = 'Industry';
+  scene.importAssetFile('ExportedData/Industry.DAE', parseOptions, collectInstances);
+        DONE
   */
 
+  /*
+  var fileName = 'FACTORIES';
+  scene.importAssetFile('ExportedData/FACTORIES.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/FACTORIES2.DAE', parseOptions, collectInstances);
+          DONE
+  */
   
   var fileName = 'Buildings';
-  scene.importAssetFile('Models/FACTORIES.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/FACTORIES2.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/Buildings.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/Buildings2.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/GARAGE.DAE', parseOptions, collectInstances);
-//  scene.importAssetFile('Models/Buros.OBJ', parseOptions, collectInstances);
-
+  scene.importAssetFile('ExportedData/Buildings.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/Buildings2.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/GARAGE.DAE', parseOptions, collectInstances);
+//  scene.importAssetFile('ExportedData/Buros.OBJ', parseOptions, collectInstances);
+  
+  
   /*
   var fileName = 'Rafinery_K1';
-  scene.importAssetFile('Models/Rafinery_K1.mtl', { materialOptions: { lightNode: light } },
+  scene.importAssetFile('ExportedData/Rafinery_K1.mtl', { materialOptions: { lightNode: light } },
     function(materials){
       var loadRafinery_K1Node = scene.constructNode('ObjResource', {
-        url: 'Models/Rafinery_K1.obj',
+        url: 'ExportedData/Rafinery_K1.obj',
         splitMaterials: true,
         splitGroups: true,
         printDetailedInfo: true
@@ -226,15 +239,14 @@ FABRIC.require(["SG/SceneGraph",
         }
       });
     });
-DONE
+  DONE
   */
-  
   /*
   var fileName = 'Terrain';
-  scene.importAssetFile('Models/TerrainAndOtherBits.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/TERRAIN_MAIN.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/MastC01.DAE', parseOptions, collectInstances);
-  scene.importAssetFile('Models/Domesky.DAE', {
+  scene.importAssetFile('ExportedData/TerrainAndOtherBits.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/TERRAIN_MAIN.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/MastC01.DAE', parseOptions, collectInstances);
+  scene.importAssetFile('ExportedData/Domesky.DAE', {
     scaleFactor: 1.0,
     materialType: 'FlatTextureMaterial',
     materialOptions: {
@@ -248,7 +260,7 @@ DONE
     blockRedrawingTillResourceIsLoaded: false
   }, collectInstances);
   
-  scene.importAssetFile('Models/Sea.DAE', {
+  scene.importAssetFile('ExportedData/Sea.DAE', {
     scaleFactor: 1.0,
     materialType: 'PhongMaterial',
     materialOptions: {
@@ -259,8 +271,7 @@ DONE
     },
     blockRedrawingTillResourceIsLoaded: false
   }, collectInstances);
-
-    DONE
+  DONE
   */
   
   scene.addEventListener('mousedown_geom', function(evt) {
