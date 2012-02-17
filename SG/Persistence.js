@@ -316,7 +316,6 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
                     return;
                   }
                 }
-                console.log(nodeData.type);
                 var node = preLoadedNodes[nodeData.name];
                 if (!node) {
                   var type = options.typeRemappings[nodeData.type] || nodeData.type;

@@ -77,11 +77,16 @@ FABRIC.require(["SG/SceneGraph",
     });
     var presetLoader = scene.constructManager('SceneDeserializer', {
 		 preLoadScene: false,
-		 filteredNodeTypes: ['PhongTextureSimpleMaterial', 'FlatTextureMaterial', 'PhongMaterial', 'PhongTextureMaterial']
+		 filteredNodeTypes: [/*'FlatTextureMaterial', 'PhongMaterial', 'PhongTextureSimpleMaterial', 'PhongTextureMaterial'*/]
 		} );
     presetLoader.setPreLoadedNode(light);
     presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName));
   }
+	
+	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/FlatTextureShader.xml', 'text/xml');
+	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongShader.xml', 'text/xml');
+	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongTextureShaderSimple.xml', 'text/xml');
+	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongTextureShader.xml', 'text/xml');
   
   
   loadSubScene('Models/Terrain.json');
