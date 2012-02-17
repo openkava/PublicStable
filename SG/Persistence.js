@@ -172,7 +172,9 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
                   str += '\n        }';
                   nodecnt++;
                 }
+                
                 str += '\n      }';
+            
               }
             }
             str += '\n    }';
@@ -180,6 +182,23 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
           str += '\n  ]';
           str += '\n}';
           writer.write(str);
+          return true;
+        },
+        saveBinary: function(writer) {
+          this.serialize();
+          var binaryStorageNode;
+          if(writer.getBinaryStorageNode){
+            binaryStorageNode = scene.getPrivateInterface(writer.getBinaryStorageNode());
+          }
+          for (var i = 0; i < savedNodes.length; i++) {
+            var name = savedNodes[i].getName();
+            if(storedDGNodes[name]){
+              if(binaryStorageNode){
+                binaryStorageNode.storeDGNodes( name, storedDGNodes[name]);
+              }
+            }
+          }
+          writer.writeBinary();
           return true;
         }
       }
@@ -509,6 +528,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
       }));
       resourceloaddgnode.evaluate();
       var dataNames = resourceloaddgnode.getData('dataNames',0);
+      var seekOffsets = resourceloaddgnode.getData('seekOffsets',0);
       
       // first, parse for slicecounts
       for(var i=0;i<dataNames.length;i++) {
@@ -525,7 +545,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
         if(tokens.length == 3){
           var memberName = tokens[2];
           if(!dataTOC[sgnodeName][dgnodeName][memberName]){
-            dataTOC[sgnodeName][dgnodeName][memberName] = { index:i };
+            dataTOC[sgnodeName][dgnodeName][memberName] = { index:i, seekOffset: seekOffsets[i] };
           }
         }
       }
