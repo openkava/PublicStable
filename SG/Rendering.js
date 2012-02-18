@@ -94,7 +94,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             'window.numDrawnGeometries'
           ]
         }));
-    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
     
     var initialLoad = true;
     var visible = false;
@@ -106,6 +105,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(initialLoad) {
             initialLoad = false;
             loading = false;
+            fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
             if(scene.getScenePreRedrawEventHandler()){
               windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
@@ -140,10 +140,10 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     }
     viewportNode.pub.show = function(){
       fabricwindow.show();
-      setTimeout(function(){
-        retrieveBrowserZoom();
-      }, 1)
       visible = true;
+      // without the following line the animation review demo loads with a grey screen on OsX.
+      // TOOD: figure out why this is required. 
+      retrieveBrowserZoom();
       fabricwindow.needsRedraw();
     };
     viewportNode.pub.hide = function(){
@@ -224,6 +224,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
+      retrieveBrowserZoom();
       if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
@@ -495,7 +496,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
@@ -512,7 +513,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseUpEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult;
@@ -528,7 +529,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;

@@ -1169,7 +1169,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       if(options.url.folderHandle) {
         dgnode.getResourceFromFile('resource', options.url);
       } else {
-        resourceLoadNode.pub.setUrl(options.url, options.blockRedrawingTillResourceIsLoaded);
+        resourceLoadNode.pub.setUrl(options.url);
       }
     }
 
