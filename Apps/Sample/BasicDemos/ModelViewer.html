@@ -19,6 +19,13 @@
     <script type="text/javascript">
    
    
+$(document).ready(function() {
+  // In firefox, buttons stay disabled after refreshing.
+  // they must be manually re-enabled. This is an open bug with FF.
+  $('#importModel').removeAttr('disabled');
+  $('#importCow').removeAttr('disabled');
+});
+
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
                 "SG/Materials",
@@ -73,7 +80,13 @@ FABRIC.require(["SG/SceneGraph",
               }),
           });
         }
-        viewport.redraw();
+        // Wait for all other resources to load, including materials etc, and then redraw.
+        FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+          if (nbRemaining===0) {
+            viewport.redraw();
+            return true;
+          }
+        });
       }
     );
   }
