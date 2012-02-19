@@ -1133,16 +1133,6 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     //This is particular to resourceLoadNode: we want to trigger the load/failure event
     //when a client registers and the resource has loaded already. This is because sometimes
     //the load is almost instantaneous and the clients usually don't cover that scenario.
-    var addEventListener = resourceLoadNode.pub.addEventListener;
-    resourceLoadNode.pub.addEventListener = function(type, fn) {
-      if(type === 'loadSuccess' && resourceLoadNode.pub.isLoaded() && lastLoadSucceeded)
-        fn(resourceLoadNode.pub);
-      else if(type === 'loadFailure' && resourceLoadNode.pub.isLoaded() && !lastLoadSucceeded)
-        fn(resourceLoadNode.pub);
-      else {
-        addEventListener(type, fn);
-      }
-    }
 
     resourceLoadNode.pub.setUrl = function(new_url, forceLoad) {
       if(new_url !== '' && new_url !== url && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
@@ -1162,6 +1152,17 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     };
     
     scene.addEventHandlingFunctions(resourceLoadNode);
+
+    var addEventListener = resourceLoadNode.pub.addEventListener;
+    resourceLoadNode.pub.addEventListener = function(type, fn) {
+      if(type === 'loadSuccess' && resourceLoadNode.pub.isLoaded() && lastLoadSucceeded)
+        fn(resourceLoadNode.pub);
+      else if(type === 'loadFailure' && resourceLoadNode.pub.isLoaded() && !lastLoadSucceeded)
+        fn(resourceLoadNode.pub);
+      else {
+        addEventListener(type, fn);
+      }
+    }
 
     if (options.url) {
       // check if the url has a handle
