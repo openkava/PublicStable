@@ -19,6 +19,7 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
       splitGroups: false,
       printDetailedInfo: false
     });
+
     var resourceLoadNode = scene.constructNode('ResourceLoad', options ),
     resourceloaddgnode = resourceLoadNode.getDGLoadNode();
     
@@ -74,58 +75,6 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
         async: false
       });
     
-    resourceLoadNode.pub.addEventListener('loadSuccess', function(){
-      try{
-        resourceloaddgnode.evaluate();
-      }catch(e){
-        console.warn(e);
-      }
-      
-      resourceLoadNode.pub.addEventListener('objloadsuccess', function(evt){
-        var loadedGeometries = {};
-        if(evt.objectNames.length > 0){
-          for(var i=0; i<evt.objectNames.length; i++){
-            var objectName;
-            if(evt.materialNames.length == evt.objectNames.length && evt.materialNames[i].length > 0){
-              objectName = evt.materialNames[i];
-            }else if(evt.groupNames.length == evt.objectNames.length && evt.groupNames[i].length > 0){
-              objectName = evt.groupNames[i];
-            }else if(evt.objectNames[i].length > 0){
-              objectName = evt.objectNames[i];
-            }else{
-              objectName = options.baseName;
-            }
-            loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
-              resourceLoadNode: resourceLoadNode.pub,
-              entityIndex: i,
-              name: objectName
-            }).pub;
-            evt.objectNames[i] = objectName;
-          }
-        }else{
-          evt.objectNames = [options.baseName];
-          loadedGeometries[options.baseName] = scene.constructNode('ObjTriangles', {
-            resourceLoadNode: resourceLoadNode.pub,
-            entityIndex: -1,
-            name: options.baseName
-          }).pub;
-        }
-        resourceLoadNode.pub.fireEvent('objparsesuccess', {
-          loadedGeometries: loadedGeometries,
-          objectNames: evt.objectNames,
-          materialNames: evt.materialNames
-        })
-        return 'remove';
-      });
-
-      resourceLoadNode.pub.fireEvent('objloadsuccess', {
-        objectNames: resourceloaddgnode.getData('objectNames'),
-        groupNames: resourceloaddgnode.getData('groupNames'),
-        materialNames: resourceloaddgnode.getData('materialNames')
-      });
-      
-      return "remove";
-    });
     var refCnt = 0;
     resourceLoadNode.incrementRef = function(){
       refCnt++;
@@ -154,6 +103,75 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
       constructionOptions.splitGroups = options.splitGroups;
     };
     
+    var objParsed = false;
+    var loadedGeometries = {}, objectNames, materialNames;
+
+    resourceLoadNode.pub.addEventListener('loadSuccess', function(){
+      try{
+        resourceloaddgnode.evaluate();
+      }catch(e){
+        console.warn(e);
+      }
+      resourceLoadNode.pub.addEventListener('objloadsuccess', function(evt){
+        if(evt.objectNames.length > 0){
+          for(var i=0; i<evt.objectNames.length; i++){
+            var objectName;
+            if(evt.materialNames.length == evt.objectNames.length && evt.materialNames[i].length > 0){
+              objectName = evt.materialNames[i];
+            }else if(evt.groupNames.length == evt.objectNames.length && evt.groupNames[i].length > 0){
+              objectName = evt.groupNames[i];
+            }else if(evt.objectNames[i].length > 0){
+              objectName = evt.objectNames[i];
+            }else{
+              objectName = options.baseName;
+            }
+            loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
+              resourceLoadNode: resourceLoadNode.pub,
+              entityIndex: i,
+              name: objectName
+            }).pub;
+            evt.objectNames[i] = objectName;
+          }
+        }else{
+          evt.objectNames = [options.baseName];
+          loadedGeometries[options.baseName] = scene.constructNode('ObjTriangles', {
+            resourceLoadNode: resourceLoadNode.pub,
+            entityIndex: -1,
+            name: options.baseName
+          }).pub;
+        }
+        objParsed = true;
+        objectNames = evt.objectNames;
+        materialNames = evt.materialNames;
+        resourceLoadNode.pub.fireEvent('objparsesuccess', {
+          loadedGeometries: loadedGeometries,
+          objectNames: objectNames,
+          materialNames: materialNames
+        })
+        return 'remove';
+      });
+
+      resourceLoadNode.pub.fireEvent('objloadsuccess', {
+        objectNames: resourceloaddgnode.getData('objectNames'),
+        groupNames: resourceloaddgnode.getData('groupNames'),
+        materialNames: resourceloaddgnode.getData('materialNames')
+      });
+      
+      return "remove";
+    });
+    var addEventListener = resourceLoadNode.pub.addEventListener;
+    resourceLoadNode.pub.addEventListener = function(type, fn) {
+      if(type === 'objparsesuccess' && objParsed) {
+        fn({
+          loadedGeometries: loadedGeometries,
+          objectNames: objectNames,
+          materialNames: materialNames
+        });
+      }
+      else {
+        addEventListener(type, fn);
+      }
+    }
     return resourceLoadNode;
   }
 });
@@ -182,7 +200,7 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
       return resourceLoadNode;
     };
     trianglesNode.pub.setResourceLoadNode = function(node) {
-      if (!node || !node.isTypeOf('ObjResource')) {
+      if (!node || !node.isTypeOf('ResourceLoad')) {//In fact we should check typeOf('ObjResource') but since the node is not fully constructed its "typeOf" function might not have been updated...
         throw ('Must pass in a ObjResource resource loader');
       }
 

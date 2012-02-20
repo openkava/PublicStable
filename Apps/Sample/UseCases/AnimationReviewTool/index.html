@@ -505,9 +505,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // create a material for all alembic content
   var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
       diffuseTextureNode: scene.constructNode('Image2D', { url: '../../Alembic/Models/frog_diffuse.png' }),
-      lightNode: scene.constructNode('PointLight', {
-        position: new FABRIC.RT.Vec3(100, 100, 0)
-      }),
+      lightNode: light,
       specularColor: FABRIC.RT.rgba(0.2,0.2,0.2,1)
     });
 
@@ -948,7 +946,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
-      $('#localtime').slider().slider('value', scene.animation.getTime());
+     
+      $('#localtime').slider().slider('value', alembicLoadNode.getAnimationController().getTime());
     }
   });
 

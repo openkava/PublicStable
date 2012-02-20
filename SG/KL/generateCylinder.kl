@@ -20,8 +20,8 @@ operator generateCylinder(
   io Vec2 uvs<>
 ) {
 //  report( "Generate cylinder. Radius: " + radius + " Height: " + height + " Caps: " + caps + " Sides: " + sides + " Loops: " + loops );
-  sides = (sides >= 0) ? sides : 3;
-  
+  sides = (sides > 0) ? sides : 3;
+  loops = (loops > 0) ? loops : 1;
   Integer numTriangles, nbSides, nbLoops;
 
   nbLoops = loops + 1;
