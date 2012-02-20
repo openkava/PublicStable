@@ -1189,9 +1189,9 @@ var manipulator = scene.constructNode('3AxisTranslationManipulator', {
     <para>The SceneGraph provides an easy way of using websockets to automate client - server -
       client communication. For this a node websocket server is required. For a sample
       implementation, please see our github project
-        <link>https://github.com/fabric-engine/websocket-server</link>.</para>
+        <uri>http://github.com/fabric-engine/websocket-server</uri>.</para>
     <para>For test scenarios you might as well use node websocket server located at
-        <link>ws.fabric-engine.com</link>.</para>
+        <uri>ws.fabric-engine.com</uri>.</para>
     <section>
       <title>WebSocketManager</title>
       <para>Before you can send or receive messages you need to setup the <emphasis role="bold"
