@@ -498,12 +498,12 @@ var constructCurveEditor = function(domRootID, scene, characterAnimationContaine
     rootDomNode.addEventListener('mouseover', function(){
       document.addEventListener('mousewheel', mouseWheelZoomFn, false);
       document.addEventListener('DOMMouseScroll', mouseWheelZoomFn, false);
-    });
+    }, false);
     
     rootDomNode.addEventListener('mouseout', function(){
       document.removeEventListener('mousewheel', mouseWheelZoomFn, false);
       document.removeEventListener('DOMMouseScroll', mouseWheelZoomFn, false);
-    });
+    }, false);
   }
   
   var updateGraph = function(){
