@@ -1044,6 +1044,8 @@ selectionMgr.addEventListener('selectionChangesd',function(evt) {
 // select a node and deselect it again
 selectionMgr.addToSelection(myInstance);
 selectionMgr.removeFromSelection(myInstance);</programlisting>
+      <para><emphasis role="italic">Note: The Selection.html sample application contains an example
+          of how to use selection in the SceneGraph.</emphasis></para>
     </section>
     <section>
       <title>Selection Manipulation Manager</title>
@@ -1067,6 +1069,61 @@ selectionMgr.removeFromSelection(myInstance);</programlisting>
   </section>
   <section>
     <title>Manipulation Guide</title>
+    <para>The SceneGraph provides a solid framework for manipulation. While a series of transform
+      manipulators are provided, you can build your own manipulators. This document includes a
+        <emphasis role="bold">Tutorial for building a custom manipulator</emphasis>.</para>
+    <para>Manipulation in the SceneGraph works by modifying the dependency graph's data in
+      JavaScript. For this, several steps of execution are required:<orderedlist>
+        <listitem>
+          <para>On MouseDown: Gather all of the current relevant values (snapshot) and attach event
+            callbacks for MouseMove</para>
+        </listitem>
+        <listitem>
+          <para>On MouseMove: Compare current values with the snapshot and change the graph
+            accordingly</para>
+        </listitem>
+        <listitem>
+          <para>On MouseUp: Remove the MouseMove event callbacks.</para>
+        </listitem>
+      </orderedlist></para>
+    <section>
+      <title>Setting up a Manipulator</title>
+      <para>Manipulators require <emphasis role="bold">RayCasting</emphasis> to be enable in the
+        viewport, since it needs to determine which objects are hit below the mouse's position. To
+        enable RayCasting, provide the following options when constructing the viewport:</para>
+      <programlisting language="JavaScript">var viewport = scene.constructNode('Viewport', {
+  windowElement: document.getElementById('FabricContainer'),
+  enableRaycasting: true,
+  rayIntersectionThreshold: 0.8
+});</programlisting>
+      <para>Manipulators operate on Instance nodes, so you first have to create an instance node to
+        be able to attach a manipulator. Manipulators can operate on any member on any dependency
+        graph node, but since typically manipulation in 3D affects the transforms of objects, all of
+        the provided manipulators in the SceneGraph operate on the <emphasis role="bold"
+          >globalXfo</emphasis> member of the transform node.</para>
+      <programlisting language="JavaScript">// create an instance out of geometry, transform and material
+var instance = scene.constructNode('Instance', {
+  geometryNode: myGeometry,
+  transformNode: myTransform,
+  materialNode: myMaterial
+});
+
+// create a manipulator for the instance node
+var manipulator = scene.constructNode('3AxisTranslationManipulator', {
+  targetNode: instance,
+  size: 10,
+  linearTranslationManipulators: true,
+  planarTranslationManipulators: true,
+  screenTranslationManipulators: true
+});</programlisting>
+      <para>For a list of all of the manipulators available and their options please refer to the
+          <emphasis role="bold">SceneGraph Node Reference</emphasis> in this document.</para>
+      <para><emphasis role="italic">Note: The Manipulators.html sample application contains an
+          example of how to use manipulation in the SceneGraph.</emphasis></para>
+    </section>
+  </section>
+  <section>
+    <title>Undo / Redo Guide</title>
     <para/>
   </section>
 </article>
