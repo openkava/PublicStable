@@ -24,7 +24,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
     });
 
     var selection = [];
-    var listeners = [];
     
     var selectionManager = {
       pub:{
@@ -114,12 +113,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
             result.push(selection[i]);
           return result;
         },
-        addListener: function(listener){
-          if(!listener.fireEvent){
-            throw "listener must support events";
-          }
-          listeners.push(listener);
-        }
       }
     }
     scene.addEventHandlingFunctions(selectionManager);
