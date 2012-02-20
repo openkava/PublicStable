@@ -725,11 +725,6 @@ $(document).ready(function() {
       displayProgressBar();
     }
     
-    var loadPresetTask;
-    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
-    
-    loadPresetTask( true );
-    
     var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
     presetLoader.load(storage, function(nodeMap){
       
@@ -741,8 +736,6 @@ $(document).ready(function() {
       localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   
       viewport.redraw();
-  
-      
     });
 
   }
