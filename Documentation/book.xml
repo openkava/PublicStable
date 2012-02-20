@@ -1166,7 +1166,7 @@ undoMgr.undo();</programlisting>
         to use Undo and Redo in the SceneGraph.</emphasis></para>
     <section>
       <title>Using Undo and Redo with Manipulation</title>
-      <para>The manipulation system already support undo. Since you can have multiple UndoManagers
+      <para>The manipulation system already supports undo. Since you can have multiple UndoManagers
         in an application, you can optionally provide the UndoManager to the construction options of
         the manipulators, but even if you didn't specify it the first created undomanager will be
         used for manipulation.</para>
@@ -1250,6 +1250,175 @@ websocketMgr.addMessageCallBack('replyToQuestion', function(message) {
 });</programlisting>
       <para><emphasis role="italic">Note: The WebSockets.html sample application demonstrates how to
           synchronize camera manipulation between clients.</emphasis></para>
+    </section>
+  </section>
+  <section>
+    <title>Bullet Physics Guide</title>
+    <para>The Fabric Engine SceneGraph contains a reference implementation of the Bullet Physics
+      simulation engine (<uri>http://www.bulletphysics.org</uri>). It allows to create several
+      different shapes, rigid bodies, soft bodies as well as constraints between them.</para>
+    <para>Bullet requires custom shapes to be constructed for collision. They can be different from
+      the ones you see in the viewport, so for example you could create a box shape for a complex
+      mesh based on its bounding box for a faster simulation.</para>
+    <para>Bullet operates on the SceneGraph's transform nodes.</para>
+    <section>
+      <title>Creating the Bullet world</title>
+      <para>Each simulation requires a world to run in. You may create several worlds, but only
+        object within the same world will effect each other.</para>
+      <programlisting language="JavaScript">var world = scene.constructNode('BulletWorldNode');</programlisting>
+      <para>Once the world is set up you can start creating shapes and simulation elements.</para>
+    </section>
+    <section>
+      <title>Creating Collision Shapes</title>
+      <para>The SceneGraph's Bullet implementation supports several basic shapes. Shapes are
+        identified by their name. The name has to be unique, using the same name several times will
+        result in an error. You can later use the shapes' names to construct rigid bodies. These are
+        the basic shapes you can construct:</para>
+      <programlisting language="JavaScript">world.addShape('myBox', FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(1.0,1.0,1.0)));
+world.addShape('mySphere', FABRIC.RT.BulletShape.createBox(1.0 /* radius */));
+world.addShape('myCylinder', FABRIC.RT.BulletShape.createBox(1.0 /* radius */, 1.0 /* height */));
+world.addPlane('myPlane', FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(0.0,1.0,0.0)));</programlisting>
+      <para>Aside from the standard shapes you can also construct complex shapes based on SceneGraph
+        geometry nodes. So for example, given the torus triangles node, you can construct either a
+        convex hull collision shape or a triangle mesh, or a GImpact shape. Convex hull shapes are
+        very fast and robust, but they don't provide actual shape collision. triangle mesh shapes
+        are very slow for moving objects, and should be used only for complex ground shapes. GImpact
+        shapes provide accurate collision for moving objects which need to support actual shape
+        collision (inclusing concave shapes).</para>
+      <programlisting language="JavaScript">var torus = scene.constructNode('Torus'); // this is a triangles node
+world.addShape('myConvexHull',FABRIC.RT.BulletShape.createConvexHull(torus));
+world.addShape('myTriangleMesh',FABRIC.RT.BulletShape.createTriangleMesh(torus));
+world.addShape('myGImpact',FABRIC.RT.BulletShape.createGImpact(torus));</programlisting>
+    </section>
+    <section>
+      <title>Creating Rigid Bodies</title>
+      <para>Once you have constructed the shapes, you can create rigid bodies in the world. Rigid
+        bodies have several settings, but the main important option is the <emphasis role="bold"
+          >mass</emphasis>. If you set the mass to 0.0, the rigid body will be passive. This means
+        Fabric Engine will continue to drive the transform of the rigid body, and it will affect the
+        Bullet world. If the mass is set to > 0.0 the rigid body is active, and is purely affected
+        by the Bullet simulation.</para>
+      <programlisting language="JavaScript">// construct a passive plane
+world.addRigidBody('ground', new FABRIC.RT.BulletRigidBody({
+  mass: 0.0
+}), 'myPlane');
+
+// construct a passive plane
+world.addRigidBody('torusRbd1', new FABRIC.RT.BulletRigidBody({
+  mass 1.0,
+  friction: 0.6,
+  restitution: 0.2, // bouncyness
+  transform: new FABRIC.RT.Xfo({
+    tr: new FABRIC.RT.Vec3(0.0,4.0,0.0)
+  })
+}), 'myConvexHull');
+</programlisting>
+      <para>Note that we didn't connect up the rigid bodies to any element in the SceneGraph yet.
+        Right now these objects are purely part of the world and are not visibile to the viewport at
+        all. To create a transform that is connected to the Bullet world, you can construct a
+          <emphasis role="bold">BulletRigidBodyTransform</emphasis> node. The code below will setup
+        a torus which is moving and visible in the viewport.</para>
+      <para>Once you have constructed the shapes, you can create rigid bodies in the world. Rigid
+        bodies have several settings, but the main important option is the <emphasis role="bold"
+          >mass</emphasis>. If you set the mass to 0.0, the rigid body will be passive. This means
+        Fabric Engine will continue to drive the transform of the rigid body, and it will affect the
+        Bullet world. If the mass is set to > 0.0 the rigid body is active, and is purely affected
+        by the Bullet simulation. Also note that you can create multiple rigid bodies using the same
+        collision shape.</para>
+      <programlisting language="JavaScript">// create a transform node driven by bullet
+var bulletTransform = scene.constructNode('BulletRigidBodyTransform', {
+  name: 'torusRbd2',
+  bulletWorldNode: world,
+  shapeName: 'myConvexHull',
+  rigidBody: new FABRIC.RT.BulletRigidBody({
+    transform: new FABRIC.RT.Xfo({
+      tr: new FABRIC.RT.Vec3(0.0,4.0,0.0)
+    })
+  })
+});
+
+// create an instance to draw the torus
+var instance = scene.constructNode('Instance', {
+  transformNode: bulletTransform,
+  geometryNode: torus,
+  materialNode: scene.constructNode('PhongMaterial')
+});</programlisting>
+    </section>
+    <section>
+      <title>Creating Soft Bodies</title>
+      <para>While Rigid Bodies represent hard surfaces, Bullet also supports deforming surfaces,
+        called <emphasis role="bold">Soft Bodies</emphasis>. These bodies contain the shape as well,
+        so they don't require a collision shape name for construction. Soft bodies don't use a
+        transform, they are applied as a deformation on top of the geometry node.</para>
+      <programlisting language="JavaScript">// create a softbody
+var torusSoftBody = world.addSoftBody('torusSbd1',new FABRIC.RT.BulletSoftBody({
+  trianglesNode: torus,
+  transform: FABRIC.RT.xfo({
+    tr: new FABRIC.RT.Vec3(0,16,0)
+  }),
+  stiffness: 0.1, // spring stiffness
+  friction: 0.5, // dynamic friction
+  conservation: 0.0, // volume conservation
+  recover: 0.01, // recover original shape per frame
+  pressure: 5    // internal pressure
+}));
+
+// create an instance to draw the deforming
+// torus. no transform specified since the 
+// transform is included in the deformation
+var instance = scene.constructNode('Instance', {
+  geometryNode: torusSoftBody,
+  materialNode: scene.constructNode('PhongMaterial')
+});</programlisting>
+    </section>
+    <section>
+      <title>Creating Constraints</title>
+      <para>Constraints are connections between rigid bodies. The SceneGraph supports three types of constraints:<itemizedlist>
+          <listitem>
+            <para>Point2Point: A ball and socket connection with 360 degrees of freedom</para>
+          </listitem>
+          <listitem>
+            <para>Hinge: A single axis rotation connection with 360 degrees of freedom</para>
+          </listitem>
+          <listitem>
+            <para>Slider: A single axis translation connection with 0 degrees of freedom</para>
+          </listitem>
+        </itemizedlist></para>
+      <para>For creating a constraint you need to specify the names of the two bodies to be
+        connected as well as the constraint's options.</para>
+      <programlisting language="JavaScript">world.addConstraint('myBallSocket',FABRIC.RT.BulletConstraint.createPoint2Point({
+  pivotA: FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,4.0,0)}),
+  pivotB: FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-4.0,0)}),
+}),'torusRbd1','torusRbd2');
+
+world.addConstraint('myHinge',FABRIC.RT.BulletConstraint.createHinge({
+  pivotA: FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,4.0,0)}),
+  pivotB: FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-4.0,0)}),
+}),'torusRbd1','torusRbd2');
+
+world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
+  pivotA: FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,4.0,0)}),
+  pivotB: FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-4.0,0)}),
+}),'torusRbd1','torusRbd2');</programlisting>
+    </section>
+    <section>
+      <title>Creating Anchors</title>
+      <para>Anchors are connections between rigid bodies and soft bodies. Aside from the names of
+        the rigid body and the soft body it is also required to specify an array of point indices on
+        the softbody to attach the anchor to.</para>
+      <programlisting language="JavaScript">world.addAnchor('myAnchor',new FABRIC.RT.BulletAnchor({
+  softBodyNodeIndices: [0,1,2,3,4,5]
+  }),'torusRbd1','torusSbd1'
+);</programlisting>
+    </section>
+    <section>
+      <title>Array functionality</title>
+      <para>All <emphasis role="bold">add</emphasis> methods on the BulletWorldNode support single
+        obbjects as well as arrays. This means that you can construct multiple rigid bodies at the
+        same time, by providing an array of bodies rather than just a single one. This also works
+        for constraints. For further details, please have a look at the <emphasis role="italic"
+          >Constraints.html</emphasis> or <emphasis role="italic">StackingBoxes.html</emphasis>
+        sample applications.</para>
     </section>
   </section>
 </article>
