@@ -1184,4 +1184,72 @@ var manipulator = scene.constructNode('3AxisTranslationManipulator', {
 });</programlisting>
     </section>
   </section>
+  <section>
+    <title>Websockets Guide</title>
+    <para>The SceneGraph provides an easy way of using websockets to automate client - server -
+      client communication. For this a node websocket server is required. For a sample
+      implementation, please see our github project
+        <link>https://github.com/fabric-engine/websocket-server</link>.</para>
+    <para>For test scenarios you might as well use node websocket server located at
+        <link>ws.fabric-engine.com</link>.</para>
+    <section>
+      <title>WebSocketManager</title>
+      <para>Before you can send or receive messages you need to setup the <emphasis role="bold"
+          >WebSocketManager</emphasis>. Each session uses a unique key, which is determined
+        automatically, however you can specify it yourself to ensure that all users of the
+        application are able to communicate with each other. </para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_websockets_01.png" width="40%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>Since the web socket connection has to be established before message handlers can be
+        setup, the constructor also takes in the <emphasis role="bold">onOpenCallBack</emphasis>
+        option, which is executed once the connection is up.</para>
+      <programlisting language="JavaScript">// create a web socket manager
+var websocketMgr = scene.constructManager('WebSocketManager', {
+  serverUrl: 'ws.fabric-engine.com',
+  contextID: 'myOwnCustomKey',
+  onOpenCallBack: function() {
+    console.log('Connection established');
+  }
+});</programlisting>
+    </section>
+    <section>
+      <title>Sending Messages</title>
+      <para>To send message, ensure that the connection has been established. Otherwise the sending
+        of the message will fail. Messages contain a name, data as well as an optional recipient. If
+        you don't specify the recipient the message will be send to all of the participants of the
+        current session.</para>
+      <programlisting language="JavaScript">websocketMgr.sendMessage('askQuestion', { question: 'What\'s your name?' });</programlisting>
+      <para>The data can contain any JSON compliant struct. The WebSocketManager encodes it and
+        decodes it automatically.</para>
+    </section>
+    <section>
+      <title>Receiving Messages</title>
+      <para>To receive messages you need to setup callbacks for each message type on the
+        WebSocketManager. Reception message callbacks themselves can also send messages again of
+        course.</para>
+      <programlisting language="JavaScript">// setup a message callback for the 'askQuestion' message
+websocketMgr.addMessageCallBack('askQuestion', function(message) {
+  if(message.data.question == 'What\'s your name?') {
+    // reply just to the sender of this message
+    var data = {
+      question: message.data.question,
+      answer: 'My name is Fabric.'
+    };
+    websocketMgr.sendMessage('replyToQuestion', data, message.sourceID);
+  } else
+    console.log('I don\'t know how to answer this question: '+message.data.question);
+});
+
+// setup a message callback for the 'replyToQuestion' message
+websocketMgr.addMessageCallBack('replyToQuestion', function(message) {
+  console.log('I asked: '+message.data.question);
+  console.log(message.sourceID+' replied: '+message.data.answer);
+});</programlisting>
+      <para><emphasis role="italic">Note: The WebSockets.html sample application demonstrates how to
+          synchronize camera manipulation between clients.</emphasis></para>
+    </section>
+  </section>
 </article>
