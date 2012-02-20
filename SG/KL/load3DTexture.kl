@@ -16,8 +16,6 @@ function decode3DImageUShortData(
   io Mat44 xfoMat
 ) {
   xfoMat.setIdentity();
-  if(imageUShortVoxels.size() != 0)
-    return;
   String ext = resource.extension ? resource.extension : resource.mimeType;
   if(ext == "")
     return;
