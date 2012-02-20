@@ -94,7 +94,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             'window.numDrawnGeometries'
           ]
         }));
-    fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
     
     var initialLoad = true;
     var visible = false;
@@ -106,6 +105,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(initialLoad) {
             initialLoad = false;
             loading = false;
+            fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
             if(scene.getScenePreRedrawEventHandler()){
               windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
@@ -141,6 +141,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.pub.show = function(){
       fabricwindow.show();
       visible = true;
+      // without the following line the animation review demo loads with a grey screen on OsX.
+      // TOOD: figure out why this is required. 
+      retrieveBrowserZoom();
       fabricwindow.needsRedraw();
     };
     viewportNode.pub.hide = function(){
