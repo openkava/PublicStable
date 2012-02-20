@@ -994,7 +994,7 @@ resourceLoadNode.addEventListener('loadSuccess', function(evt){
       selection.</para>
     <section>
       <title>Basic Selection Management</title>
-      <para>The code snippet below sets up the manager, attached a callback to it and selects as
+      <para>The code snippet below sets up the manager, attaches a callback to it and selects as
         well as deselects a single node. This code is the basis for more complex selection
         management.</para>
       <programlisting language="JavaScript">// setup manager and attach event callback
@@ -1125,7 +1125,7 @@ var manipulator = scene.constructNode('3AxisTranslationManipulator', {
   <section>
     <title>Undo / Redo Guide</title>
     <para>Undo and Redo functionality in the SceneGraph can be achieved by constructing the
-        <emphasis role="bold">UndoManager</emphasis> and pusing <emphasis role="bold"
+        <emphasis role="bold">UndoManager</emphasis> and pushing <emphasis role="bold"
         >Transactions</emphasis> to it. A transaction is a dictionary containing callbacks for
         <emphasis role="bold">onClose</emphasis>, <emphasis role="bold">onUndo</emphasis> and
         <emphasis role="bold">onRedo</emphasis>. The SceneGraph's manipulation system provides these
