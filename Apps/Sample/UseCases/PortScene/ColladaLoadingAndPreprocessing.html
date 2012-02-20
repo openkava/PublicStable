@@ -107,35 +107,30 @@ FABRIC.require(["SG/SceneGraph",
       return imageLibrary[imageUrl];
     }
   
+    var diffuseTexture, specularTexture;
     if(materialData.diffuse.texture){
-      var diffuseTexture = loadTexture(materialData.diffuse.texture.texture);
-      if(diffuseTexture && materialData.specular.texture){
-        var specularTexture = loadTexture(materialData.specular.texture.texture);
-        materialType = 'PhongTextureMaterial';
-        materialOptions = {
-          lightNode: light,
-          diffuseTextureNode: diffuseTexture,
-          specularTextureNode: specularTexture
-        }
-      }else{
-        if(diffuseTexture){
-          materialType = 'PhongTextureSimpleMaterial';
-          materialOptions = {
-            lightNode: light,
-            diffuseTextureNode: loadTexture(materialData.diffuse.texture.texture),
-            specularColor: materialData.specular.color
-          }
-        }
-        else{
-          materialType = 'PhongMaterial';
-          materialOptions = {
-            lightNode: light,
-            diffuseColor: materialData.diffuse.color,
-            specularColor: materialData.specular.color
-          }
-        }
+      diffuseTexture = loadTexture(materialData.diffuse.texture.texture);
+    }
+    if(materialData.specular.texture){
+      specularTexture = loadTexture(materialData.specular.texture.texture);
+    }
+    if(diffuseTexture && specularTexture){
+      var specularTexture = loadTexture(materialData.specular.texture.texture);
+      materialType = 'PhongTextureMaterial';
+      materialOptions = {
+        lightNode: light,
+        diffuseTextureNode: diffuseTexture,
+        specularTextureNode: specularTexture
       }
-    }else{
+    }else if(diffuseTexture){
+      materialType = 'PhongTextureSimpleMaterial';
+      materialOptions = {
+        lightNode: light,
+        diffuseTextureNode: diffuseTexture,
+        specularColor: materialData.specular.color
+      }
+    }
+    else{
       materialType = 'PhongMaterial';
       materialOptions = {
         lightNode: light,
@@ -152,60 +147,36 @@ FABRIC.require(["SG/SceneGraph",
     scaleFactor: 1.0,
     materialConstructorCallback: materialCallback
   };
+  var fileName = 'portScene';
+
   
-  /*
-  var fileName = 'Cranes';
   scene.importAssetFile('ExportedData/RMG_Crane.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/CRANES.DAE', parseOptions, collectInstances);
-  DONE
-  */
-  
-  /*
-  var fileName = 'Trailors_Ships_Containers';
+
   scene.importAssetFile('ExportedData/Trailors.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/Ships.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/Containers.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/TruckTANKER.DAE', parseOptions, collectInstances);
-  DONE
-  */
-  
-  /*
-  var fileName = 'Tanks';
+
   scene.importAssetFile('ExportedData/W_PLANTS.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/OilTank01.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/OilTank02.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/OilTank03.DAE', parseOptions, collectInstances);
-    DONE
-  */
   
-  /*
-  var fileName = 'RafineryAndMachinery';
   scene.importAssetFile('ExportedData/RafinerySmall.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/BotrMachinery.DAE', parseOptions, collectInstances);
-      DONE
-  */
-  
-  /*
-  var fileName = 'Industry';
-  scene.importAssetFile('ExportedData/Industry.DAE', parseOptions, collectInstances);
-        DONE
-  */
 
-  /*
-  var fileName = 'FACTORIES';
+  scene.importAssetFile('ExportedData/Industry.DAE', parseOptions, collectInstances);
+
   scene.importAssetFile('ExportedData/FACTORIES.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/FACTORIES2.DAE', parseOptions, collectInstances);
-          DONE
-  */
-  
-  var fileName = 'Buildings';
+
   scene.importAssetFile('ExportedData/Buildings.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/Buildings2.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/GARAGE.DAE', parseOptions, collectInstances);
 //  scene.importAssetFile('ExportedData/Buros.OBJ', parseOptions, collectInstances);
   
   
-  /*
   var fileName = 'Rafinery_K1';
   scene.importAssetFile('ExportedData/Rafinery_K1.mtl', { materialOptions: { lightNode: light } },
     function(materials){
@@ -239,10 +210,7 @@ FABRIC.require(["SG/SceneGraph",
         }
       });
     });
-  DONE
-  */
-  /*
-  var fileName = 'Terrain';
+
   scene.importAssetFile('ExportedData/TerrainAndOtherBits.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/TERRAIN_MAIN.DAE', parseOptions, collectInstances);
   scene.importAssetFile('ExportedData/MastC01.DAE', parseOptions, collectInstances);
@@ -271,8 +239,8 @@ FABRIC.require(["SG/SceneGraph",
     },
     blockRedrawingTillResourceIsLoaded: false
   }, collectInstances);
-  DONE
-  */
+  
+  
   
   scene.addEventListener('mousedown_geom', function(evt) {
       console.log('Mouse Down:' + evt.targetNode.getName());

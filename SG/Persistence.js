@@ -233,6 +233,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     };
     var nodeData;
     var sgnodeDataMap = {};
+    
+    
     var sceneDeserializer = {
       getNode: function(storedNodeName) {
         var nodeName = nodeStoredNameToNodeRemapping[ storedNodeName ]
@@ -253,6 +255,80 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               return;
             }
             dataObj = data;
+            
+            var loadNodes = function(){
+              // Assign the function for interfacing with the binary node.
+              // by assigning the function here, the closure contains the binary data node.
+              var sceneDeserializerInterface = {
+                getNode: sceneDeserializer.getNode,
+                loadDGNodesData: function(sgnodeName, desc) {
+                  sgnodeName = nodeNameToStoredNameRemapping[sgnodeName];
+                  if(dataObj.metadata.binaryStorage){
+                    loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
+                      loadNodeBinaryFileNode.pub.loadDGNodes(sgnodeName, desc);
+                      return;
+                    });
+                  }
+                  else{
+                    var nodeData = sgnodeDataMap[sgnodeName];
+                    if(!nodeData.dgnodedata){
+                      console.warn("missing dgnode data for node:" + sgnodeName);
+                      return;
+                    }
+                    for(var dgnodename in desc){
+                      var data = nodeData.dgnodedata[dgnodename];
+                      var dgnode = desc[dgnodename].dgnode;
+                      dgnode.resize(data.sliceCount);
+                      var members = dgnode.getMembers();
+                      var memberData = {};
+                      for(var memberName in members){
+                        if(data.memberData[memberName]){
+                          memberData[memberName] = data.memberData[memberName];
+                        }
+                      }
+                      dgnode.setBulkData(memberData);
+                    }
+                  }
+                }
+              }
+                
+              var remainingNodes = dataObj.sceneGraphNodes.length;
+              var loadDGNode = function(nodeData){
+                nodeDataMap[nodeData.name] = nodeData;
+                FABRIC.createAsyncTask(function(){
+                  
+                  for(var i=0; i<options.filteredNodeTypes.length; i++){
+                    if (options.filteredNodeTypes[i] == nodeData.type) {
+                      return;
+                    }
+                  }
+                  var node = preLoadedNodes[nodeData.name];
+                  if (!node) {
+                    var type = options.typeRemappings[nodeData.type] || nodeData.type;
+                    node = scene.pub.constructNode(type, nodeData.options);
+                  }
+                  // in case a name collision occured, store a name remapping table.
+                  nodeStoredNameToNodeRemapping[ nodeData.name ] = node.getName();
+                  nodeNameToStoredNameRemapping[ node.getName() ] = nodeData.name;
+                  var nodePrivate = scene.getPrivateInterface(node);
+                  nodePrivate.readData(sceneDeserializerInterface, nodeData.data);
+                  constructedNodeMap[node.getName()] = node;
+                  remainingNodes--;
+                  if(remainingNodes == 0){
+                    if(callback)
+                      callback(constructedNodeMap);
+                  }
+                });
+              }
+              for (var i = 0; i < dataObj.sceneGraphNodes.length; i++) {
+                // Generate a map of the array of data that can be easily re-indexed
+                sgnodeDataMap[dataObj.sceneGraphNodes[i].name] = dataObj.sceneGraphNodes[i];
+                loadDGNode(dataObj.sceneGraphNodes[i]);
+              }
+              
+            }
+            
+            
             if(dataObj.metadata.binaryStorage){
               
               var binaryFilePath;
@@ -268,77 +344,16 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               var loadNodeBinaryFileNode = scene.constructNode('LoadBinaryDataNode', {
                 url: binaryFilePath
               });
-            }
-            
-            // Assign the function for interfacing with the binary node.
-            // by assigning the function here, the closure contains the binary data node.
-            
-            var sceneDeserializerInterface = {
-              getNode: sceneDeserializer.getNode,
-              loadDGNodesData: function(sgnodeName, desc) {
-                sgnodeName = nodeNameToStoredNameRemapping[sgnodeName];
-                if(dataObj.metadata.binaryStorage){
-                  loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
-                    loadNodeBinaryFileNode.pub.loadDGNodes(sgnodeName, desc);
-                    return;
-                  });
-                }
-                else{
-                  var nodeData = sgnodeDataMap[sgnodeName];
-                  if(!nodeData.dgnodedata){
-                    console.warn("missing dgnode data for node:" + sgnodeName);
-                    return;
-                  }
-                  for(var dgnodename in desc){
-                    var data = nodeData.dgnodedata[dgnodename];
-                    var dgnode = desc[dgnodename].dgnode;
-                    dgnode.resize(data.sliceCount);
-                    var members = dgnode.getMembers();
-                    var memberData = {};
-                    for(var memberName in members){
-                      if(data.memberData[memberName]){
-                        memberData[memberName] = data.memberData[memberName];
-                      }
-                    }
-                    dgnode.setBulkData(memberData);
-                  }
-                }
-              }
-            }
               
-            var remainingNodes = dataObj.sceneGraphNodes.length;
-            var loadDGNode = function(nodeData){
-              nodeDataMap[nodeData.name] = nodeData;
-              FABRIC.createAsyncTask(function(){
-                
-                for(var i=0; i<options.filteredNodeTypes.length; i++){
-                  if (options.filteredNodeTypes[i] == nodeData.type) {
-                    return;
-                  }
-                }
-                var node = preLoadedNodes[nodeData.name];
-                if (!node) {
-                  var type = options.typeRemappings[nodeData.type] || nodeData.type;
-                  node = scene.pub.constructNode(type, nodeData.options);
-                }
-                // in case a name collision occured, store a name remapping table.
-                nodeStoredNameToNodeRemapping[ nodeData.name ] = node.getName();
-                nodeNameToStoredNameRemapping[ node.getName() ] = nodeData.name;
-                var nodePrivate = scene.getPrivateInterface(node);
-                nodePrivate.readData(sceneDeserializerInterface, nodeData.data);
-                constructedNodeMap[node.getName()] = node;
-                remainingNodes--;
-                if(remainingNodes == 0){
-                  if(callback)
-                    callback(constructedNodeMap);
-                }
+              loadNodeBinaryFileNode.pub.addEventListener('loadSuccess', function(){
+                // Construct the graph only once the binary node has been loaded.
+                loadNodes();
               });
+            }else{
+              
+              loadNodes();
             }
-            for (var i = 0; i < dataObj.sceneGraphNodes.length; i++) {
-              // Generate a map of the array of data that can be easily re-indexed
-              sgnodeDataMap[dataObj.sceneGraphNodes[i].name] = dataObj.sceneGraphNodes[i];
-              loadDGNode(dataObj.sceneGraphNodes[i]);
-            }
+            
           });
         }
       }
