@@ -27,13 +27,14 @@ operator writeSliceCountToStream(
   io String dataNames[],
   io Size seekOffsets[],
   io String dataName,
-  Size count
+  io Container container
 ){
   if(stream.isWritable()) {
     Integer dataIndexId = lookupDataIndex(dataNames, dataName);
     if(dataIndexId >= 0){
       seekOffsets[dataIndexId] = stream.getSeek();
-      stream.writeSize(count);
+      Size sliceCount = container.size();
+      stream.writeSize(sliceCount);
     }
   }
 }
