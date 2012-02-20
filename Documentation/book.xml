@@ -932,6 +932,10 @@ void main(){
     </section>
   </section>
   <section>
+    <title>SceneGraph IO Guide</title>
+    <para>Waiting for Jerome's input...!</para>
+  </section>
+  <section>
     <title>Events Guide</title>
     <para>The SceneGraph provides a system for automatically firing callbacks when certain things
       happen. SceneGraph events are a very powerful mechanism to automate functionality, especially
@@ -980,5 +984,89 @@ resourceLoadNode.addEventListener('loadSuccess', function(evt){
       <para>This allows you to automatically continue with the setup of the application once the
         resource file is downloaded and ready.</para>
     </section>
+  </section>
+  <section>
+    <title>Selection Manager Guide</title>
+    <para>The SceneGraph comes with a manager for selection, called the <emphasis role="bold"
+        >SelectionManager</emphasis>. This manager is the basic implementation, and simply keeps
+      track of a collection of selected nodes. It provides the <emphasis role="bold"
+        >selectionChanged</emphasis> event for automating UI changes, for example, based on the
+      selection.</para>
+    <section>
+      <title>Basic Selection Management</title>
+      <para>The code snippet below sets up the manager, attached a callback to it and selects as
+        well as deselects a single node. This code is the basis for more complex selection
+        management.</para>
+      <programlisting language="JavaScript">// setup manager and attach event callback
+var selectionMgr = scene.constructManager('SelectionManager');
+selectionMgr.addEventListener('selectionChangesd',function(evt) {
+  console.log(evt.selection);
+});
+
+// select a node and deselect it again
+selectionMgr.addToSelection(myNode);
+selectionMgr.removeFromSelection(myNode);</programlisting>
+    </section>
+    <section>
+      <title>Viewport Selection Manager</title>
+      <para>The <emphasis role="bold">ViewportSelectionManager</emphasis> works by providing a new
+          <emphasis role="bold">Instance</emphasis> node, called the <emphasis role="bold"
+          >SelectableInstance</emphasis>. It contains a selection state as well as an additional
+        material, that indicates the selection during drawing.</para>
+      <para><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/sg_selection_01.png" width="70%"/>
+          </imageobject>
+        </inlinemediaobject></para>
+      <para>When a SelectableInstance node is hovered, the material on the node changes to the
+          <emphasis role="italic">highlighted</emphasis> material. Once the node is selected the
+        material changes to the <emphasis role="italic">selected</emphasis> material. </para>
+      <programlisting language="JavaScript">// create the materials
+var normalMaterial = scene.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(0.0, 0.0, 1.0, 1) });
+var highlightMaterial = scene.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(0.7, 0.7, 0.7, 1) });
+var selectedMaterial = scene.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(1.0, 0.0, 0.0, 1) });
+
+// create a selectable instance
+var myInstance = scene.constructNode('SelectableInstance', {
+  transformNode: myTransform,
+  geometryNode: myGeometry,
+  materialNode: normalMaterial,
+  highlightMaterial: highlightMaterial,
+  selectMaterial: selectedMaterial
+});
+
+// setup manager and attach event callback
+var selectionMgr = scene.constructManager('ViewportSelectionManager');
+selectionMgr.addEventListener('selectionChangesd',function(evt) {
+  console.log(evt.selection);
+});
+
+// select a node and deselect it again
+selectionMgr.addToSelection(myInstance);
+selectionMgr.removeFromSelection(myInstance);</programlisting>
+    </section>
+    <section>
+      <title>Selection Manipulation Manager</title>
+      <para>The <emphasis role="bold">SelectionManipulationManager</emphasis> provides an additional
+        mechanism for selection based manipulation. For further details on the way manipulation
+        works in the SceneGraph please refer to the <emphasis role="bold">Manipulation
+          Guide</emphasis> in this document. The SelectionManipulationManager itself is not taking
+        care of the selection management, therefore you need to specify the SelectionManager during
+        its construction. The SelectionManipulationManager just takes care of setting up a group
+        manipulation, that toggles on and off based on selection changes as well as centers the
+        manipulator in the center of the selected objects.</para>
+      <programlisting language="JavaScript">var manipulationMgr = scene.constructManager('SelectionManipulationManager', {
+  selectionManager: selectionMgr,
+  manipulators: undefined // here you can specify an array of manipulators to manage
+});</programlisting>
+      <para>By providing a list of manipulators to the <emphasis role="italic"
+          >manipulators</emphasis> option, you can define the kind of manipulations you want the
+        manager to take care of. If you don't specify anything, the manipulation will default to to
+        a screen space translation.</para>
+    </section>
+  </section>
+  <section>
+    <title>Manipulation Guide</title>
+    <para/>
   </section>
 </article>
