@@ -931,4 +931,54 @@ void main(){
         sample application for an example of a more advanced scenario.</para>
     </section>
   </section>
+  <section>
+    <title>Events Guide</title>
+    <para>The SceneGraph provides a system for automatically firing callbacks when certain things
+      happen. SceneGraph events are a very powerful mechanism to automate functionality, especially
+      since in web applications things can happen asynchronously.</para>
+    <section>
+      <title>Setting up a node for event handling</title>
+      <para>To enable events on a SceneGraph node the <emphasis role="bold"
+          >addEventHandlingFunctions</emphasis> method has to be called in the constructor of the
+        node.</para>
+      <programlisting language="JavaScript">scene.addEventHandlingFunctions(myNodePrivateInterface);</programlisting>
+      <para>Once that's done the node can fire events and receive event callbacks. To attach a
+        callback to the node, other nodes resp. the scene script can call the <emphasis role="bold"
+          >addEventListener</emphasis> method.</para>
+      <programlisting language="JavaScript">var myCallback = function(evt) {
+  console.log(evt);
+  return 'remove';
+};
+myNodePublicInterface.addEventListener('myEvent', myCallback);</programlisting>
+      <para>If the event callback function returns <emphasis role="italic">'remove'</emphasis> the
+        callback will be removed from the event listener stack, and won't fire again if the element
+        fires another time. If you don't return <emphasis role="italic">'remove'</emphasis> the
+        callback will stay attached.</para>
+      <para>You can also remove the event callback by calling the <emphasis role="bold"
+          >removeEventListener</emphasis> method, which allows to have functions listens to event
+        dynamically. So to say you can attach functions and de-attach them again.</para>
+      <programlisting language="JavaScript">myNodePublicInterface.removeEventListener('myEvent', myCallback);</programlisting>
+      <para>To trigger the event programatically you can call the <emphasis role="bold"
+          >fireEvent</emphasis> method on the node. </para>
+      <programlisting language="JavaScript">myNodePublicInterface.fireEvent('myEvent', { data: 'myData' });</programlisting>
+      <para>This fires all attached event callbacks, and provides the event data to each of the
+        callback functions.  This mechasnism is used heavily throughout the SceneGraph.</para>
+    </section>
+    <section>
+      <title>loadSuccess event</title>
+      <para>The <emphasis role="bold">ResourceLoadNode</emphasis>, covered in the <emphasis
+          role="bold">SceneGraph IO Guide</emphasis> in this document, uses events to dispatch the
+        call of event listeners once a resource file is loaded. This mechanism is uses in the
+        SceneGraph parsers, but you can also use it for custom scenarios like this:</para>
+      <programlisting language="JavaScript">var resourceLoadNode = scene.constructNode('ResourceLoad', {
+  url: 'myBinaryFile.bin'
+});
+resourceLoadNode.addEventListener('loadSuccess', function(evt){
+  // attach operators to the resourceLoadNode for parsing...
+  return 'remove';
+});</programlisting>
+      <para>This allows you to automatically continue with the setup of the application once the
+        resource file is downloaded and ready.</para>
+    </section>
+  </section>
 </article>
