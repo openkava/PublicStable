@@ -76,31 +76,30 @@ FABRIC.require(["SG/SceneGraph",
       modal: true
     });
     var presetLoader = scene.constructManager('SceneDeserializer', {
-		 preLoadScene: false,
-		 filteredNodeTypes: [/*'FlatTextureMaterial', 'PhongMaterial', 'PhongTextureSimpleMaterial', 'PhongTextureMaterial'*/]
-		} );
+      preLoadScene: false
+    } );
     presetLoader.setPreLoadedNode(light);
-    presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName));
+    presetLoader.load(new FABRIC.SceneGraph.XHRReader(fileName), callback);
   }
-	
-	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/FlatTextureShader.xml', 'text/xml');
-	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongShader.xml', 'text/xml');
-	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongTextureShaderSimple.xml', 'text/xml');
-	FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/PhongTextureShader.xml', 'text/xml');
+
+  loadSubScene('Models/Terrain.json', function(){
+    loadSubScene('Models/Cranes.json', function(){
+      loadSubScene('Models/Trailors_Ships_Containers.json', function(){
+        loadSubScene('Models/Tanks.json', function(){
+          loadSubScene('Models/Rafinery_K1.json', function(){
+            loadSubScene('Models/RafineryAndMachinery.json', function(){
+              loadSubScene('Models/Industry.json', function(){
+                loadSubScene('Models/FACTORIES.json', function(){
+                  loadSubScene('Models/Buildings.json');
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
   
-  
-  loadSubScene('Models/Terrain.json');
-  loadSubScene('Models/Cranes.json');
-	
-  loadSubScene('Models/Trailors_Ships_Containers.json');
-  loadSubScene('Models/Tanks.json');
-  loadSubScene('Models/Rafinery_K1.json');
-  loadSubScene('Models/RafineryAndMachinery.json');
-	
-  loadSubScene('Models/Industry.json');
-  loadSubScene('Models/FACTORIES.json');
-  loadSubScene('Models/Buildings.json');
-	
   
   $(document).ready(function() {
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
