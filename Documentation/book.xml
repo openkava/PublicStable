@@ -1124,6 +1124,64 @@ var manipulator = scene.constructNode('3AxisTranslationManipulator', {
   </section>
   <section>
     <title>Undo / Redo Guide</title>
-    <para/>
+    <para>Undo and Redo functionality in the SceneGraph can be achieved by constructing the
+        <emphasis role="bold">UndoManager</emphasis> and pusing <emphasis role="bold"
+        >Transactions</emphasis> to it. A transaction is a dictionary containing callbacks for
+        <emphasis role="bold">onClose</emphasis>, <emphasis role="bold">onUndo</emphasis> and
+        <emphasis role="bold">onRedo</emphasis>. The SceneGraph's manipulation system provides these
+      kinds of transactions already, but you can implement your own.</para>
+    <para>To undo or redo a transaction, simply call the on the <emphasis role="bold"
+        >undo</emphasis> and <emphasis role="bold">redo</emphasis> methods of the  of the
+      UndoManager.</para>
+    <programlisting language="JavaScript">// create an undo manager
+var undoMgr = scene.constructManager('UndoManager');
+
+// create a value to be changed
+var value = 10;
+var prevValue = value;
+var newValue;
+
+// push a transaction to it
+undoMgr.addTransaction({
+  onClose: function() {
+    newValue = value;
+  },
+  onUndo: function() {
+    value = prevValue;
+  },
+  onRedo: function() {
+    value = newValue;
+  }
+});
+
+// change the value
+value = 20;
+
+// close the transaction
+undoMgr.closeTransaction();
+
+// undo the change
+undoMgr.undo();</programlisting>
+    <para><emphasis role="italic">Note: The Undo.html sample application contains an example of how
+        to use Undo and Redo in the SceneGraph.</emphasis></para>
+    <section>
+      <title>Using Undo and Redo with Manipulation</title>
+      <para>The manipulation system already support undo. Since you can have multiple UndoManagers
+        in an application, you can optionally provide the UndoManager to the construction options of
+        the manipulators, but even if you didn't specify it the first created undomanager will be
+        used for manipulation.</para>
+      <programlisting language="JavaScript">// create an undo manager
+var undoMgr = scene.constructManager('UndoManager');
+
+// create a manipulator for the instance node
+var manipulator = scene.constructNode('3AxisTranslationManipulator', {
+  targetNode: instance,
+  size: 10,
+  linearTranslationManipulators: true,
+  planarTranslationManipulators: true,
+  screenTranslationManipulators: true,
+  undoManager: undefined // optionally you can specify it here, in case you have more than one
+});</programlisting>
+    </section>
   </section>
 </article>
