@@ -567,7 +567,7 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     scene.assignDefaults(options, {
         targetNode: undefined,
         targetMember: 'globalXfo',
-        localXfo: new FABRIC.RT.Xfo()
+        localXfo: new FABRIC.RT.Xfo(),
         undoManager: scene.getManager('UndoManager')
       });
     if(!options.targetNode)
