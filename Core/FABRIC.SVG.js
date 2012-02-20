@@ -1496,7 +1496,7 @@ function clone_obj(obj, deepclone) {
                                 .addClass('Node')
                                 .size(nodeWidth, nodeHeight).cornerRadius(3)
                                 .color(options.color);
-        nodeRect.dropShadow({ offset: options.shadow });
+      //  nodeRect.dropShadow({ offset: options.shadow });
         var nodeTitle;
         if (options.text) {
           nodeTitle = nodeGroup.createText()
@@ -1719,7 +1719,7 @@ function clone_obj(obj, deepclone) {
                                   .addClass('DFGNodePort')
                                   .color(options.color)
                                   .radius(options.portRadius);
-
+/*
         if (options.createLabelEventCatcher) {
           portGroup.createRect()
                    .eventCatcher()
@@ -1745,7 +1745,7 @@ function clone_obj(obj, deepclone) {
                 setCursor: true,
                 cursor: 'crosshair'
               });
-
+ */
         portGroup.dataType = function() {
           if (arguments.length === 0) {
             return options.portDataType;
@@ -2000,9 +2000,9 @@ function clone_obj(obj, deepclone) {
 
         var sourcePos, targetPos;
         var connectorGroup = this.createGroup();
-        var lineBorder = connectorGroup.createPath().addClass('LineBorder');
+      //  var lineBorder = connectorGroup.createPath().addClass('LineBorder');
         var line = connectorGroup.createPath().addClass('LineCore').stroke(options.color);
-        var lineEventCatcher = connectorGroup.createPath().addClass('EventCatcher');
+      //  var lineEventCatcher = connectorGroup.createPath().addClass('EventCatcher');
 
         sourcePos = targetPos = new FABRIC.Vec2();
         var sourceDirection, targetDirection;
@@ -2049,9 +2049,9 @@ function clone_obj(obj, deepclone) {
           }
           var path = ['M', p1.x.toFixed(3), p1.y.toFixed(3), 'C',
                       p2.x, p2.y, p3.x, p3.y, p4.x.toFixed(3), p4.y.toFixed(3)].join(' ');
-          lineBorder.attr('d', path);
+        //  lineBorder.attr('d', path);
           line.attr('d', path);
-          lineEventCatcher.attr('d', path);
+        //  lineEventCatcher.attr('d', path);
         };
 
         if (options.sourcePortOwner && options.sourcePortOwner.addOnDragCallback) {
@@ -2075,11 +2075,12 @@ function clone_obj(obj, deepclone) {
         var svgRoot = this.svgRoot;
 
         if (options.connectable){
-
+          /*
           connectorGroup.highlight({
             setCursor: false,
             highlightObj: lineBorder
           });
+          */
           connectorGroup.elem.addEventListener('mousedown',
             function(evt) {
               var mouseDownPos = graphHolderGroup.screenToLocalPos(new FABRIC.Vec2(evt.offsetX, evt.offsetY));
