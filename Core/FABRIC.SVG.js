@@ -986,8 +986,7 @@ function clone_obj(obj, deepclone) {
         return this.appendAndReturnChild(this.extend(this.create('g'), this.groupObj));
       },
       createText: function() {
-        return this.appendAndReturnChild(this.extend(this.create('text'),
-          {
+        return this.appendAndReturnChild(this.extend(this.create('text'), {
             text: function() {
               if (arguments.length === 0) {
                 return this.textNode.data;
@@ -1241,8 +1240,7 @@ function clone_obj(obj, deepclone) {
         options = this.extend({ direction: 'Y', padding: 3 }, options, false);
         var __sizeObj;
         var listItems = [];
-        return this.appendAndReturnChild(this.extend(this.createGroup(),
-        {
+        return this.appendAndReturnChild(this.extend(this.createGroup(), {
           sizeObj: function() {
             if (arguments.length === 0) {
               return __sizeObj;
@@ -1297,8 +1295,7 @@ function clone_obj(obj, deepclone) {
             this.elem.removeChild(child.elem);
             this.arrangeListItems();
           },
-          removeAllChildren: function()
-          {
+          removeAllChildren: function() {
             while (this.elem.firstChild) {
               this.elem.removeChild(this.elem.firstChild);
             }
@@ -1695,7 +1692,7 @@ function clone_obj(obj, deepclone) {
           portRadius: 2.5,
           portLabelPaddingX: 5,
           portLabelPaddingY: 3,
-          createLabelEventCatcher: true,
+          createLabelEventCatcher: false,
           labelEventCatcherWidth: 50,
           ownerNode: null,
           portDataType: null,
@@ -1719,33 +1716,35 @@ function clone_obj(obj, deepclone) {
                                   .addClass('DFGNodePort')
                                   .color(options.color)
                                   .radius(options.portRadius);
-/*
-        if (options.createLabelEventCatcher) {
+
+        if (options.connectable && options.createLabelEventCatcher) {
           portGroup.createRect()
                    .eventCatcher()
                    .size(options.labelEventCatcherWidth, options.height)
                    .translate((options.direction == 'Target') ? 0 : -options.labelEventCatcherWidth,
                               options.height * -0.5).typeName('PortLabelEventCatcher');
         }
-        var portCircleEventCatcher = portGroup.createCircle()
-                                              .eventCatcher()
-                                              .radius(options.height * 0.5)
-                                              .typeName('PortEventCatcher');
-        portGroup.sizeObj(portCircleEventCatcher)
-            .highlight(
-              {
-                highlightObj: portCircle
-              })
-            .addOnHighlightCallback(function() { portCircle.radius(options.portRadius + 0.75); })
-            .addOnUnHighlightCallback(function() { portCircle.radius(options.portRadius); });
-
-        portCircleEventCatcher.highlight(
-              {
-                setClasses: false,
-                setCursor: true,
-                cursor: 'crosshair'
-              });
- */
+        if (options.connectable) {
+          var portCircleEventCatcher = portGroup.createCircle()
+                                                .eventCatcher()
+                                                .radius(options.height * 0.5)
+                                                .typeName('PortEventCatcher');
+          portGroup.sizeObj(portCircleEventCatcher)
+              .highlight({
+                  highlightObj: portCircle
+                })
+              .addOnHighlightCallback(function() { portCircle.radius(options.portRadius + 0.75); })
+              .addOnUnHighlightCallback(function() { portCircle.radius(options.portRadius); });
+  
+          portCircleEventCatcher.highlight({
+              setClasses: false,
+              setCursor: true,
+              cursor: 'crosshair'
+            });
+        }else{
+          portGroup.size(options.height, options.height);
+        }
+ 
         portGroup.dataType = function() {
           if (arguments.length === 0) {
             return options.portDataType;
@@ -1991,8 +1990,9 @@ function clone_obj(obj, deepclone) {
           targetPortOwner: null,
           connectable: true,
           wrt: null,
-          color: FABRIC.rgb(0.9, 0.7, 0.5)
-          }, options, false);
+          color: FABRIC.rgb(0.9, 0.7, 0.5),
+          diconnectable: false
+        }, options, false);
 
         if (!options.sourcePort && !options.targetPort) {
           console.error(' Error creating connection: a source or target port must be specified');
@@ -2000,9 +2000,11 @@ function clone_obj(obj, deepclone) {
 
         var sourcePos, targetPos;
         var connectorGroup = this.createGroup();
-      //  var lineBorder = connectorGroup.createPath().addClass('LineBorder');
         var line = connectorGroup.createPath().addClass('LineCore').stroke(options.color);
-      //  var lineEventCatcher = connectorGroup.createPath().addClass('EventCatcher');
+        var lineEventCatcher;
+        if(options.diconnectable){
+          lineEventCatcher = connectorGroup.createPath().addClass('EventCatcher');
+        }
 
         sourcePos = targetPos = new FABRIC.Vec2();
         var sourceDirection, targetDirection;
@@ -2049,9 +2051,10 @@ function clone_obj(obj, deepclone) {
           }
           var path = ['M', p1.x.toFixed(3), p1.y.toFixed(3), 'C',
                       p2.x, p2.y, p3.x, p3.y, p4.x.toFixed(3), p4.y.toFixed(3)].join(' ');
-        //  lineBorder.attr('d', path);
+          
           line.attr('d', path);
-        //  lineEventCatcher.attr('d', path);
+          if(lineEventCatcher)
+            lineEventCatcher.attr('d', path);
         };
 
         if (options.sourcePortOwner && options.sourcePortOwner.addOnDragCallback) {
