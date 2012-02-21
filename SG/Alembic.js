@@ -156,19 +156,9 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
           }));
           
           attributesdgnode.bindings.append(scene.constructOperator({
-            operatorName: 'alembicParsePolyMeshCount',
-            parameterLayout: [
-              'alembic.handle',
-              'uniforms.identifier',
-              'self.newCount'
-            ],
-            entryFunctionName: 'alembicParsePolyMeshCount',
-            srcFile: 'FABRIC_ROOT/SG/KL/loadAlembic.kl'
-          }));
-          
-          attributesdgnode.bindings.append(scene.constructOperator({
             operatorName: 'alembicParsePolyMeshAttributes',
             parameterLayout: [
+              'self',
               'alembic.handle',
               'uniforms.identifier',
               'uniforms.alembicTime',
@@ -272,20 +262,9 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
           
           // setup the parse operators
           attributesdgnode.bindings.append(scene.constructOperator({
-            operatorName: 'alembicParsePointsCount',
-            parameterLayout: [
-              'alembic.handle',
-              'uniforms.identifier',
-              'uniforms.alembicTime',
-              'self.newCount'
-            ],
-            entryFunctionName: 'alembicParsePointsCount',
-            srcFile: 'FABRIC_ROOT/SG/KL/loadAlembic.kl'
-          }));
-          
-          attributesdgnode.bindings.append(scene.constructOperator({
             operatorName: 'alembicParsePointsAttributes',
             parameterLayout: [
+              'self',
               'alembic.handle',
               'uniforms.identifier',
               'uniforms.alembicTime',
@@ -336,20 +315,11 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
             srcFile: 'FABRIC_ROOT/SG/KL/loadAlembic.kl'
           }));
           
-          attributesdgnode.bindings.append(scene.constructOperator({
-            operatorName: 'alembicParseCurvesCount',
-            parameterLayout: [
-              'alembic.handle',
-              'uniforms.identifier',
-              'self.newCount'
-            ],
-            entryFunctionName: 'alembicParseCurvesCount',
-            srcFile: 'FABRIC_ROOT/SG/KL/loadAlembic.kl'
-          }));
-          
+
           attributesdgnode.bindings.append(scene.constructOperator({
             operatorName: 'alembicParseCurvesAttributes',
             parameterLayout: [
+              'self',
               'alembic.handle',
               'uniforms.identifier',
               'uniforms.alembicTime',

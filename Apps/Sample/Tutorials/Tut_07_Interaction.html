@@ -30,11 +30,11 @@ $(document).ready(function() {
   dgnode2.addMember('result','Scalar');
   dgnodeInteract.addMember('multiplier','Scalar',3.0);
   
-  // increase the slicecount of the nodes
+  // resize the nodes
   var count = 1000000; // one million instructions
-  dgnode1.setCount(count);
-  dgnode2.setCount(count);
-  dgnodeInteract.setCount(1);
+  dgnode1.resize(count);
+  dgnode2.resize(count);
+  dgnodeInteract.resize(1);
   
   // create dependencies between the nodes
   dgnode2.setDependency(dgnode1, 'otherNode');

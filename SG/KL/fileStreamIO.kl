@@ -27,13 +27,14 @@ operator writeSliceCountToStream(
   io String dataNames[],
   io Size seekOffsets[],
   io String dataName,
-  Size count
+  io Container container
 ){
   if(stream.isWritable()) {
     Integer dataIndexId = lookupDataIndex(dataNames, dataName);
     if(dataIndexId >= 0){
       seekOffsets[dataIndexId] = stream.getSeek();
-      stream.writeSize(count);
+      Size sliceCount = container.size();
+      stream.writeSize(sliceCount);
     }
   }
 }
@@ -51,12 +52,12 @@ operator writeMemberToStream(
       seekOffsets[dataIndexId] = stream.getSeek();
       String dataType = "DATA_TYPE";
       stream.writeString(dataType);
-      stream.writeData(member.data(),member.dataSize());
+      stream.writeDataCompressed(member.data(),member.dataSize());
     }
   }
 }
 
-operator writeArrayToStream(
+operator writeArrayToStream(  
   io FabricFileStream stream,
   io String dataNames[],
   io Size seekOffsets[],
@@ -71,7 +72,7 @@ operator writeArrayToStream(
       stream.writeString(dataType);
       for(Integer i=0; i<data.size(); i++){
         stream.writeSize(data[i].size());
-        stream.writeData(data[i].data(),data[i].dataSize());
+        stream.writeDataCompressed(data[i].data(),data[i].dataSize());
       }
     }
   }
@@ -111,14 +112,16 @@ operator readSliceCountFromStream(
   io String dataNames[],
   io Size dataSeekOffsets[],
   io String dataName,
-  io Size newCount
+  io Container container
 ){
   FabricFileStream stream;
   stream.open(resource.dataExternalLocation,"r");
   if(stream.isValid()){
     Size prevDataIndex = -1;
     if(seekData(stream, prevDataIndex, dataNames, dataSeekOffsets, dataName)) {
+      Size newCount;
       stream.readSize(newCount);
+      container.resize(newCount);
     }
     stream.close();
   }
@@ -144,7 +147,7 @@ operator readMemberFromStream(
         stream.close();
         return;
       }
-      stream.readData(data.data(),data.dataSize());
+      stream.readDataCompressed(data.data(),data.dataSize());
     }
     stream.close();
   }
@@ -173,7 +176,7 @@ operator readArrayFromStream(
     for(Integer i=0; i<data.size(); i++){
       stream.readSize(size);
       data[i].resize(size);
-      stream.readData(data[i].data(),data[i].dataSize());
+      stream.readDataCompressed(data[i].data(),data[i].dataSize());
     }
     stream.close();
   }

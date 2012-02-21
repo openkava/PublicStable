@@ -28,7 +28,7 @@ operator populateHashTable(
   for (Index i = 0; i < numCells; ++ i)
     hashtable.cells[i].resize(0);
 
-  for (Integer i = 0; i < cellIndices.size; i++) {
+  for (Index i = 0; i < cellIndices.size; i++) {
     Integer cellIndex = cellIndices[i];
     hashtable.cells[cellIndex].push(i);
   }

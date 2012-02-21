@@ -57,13 +57,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       redrawEventHandler = viewportNode.constructEventHandlerNode('Redraw');
       
     dgnode.addMember('backgroundColor', 'Color', options.backgroundColor);
+    
+    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
 
     redrawEventHandler.setScope('viewPort', dgnode);
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'viewPortBeginRender',
-          srcFile: 'FABRIC_ROOT/SG/KL/viewPortBeginRender.kl',
-          entryFunctionName: 'viewPortBeginRender',
+          operatorName: 'viewportBeginRender',
+          srcFile: 'FABRIC_ROOT/SG/KL/viewport.kl',
+          entryFunctionName: 'viewportBeginRender',
           parameterLayout: [
             'window.width',
             'window.height',
@@ -71,8 +73,27 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           ]
         }));
 
-
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
+    var windowRedrawEventHandler = viewportNode.constructEventHandlerNode('WindowRedraw');
+    
+    fabricwindow.windowNode.addMember('numDrawnVerticies', 'Size');
+    fabricwindow.windowNode.addMember('numDrawnTriangles', 'Size');
+    fabricwindow.windowNode.addMember('numDrawnGeometries', 'Size');
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnVerticies', false);
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnTriangles', false);
+    viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnGeometries', false);
+            
+    windowRedrawEventHandler.setScope('window', fabricwindow.windowNode);
+    windowRedrawEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'windowBeginRender',
+          srcFile: 'FABRIC_ROOT/SG/KL/window.kl',
+          entryFunctionName: 'windowBeginRender',
+          parameterLayout: [
+            'window.numDrawnVerticies',
+            'window.numDrawnTriangles',
+            'window.numDrawnGeometries'
+          ]
+        }));
     
     var initialLoad = true;
     var visible = false;
@@ -84,13 +105,13 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(initialLoad) {
             initialLoad = false;
             loading = false;
-            redrawEventHandler.setScope('window', fabricwindow.windowNode);
+            fabricwindow.redrawEvent.appendEventHandler(windowRedrawEventHandler);
             if(scene.getScenePreRedrawEventHandler()){
-              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
+              windowRedrawEventHandler.appendChildEventHandler(scene.getScenePreRedrawEventHandler());
             }
-            fabricwindow.redrawEvent.appendEventHandler(redrawEventHandler);
+            windowRedrawEventHandler.appendChildEventHandler(redrawEventHandler);
             if(scene.getScenePostRedrawEventHandler()){
-              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
+              windowRedrawEventHandler.appendChildEventHandler(scene.getScenePostRedrawEventHandler());
             }
             if(raycastingEnabled){
               // the sceneRaycastEventHandler propogates the event throughtout the scene.
@@ -102,11 +123,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             // during the 1st redraw.
             viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
-            viewportNode.pub.show = function(){ fabricwindow.show(); visible = true; };
-            viewportNode.pub.hide = function(){ fabricwindow.hide(); visible = false; };
-
-            viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
-            viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
           }
 
@@ -116,6 +132,28 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       });
     };
     startLoadMode();
+    
+    
+    var browserZoom = 1.0;
+    var retrieveBrowserZoom = function(){
+      browserZoom = fabricwindow.windowNode.getData('width') / windowElement.clientWidth;
+    }
+    viewportNode.pub.show = function(){
+      fabricwindow.show();
+      visible = true;
+      // without the following line the animation review demo loads with a grey screen on OsX.
+      // TOOD: figure out why this is required. 
+      retrieveBrowserZoom();
+      fabricwindow.needsRedraw();
+    };
+    viewportNode.pub.hide = function(){
+      fabricwindow.hide();
+      visible = false;
+    };
+    window.addEventListener('resize', retrieveBrowserZoom, false);
+    
+    viewportNode.pub.getWidth = function(){  return windowElement.offsetWidth * browserZoom;  };
+    viewportNode.pub.getHeight = function(){ return windowElement.offsetHeight * browserZoom; };
     
     var propagationRedrawEventHandler = viewportNode.constructEventHandlerNode('DrawPropagation');
     redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
@@ -147,9 +185,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           // this operator calculates the rayOri and rayDir from the scopes collected so far.
           // The scopes should be the window, viewport, camera and projection.
           viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-            operatorName: 'ViewportRaycast',
-            srcFile: 'FABRIC_ROOT/SG/KL/viewPortUpdateRayCast.kl',
-            entryFunctionName: 'viewPortUpdateRayCast',
+            operatorName: 'viewportUpdateRayCast',
+            srcFile: 'FABRIC_ROOT/SG/KL/viewport.kl',
+            entryFunctionName: 'viewportUpdateRayCast',
             parameterLayout: [
               'camera.cameraMat44',
               'camera.projectionMat44',
@@ -186,7 +224,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     };
 
     var getElementCoords = function(evt) {
-      var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
+      retrieveBrowserZoom();
       if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
@@ -209,7 +247,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return fabricwindow;
     };
     
-    viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
     viewportNode.addReferenceInterface('Camera', 'Camera',
       function(nodePrivate){
       // remove the child event handler first
@@ -290,6 +327,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       });
     
     viewportNode.pub.rayCast = function(evt, options) {
+      if(!visible){
+        return;
+      }
       var result = {
         rayData: undefined
       };
@@ -302,15 +342,16 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         viewPortRayCastDgNode.setData('y', elementCoords.y);
         var nodes = viewPortRaycastEvent.select();
         result.rayData = viewPortRayCastDgNode.getData('ray');
-
-        if (options.returnOnlyClosestNode) {
-          for (var i = 0; i < nodes.length; i++) {
-            if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
-              result.closestNode = nodes[i];
+        if(nodes.length > 0){
+          if (options.returnOnlyClosestNode) {
+            for (var i = 0; i < nodes.length; i++) {
+              if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
+                result.closestNode = nodes[i];
+              }
             }
+          }else {
+            result.nodes = nodes;
           }
-        }else {
-          result.nodes = nodes;
         }
       }
       return result;
@@ -414,7 +455,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseMoveEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
@@ -455,7 +496,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
@@ -472,7 +513,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseUpEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult;
@@ -488,7 +529,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
-          if (raycastResult.closestNode) {
+          if (raycastResult && raycastResult.closestNode) {
             var hitNode = raycastResult.closestNode.node.sceneGraphNode;
             evt.rayData = raycastResult.rayData;
             evt.hitData = raycastResult.closestNode.value;
@@ -675,7 +716,7 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     
     preBindings.append(scene.constructOperator({
       operatorName: 'UpdateCameraProjection',
-      srcFile: 'FABRIC_ROOT/SG/KL/updateCameraProjection.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/camera.kl',
       entryFunctionName: 'updateCameraProjection',
       parameterLayout: [
         'camera.projectionMat44',

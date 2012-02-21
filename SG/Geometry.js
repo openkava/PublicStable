@@ -5,6 +5,7 @@
 
 FABRIC.define(["SG/SceneGraph", "SG/Kinematics"], function() {
 
+  var registeredTypes;
 
 FABRIC.SceneGraph.registerNodeType('Geometry', {
   briefDesc: 'The Geometry node is a base abstract node for all geometry nodes.',
@@ -59,10 +60,6 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     // beginning of the operator list. if there are operators for
     // generating tangents, or any other data, they should always go after
     // the generator ops.
-    // Currently the generator ops are bound to the attributesdgnode,
-    // but with node nesting, we should put them on the outer node.
-    // this would mean 2 things. We could generate geometry in a
-    // single operator, and we wouldn't need this code here....
     geometryNode.setGeneratorOps = function(opBindings) {
       var i;
       if (attributesdgnode.bindings.empty()) {
@@ -91,7 +88,9 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         geometryNode.addMemberInterface(uniformsdgnode, name, true);
       }
       if(name == 'indices'){
-        var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+        if(!registeredTypes){
+          registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+        }
         var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
         var indicesBuffer = new FABRIC.RT.OGLBuffer(name, attributeID, registeredTypes.Integer);
         indicesBuffer.dynamic = options.dynamicIndices;
@@ -116,7 +115,9 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       attributesdgnode.addMember(name, type, attributeoptions ? attributeoptions.defaultValue : undefined);
       if(attributeoptions){
         if(attributeoptions.genVBO && redrawEventHandler){
-          var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+          if(!registeredTypes){
+            registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
+          }
           var typeDesc = registeredTypes[type];
           var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
           var bufferMemberName = name + 'Buffer';
@@ -167,10 +168,10 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       return uniformsdgnode.setData(name, 0, value);
     };
     geometryNode.pub.getVertexCount = function(count) {
-      return attributesdgnode.getCount();
+      return attributesdgnode.size();
     };
     geometryNode.pub.setVertexCount = function(count) {
-      attributesdgnode.setCount(count);
+      attributesdgnode.resize(count);
     };
     geometryNode.pub.getBulkAttributeData = function( pointIds ) {
       return attributesdgnode.getSlicesBulkData( pointIds );
@@ -197,7 +198,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         }
       }
       if (attributeData.positions) {
-        attributesdgnode.setCount(attributeData.positions.length);
+        attributesdgnode.resize(attributeData.positions.length);
       }
       attributesdgnode.setBulkData(attributeData);
     };
@@ -217,7 +218,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     /*
     geometryNode.writeGeometryData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.attributes = attributes;
-      nodeData.sliceCount = attributesdgnode.getCount();
+      nodeData.sliceCount = attributesdgnode.size();
       nodeData.attributeData = attributesdgnode.getBulkData();
       var uniformMembers = uniformsdgnode.getMembers();
       if(uniformMembers.indices){
@@ -238,7 +239,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         }
       }
       if(nodeData.sliceCount){
-        attributesdgnode.setCount(nodeData.sliceCount);
+        attributesdgnode.resize(nodeData.sliceCount);
       }
       if(nodeData.attributeData){
         attributesdgnode.setBulkData(nodeData.attributeData);
@@ -283,7 +284,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           );
         }
       }
-      sceneDeserializer.loadDGNodesData(options.name, {
+      sceneDeserializer.loadDGNodesData(geometryNode.pub.getName(), {
         uniforms:{
           dgnode: uniformsdgnode
         },
@@ -317,19 +318,17 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
     
     // The data copy must always have the same count on the attributes node,
     // as the original geometry node.
-    geometryDataCopyNode.getAttributesDGNode().bindings.append(
-      scene.constructOperator({
-        operatorName: 'matchCount',
-        srcCode: '\n'+
-        'operator matchCount(Size parentCount, io Size selfCount) {\n' +
-        '  selfCount = parentCount;\n' +
-        '}',
-        entryFunctionName: 'matchCount',
-        parameterLayout: [
-          'parentattributes.count',
-          'self.newCount'
-        ]
-      }));
+    geometryDataCopyNode.getAttributesDGNode().bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'parentattributes',
+        'self'
+      ],
+      async: false
+    }));
+
     var redrawEventHandler = geometryDataCopyNode.getRedrawEventHandler();
     var uniformsdgnode = geometryDataCopyNode.getUniformsDGNode();
     var attributesdgnode = geometryDataCopyNode.getAttributesDGNode();
@@ -400,7 +399,9 @@ FABRIC.SceneGraph.registerNodeType('Points', {
         entryFunctionName: 'drawPoints',
         parameterLayout: [
           'shader.shaderProgram',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -451,7 +452,9 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
         parameterLayout: [
           'shader.shaderProgram',
           'self.indicesBuffer',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -558,7 +561,10 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
         parameterLayout: [
           'shader.shaderProgram',
           'self.indicesBuffer',
-          'instance.drawToggle'
+          'instance.drawToggle',
+          'window.numDrawnVerticies',
+          'window.numDrawnTriangles',
+          'window.numDrawnGeometries'
         ]
       }));
     }
@@ -688,10 +694,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       }));
 
     var assignLoadTransformOperators = function() {
-      // check if we have a sliced transform!
-      if(options.transformNodeIndex == undefined && transformNode.getDGNode().getCount() > 1) {
-        options.transformNodeIndex = 0
-      }
       var transformdgnode = transformNode.getDGNode();
       redrawEventHandler.setScope('transform', transformdgnode);
       if(options.transformNodeIndex == undefined){
