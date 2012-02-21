@@ -124,36 +124,16 @@ FABRIC.SceneGraph.registerNodeType('Image2D', {
       if(options.createDgNodes && options.url){
         imageNode.getPixelsDGNode().setDependency(resourceloaddgnode, 'resource');
         imageNode.getPixelsDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'loadImage'+options.format,
+          operatorName: 'loadSlicedImage'+options.format,
           parameterLayout: [
+            'self',
             'resource.resource',
             'uniforms.width',
             'uniforms.height',
-            'uniforms.pixels',
-            'self.newCount'
+            'self.pixels<>'
           ],
           preProcessorDefinitions: { PIXELFORMAT: options.format },
-          entryFunctionName: 'loadImage'+options.format,
-          srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
-        }));
-        imageNode.getPixelsDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'sliceImage'+options.format,
-          parameterLayout: [
-            'self.index',
-            'uniforms.pixels',
-            'self.pixels'
-          ],
-          preProcessorDefinitions: { PIXELFORMAT: options.format },
-          entryFunctionName: 'sliceImage'+options.format,
-          srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
-        }));
-        imageNode.getPixelsDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'clearImage'+options.format,
-          parameterLayout: [
-            'uniforms.pixels'
-          ],
-          preProcessorDefinitions: { PIXELFORMAT: options.format },
-          entryFunctionName: 'clearImage'+options.format,
+          entryFunctionName: 'loadSlicedImage'+options.format,
           srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
         }));
       };
@@ -170,19 +150,11 @@ FABRIC.SceneGraph.registerNodeType('Image2D', {
         imageNode.getUniformsDGNode().addMember('color', options.format, options.color);
         imageNode.getUniformsDGNode().addMember('initiated', 'Boolean', false);
         imageNode.getPixelsDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'resizeImage'+options.format,
-          parameterLayout: [
-            'uniforms.width',
-            'uniforms.height',
-            'self.newCount'
-          ],
-          preProcessorDefinitions: { PIXELFORMAT: options.format },
-          entryFunctionName: 'resizeImage'+options.format,
-          srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
-        }));
-        imageNode.getPixelsDGNode().bindings.append(scene.constructOperator({
           operatorName: 'initImageFrom'+options.format,
           parameterLayout: [
+            'self',
+            'uniforms.width',
+            'uniforms.height',
             'uniforms.color',
             'uniforms.initiated',
             'self.pixels<>'
@@ -407,7 +379,7 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
           redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'detectResourceChange',
             srcCode: 'operator detectResourceChange(io FabricResource resource, io String prevUrl, io Boolean refresh){\n' + 
-                          '  if(prevUrl != resource.url && resource.data.size() != 0){' +
+                          '  if(prevUrl != resource.url && (resource.data.size() != 0 || Boolean(resource.dataExternalLocation))){' +
                           '    prevUrl = resource.url;\n' +
                           '    refresh = true;} }',
             entryFunctionName: 'detectResourceChange',

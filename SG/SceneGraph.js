@@ -209,13 +209,7 @@ FABRIC.SceneGraph = {
     };
 
     ///////////////////////////////////////////////////////////////////
-    //  Resource File Loading
-    scene.writeResourceFile = function(filepath, fileContents) {
-      throw ' FS has been depreciated ';
-    };
-    scene.readResourceFile = function(filepath) {
-      throw ' FS has been depreciated ';
-    };
+    //  Utility functions
     scene.assignDefaults = assignDefaults;
     
     scene.cloneObj = function(obj, assignedValues) {
@@ -231,9 +225,6 @@ FABRIC.SceneGraph = {
       return clonedobj;
     };
     
-    scene.loadResourceURL = function(url, mimeType, callback) {
-      return FABRIC.loadResourceURL(url, mimeType, callback);
-    };
     //////////////////////////////////////////////////
     // Timers.
     scene.pushTimer = function(name) {
@@ -263,7 +254,7 @@ FABRIC.SceneGraph = {
         throw ('Manager Constructor not Registered:' + type);
       }
       if (managers[type]) {
-        throw ('Manager of this type already constructed:' + type);
+        console.warn ('Manager of this type already constructed:' + type);
       }
       options = (options ? options : {});
       var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
@@ -1063,7 +1054,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      blockRedrawingTillResourceIsLoaded:true,
+      blockRedrawingTillResourceIsLoaded: true,
       redrawOnLoad: true,
       storeDataAsFile: true,
       url: undefined
@@ -1077,6 +1068,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
 
     var lastLoadEventURL = '';
     var lastLoadSucceeded = false;
+    var url;
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
     scene.addEventHandlingFunctions(resourceLoadNode);
@@ -1141,23 +1133,14 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     //This is particular to resourceLoadNode: we want to trigger the load/failure event
     //when a client registers and the resource has loaded already. This is because sometimes
     //the load is almost instantaneous and the clients usually don't cover that scenario.
-    var addEventListener = resourceLoadNode.pub.addEventListener;
-    resourceLoadNode.pub.addEventListener = function(type, fn) {
-      if(type === 'loadSuccess' && resourceLoadNode.pub.isLoaded() && lastLoadSucceeded)
-        fn(resourceLoadNode.pub);
-      else if(type === 'loadFailure' && resourceLoadNode.pub.isLoaded() && !lastLoadSucceeded)
-        fn(resourceLoadNode.pub);
-      else {
-        addEventListener(type, fn);
-      }
-    }
 
-    resourceLoadNode.pub.setUrl = function(url, forceLoad) {
-      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+    resourceLoadNode.pub.setUrl = function(new_url, forceLoad) {
+      if(new_url !== '' && new_url !== url && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ new_url, remainingTaskWeight);
       }
-      dgnode.setData('url', 0, url);
-      if(forceLoad!= false){
+      dgnode.setData('url', 0, new_url);
+      url = new_url;
+      if(forceLoad != false){
         dgnode.evaluate();
       }
     };
@@ -1169,6 +1152,17 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     };
     
     scene.addEventHandlingFunctions(resourceLoadNode);
+
+    var addEventListener = resourceLoadNode.pub.addEventListener;
+    resourceLoadNode.pub.addEventListener = function(type, fn) {
+      if(type === 'loadSuccess' && resourceLoadNode.pub.isLoaded() && lastLoadSucceeded)
+        fn(resourceLoadNode.pub);
+      else if(type === 'loadFailure' && resourceLoadNode.pub.isLoaded() && !lastLoadSucceeded)
+        fn(resourceLoadNode.pub);
+      else {
+        addEventListener(type, fn);
+      }
+    }
 
     if (options.url) {
       // check if the url has a handle

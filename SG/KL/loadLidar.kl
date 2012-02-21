@@ -18,18 +18,14 @@ operator lidarLoad(
   }
 }
 
-operator lidarGetCount(
-  io LidarReader lidar,
-  io Size count
-) {
-  lidar.getCount(count);
-  report("Parsed "+count+" LIDAR points");
-}
-
 operator lidarGetPoints(
+  io Container container,
   io LidarReader lidar,
   io Vec3 positions<>,
   io Color colors<>
 ) {
+  Size count;
+  lidar.getCount(count);
+  container.resize(count);
   lidar.getPoints(positions,colors);
 }

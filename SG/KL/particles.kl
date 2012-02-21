@@ -22,10 +22,10 @@ operator populateHashTable(
   // Reset the hash table, and re-accumulate the ids.
   Size numCells = hashtable.x_count * hashtable.y_count * hashtable.z_count;
   hashtable.cells.resize(numCells);
-  for (var Index i = 0; i < numCells; ++ i)
+  for (Index i = 0; i < numCells; ++ i)
     hashtable.cells[i].resize(0);
 
-  for (var Integer i = 0; i < cellIndices.size; i++) {
+  for (Index i = 0; i < cellIndices.size; i++) {
     var Integer cellIndex = cellIndices[i];
     hashtable.cells[cellIndex].push(i);
   }

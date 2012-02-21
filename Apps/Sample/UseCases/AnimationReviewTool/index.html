@@ -242,31 +242,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     });
     var textureuniformsdgnode = textureNode.getUniformsDGNode();
     var texturepixelsdgnode = textureNode.getPixelsDGNode();
-    
-    // check if we need to initialize from a loaded resource
-    if(options.resourceFileHandle) {
-      texturepixelsdgnode.bindings.append(scene.constructOperator({
-        operatorName: 'sliceImageRGBA',
-        parameterLayout: [
-          'self.index',
-          'uniforms.pixels',
-          'self.pixels'
-        ],
-        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
-        entryFunctionName: 'sliceImageRGBA',
-        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
-      }));
-      texturepixelsdgnode.bindings.append(scene.constructOperator({
-        operatorName: 'clearImageRGBA',
-        parameterLayout: [
-          'uniforms.pixels'
-        ],
-        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
-        entryFunctionName: 'clearImageRGBA',
-        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
-      }));
-    }
-    
+        
     // create the paint operator for the texture
     textureuniformsdgnode.addMember('paint','Integer',0);
     textureuniformsdgnode.addMember('paintColor','RGBA',options.paintColor);
@@ -529,9 +505,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // create a material for all alembic content
   var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
       diffuseTextureNode: scene.constructNode('Image2D', { url: '../../Alembic/Models/frog_diffuse.png' }),
-      lightNode: scene.constructNode('PointLight', {
-        position: new FABRIC.RT.Vec3(100, 100, 0)
-      }),
+      lightNode: light,
       specularColor: FABRIC.RT.rgba(0.2,0.2,0.2,1)
     });
 
@@ -972,7 +946,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
-      $('#localtime').slider().slider('value', scene.animation.getTime());
+     
+      $('#localtime').slider().slider('value', alembicLoadNode.getAnimationController().getTime());
     }
   });
 

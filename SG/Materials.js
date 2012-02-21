@@ -391,13 +391,17 @@ FABRIC.SceneGraph.registerNodeType('Material', {
       for (var lightName in options.lights) {
         if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
           var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
-          sceneSerializer.addNode(lightNode);
+          if(lightNode){
+            sceneSerializer.addNode(lightNode);
+          }
         }
       }
       for (var textureName in options.textures) {
         if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
           var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();
-          sceneSerializer.addNode(textureNode);
+          if(textureNode){
+            sceneSerializer.addNode(textureNode);
+          }
         }
       }
     };
@@ -415,15 +419,18 @@ FABRIC.SceneGraph.registerNodeType('Material', {
       for (var lightName in options.lights) {
         if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
           var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
-          nodeData.lights[lightName] = lightNode.getName();
+          if(lightNode){
+            nodeData.lights[lightName] = lightNode.getName();
+          }
         }
       }
       nodeData.textures = {};
       for (var textureName in options.textures) {
         if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
           var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();
-          sceneSerializer.addNode(textureNode);
-          nodeData.textures[textureName] = textureNode.getName();
+          if(textureNode){
+            nodeData.textures[textureName] = textureNode.getName();
+          }
         }
       }
     };

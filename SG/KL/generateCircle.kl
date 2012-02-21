@@ -4,20 +4,15 @@
 
 use Vec3;
 
-operator setCircleVertexCount(
-  io Integer numSegments,
-  io Size newCount
-) {
-  newCount = numSegments;
-}
-
 operator generateCircle(
+  io Container container,
   io Vec3 positions<>,
   io Integer indices[],
   io Scalar radius,
   io Scalar arcAngle,
   io Integer numSegments
 ) {
+  container.resize(Size(numSegments));
   indices.resize(numSegments * 2);
 
   // +z-plane

@@ -46,13 +46,13 @@ FABRIC.require(["SG/SceneGraph",
     target: new FABRIC.RT.Vec3(-10, 5, 10)
   });
 
-  var animationLibrary, rig;
+  var characterAnimationContainer, rig;
   scene.importAssetFile('Models/mocap_01.dae', {
     constructRigFromHierarchy: true,
     rigHierarchyRootNodeName: 'Biped_Nulls_UpperBody'
     },
     function(assetNodes){
-      animationLibrary = assetNodes.LinearKeyAnimationLibrary;
+      characterAnimationContainer = assetNodes.LinearCharacterAnimationContainer;
       rig = assetNodes.Biped_Nulls_UpperBodyCharacterRig;
       assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 2.5));
       
@@ -148,7 +148,7 @@ FABRIC.require(["SG/SceneGraph",
 
   $('#curveEditor').button()
     .click(function() {
-      animationLibrary.openCurveEditor();
+      characterAnimationContainer.openCurveEditor();
   });
 
   $('#debugger').button()

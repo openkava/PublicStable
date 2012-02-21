@@ -47,12 +47,12 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
           entryFunctionName: 'calcGlobalXfo'
         }));
 
-      transformNode.addMemberInterface(dgnode, 'localXfo', true, true);
+      transformNode.addMemberInterface(dgnode, 'localXfo', true);
 
       // use a custom getter
       transformNode.pub.setGlobalXfo = function(val) {
         if (parentTransformNode) {
-          var parentXfo = parentTransformNode.getGlobalXfo();
+          var parentXfo = parentTransformNode.pub.getGlobalXfo();
           val = val.multiply(parentXfo.inverse());
           dgnode.setData('localXfo', val);
         }
@@ -85,7 +85,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
     }else {
       transformNode.pub.setGlobalXfo = function(val) {
         if(val.constructor.name == "Array") {
-          dgnode.setCount(val.length);
+          dgnode.resize(val.length);
           dgnode.setBulkData({ globalXfo: val});
         }
         else {
@@ -110,16 +110,26 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       constructionOptions.hierarchical = options.hierarchical;
       if(parentTransformNode){
         nodeData.parentTransformNode = parentTransformNode.pub.getName();
+        nodeData.localXfo = transformNode.pub.getLocalXfo();
+      }else{
+        nodeData.globalXfo = transformNode.pub.getGlobalXfo();
       }
-      nodeData.globalXfo = transformNode.pub.getGlobalXfo();
       
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     transformNode.readData = function(sceneDeserializer, nodeData) {
       if(nodeData.parentTransformNode){
-        transformNode.pub.setParentNode(sceneDeserializer.getNode(nodeData.parentTransformNode));
+        var parentTransformNode = sceneDeserializer.getNode(nodeData.parentTransformNode);
+        if(parentTransformNode){
+          transformNode.pub.setParentNode(parentTransformNode);
+        }
+        if(nodeData.localXfo){
+          transformNode.pub.setLocalXfo(nodeData.localXfo);
+        }
       }
-      transformNode.pub.setGlobalXfo(nodeData.globalXfo);
+      else if(nodeData.globalXfo){
+        transformNode.pub.setGlobalXfo(nodeData.globalXfo);
+      }
       
       parentReadData(sceneDeserializer, nodeData);
     };
@@ -147,14 +157,13 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     // create the operator to convert the matrices into a texture
     dgnode.addMember('textureMatrix', 'Mat44');
     
-      
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'matchCount',
-      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      srcCode: 'operator matchCount(in Container parentContainer, io Container selfContainer) { selfContainer.resize( parentContainer.size() ); }',
       entryFunctionName: 'matchCount',
       parameterLayout: [
-        'transforms.count',
-        'self.newCount'
+        'transforms',
+        'self'
       ],
       async: false
     }));
