@@ -113,7 +113,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
             var nodePrivate = scene.getPrivateInterface(savedNodes[i]);
             var constructionOptions = { };
             var nodeData = {};
-            nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData);
+            nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData, writeOptions);
             savedData[i] = {
               options: constructionOptions,
               data: nodeData
@@ -393,11 +393,11 @@ FABRIC.SceneGraph.LocalStorage = function(name) {
  * @constructor
  * @param {string} filepath The path to the file to write to.
  */
-FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
+FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName, fileType) {
   
   var path;
   var str = "";
-  path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, "json", suggestedFileName);
+  path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, title, fileType ? fileType : "json", suggestedFileName);
   
   this.write = function(instr) {
     str = instr;
