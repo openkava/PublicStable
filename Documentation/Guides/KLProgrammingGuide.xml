@@ -80,4 +80,544 @@ operator entry() {
       All of these will be discussed in more detail below.
     </para>
   </chapter>
+
+  <chapter>
+    <title>The KL Type System</title>
+
+    <para>
+      Unlike most languages, <acronym>KL</acronym> has a dynamic type system that is inherited from the Fabric environment.  In most cases, compound types are registered from the Fabric environment running in a dynamic language (eg. JavaScript or Python); those types are then automatically made available to <acronym>KL</acronym> programs running in that environment.  This does not, however, affect the semantics of the language; the <acronym>KL</acronym> type system can still be explained purely from the point of view of the language itself.
+    </para>
+
+    <para>
+      Like most programming languages, <acronym>KL</acronym> has support for both a fixed set of atomic types from which other types are derived as well as different kinds of derived types.
+    </para>
+
+    <section>
+      <title>Atomic Types</title>
+
+      <para>
+        The KL atomic types are the following:
+
+        <variablelist>
+          <varlistentry>
+            <term><type>Boolean</type></term>
+            <listitem><para>a type whose value can be either <constant>true</constant> or <constant>false</constant></para></listitem>
+          </varlistentry>
+    
+          <varlistentry>
+            <term><type>Byte</type></term>
+            <listitem><para>an 8-bit unsigned integer value</para></listitem>
+          </varlistentry>
+    
+          <varlistentry>
+            <term><type>Integer</type></term>
+            <listitem><para>a 32-bit signed integer value</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><type>Size</type></term>
+            <listitem><para>an unsigned integer value which is 32-bit on 32-bit platforms and 64-bit on 64-bit platforms.  <type>Size</type> is usually used to either index into or count the number of elements in an array</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><type>Index</type></term>
+            <listitem><para>an alias for <type>Size</type></para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><type>Scalar</type></term>
+            <listitem><para>a 32-bit IEEE floating point value</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><type>Float64</type></term>
+            <listitem><para>a 64-bit IEEE floating point value</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><type>String</type></term>
+            <listitem><para>a sequence of zero or more characters</para></listitem>
+          </varlistentry>
+        </variablelist>
+      </para>
+      
+      <section>
+        <title>The <type>Boolean</type> Type</title>
+
+        <para>
+          The value of an expression of <type>Boolean</type> type is either logical true or logical false.  The type has the following properties:
+
+          <itemizedlist>
+            <listitem><para>
+              The constants <constant>true</constant> and <constant>false</constant> are <type>Boolean</type> values with logical values true and false, respectively.
+            </para></listitem>
+
+            <listitem><para>
+              All other atomic types cast to Boolean as follows:
+              
+              <itemizedlist>
+                <listitem><para><type>Byte</type>, <type>Integer</type> and <type>Size</type> values cast to true if and only if the value is non-zero</para></listitem>
+                <listitem><para><type>Scalar</type> and <type>Float64</type> values cast true if and only if the value is not equal to <constant>0.0</constant> or <constant>-0.0</constant></para></listitem>
+                <listitem><para><type>String</type> values cast to true if and only if their length is greater than zero</para></listitem>
+                <listitem><para>arrays and dictionaries cast to true if and only if they are non-empty</para></listitem>
+                <listitem><para>by default, structures do not cast to <type>Boolean</type>, but you can implement the cast if desired</para></listitem>
+              </itemizedlist>
+            </para></listitem>
+
+            <listitem><para>
+              For operators:
+              
+              <itemizedlist>
+                <listitem><para>None of the arithmetic operators (binary <token>+</token>, <token>-</token>, <token>*</token>, <token>/</token>, <token>%</token> as well as unary <token>-</token> and <token>+</token>) are valid for <type>Boolean</type> values</para></listitem>
+                <listitem><para>Only the <token>==</token> and <token>!=</token> comparison operators are valid for <type>Boolean</type> values</para></listitem>
+                <listitem><para>All of the bitwise binary operators (<token>|</token>, <token>&amp;</token>, <token>^</token> and <token>~</token>) are valid for <type>Boolean</type> values and treat the value as if were a single bit</para></listitem>
+              </itemizedlist>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+        
+        <example xml:id="ex.boolean">
+          <title>Example use of a <type>Boolean</type> value</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  Boolean a = true;
+  report a;
+  Boolean b = a & false;
+  report b;
+  report a != b;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+true
+false
+true              
+          ]]></screen>
+        </example>
+      </section>
+
+      <section>
+        <title>Integer Types</title>
+        
+        <para>
+          The <type>Byte</type>, <type>Integer</type> and <type>Size</type> types (collectively known as <glossterm>integer types</glossterm>) represent whole integers.  These types differ only in their bit width and whether they are signed or unsigned, as follows:
+          
+          <variablelist>
+            <varlistentry>
+              <term><type>Byte</type></term>
+              <listitem><simpara>8-bit unsigned integer</simpara></listitem>
+            </varlistentry>
+            
+            <varlistentry>
+              <term><type>Integer</type></term>
+              <listitem><simpara>32-bit signed integer</simpara></listitem>
+            </varlistentry>
+            
+            <varlistentry>
+              <term><type>Size</type></term>
+              <listitem><simpara>unsigned integer that is 32-bit on 32-bit systems and 64-bit on 64-bit systems</simpara></listitem>
+            </varlistentry>
+          </variablelist>
+        </para>
+        
+        <note><simpara><type>Index</type> is an alias for <type>Size</type></simpara></note>
+
+        <para>
+          <glossterm>Integer types</glossterm> behave as follows:
+          
+          <itemizedlist>
+            <listitem><simpara>
+              Integer constants (eg. <constant>43562</constant>) are of type <type>Integer</type> if their value is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation>, otherwise they are of type <type>Size</type>.
+            </simpara></listitem>
+
+            <listitem><simpara>
+              All of the arithmetic, comparison and bitwise operators work as expected for <glossterm>integer types</glossterm>, with the exception of unary <token>-</token> which does not work for values of type <type>Size</type> and <type>Byte</type>.
+            </simpara></listitem>
+          </itemizedlist>
+        </para>
+        
+        <example xml:id="ex.integers">
+          <title>Example use of <glossterm>integer types</glossterm></title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  Byte b = 64;
+  report b;
+  Size s = 45 * Size(b) + 32;
+  report s;
+  Integer i = -75 * Integer(s) + 18;
+  report i;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+64
+2912
+-218382
+          ]]></screen>
+        </example>
+      </section>
+
+      <section>
+        <title>Floating-Point Types</title>
+        
+        <para>
+          The <type>Scalar</type>, and <type>Float64</type> types (collectively known as <glossterm>floating-point types</glossterm>) represent <acronym>IEEE</acronym> floating-point numbers.  These types differ only in their bit width, as follows:
+          
+          <variablelist>
+            <varlistentry>
+              <term><type>Scalar</type></term>
+              <listitem><simpara>32-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
+            </varlistentry>
+            
+            <varlistentry>
+              <term><type>Integer</type></term>
+              <listitem><simpara>64-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
+            </varlistentry>
+          </variablelist>
+        </para>
+        
+        <para>
+          <glossterm>Floating-point types</glossterm> behave as follows:
+          
+          <itemizedlist>
+            <listitem><para>
+              Floating-point constants have the same syntax as in Javascript and C, and are of type <type>Float64</type>.  The following are examples of Scalar constants: <constant>0.0</constant>, <constant>1.0</constant>, <constant>3.14159265358979</constant>, <constant>8.9e-6</constant>, <constant>4356.123E42</constant>
+            </para></listitem>
+            
+            <listitem><para>
+              All of the arithmetic and comparison operators are valid for floating-point values.  None of the bitwise operators are valid for floating-point values.
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+
+      <section>
+        <title>The <type>String</type> Type</title>
+        
+        <para>
+          The <type>String</type> type represents a text string, ie. a sequence of zero or more characters.  A value of type <type>String</type> is referred to as a <glossterm>string value</glossterm>.
+        </para>
+
+        <para>          
+          The semantics of the <type>String</type> type in <acronym>KL</acronym> are important to understand.  Strings have the following key properties:
+          
+          <itemizedlist>
+            <listitem><simpara>A string is a sequence of zero or more characters.</simpara></listitem>
+            <listitem><simpara>The length of a string is value of type <type>Size</type>, and the maximum length of a string is the maximum value of type <type>Size</type>.</simpara></listitem>
+            <listitem><simpara>String constants can be specified inline in <acronym>KL</acronym> source files using single- or double-quotation marks, just as JavaScript.  Examples of string constants: <constant>"Hello, world!"</constant>, <constant>'A string\nwith a newline'</constant>, <constant>"A string containing \"double quotes\""</constant></simpara></listitem>
+            <listitem><simpara>Strings are <emphasis>reference-counted</emphasis> and <emphasis>copy-on-write</emphasis>.  This means that if you assign a string value to multiple variables, there is only one copy of the actual string until someone changes one of the strings.</simpara></listitem>
+            <listitem><para>
+              Strings support the following operations and properties, which are all exactly the same as JavaScript:
+              <itemizedlist>
+                <listitem><simpara>They have a <property>.length</property> property which returns the number of characters in the string</simpara></listitem>
+                <listitem><simpara>The <token>+=</token> assignment operator is used to append another string to a given string</simpara></listitem>
+                <listitem><simpara>A new string can be created by concatenating two other strings using the <token>+</token> binary operation</simpara></listitem>
+                <listitem><simpara>Strings can be compared using the usual <token>==</token>, <token>!=</token>, <token>&lt;</token>, <token>&lt;=</token>, <token>&gt;</token> and <token>&gt;=</token> logical operators.</simpara></listitem>
+              </itemizedlist>
+            </para></listitem>
+            <listitem><simpara>Unlike C or C++, strings can contain the null character (ASCII 0).</simpara></listitem>
+            <listitem><simpara>Strings have no notion of encoding; they are just sequences of bytes.  String encodings are determined by the application space where the strings are used.  Note that everything in Fabric itself uses the UTF-8 encoding, but Fabric extensions may need to convert strings into other encodings.</simpara></listitem>
+            <listitem><simpara>All other types in <acronym>KL</acronym> can be converted to strings through a cast; this conversion simply creates a string which is a human-readable version of the value.</simpara></listitem>
+          </itemizedlist>
+        </para>
+
+        <example>
+          <title>Example use of string values</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  String a = "A string";
+  report a;
+  report "a has length " + a.length;
+  String b = "Another string";
+  report b;
+  String c = a + " and " + b;
+  report c;
+  b += " now includes " + a;
+  report b;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+A string
+a has length 8
+Another string
+A string and Another string
+Another string now includes A string
+          ]]></screen>
+        </example>
+      </section>
+    </section>
+
+<!--
+### Derived Types
+
+In addition to the atomic types, KL supports three derived types: structures, variable-length arrays and fixed-length arrays.
+
+#### Structures
+
+Structures are usually declared outside of KL using Fabric's "registered type" system, but they can also be declared in KL code itself using the following syntax:
+
+```javascript
+struct NewType {
+  Scalar firstMember;
+  String secondMember;
+  Integer thirdMemberVarArray[];
+};
+```
+
+All structure declarations in KL must be in the global scope; it is not possible to declare a structure within a function scope.
+
+Access to structure members is through the `.` operator, as in Javascript.
+
+Note the use of the variable-length array as the last member; derived types can nest arbitrarily.
+
+Some details about structures:
+
+- Currently, the structure members are "packed", meaning that there is no space in member between the structure members.  In a future version of Fabric it will be possible to explicitly specify structure member alignment and packing.
+- It is possible to overload operators and add "methods" to structures; this will be described below.
+
+Example use of a structure:
+
+```javascript
+struct MyNewType {
+  Integer i;
+  String s;
+};
+
+function entry() {
+  MyNewType mnt;
+  mnt.s = "Hello!";
+  mnt.i = 42;
+  report mnt;
+}
+```
+
+The output is:
+
+```
+{i:42,s:"Hello!"}
+```
+
+#### Variable-Length Arrays
+
+Fabric supports variable-length arrays, i.e. where the length of the array is dynamic at runtime.  Variable-length arrays are declared and used as follows:
+
+```javascript
+String strings[];
+strings.push("Hello!");
+report "The first element of strings is '" + strings[0] + "'";
+```
+
+Variable-length arrays have the following properties:
+
+- Like strings, variable-length arrays are *reference counted* and *copy on write*.  This means that you can create a large variable-length array and then assign it to multiple variables; there will only be one array in memory until you modify one of the variables.
+- Variable-length array declarations can be nested, and can be co-nested with fixed-length arrays (see below).  For example,
+```javascript
+Integer b[][];  // A variable-length array of variable-length arrays of integers
+Boolean a[2][]; // An array of 2 variable-length arrays of booleans
+```
+- The indexing of both variable- and fixed-length arrays in KL is 0-based (as in Javascript and C)
+- Access to variable-length arrays using the `[]` indexing operator is bounds-checked; if the index runs off the end of the array, an error is reported automatically (using the same mechanism as `report`) and the default value of the underlying type is returned.  In the future, an exception will be thrown.
+- Variable-length arrays additionally support the following operations:
+  - The `push` method to append an element to the end of the array
+  - The `size` property which is the length of the array
+  - The `resize` method which resizes the array.  Any new elements at the end are initialized with the default value for the underlying type.
+
+Example use of variable length arrays:
+
+```javascript
+function entry() {
+  Integer a[];
+  report "The array a has size " + a.size + " and value " + a;
+  a.push(42);
+  a.push(84);
+  report "The array a NOW has size " + a.size + " and value " + a;
+  a.resize(4);
+  report "The array a NOW has size " + a.size + " and value " + a;
+}
+```
+
+The output is:
+
+```
+The array a has size 0 and value []
+The array a NOW has size 2 and value [42,84]
+The array a NOW has size 4 and value [42,84,0,0]
+```
+
+#### Fixed-Length Arrays
+
+KL also supports fixed-length arrays whose sizes are fixed at compile time.  A fixed-length array must have length 0 or greater, and is part of the declaration of the variable or parameter.  An example of the declaration and use of fixed length arrays:
+
+```javascript
+String a[4];
+a[0] = "one";
+a[1] = "two";
+a[2] = "three";
+a[3] = "four";
+report a[2]; // Reports 'three'
+```
+
+Fixed-length arrays have the following properties:
+
+- Unlike variable-length arrays, fixed-length arrays are copy-by-value.  This means that if you assign one fixed-length array to another, it will copy the array elements one-by-one.
+- Fixed-length array declarations can be nested, and can be co-nested with variable-length arrays.  For example,
+```javascript
+Integer b[2][2];  // An array of 2 arrays of 2 integers
+Boolean a[2][]; // An array of 2 variable-length arrays of booleans
+```
+- The indexing of both variable- and fixed-length arrays in KL is 0-based (as in Javascript and C)
+- Access to variable-length arrays using the `[]` indexing operator is bounds-checked; if the index runs off the end of the array, an error is reported automatically (using the same mechanism as `report`) and the default value of the underlying type is returned.  In the future, an exception will be thrown.
+
+Example use of fixed-length arrays:
+
+```javascript
+function Scalar det(Scalar mat[2][2]) {
+  return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+}
+
+function entry() {
+  Scalar mat[2][2];
+  mat[0][0] = 3.5;
+  mat[0][1] = -9.2;
+  mat[1][0] = -2.1;
+  mat[1][1] = 8.6;
+  report "The determinant of " + mat + " is " + det(mat);
+}
+```
+
+The output is:
+
+```
+The determinant of [[3.5,-9.2],[-2.1,8.6]] is 10.78
+```
+
+#### Dictionaries
+
+KL supports key-value pair dictionaries.  The type of the key of a dictionary can be any of the KL atomic types (e.g. Integer, String) and the type of the Value can be any type.  An example of the declaration and use of a dictionary:
+
+```javascript
+String a[String];
+a["uno"] = "one";
+a["dos"] = "two";
+a["tres"] = "three";
+a["cuatro"] = "four";
+report a["dos"]; // Reports 'two'
+```
+
+Dictionaries have the following properties:
+
+- Dictionaries are copy-by-value.  However, they are always passed by reference to functions, so it is not necessary to pass them as an `io` parameter to avoid copies.
+- Dictionaries can be nested, and can be co-nested with array types.  For example,
+```javascript
+Integer b[String][2]; // An String-to-Fixed-Length-Integer-Array dictionary
+Boolean a[][Integer]; // A variable array of Integer-to-Boolean dictionaries
+```
+- There is no limit to the size of dictionaries other than available memory
+- Dictionaries support the `has` method to test for inclusion of a key in the dictionary
+- Dictionaries support indexing using the `[]` indexing operator as both r-values and l-values
+- Dictionaries support the `delete` method to delete the entry with a given key
+- Dictionaries can be iterated over using Javascript-like `in` iteration:
+```javascript
+String dict[String];
+for (k in dict)
+  report "dict["+k+"] = "+dict[k];
+```
+- For improved performance, both the key and value can be made available through dictionary iteration.  The value is an l-value if and only if the dictionary is an l-value.
+```javascript
+String dict[String];
+for (k, v in dict)
+  report "dict["+k+"] = "+v;
+```
+- Insertion order (not sort order!) is the iteration order for dictionaries, just like Javascript
+- Access to a non-existent key as an r-value will throw an exception.
+- Access to a non-existent key as an l-value will create a new entry with the default value of the type.
+
+Example use of dictionaries:
+
+```javascript
+  Scalar a[String];
+  a['pi'] = 3.14;
+  a['e'] = 2.71;
+  report "a is:";
+  for ( k in a ) {
+    report "a['" + k + "'] = " + a[k];
+  }
+  a.delete['pi'];
+  report "a is now:";
+  for ( k in a ) {
+    report "a['" + k + "'] = " + a[k];
+  }
+```
+
+The output is:
+
+```
+a is:
+a['pi'] = 3.14
+a['e'] = 2.71
+a is now:
+a['e'] = 2.71
+```
+
+### Type Aliases
+
+The `alias` statement can be used to alias a type to make code more readable:
+
+```javascript
+alias Scalar Mat22[2][2];
+
+function entry() {
+  Mat22 mat22;
+  report mat22;
+}
+```
+
+The output is:
+
+```
+[[0,0],[0,0]]
+```
+
+### The Data Type and the data and dataSize Methods
+
+When interfacing with external libraries such as OpenGL, it is sometimes necessary to get direct access to the data underlying a value.  An example is a library call that takes a pointer to data.  KL itself has no notion of pointers; instead, KL has the concept of the `Data` type whose value is a pointer to data which can be passed to an external library call.
+
+Most values in KL have a built-in method called `data` which returns a value of type `Data`, and a built-in method called `dataSize` which returns a value of type `Size`.  The value returned by the `data` method is a pointer to the data underlying the value, and the value returned by the `dataSize` method is the number of bytes the value occupies in memory.  The only values which do not support the `data` and `dataSize` methods are structures which contain strings or variable-length arrays; this is because such structures do not store their contents contiguously in memory.
+
+Unlike C, the "pointers" returned by the `data` methods cannot be inspected or used in any expressions; the only thing which can be done is a cast to `Boolean`, which will be `true` if and only if the `Data` value points to a value whose size is greater than zero.  However, these `Data` values can be passed directly to external library functions provided by Fabric itself or Fabric extensions, where they are used as pointers to data in memory.
+
+Note that for values of type `String`, the value returned by `dataSize` includes a null terminator which is automatically appended to the string by Fabric; this is so that the string data can be directly used in C library calls as a regular C string.
+
+Example code illustrating the use of `Data` values and the `data` and `dataSize` methods:
+
+```javascript
+function entry() {
+  String s;
+  report "s = '" + s + "'";
+  report "s.data = " + s.data;
+  report "(Boolean)s.data = " + (Boolean)s.data;
+  report "s.dataSize = " + s.dataSize;
+  s = "Hello";
+  report "s = '" + s + "'";
+  report "s.data = " + s.data;
+  report "(Boolean)s.data = " + (Boolean)s.data;
+  report "s.dataSize = " + s.dataSize;
+}
+```
+
+The output is:
+
+```
+s = ''
+s.data = <Opaque>
+(Boolean)s.data = false
+s.dataSize = 1
+s = 'Hello'
+s.data = <Opaque>
+(Boolean)s.data = true
+s.dataSize = 6
+```
+-->
+  </chapter>
 </book>
