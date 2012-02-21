@@ -1390,12 +1390,6 @@ function clone_obj(obj, deepclone) {
                 offset: new FABRIC.Vec2(5, 5),
                 shadowParent: this
               }, options, false);
-          //  var dropShadow = this.createCircle().size(this.size())
-          //                                      .radius(this.radius())
-          //                                      .addClass("Shadow")
-          //                                      .translate(options.offset);
-          //  this.parent.insertBefore(dropShadow, this);
-          //  this.addOnSizeCallback(function(size){  dropShadow.size(size);});
             return this;
           }
         }));
@@ -1481,8 +1475,7 @@ function clone_obj(obj, deepclone) {
           operatorPadding: 2,
           operatorHeight: 14,
           createEditButton: true,
-          draggable: true,
-          shadow: new FABRIC.Vec2(3, 3)
+          draggable: true
         }, options, false);
 
         var nodeGroup = this.createGroup();
@@ -1493,7 +1486,6 @@ function clone_obj(obj, deepclone) {
                                 .addClass('Node')
                                 .size(nodeWidth, nodeHeight).cornerRadius(3)
                                 .color(options.color);
-      //  nodeRect.dropShadow({ offset: options.shadow });
         var nodeTitle;
         if (options.text) {
           nodeTitle = nodeGroup.createText()
@@ -1650,7 +1642,6 @@ function clone_obj(obj, deepclone) {
                                           .size(operatorWidth, options.operatorHeight)
                                           .cornerRadius(options.operatorHeight * 0.4)
                                           .color(operatorOptions.color);
-                                          //.dropShadow({ offset:new FABRIC.Vec2(3,3) });
           operatorGroup.createText()
                        .preventSelection()
                        .text(operatorOptions.text)
