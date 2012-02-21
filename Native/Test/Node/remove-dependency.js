@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
+
 F = require('Fabric').createClient();
 
 parentNode = F.DG.createNode('parentNode');

@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
+
 #ifndef __FABRIC_FILESYSTEM_EXTENSION__
 #define __FABRIC_FILESYSTEM_EXTENSION__
 
