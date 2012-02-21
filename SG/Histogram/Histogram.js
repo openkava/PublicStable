@@ -1,3 +1,6 @@
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
 var constructHistogram = function(domRootID, options){
   

@@ -1,8 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
 FABRIC.define(["RT/Math", "RT/Mat33"], function() {
   

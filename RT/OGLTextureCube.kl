@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
 // The 6 sides of the cube area loaded in as individual textures,
 // and the data pointers are stored in the OGLTextureCube member.

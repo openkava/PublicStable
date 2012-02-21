@@ -1,8 +1,6 @@
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
-// Algorithm copied from http://www.terathon.com/code/tangent.html
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
 use Vec2, Vec3, Vec4, Math;
 
