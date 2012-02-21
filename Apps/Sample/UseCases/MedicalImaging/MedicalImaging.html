@@ -60,6 +60,49 @@
     
     <script type="text/javascript">
 
+$(document).ready(function() {
+  
+  $('#savePreset').button({ text: true });
+  $('#newPreset').button({ text: true });
+  
+  $('#aboutDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  var $aboutButton = $('#aboutButton').button({ text: true })
+    .click(function() {
+      viewport.hide();
+      $('#aboutDialog').dialog({
+        autoOpen: true,
+        modal: true,
+        buttons: {
+          Ok: function() {
+            $(this).dialog( "close" );
+          }
+        },
+        closeOnEscape: true,
+        close: function(ev, ui) { viewport.show(); },
+      });
+    });
+  
+  $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
+  $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
+  $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
+  $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
+  $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
+
+  var $sliders2D = [
+    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
+  ];
+  
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
+
+  $( "#tabs" ).tabs();
+});
 
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
@@ -339,46 +382,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
 });
 
 
-$(document).ready(function() {
+  
   var i, j;
-  
-  var $savePresetButton = $('#savePreset').button({ text: true });
-  var $newPresetButton = $('#newPreset').button({ text: true });
-  
-  $('#aboutDialog').dialog({
-    autoOpen: false,
-    modal: true
-  });
-  var $aboutButton = $('#aboutButton').button({ text: true })
-    .click(function() {
-      viewport.hide();
-      $('#aboutDialog').dialog({
-        autoOpen: true,
-        modal: true,
-        buttons: {
-          Ok: function() {
-            $(this).dialog( "close" );
-          }
-        },
-        closeOnEscape: true,
-        close: function(ev, ui) { viewport.show(); },
-      });
-    });
-  
-              
-  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
-  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
-  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
-  var $specularFactorSlider = $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
-  var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
-
-  var $sliders2D = [
-    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
-    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
-    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
-  ];
-  
-  
   
   var scene = FABRIC.SceneGraph.createScene();
   
@@ -496,42 +501,47 @@ $(document).ready(function() {
       };
   };
 
-  $opacityRangeSlider.slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
-  $opacityRangeSlider.bind('slide', function(event, ui){
+  $('#opacityRange').slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
+  $('#opacityRange').bind('slide', function(event, ui){
     volumeNode.setMinOpacity(ui.values[0]);
     volumeNode.setMaxOpacity(ui.values[1]);
     viewport.redraw();
     return true;
   });
 
+  var $sliders2D = [
+    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
+  ];
   for( i = 0; i < 3; ++i ) {
     $sliders2D[i].slider('value', texture2DSlice[i].getRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
   }
 
-  $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
-  $resolutionFactorSlider.bind('slide', function(event, ui) {
+  $('#resolutionFactor').slider('value', volumeNode.getResolutionFactor());
+  $('#resolutionFactor').bind('slide', function(event, ui) {
     volumeNode.setResolutionFactor(ui.value);
     viewport.redraw();
     return true;
   });
   
-  $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
-  $brightnessSlider.bind('slide', function(event, ui) {
+  $('#brightness').slider('value', volumeNode.getBrightnessFactor());
+  $('#brightness').bind('slide', function(event, ui) {
     volumeNode.setBrightnessFactor(ui.value);
     viewport.redraw();
     return true;
   });
   
-  $transparencySlider.slider('value', volumeNode.getTransparency());
-  $transparencySlider.bind('slide', function(event, ui) {
+  $('#transparency').slider('value', volumeNode.getTransparency());
+  $('#transparency').bind('slide', function(event, ui) {
     volumeNode.setTransparency(ui.value);
     viewport.redraw();
     return true;
   });
   
-  $specularFactorSlider.slider('value', volumeNode.getSpecularFactor());
-  $specularFactorSlider.bind('slide', function(event, ui) {
+  $('#specularFactor').slider('value', volumeNode.getSpecularFactor());
+  $('#specularFactor').bind('slide', function(event, ui) {
     volumeNode.setSpecularFactor(ui.value);
     viewport.redraw();
     return true;
@@ -554,7 +564,7 @@ $(document).ready(function() {
     var invertColor = $('#invert').attr('checked');
     volumeNode.setInvertColor(invertColor ? 1 : 0);
     volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
-    $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
+    $('#brightness').slider('value', volumeNode.getBrightnessFactor());
     viewport.redraw();
   });
 
@@ -641,11 +651,6 @@ $(document).ready(function() {
 
   window.scene = scene;
 
-  $(".box").addClass("ui-widget");
-  $(".box h2").addClass("ui-widget-header ui-corner-all");
-  $(".content").addClass("ui-widget-content");
-
-  $( "#tabs" ).tabs();
 
   var curveEditor = constructCurveEditor('opacityMapping', scene, opacityKeyTrackAnimationContainer, {
     timeStripe: false,
@@ -730,7 +735,7 @@ $(document).ready(function() {
       
       addOnLoadCallback();
   
-      $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+      $('#resolutionFactor').slider('value', volumeNode.getResolutionFactor());
     //  curveEditor.redraw();
       colorGradient.redraw();
       localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
@@ -750,12 +755,12 @@ $(document).ready(function() {
     modal: true
   });
   
-  $savePresetButton.button()
+  $('#savePreset').button()
     .click(function() {
       savePreset();
     });
   
-  $newPresetButton.button()
+  $('#newPreset').button()
     .click(function() {
       var closeDialogAndSavePreset = function(){
         currPresetName = $("#presetName").val();
@@ -804,7 +809,6 @@ $(document).ready(function() {
     }
   });
   
-});
 });
 
 </script>
