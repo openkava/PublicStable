@@ -1,3 +1,6 @@
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
  var _gaq = _gaq || [];
  _gaq.push(['_setAccount', 'UA-25833362-1']);

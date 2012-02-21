@@ -1,9 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
-//determine if an object is a valid Vec2.
 FABRIC.isVec2 = function(t) {
   return t && t.getType &&
          t.getType() === 'FABRIC.Vec2';

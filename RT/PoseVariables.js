@@ -1,4 +1,6 @@
-
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
 FABRIC.define(["RT/Math", "RT/Vec3", "RT/Quat", "RT/Xfo"], function() {
 
