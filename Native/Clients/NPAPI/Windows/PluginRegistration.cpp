@@ -1,6 +1,6 @@
-// PluginRegistration.cpp
-// *****************************************************************************
-// (C) 2011 Fabric Technologies, Inc.
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
 
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Assert.h>

@@ -1,10 +1,5 @@
 /*
- *  AssignOp.h
- *  Fabric
- *
- *  Created by Halfdan Ingvarsson on 11-01-10.
- *  Copyright 2011 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_AST_ASSIGN_OP_H

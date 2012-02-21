@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ */
+
 operator entry() {
   Integer sa<>(Size(10));
   for (Size i=0; i<10; ++i)

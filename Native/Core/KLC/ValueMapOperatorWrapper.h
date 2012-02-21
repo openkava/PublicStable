@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
  */
- 
+
 #ifndef _FABRIC_KLC_VALUE_MAP_OPERATOR_WRAPPER_H
 #define _FABRIC_KLC_VALUE_MAP_OPERATOR_WRAPPER_H
 

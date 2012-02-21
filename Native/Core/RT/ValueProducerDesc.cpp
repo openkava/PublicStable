@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
  */
- 
+
 #include "ValueProducerDesc.h"
 #include "ValueProducerImpl.h"
 #include <Fabric/Base/JSON/Encoder.h>
