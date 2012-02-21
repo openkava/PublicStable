@@ -100,67 +100,67 @@ operator entry() {
 
         <variablelist>
           <varlistentry>
-            <term><type>Boolean</type></term>
-            <listitem><para>a type whose value can be either <constant>true</constant> or <constant>false</constant></para></listitem>
+            <term><code>Boolean</code></term>
+            <listitem><para>a type whose value can be either <code>true</code> or <code>false</code></para></listitem>
           </varlistentry>
     
           <varlistentry>
-            <term><type>Byte</type></term>
+            <term><code>Byte</code></term>
             <listitem><para>an 8-bit unsigned integer value</para></listitem>
           </varlistentry>
     
           <varlistentry>
-            <term><type>Integer</type></term>
+            <term><code>Integer</code></term>
             <listitem><para>a 32-bit signed integer value</para></listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><type>Size</type></term>
-            <listitem><para>an unsigned integer value which is 32-bit on 32-bit platforms and 64-bit on 64-bit platforms.  <type>Size</type> is usually used to either index into or count the number of elements in an array</para></listitem>
+            <term><code>Size</code></term>
+            <listitem><para>an unsigned integer value which is 32-bit on 32-bit platforms and 64-bit on 64-bit platforms.  <code>Size</code> is usually used to either index into or count the number of elements in an array</para></listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><type>Index</type></term>
-            <listitem><para>an alias for <type>Size</type></para></listitem>
+            <term><code>Index</code></term>
+            <listitem><para>an alias for <code>Size</code></para></listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><type>Scalar</type></term>
+            <term><code>Scalar</code></term>
             <listitem><para>a 32-bit IEEE floating point value</para></listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><type>Float64</type></term>
+            <term><code>Float64</code></term>
             <listitem><para>a 64-bit IEEE floating point value</para></listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><type>String</type></term>
+            <term><code>String</code></term>
             <listitem><para>a sequence of zero or more characters</para></listitem>
           </varlistentry>
         </variablelist>
       </para>
       
       <section>
-        <title>The <type>Boolean</type> Type</title>
+        <title>The <code>Boolean</code> Type</title>
 
         <para>
-          The value of an expression of <type>Boolean</type> type is either logical true or logical false.  The type has the following properties:
+          The value of an expression of <code>Boolean</code> type is either logical true or logical false.  The type has the following properties:
 
           <itemizedlist>
             <listitem><para>
-              The constants <constant>true</constant> and <constant>false</constant> are <type>Boolean</type> values with logical values true and false, respectively.
+              The constants <code>true</code> and <code>false</code> are <code>Boolean</code> values with logical values true and false, respectively.
             </para></listitem>
 
             <listitem><para>
               All other atomic types cast to Boolean as follows:
               
               <itemizedlist>
-                <listitem><para><type>Byte</type>, <type>Integer</type> and <type>Size</type> values cast to true if and only if the value is non-zero</para></listitem>
-                <listitem><para><type>Scalar</type> and <type>Float64</type> values cast true if and only if the value is not equal to <constant>0.0</constant> or <constant>-0.0</constant></para></listitem>
-                <listitem><para><type>String</type> values cast to true if and only if their length is greater than zero</para></listitem>
+                <listitem><para><code>Byte</code>, <code>Integer</code> and <code>Size</code> values cast to true if and only if the value is non-zero</para></listitem>
+                <listitem><para><code>Scalar</code> and <code>Float64</code> values cast true if and only if the value is not equal to <code>0.0</code> or <code>-0.0</code></para></listitem>
+                <listitem><para><code>String</code> values cast to true if and only if their length is greater than zero</para></listitem>
                 <listitem><para>arrays and dictionaries cast to true if and only if they are non-empty</para></listitem>
-                <listitem><para>by default, structures do not cast to <type>Boolean</type>, but you can implement the cast if desired</para></listitem>
+                <listitem><para>by default, structures do not cast to <code>Boolean</code>, but you can implement the cast if desired</para></listitem>
               </itemizedlist>
             </para></listitem>
 
@@ -168,16 +168,16 @@ operator entry() {
               For operators:
               
               <itemizedlist>
-                <listitem><para>None of the arithmetic operators (binary <token>+</token>, <token>-</token>, <token>*</token>, <token>/</token>, <token>%</token> as well as unary <token>-</token> and <token>+</token>) are valid for <type>Boolean</type> values</para></listitem>
-                <listitem><para>Only the <token>==</token> and <token>!=</token> comparison operators are valid for <type>Boolean</type> values</para></listitem>
-                <listitem><para>All of the bitwise binary operators (<token>|</token>, <token>&amp;</token>, <token>^</token> and <token>~</token>) are valid for <type>Boolean</type> values and treat the value as if were a single bit</para></listitem>
+                <listitem><para>None of the arithmetic operators (binary <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> as well as unary <code>-</code> and <code>+</code>) are valid for <code>Boolean</code> values</para></listitem>
+                <listitem><para>Only the <code>==</code> and <code>!=</code> comparison operators are valid for <code>Boolean</code> values</para></listitem>
+                <listitem><para>All of the bitwise binary operators (<code>|</code>, <code>&amp;</code>, <code>^</code> and <code>~</code>) are valid for <code>Boolean</code> values and treat the value as if were a single bit</para></listitem>
               </itemizedlist>
             </para></listitem>
           </itemizedlist>
         </para>
         
         <example xml:id="ex.boolean">
-          <title>Example use of a <type>Boolean</type> value</title>
+          <title>Example use of a <code>Boolean</code> value</title>
           <programlisting language="KL"><![CDATA[
 operator entry() {
   Boolean a = true;
@@ -200,38 +200,38 @@ true
         <title>Integer Types</title>
         
         <para>
-          The <type>Byte</type>, <type>Integer</type> and <type>Size</type> types (collectively known as <glossterm>integer types</glossterm>) represent whole integers.  These types differ only in their bit width and whether they are signed or unsigned, as follows:
+          The <code>Byte</code>, <code>Integer</code> and <code>Size</code> types (collectively known as <glossterm>integer types</glossterm>) represent whole integers.  These types differ only in their bit width and whether they are signed or unsigned, as follows:
           
           <variablelist>
             <varlistentry>
-              <term><type>Byte</type></term>
+              <term><code>Byte</code></term>
               <listitem><simpara>8-bit unsigned integer</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
-              <term><type>Integer</type></term>
+              <term><code>Integer</code></term>
               <listitem><simpara>32-bit signed integer</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
-              <term><type>Size</type></term>
+              <term><code>Size</code></term>
               <listitem><simpara>unsigned integer that is 32-bit on 32-bit systems and 64-bit on 64-bit systems</simpara></listitem>
             </varlistentry>
           </variablelist>
         </para>
         
-        <note><simpara><type>Index</type> is an alias for <type>Size</type></simpara></note>
+        <note><simpara><code>Index</code> is an alias for <code>Size</code></simpara></note>
 
         <para>
           <glossterm>Integer types</glossterm> behave as follows:
           
           <itemizedlist>
             <listitem><simpara>
-              Integer constants (eg. <constant>43562</constant>) are of type <type>Integer</type> if their value is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation>, otherwise they are of type <type>Size</type>.
+              Integer constants (eg. <code>43562</code>) are of type <code>Integer</code> if their value is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation>, otherwise they are of type <code>Size</code>.
             </simpara></listitem>
 
             <listitem><simpara>
-              All of the arithmetic, comparison and bitwise operators work as expected for <glossterm>integer types</glossterm>, with the exception of unary <token>-</token> which does not work for values of type <type>Size</type> and <type>Byte</type>.
+              All of the arithmetic, comparison and bitwise operators work as expected for <glossterm>integer types</glossterm>, with the exception of unary <code>-</code> which does not work for values of type <code>Size</code> and <code>Byte</code>.
             </simpara></listitem>
           </itemizedlist>
         </para>
@@ -261,16 +261,16 @@ operator entry() {
         <title>Floating-Point Types</title>
         
         <para>
-          The <type>Scalar</type>, and <type>Float64</type> types (collectively known as <glossterm>floating-point types</glossterm>) represent <acronym>IEEE</acronym> floating-point numbers.  These types differ only in their bit width, as follows:
+          The <code>Scalar</code>, and <code>Float64</code> types (collectively known as <glossterm>floating-point types</glossterm>) represent <acronym>IEEE</acronym> floating-point numbers.  These types differ only in their bit width, as follows:
           
           <variablelist>
             <varlistentry>
-              <term><type>Scalar</type></term>
+              <term><code>Scalar</code></term>
               <listitem><simpara>32-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
-              <term><type>Integer</type></term>
+              <term><code>Integer</code></term>
               <listitem><simpara>64-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
             </varlistentry>
           </variablelist>
@@ -281,7 +281,7 @@ operator entry() {
           
           <itemizedlist>
             <listitem><para>
-              Floating-point constants have the same syntax as in Javascript and C, and are of type <type>Float64</type>.  The following are examples of Scalar constants: <constant>0.0</constant>, <constant>1.0</constant>, <constant>3.14159265358979</constant>, <constant>8.9e-6</constant>, <constant>4356.123E42</constant>
+              Floating-point constants have the same syntax as in Javascript and C, and are of type <code>Float64</code>.  The following are examples of Scalar constants: <code>0.0</code>, <code>1.0</code>, <code>3.14159265358979</code>, <code>8.9e-6</code>, <code>4356.123E42</code>
             </para></listitem>
             
             <listitem><para>
@@ -292,27 +292,27 @@ operator entry() {
       </section>
 
       <section>
-        <title>The <type>String</type> Type</title>
+        <title>The <code>String</code> Type</title>
         
         <para>
-          The <type>String</type> type represents a text string, ie. a sequence of zero or more characters.  A value of type <type>String</type> is referred to as a <glossterm>string value</glossterm>.
+          The <code>String</code> type represents a text string, ie. a sequence of zero or more characters.  A value of type <code>String</code> is referred to as a <glossterm>string value</glossterm>.
         </para>
 
         <para>          
-          The semantics of the <type>String</type> type in <acronym>KL</acronym> are important to understand.  Strings have the following key properties:
+          The semantics of the <code>String</code> type in <acronym>KL</acronym> are important to understand.  Strings have the following key properties:
           
           <itemizedlist>
             <listitem><simpara>A string is a sequence of zero or more characters.</simpara></listitem>
-            <listitem><simpara>The length of a string is value of type <type>Size</type>, and the maximum length of a string is the maximum value of type <type>Size</type>.</simpara></listitem>
-            <listitem><simpara>String constants can be specified inline in <acronym>KL</acronym> source files using single- or double-quotation marks, just as JavaScript.  Examples of string constants: <constant>"Hello, world!"</constant>, <constant>'A string\nwith a newline'</constant>, <constant>"A string containing \"double quotes\""</constant></simpara></listitem>
+            <listitem><simpara>The length of a string is value of type <code>Size</code>, and the maximum length of a string is the maximum value of type <code>Size</code>.</simpara></listitem>
+            <listitem><simpara>String constants can be specified inline in <acronym>KL</acronym> source files using single- or double-quotation marks, just as JavaScript.  Examples of string constants: <code>"Hello, world!"</code>, <code>'A string\nwith a newline'</code>, <code>"A string containing \"double quotes\""</code></simpara></listitem>
             <listitem><simpara>Strings are <emphasis>reference-counted</emphasis> and <emphasis>copy-on-write</emphasis>.  This means that if you assign a string value to multiple variables, there is only one copy of the actual string until someone changes one of the strings.</simpara></listitem>
             <listitem><para>
               Strings support the following operations and properties, which are all exactly the same as JavaScript:
               <itemizedlist>
                 <listitem><simpara>They have a <property>.length</property> property which returns the number of characters in the string</simpara></listitem>
-                <listitem><simpara>The <token>+=</token> assignment operator is used to append another string to a given string</simpara></listitem>
-                <listitem><simpara>A new string can be created by concatenating two other strings using the <token>+</token> binary operation</simpara></listitem>
-                <listitem><simpara>Strings can be compared using the usual <token>==</token>, <token>!=</token>, <token>&lt;</token>, <token>&lt;=</token>, <token>&gt;</token> and <token>&gt;=</token> logical operators.</simpara></listitem>
+                <listitem><simpara>The <code>+=</code> assignment operator is used to append another string to a given string</simpara></listitem>
+                <listitem><simpara>A new string can be created by concatenating two other strings using the <code>+</code> binary operation</simpara></listitem>
+                <listitem><simpara>Strings can be compared using the usual <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code> logical operators.</simpara></listitem>
               </itemizedlist>
             </para></listitem>
             <listitem><simpara>Unlike C or C++, strings can contain the null character (ASCII 0).</simpara></listitem>
@@ -348,37 +348,51 @@ Another string now includes A string
       </section>
     </section>
 
-<!--
-### Derived Types
-
-In addition to the atomic types, KL supports three derived types: structures, variable-length arrays and fixed-length arrays.
-
-#### Structures
-
-Structures are usually declared outside of KL using Fabric's "registered type" system, but they can also be declared in KL code itself using the following syntax:
-
-```javascript
+    <section>
+      <title>Derived Types</title>
+      
+      <para>
+        In addition to the atomic types, <acronym>KL</acronym> supports three classes of derived types: structures, arrays and dictionaries.
+      </para>
+      
+      <section>
+        <title>Structures</title>
+        
+        <para>
+          A <glossterm>structure</glossterm> is a collection of typed values that are placed together in memory.
+        </para>
+        
+        <para>
+          Structures are usually declared outside of <acronym>KL</acronym> using Fabric's <glossterm>registered type system</glossterm>, but they can also be declared in <acronym>KL</acronym> source code itself using the <code>struct</code> keyword:
+          
+          <example>
+            <title>Example structure declaration in <acronym>KL</acronym></title>
+            <programlisting language="KL"><![CDATA[
 struct NewType {
   Scalar firstMember;
   String secondMember;
   Integer thirdMemberVarArray[];
 };
-```
+            ]]></programlisting>
 
-All structure declarations in KL must be in the global scope; it is not possible to declare a structure within a function scope.
+            <note><simpara>Note the use of the variable-length array as the last member; derived types can nest arbitrarily.</simpara></note>
+            <warning><simpara>All structure declarations in <acronym>KL</acronym> must be in the global scope; it is not possible to declare a structure within a function scope.</simpara></warning>
+          </example>
+        </para>
+        
+        <para>
+          More details about structures:
+          
+          <itemizedlist>
+            <listitem><simpara>Access to structure members is through the <code>.</code> operator, as in JavaScript.</simpara></listitem>
+            <listitem><simpara>Currently, the structure members are <glossterm>packed</glossterm>, meaning that there is no space in member between the structure members.  In a future version of Fabric it will be possible to explicitly specify structure member alignment and packing.</simpara></listitem>
+            <listitem><simpara>It is possible to overload operators and add <glossterm>methods</glossterm> to structures; this will be described below.</simpara></listitem>
+          </itemizedlist>
+        </para>
 
-Access to structure members is through the `.` operator, as in Javascript.
-
-Note the use of the variable-length array as the last member; derived types can nest arbitrarily.
-
-Some details about structures:
-
-- Currently, the structure members are "packed", meaning that there is no space in member between the structure members.  In a future version of Fabric it will be possible to explicitly specify structure member alignment and packing.
-- It is possible to overload operators and add "methods" to structures; this will be described below.
-
-Example use of a structure:
-
-```javascript
+        <example>
+          <title>Example definition and use of a structure</title>
+          <programlisting language="KL"><![CDATA[
 struct MyNewType {
   Integer i;
   String s;
@@ -390,61 +404,95 @@ function entry() {
   mnt.i = 42;
   report mnt;
 }
-```
-
-The output is:
-
-```
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
 {i:42,s:"Hello!"}
-```
+          ]]></screen>
+        </example>
+      </section>
+    </section>
 
-#### Variable-Length Arrays
-
-Fabric supports variable-length arrays, i.e. where the length of the array is dynamic at runtime.  Variable-length arrays are declared and used as follows:
-
-```javascript
-String strings[];
-strings.push("Hello!");
-report "The first element of strings is '" + strings[0] + "'";
-```
-
-Variable-length arrays have the following properties:
-
-- Like strings, variable-length arrays are *reference counted* and *copy on write*.  This means that you can create a large variable-length array and then assign it to multiple variables; there will only be one array in memory until you modify one of the variables.
-- Variable-length array declarations can be nested, and can be co-nested with fixed-length arrays (see below).  For example,
-```javascript
+    <section>
+      <title>Arrays</title>
+      
+      <para>
+        An <glossterm>array</glossterm> is a sequence of values of the same type that are indexed by integers and placed sequentially in memory.  <acronym>KL</acronym> supports three types of arrays: variable-length arrays, fixed-length arrays, and sliced arrays.
+      </para>
+      
+      <section>
+        <title>Variable-Length Arrays</title>
+        
+        <para>
+          A <glossterm>variable-length array</glossterm> is an array whose length is dynamic at runtime.  Variable-length arrays are declared by appending <code>[]</code> to the name of the variable, parameter or structure member, eg. <code>String strings[]</code>.
+        </para>
+          
+        <para>
+          Variable-length arrays have the following properties:
+          
+          <itemizedlist>
+            <listitem><para>
+              Variable-length arrays, like all arrays in <acronym>KL</acronym>, are indexed using the <code>[</code>..<code>]</code> operator.  The indexing of arrays in <acronym>KL</acronym>, is 0-based (as in JavaScript and C).
+              
+              <informalexample>
+                <programlisting language="KL"><![CDATA[
+Size sizes[];
+sizes.push(42);
+sizes.push(21);
+sizes.push(3);
+report sizes[1]; // outputs "21"
+                ]]></programlisting>
+              </informalexample>
+            </para></listitem>
+            <listitem><para>
+              Variable-length arrays are copied when they are assigned.
+              <note><simpara>This means that there is no inexpensive way to assign arrays; this will probably be fixed in a future version of Fabric.</simpara></note>
+            </para></listitem>
+            <listitem><simpara>However, variable-length arrays are <glossterm>passed by reference</glossterm> into functions.  This means that they are not copied when passed to functions.</simpara></listitem>
+            <listitem><para>
+              Variable-length array declarations can be nested, and can be co-nested with fixed-length arrays (see below).
+              <informalexample>
+                <programlisting language="KL"><![CDATA[
 Integer b[][];  // A variable-length array of variable-length arrays of integers
 Boolean a[2][]; // An array of 2 variable-length arrays of booleans
-```
-- The indexing of both variable- and fixed-length arrays in KL is 0-based (as in Javascript and C)
-- Access to variable-length arrays using the `[]` indexing operator is bounds-checked; if the index runs off the end of the array, an error is reported automatically (using the same mechanism as `report`) and the default value of the underlying type is returned.  In the future, an exception will be thrown.
-- Variable-length arrays additionally support the following operations:
-  - The `push` method to append an element to the end of the array
-  - The `size` property which is the length of the array
-  - The `resize` method which resizes the array.  Any new elements at the end are initialized with the default value for the underlying type.
-
-Example use of variable length arrays:
-
-```javascript
-function entry() {
+                ]]></programlisting>
+              </informalexample>
+            </para></listitem>
+            <listitem><simpara>When running within a web browser, indexing into variable-length arrays using the indexing operator is bounds-checked; if the index runs off the end of the array, an exception is thrown.  When running Fabric from the command line, arrays are not bounds-checked.</simpara></listitem>
+            <listitem><para>
+              Variable-length arrays additionally support the following methods:
+              <itemizedlist>
+                <listitem><simpara>The <code>push(element)</code> method appends an element to the end of the variable-length array</simpara></listitem>
+                <listitem><simpara>The <code>size()</code> method returns the number of elements in the variable-length array</simpara></listitem>
+                <listitem><simpara>The <code>resize(newSize)</code> method resizes the array.  Any new elements at the end are initialized with the default value for the underlying type.</simpara></listitem>
+              </itemizedlist>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+        <example>
+          <title>Example use of variable length arrays</title>
+          <programlisting><![CDATA[
+operator entry() {
   Integer a[];
   report "The array a has size " + a.size + " and value " + a;
   a.push(42);
   a.push(84);
-  report "The array a NOW has size " + a.size + " and value " + a;
+  report "The array NOW has size " + a.size + " and value " + a;
   a.resize(4);
-  report "The array a NOW has size " + a.size + " and value " + a;
+  report "The array NOW has size " + a.size + " and value " + a;
 }
-```
-
-The output is:
-
-```
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
 The array a has size 0 and value []
-The array a NOW has size 2 and value [42,84]
-The array a NOW has size 4 and value [42,84,0,0]
-```
+The array NOW has size 2 and value [42,84]
+The array NOW has size 4 and value [42,84,0,0]
+          ]]></screen>
+        </example>
+      </section>
+    </section>
 
+<!--
 #### Fixed-Length Arrays
 
 KL also supports fixed-length arrays whose sizes are fixed at compile time.  A fixed-length array must have length 0 or greater, and is part of the declaration of the variable or parameter.  An example of the declaration and use of fixed length arrays:
