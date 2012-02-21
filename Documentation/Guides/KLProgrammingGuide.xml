@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+  <info>
+    <title>KL Programming Guide</title>
+    <copyright>
+      <year>2011-2012</year>
+      <holder>Fabric Engine Inc.</holder>
+    </copyright>
+  </info>
+  
+  <chapter>
+    <title>Introduction</title>
+
+    <para>
+      <acronym>KL</acronym> (pronounced <emphasis>kale</emphasis>) is the programming language used for Fabric operators.  <acronym>KL</acronym> stands for <quote>kernel language</quote>; in this context, <emphasis>kernel</emphasis> refers to the concept of a computational kernel as used in multithreaded programming.
+    </para>
+
+    <para>
+      <acronym>KL</acronym> was designed with the following goals:
+
+      <itemizedlist>
+        <listitem><para>
+          <acronym>KL</acronym> should be easy to learn for someone who is already familiar with programming in Javascript.
+        </para></listitem>
+
+        <listitem><para>
+          It must be possible to compile most KL programs to run on different architectures and kinds of hardware, specifically <acronym>CPU</acronym>s and <acronym>GPU</acronym>s.
+        </para></listitem>
+      </itemizedlist>
+
+      As such, <acronym>KL</acronym> is a language with a syntax very similar to Javascript but which is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike Javascript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike Javascript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
+    </para>
+
+    <para>
+      Before diving in to the details of the language, here is a simple example of a <acronym>KL</acronym> program that outputs the first few elements of the Fibonacci sequence:
+
+      <example xml:id="ex.fibonacci">
+        <title>KL Fibonacci sequence generator</title>
+        <programlisting language="KL"><![CDATA[
+function Integer fibonacci(Integer n) {
+  if (n <= 1)
+    return 1;
+  else 
+    return fibonacci(n - 2) + fibonacci(n - 1);
+}
+
+operator entry() {
+  for (Integer i = 0; i < 10; ++i)
+    report fibonacci(i);
+}
+        ]]></programlisting>
+      </example>
+
+      The output of calling the function <function>entry</function> is:
+
+      <screen><![CDATA[
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+      ]]></screen>
+
+      This example highlights a few simple features of KL, including:
+
+      <itemizedlist>
+        <listitem><para>Function and parameter declaration</para></listitem>
+        <listitem><para>Recursion</para></listitem>
+        <listitem><para>Conditional statements</para></listitem>
+        <listitem><para>Loops</para></listitem>
+        <listitem><para>The <function>report</function> statement</para></listitem>
+      </itemizedlist>
+
+      All of these will be discussed in more detail below.
+    </para>
+  </chapter>
+</book>
