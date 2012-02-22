@@ -38,6 +38,32 @@
     <script type="text/javascript">
     
     
+$(document).ready(function() {
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
+  $('#lightDirection').slider();
+  $('#localtime').slider();
+  $('#planeblend').slider();
+  $('#saveload').button({
+      text: true
+    });
+  $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+  
+  $('#brushColor').ColorPicker({
+      flat: true,
+      color: { r: 255, g: 0, b: 0}
+    });
+  $('#brushOpacity').slider();  
+  $('#brushRadius').slider();
+  
     
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
@@ -451,11 +477,6 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     return instanceNode;    
   }});    
 
-$(document).ready(function() {
-  
-  $('#loadingDialog').dialog({
-    modal: true
-  });
   
 
   var scene = FABRIC.SceneGraph.createScene();
@@ -473,7 +494,7 @@ $(document).ready(function() {
   });
   viewport.setCameraNode(camera);
   
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
   
@@ -801,7 +822,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         cameraManipulator.enable();
       }
     }
-  }; 
+  };
   
   // create a slider for the light direction
   $('#lightDirection').slider({
@@ -983,8 +1004,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         brushRadius = ui.value;
         currentPlane.instance.setPaintRadius(brushRadius);
         scene.redrawAllViewports();
-    });  
-  $('#planeblend').slider({
     });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
