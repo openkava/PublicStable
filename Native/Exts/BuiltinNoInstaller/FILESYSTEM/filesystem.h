@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #ifndef __FABRIC_FILESYSTEM_EXTENSION__
