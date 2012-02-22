@@ -16,11 +16,11 @@ BULLLETWORLD_CLOSEBLOCKCOMMENT
 
 function activateClip(
   io LocomotionMarker locomotionMarkers<>[][],
-  io TrackSetController trackcontroller,
+  io TrackSetController trackcontroller
 ){
   LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
   LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
-  trackcontroller.time += marker.time;
+  trackcontroller.time = trackcontroller.activateTrackSetTime;
   trackcontroller.stepIds = marker.stepIds;
   trackcontroller.comParams = marker.params;
   
@@ -195,7 +195,11 @@ operator evaluateLocomotionPoseVariables(
   
   /////////////////////////////////////////////////
   // Clip Activation
+  Integer prevClipId;
+  Scalar prevClipT;
   if(trackcontroller.deactivate){
+    prevClipId = trackcontroller.activeTrackSet;
+    prevClipT = trackcontroller.time;
     activateClip(
       locomotionMarkers,
       trackcontroller,
@@ -233,6 +237,7 @@ operator evaluateLocomotionPoseVariables(
     /////////////////////////////////////////////////
     // Error dissapation
     // If deactivate is true, it means we have just deactivated a state to get to this one.
+    
     if(trackcontroller.deactivate){
       
       for(Integer j=0; j < locomotionFeet.size; j++){
@@ -328,7 +333,7 @@ operator evaluateLocomotionPoseVariables(
               trackcontroller.pivotFoot = j;
               trackcontroller.pivotStepId = l;
               trackcontroller.activeTrackSet = clipId;
-              trackcontroller.time = 0.0;
+              trackcontroller.activateTrackSetTime = locomotionMarkers[clipId][j][l].time;
               currClipDelta = clipDelta;
             }
           }
@@ -390,9 +395,12 @@ operator evaluateLocomotionPoseVariables(
       
     /////////////////////////////////////////////////
     // Error dissapation
-    if(trackcontroller.tick>0){
+    if(trackcontroller.tick > 0){
       if(trackcontroller.deactivate){
-        poseError = prevUpdatePose.subtract(poseVariables);
+        LinearKeyframeTrackSet prevTrackSet = animationLibrary[prevClipId];
+        PoseVariables prevClipPose = poseVariables;
+        bindings.evaluateTracks(prevClipT+timeIncrement, prevClipPose, prevTrackSet, trackcontroller.currKeys);
+        poseError = prevClipPose.subtract(poseVariables);
         clipActivationTime = trackcontroller.time-timestep;
       }
       
@@ -554,10 +562,16 @@ operator evaluateLocomotionPoseVariables(
           // Interpolate the error across the step.
           Scalar dissipationPeriod = 1.0;
           if(legSwingRatio < dissipationPeriod){
-            Scalar errorDissipation = cos((legSwingRatio/dissipationPeriod) * PI) * 0.5 + 0.5;
-            footError.tr = plantLocations[j].tr * errorDissipation;
+            Scalar trerrorDissipation = cos((legSwingRatio/dissipationPeriod) * PI) * 0.5 + 0.5;
+            footError.tr = plantLocations[j].tr * trerrorDissipation;
             Quat identity; identity.setIdentity();
-            footError.ori = identity.sphericalLinearInterpolate(plantLocations[j].ori, errorDissipation);
+            // Blend off the ori error much quickly because as the foot lifts off the ground, we expect it to
+            // correct its aligment.
+            if(legSwingRatio < 0.25){
+              footError.ori = identity.sphericalLinearInterpolate(plantLocations[j].ori, 1.0 - (legSwingRatio*4.0));
+            }else{
+              footError.ori.setIdentity();
+            }
             liftLift = footError.tr.y;
           }
           /////////////////////////////////////////////////
@@ -662,7 +676,8 @@ operator evaluateLocomotionPoseVariables(
                     trackcontroller.pivotFoot = j;
                     trackcontroller.pivotStepId = l;
                     trackcontroller.activeTrackSet = clipId;
-                    trackcontroller.time = t - currStep.midPlantTime;
+                    trackcontroller.activateTrackSetTime = (t - currStep.midPlantTime) + locomotionMarkers[clipId][j][l].time;
+                    
                     currClipDelta = clipDelta;
                   }
                 }
@@ -676,7 +691,7 @@ operator evaluateLocomotionPoseVariables(
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
-            trackcontroller.time -= currStep.midPlantTime;
+            trackcontroller.activateTrackSetTime = (t - currStep.midPlantTime) + locomotionMarkers[trackcontroller.activeTrackSet][j][0].time;
           }
           if(!trackcontroller.deactivate){
             trackcontroller.stepIds[j]++;
