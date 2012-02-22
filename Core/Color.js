@@ -1,13 +1,7 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
-/**
- * Function to determine if an object is a valid color.
- * @param {object} color The color object to validate.
- * @return {boolean} true if the given object is a valid color.
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
+
 FABRIC.isColor = function(color) {
   return typeof color === 'object' &&
     'r' in color &&

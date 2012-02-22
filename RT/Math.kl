@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 const Scalar PI = 3.141592653589793;
 const Scalar TWO_PI = 6.283185307179586;
