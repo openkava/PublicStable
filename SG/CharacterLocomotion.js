@@ -550,6 +550,7 @@ FABRIC.SceneGraph.registerNodeType('ScreenSpacePlayerCharacterController', {
   
 FABRIC.RT.TrackSetController = function( activeTrackSet ) {
   this.activeTrackSet = activeTrackSet != undefined ? activeTrackSet : 0;
+  this.activateTrackSetTime = 0;
   this.time = 0.0;
   this.currKeys = [];
   this.trackWeight = 0.0;
@@ -565,6 +566,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('TrackSetController', {
     members: {
       activeTrackSet: 'Integer',
+      activateTrackSetTime: 'Scalar',
       time: 'Scalar',
       currKeys: 'Integer[]',
       trackWeight: 'Scalar',
