@@ -120,7 +120,7 @@ $(document).ready(function() {
  
    $('#openVideo').button().click(function() {
     
-    var handle = FABRIC.IO.queryUserFileHandle(FABRIC.IO.forOpen,"Choose a local video file", "", "*.mpg");
+    var handle = FABRIC.IO.queryUserFileHandle(FABRIC.IO.forOpen,"Choose local video file", "", "model.obj");
     if(!handle)
       return;
 
