@@ -19,13 +19,22 @@
     <script type="text/javascript">
  
 
+$(document).ready(function() {
+  
+  $('#play').button();
+  $('#step').button();
+      
+  // create the alembic content, and fire the load once it is loaded
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Alembic"], function() {
   
-$(document).ready(function() {
     
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
@@ -53,10 +62,6 @@ $(document).ready(function() {
       color: FABRIC.RT.rgb(0.75, 0.0, 0.0)
     });
   
-  // create the alembic content, and fire the load once it is loaded
-  $('#loadingDialog').dialog({
-    modal: true
-  });
 
   var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
     url: 'Models/fireworks.abc',
@@ -66,8 +71,7 @@ $(document).ready(function() {
   alembicLoadNode.addEventListener('loadSuccess', function(){
     // loop over all assets and create an instance
     for(var name in alembicLoadNode.getParsedNodes()) {
-      if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Points'))
-      {
+      if(alembicLoadNode.getParsedNodes()[name].isTypeOf('Points')){
         var inst = scene.constructNode('Instance', {
           transformNode: alembicLoadNode.getCorrespondingTransform(name),
           geometryNode: alembicLoadNode.getParsedNodes()[name],
@@ -75,10 +79,7 @@ $(document).ready(function() {
         });
       }
     }
-      
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-    return 'remove';
+    return true;
   });
   
     $('#play').button()

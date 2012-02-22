@@ -213,9 +213,7 @@ $(document).ready(function() {
       for(var i=0;i<shapeNames.length;i++)
         setupSlider(shapeNames[i]);
 
-      $('#loadingDialog').dialog('close');
-      viewport.redraw();
-      return 'remove';
+      return true;
     });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -228,6 +226,8 @@ $(document).ready(function() {
       if (errors.length > 0) {
         throw (errors.toString());
       }
+      $('#loadingDialog').dialog('close');
+      viewport.redraw();
       return true;
     }
   });

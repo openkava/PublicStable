@@ -60,6 +60,49 @@
     
     <script type="text/javascript">
 
+$(document).ready(function() {
+  
+  $('#savePreset').button({ text: true });
+  $('#newPreset').button({ text: true });
+  
+  $('#aboutDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  var $aboutButton = $('#aboutButton').button({ text: true })
+    .click(function() {
+      viewport.hide();
+      $('#aboutDialog').dialog({
+        autoOpen: true,
+        modal: true,
+        buttons: {
+          Ok: function() {
+            $(this).dialog( "close" );
+          }
+        },
+        closeOnEscape: true,
+        close: function(ev, ui) { viewport.show(); },
+      });
+    });
+  
+  $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
+  $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
+  $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
+  $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
+  $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
+
+  var $sliders2D = [
+    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
+  ];
+  
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
+
+  $( "#tabs" ).tabs();
+});
 
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
@@ -339,46 +382,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
 });
 
 
-$(document).ready(function() {
+  
   var i, j;
-  
-  var $savePresetButton = $('#savePreset').button({ text: true });
-  var $newPresetButton = $('#newPreset').button({ text: true });
-  
-  $('#aboutDialog').dialog({
-    autoOpen: false,
-    modal: true
-  });
-  var $aboutButton = $('#aboutButton').button({ text: true })
-    .click(function() {
-      viewport.hide();
-      $('#aboutDialog').dialog({
-        autoOpen: true,
-        modal: true,
-        buttons: {
-          Ok: function() {
-            $(this).dialog( "close" );
-          }
-        },
-        closeOnEscape: true,
-        close: function(ev, ui) { viewport.show(); },
-      });
-    });
-  
-              
-  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
-  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
-  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
-  var $specularFactorSlider = $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
-  var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
-
-  var $sliders2D = [
-    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
-    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
-    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
-  ];
-  
-  
   
   var scene = FABRIC.SceneGraph.createScene();
   
@@ -496,42 +501,47 @@ $(document).ready(function() {
       };
   };
 
-  $opacityRangeSlider.slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
-  $opacityRangeSlider.bind('slide', function(event, ui){
+  $('#opacityRange').slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
+  $('#opacityRange').bind('slide', function(event, ui){
     volumeNode.setMinOpacity(ui.values[0]);
     volumeNode.setMaxOpacity(ui.values[1]);
     viewport.redraw();
     return true;
   });
 
+  var $sliders2D = [
+    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
+  ];
   for( i = 0; i < 3; ++i ) {
     $sliders2D[i].slider('value', texture2DSlice[i].getRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
   }
 
-  $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
-  $resolutionFactorSlider.bind('slide', function(event, ui) {
+  $('#resolutionFactor').slider('value', volumeNode.getResolutionFactor());
+  $('#resolutionFactor').bind('slide', function(event, ui) {
     volumeNode.setResolutionFactor(ui.value);
     viewport.redraw();
     return true;
   });
   
-  $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
-  $brightnessSlider.bind('slide', function(event, ui) {
+  $('#brightness').slider('value', volumeNode.getBrightnessFactor());
+  $('#brightness').bind('slide', function(event, ui) {
     volumeNode.setBrightnessFactor(ui.value);
     viewport.redraw();
     return true;
   });
   
-  $transparencySlider.slider('value', volumeNode.getTransparency());
-  $transparencySlider.bind('slide', function(event, ui) {
+  $('#transparency').slider('value', volumeNode.getTransparency());
+  $('#transparency').bind('slide', function(event, ui) {
     volumeNode.setTransparency(ui.value);
     viewport.redraw();
     return true;
   });
   
-  $specularFactorSlider.slider('value', volumeNode.getSpecularFactor());
-  $specularFactorSlider.bind('slide', function(event, ui) {
+  $('#specularFactor').slider('value', volumeNode.getSpecularFactor());
+  $('#specularFactor').bind('slide', function(event, ui) {
     volumeNode.setSpecularFactor(ui.value);
     viewport.redraw();
     return true;
@@ -554,7 +564,7 @@ $(document).ready(function() {
     var invertColor = $('#invert').attr('checked');
     volumeNode.setInvertColor(invertColor ? 1 : 0);
     volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
-    $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
+    $('#brightness').slider('value', volumeNode.getBrightnessFactor());
     viewport.redraw();
   });
 
@@ -641,11 +651,6 @@ $(document).ready(function() {
 
   window.scene = scene;
 
-  $(".box").addClass("ui-widget");
-  $(".box h2").addClass("ui-widget-header ui-corner-all");
-  $(".content").addClass("ui-widget-content");
-
-  $( "#tabs" ).tabs();
 
   var curveEditor = constructCurveEditor('opacityMapping', scene, opacityKeyTrackAnimationContainer, {
     timeStripe: false,
@@ -687,7 +692,7 @@ $(document).ready(function() {
   var rebuildPresetNamesList = function(){
     $('#resourceSelector').empty();
     for(var i=0; i<localStorage.length; i++){
-      if(localStorage.key(i).split('.')[0]=='MedicalImagingPresetsVer1'){
+      if(localStorage.key(i).split('.')[0]=='MedicalImagingPresetsVer2'){
       //  presetNames.push(localStorage.key(i).slipt('.')[1]);
         var presetName = localStorage.key(i).split('.')[1];
         $('#resourceSelector').append('<option value="'+presetName+'">'+presetName);
@@ -696,20 +701,28 @@ $(document).ready(function() {
     }
   }
   
+  var presetSaver;
   var savePreset = function(){
-    var presetSaver = scene.constructManager('SceneSerializer');
-    presetSaver.addNode(camera);
-    presetSaver.addNode(opacityKeyTrackAnimationContainer);
-    presetSaver.addNode(gradientKeyTrack);
-    presetSaver.addNode(volumeNode);
-    presetSaver.addNode(opacityTexture);
-    presetSaver.addNode(texture2DSlice[0]);
-    presetSaver.addNode(texture2DSlice[1]);
-    presetSaver.addNode(texture2DSlice[2]);
-    
-    var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
+    if(!presetSaver){
+      presetSaver = scene.constructManager('SceneSerializer');
+      presetSaver.addNode(camera);
+      presetSaver.addNode(opacityKeyTrackAnimationContainer);
+      presetSaver.addNode(gradientKeyTrack);
+      presetSaver.addNode(volumeNode);
+      presetSaver.addNode(opacityTexture);
+      presetSaver.addNode(texture2DSlice[0]);
+      presetSaver.addNode(texture2DSlice[1]);
+      presetSaver.addNode(texture2DSlice[2]);
+    }
+    // To export a preset, set exportFile to true and write out the preset file.
+    var storage, exportFile = false;
+    if(exportFile){
+      storage = new FABRIC.SceneGraph.FileWriter(scene, "Export Imaging Preset", currPresetName, 'txt');
+    }
+    else {
+      storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer2.'+currPresetName);
+    }
     presetSaver.save(storage);
-    
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
@@ -725,16 +738,16 @@ $(document).ready(function() {
       displayProgressBar();
     }
     
-    var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
+    var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer2.'+currPresetName);
     presetLoader.load(storage, function(nodeMap){
       
       addOnLoadCallback();
   
-      $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
-    //  curveEditor.redraw();
+      $('#resolutionFactor').slider('value', volumeNode.getResolutionFactor());
+      curveEditor.redraw();
       colorGradient.redraw();
       localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
-  
+      
       viewport.redraw();
     });
 
@@ -750,12 +763,12 @@ $(document).ready(function() {
     modal: true
   });
   
-  $savePresetButton.button()
+  $('#savePreset').button()
     .click(function() {
       savePreset();
     });
   
-  $newPresetButton.button()
+  $('#newPreset').button()
     .click(function() {
       var closeDialogAndSavePreset = function(){
         currPresetName = $("#presetName").val();
@@ -789,8 +802,8 @@ $(document).ready(function() {
       presetInitialized = true;
       initialLoad = false;
       if(!presetsFound){
-        localStorage.setItem('MedicalImagingPresetsVer1.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
-        localStorage.setItem('MedicalImagingPresetsVer1.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
+        localStorage.setItem('MedicalImagingPresetsVer2.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
+        localStorage.setItem('MedicalImagingPresetsVer2.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
         rebuildPresetNamesList();
         currPresetName = 'Chest';
         $("#resourceSelector").val(currPresetName);
@@ -804,7 +817,6 @@ $(document).ready(function() {
     }
   });
   
-});
 });
 
 </script>
@@ -833,10 +845,10 @@ $(document).ready(function() {
             <div class="content">
               <h2>PRESETS</h2>
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
-                <!--
+                
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
               <button id="savePreset" style="margin-top:10px;">Save</button>
-              -->
+              
               <button id="aboutButton" style="margin-top:10px;">About</button>
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">

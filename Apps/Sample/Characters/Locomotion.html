@@ -15,22 +15,6 @@
     
 <script type="text/javascript">
 
-FABRIC.require(["SG/SceneGraph",
-                "SG/Geometry",
-                "SG/Materials",
-                "SG/Manipulation",
-                "SG/Characters",
-                "SG/CharacterLocomotion",
-                "SG/Bullet",
-                "SG/Persistence",
-                "SG/Alembic",
-                "SG/Parsers/parseCollada",
-                "RT/LinearKeyframe",
-                "RT/BezierKeyframe"], function() {
-
-FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('SkinningShadowmapMaterial', 'FABRIC_ROOT/SG/Shaders/SkinningShadowmapShader.xml');
-
 $(document).ready(function() {
 
 
@@ -51,6 +35,26 @@ $(document).ready(function() {
   $("#displayFootRaycastingDebugging").attr('checked', true);
   
   
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Characters",
+                "SG/CharacterLocomotion",
+                "SG/Bullet",
+                "SG/Persistence",
+                "SG/Alembic",
+                "SG/Parsers/parseCollada",
+                "RT/LinearKeyframe",
+                "RT/BezierKeyframe"], function() {
+
+FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('SkinningShadowmapMaterial', 'FABRIC_ROOT/SG/Shaders/SkinningShadowmapShader.xml');
+
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene({
@@ -536,9 +540,6 @@ $(document).ready(function() {
     locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
   }
   
-  $('#loadingDialog').dialog({
-    modal: true
-  });
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
       value: (1.0-(doneWeight/totalWeight))*100
