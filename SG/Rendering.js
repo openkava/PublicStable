@@ -150,7 +150,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       fabricwindow.hide();
       visible = false;
     };
-    window.addEventListener('resize', retrieveBrowserZoom);
+    window.addEventListener('resize', retrieveBrowserZoom, false);
     
     viewportNode.pub.getWidth = function(){  return windowElement.offsetWidth * browserZoom;  };
     viewportNode.pub.getHeight = function(){ return windowElement.offsetHeight * browserZoom; };
