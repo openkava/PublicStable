@@ -778,14 +778,14 @@ class _DG( _NAMESPACE ):
       return self.__size
 
     def size( self ):
-      return getCount( self )
+      return self.getCount()
 
     def setCount( self, count ):
       self._nObjQueueCommand( 'resize', count )
       self.__sizeNeedRefresh = True
 
     def resize( self, count ):
-      setCount( self, count )
+      self.setCount( count )
 
     def getMembers( self ):
       if self.__members is None:
