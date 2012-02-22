@@ -13,15 +13,15 @@
     <title>Introduction</title>
 
     <para>
-      <acronym>KL</acronym> (pronounced <emphasis>kale</emphasis>) is the programming language used for Fabric operators.  <acronym>KL</acronym> stands for <quote>kernel language</quote>; in this context, <emphasis>kernel</emphasis> refers to the concept of a computational kernel as used in multithreaded programming.
+      KL (pronounced <emphasis>kale</emphasis>) is the programming language used for Fabric operators.  KL stands for <quote>kernel language</quote>; in this context, <emphasis>kernel</emphasis> refers to the concept of a computational kernel as used in multithreaded programming.
     </para>
 
     <para>
-      <acronym>KL</acronym> was designed with the following goals:
+      KL was designed with the following goals:
 
       <itemizedlist>
         <listitem><para>
-          <acronym>KL</acronym> should be easy to learn for someone who is already familiar with programming in Javascript.
+          KL should be easy to learn for someone who is already familiar with programming in Javascript.
         </para></listitem>
 
         <listitem><para>
@@ -29,11 +29,11 @@
         </para></listitem>
       </itemizedlist>
 
-      As such, <acronym>KL</acronym> is a language with a syntax very similar to Javascript but which is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike Javascript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike Javascript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
+      As such, KL is a language with a syntax very similar to Javascript but which is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike Javascript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike Javascript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
     </para>
 
     <para>
-      Before diving in to the details of the language, here is a simple example of a <acronym>KL</acronym> program that outputs the first few elements of the Fibonacci sequence:
+      Before diving in to the details of the language, here is a simple example of a KL program that outputs the first few elements of the Fibonacci sequence:
 
       <example xml:id="ex.fibonacci">
         <title>KL Fibonacci sequence generator</title>
@@ -85,11 +85,11 @@ operator entry() {
     <title>The KL Type System</title>
 
     <para>
-      Unlike most languages, <acronym>KL</acronym> has a dynamic type system that is inherited from the Fabric environment.  In most cases, compound types are registered from the Fabric environment running in a dynamic language (eg. JavaScript or Python); those types are then automatically made available to <acronym>KL</acronym> programs running in that environment.  This does not, however, affect the semantics of the language; the <acronym>KL</acronym> type system can still be explained purely from the point of view of the language itself.
+      Unlike most languages, KL has a dynamic type system that is inherited from the Fabric environment.  In most cases, compound types are registered from the Fabric environment running in a dynamic language (eg. JavaScript or Python); those types are then automatically made available to KL programs running in that environment.  This does not, however, affect the semantics of the language; the KL type system can still be explained purely from the point of view of the language itself.
     </para>
 
     <para>
-      Like most programming languages, <acronym>KL</acronym> has support for both a fixed set of atomic types from which other types are derived as well as different kinds of derived types.
+      Like most programming languages, KL has support for both a fixed set of atomic types from which other types are derived as well as different kinds of derived types.
     </para>
 
     <section>
@@ -299,12 +299,12 @@ operator entry() {
         </para>
 
         <para>          
-          The semantics of the <code>String</code> type in <acronym>KL</acronym> are important to understand.  Strings have the following key properties:
+          The semantics of the <code>String</code> type in KL are important to understand.  Strings have the following key properties:
           
           <itemizedlist>
             <listitem><simpara>A string is a sequence of zero or more characters.</simpara></listitem>
             <listitem><simpara>The length of a string is value of type <code>Size</code>, and the maximum length of a string is the maximum value of type <code>Size</code>.</simpara></listitem>
-            <listitem><simpara>String constants can be specified inline in <acronym>KL</acronym> source files using single- or double-quotation marks, just as JavaScript.  Examples of string constants: <code>"Hello, world!"</code>, <code>'A string\nwith a newline'</code>, <code>"A string containing \"double quotes\""</code></simpara></listitem>
+            <listitem><simpara>String constants can be specified inline in KL source files using single- or double-quotation marks, just as JavaScript.  Examples of string constants: <code>"Hello, world!"</code>, <code>'A string\nwith a newline'</code>, <code>"A string containing \"double quotes\""</code></simpara></listitem>
             <listitem><simpara>Strings are <emphasis>reference-counted</emphasis> and <emphasis>copy-on-write</emphasis>.  This means that if you assign a string value to multiple variables, there is only one copy of the actual string until someone changes one of the strings.</simpara></listitem>
             <listitem><para>
               Strings support the following operations and properties, which are all exactly the same as JavaScript:
@@ -317,7 +317,7 @@ operator entry() {
             </para></listitem>
             <listitem><simpara>Unlike C or C++, strings can contain the null character (ASCII 0).</simpara></listitem>
             <listitem><simpara>Strings have no notion of encoding; they are just sequences of bytes.  String encodings are determined by the application space where the strings are used.  Note that everything in Fabric itself uses the UTF-8 encoding, but Fabric extensions may need to convert strings into other encodings.</simpara></listitem>
-            <listitem><simpara>All other types in <acronym>KL</acronym> can be converted to strings through a cast; this conversion simply creates a string which is a human-readable version of the value.</simpara></listitem>
+            <listitem><simpara>All other types in KL can be converted to strings through a cast; this conversion simply creates a string which is a human-readable version of the value.</simpara></listitem>
           </itemizedlist>
         </para>
 
@@ -352,7 +352,7 @@ Another string now includes A string
       <title>Derived Types</title>
       
       <para>
-        In addition to the atomic types, <acronym>KL</acronym> supports three classes of derived types: structures, arrays and dictionaries.
+        In addition to the atomic types, KL supports three classes of derived types: structures, arrays and dictionaries.
       </para>
       
       <section>
@@ -363,10 +363,10 @@ Another string now includes A string
         </para>
         
         <para>
-          Structures are usually declared outside of <acronym>KL</acronym> using Fabric's <glossterm>registered type system</glossterm>, but they can also be declared in <acronym>KL</acronym> source code itself using the <code>struct</code> keyword:
+          Structures are usually declared outside of KL using Fabric's <glossterm>registered type system</glossterm>, but they can also be declared in KL source code itself using the <code>struct</code> keyword:
           
           <example>
-            <title>Example structure declaration in <acronym>KL</acronym></title>
+            <title>Example structure declaration in KL</title>
             <programlisting language="KL"><![CDATA[
 struct NewType {
   Scalar firstMember;
@@ -376,7 +376,7 @@ struct NewType {
             ]]></programlisting>
 
             <note><simpara>Note the use of the variable-size array as the last member; derived types can nest arbitrarily.</simpara></note>
-            <warning><simpara>All structure declarations in <acronym>KL</acronym> must be in the global scope; it is not possible to declare a structure within a function scope.</simpara></warning>
+            <warning><simpara>All structure declarations in KL must be in the global scope; it is not possible to declare a structure within a function scope.</simpara></warning>
           </example>
         </para>
         
@@ -416,11 +416,11 @@ function entry() {
         <title>Arrays</title>
       
         <para>
-          An <glossterm>array</glossterm> is a sequence of values of the same type (referred to as the array's <glossterm>element type</glossterm>) that are indexed by integers and placed sequentially in memory.  <acronym>KL</acronym> supports three types of arrays: variable-size arrays, fixed-length arrays, and sliced arrays.  The details of each array type are discussed below.
+          An <glossterm>array</glossterm> is a sequence of values of the same type (referred to as the array's <glossterm>element type</glossterm>) that are indexed by integers and placed sequentially in memory.  KL supports three types of arrays: variable-size arrays, fixed-length arrays, and sliced arrays.  The details of each array type are discussed below.
         </para>
       
         <para xml:id="array-properties">
-          Regardless of specific type, arrays in <acronym>KL</acronym> have several common behaviours:
+          Regardless of specific type, arrays in KL have several common behaviours:
       
           <itemizedlist>
               <listitem><para>
@@ -563,7 +563,7 @@ The determinant of [[3.5,-9.2],[-2.1,8.6]] is 10.78
           <title>Sliced Arrays</title>
         
           <para>
-            A <glossterm>sliced array</glossterm> is an array whose size is fixed when it is created.  Sliced arrays have the unique feature that new sliced arrays can be created that access a sub-range of the elements of an existing sliced array.  Sliced arrays are primarily used for operator parameters bound to sliced data inside Fabric's dependency graph, but can also be used on their own within <acronym>KL</acronym>.  Sliced arrays are declared by appending <code>&lt;&gt;</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings&lt;&gt;</code>.
+            A <glossterm>sliced array</glossterm> is an array whose size is fixed when it is created.  Sliced arrays have the unique feature that new sliced arrays can be created that access a sub-range of the elements of an existing sliced array.  Sliced arrays are primarily used for operator parameters bound to sliced data inside Fabric's dependency graph, but can also be used on their own within KL.  Sliced arrays are declared by appending <code>&lt;&gt;</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings&lt;&gt;</code>.
           </para>
           
           <para>
@@ -571,7 +571,7 @@ The determinant of [[3.5,-9.2],[-2.1,8.6]] is 10.78
           
             <itemizedlist>
               <listitem><para>
-                Within <acronym>KL</acronym>, sliced arrays can only be created using one of two syntaxes, shown in the example below:
+                Within KL, sliced arrays can only be created using one of two syntaxes, shown in the example below:
                 
                 <informalexample>
                   <programlisting language="KL"><![CDATA[
@@ -635,7 +635,7 @@ strings = ["string 1","string 2","string 3","string 4","string 5","replaced stri
         <title>Dictionaries</title>
       
         <para>
-          <acronym>KL</acronym> supports key-value pair dictionaries.  The type of the key of a dictionary can be any of the <acronym>KL</acronym> atomic types (e.g. <code>Boolean</code>, <code>String</code>, or any integer or floating-point type) and the type of the value can be any type.  Dictionaries are declared by appending <code>[<replaceable>KeyType</replaceable>]</code> to the variable, parameter or member name.  For example:
+          KL supports key-value pair dictionaries.  The type of the key of a dictionary can be any of the KL atomic types (e.g. <code>Boolean</code>, <code>String</code>, or any integer or floating-point type) and the type of the value can be any type.  Dictionaries are declared by appending <code>[<replaceable>KeyType</replaceable>]</code> to the variable, parameter or member name.  For example:
         
           <informalexample><programlisting language="KL"><![CDATA[
 String scalarToString[Scalar];      // A Scalar-to-String dictionary
@@ -644,12 +644,12 @@ Boolean integerToBoolean[Integer];  // An Integer-to-Boolean dictionary
         </para>
 
         <para>
-          Dictionaries in <acronym>KL</acronym> have the following properties:
+          Dictionaries in KL have the following properties:
         
           <itemizedlist>
             <listitem><para>
               Dictionaries are copied on assignment.  However, they are always passed by reference to functions.
-              <note><para>The copy-on-assignment property of dictionaries is likely to change in a future version of <acronym>KL</acronym>.</para></note>
+              <note><para>The copy-on-assignment property of dictionaries is likely to change in a future version of KL.</para></note>
             </para></listitem>
           
             <listitem><para>
@@ -744,7 +744,7 @@ a['e'] = 2.71
           alias Float32 Mat22[2][2];  // Mat22 is now an alias for Float32[2][2], ie. a size-2-array-of-size-2-arrays-of-Float32
         </programlisting>
         
-        <code>alias</code> statements must appear within the global scope of a <acronym>KL</acronym> program.
+        <code>alias</code> statements must appear within the global scope of a KL program.
       </para>
       
       <example>
@@ -768,11 +768,11 @@ operator entry() {
       <title>The <code>Data</code> Type and the <code>data</code> and <code>dataSize</code> Methods</title>
 
       <para>
-        When interfacing with external libraries such as OpenGL, it is sometimes necessary to get direct access to the data underlying a value.  An example is a library call that takes a pointer to data.  <acronym>KL</acronym> itself has no notion of pointers; instead, <acronym>KL</acronym> has the concept of the <code>Data</code> type whose value is a pointer to data which can be passed to an external library call.
+        When interfacing with external libraries such as OpenGL, it is sometimes necessary to get direct access to the data underlying a value.  An example is a library call that takes a pointer to data.  KL itself has no notion of pointers; instead, KL has the concept of the <code>Data</code> type whose value is a pointer to data which can be passed to an external library call.
       </para>
 
       <para>
-        Most values in <acronym>KL</acronym> have a built-in method called <code>data</code> that returns a value of type <code>Data</code>, and a built-in method called <code>dataSize</code> that returns a value of type <code>Size</code>.  The value returned by the <code>data</code> method is a pointer to the data underlying the value, and the value returned by the <code>dataSize</code> method is the number of bytes the value occupies in memory.  The only values which do not support the <code>data</code> and <code>dataSize</code> methods are dictionaries as well as other derived types that do not lay out their elements or members contiguously in memory.
+        Most values in KL have a built-in method called <code>data</code> that returns a value of type <code>Data</code>, and a built-in method called <code>dataSize</code> that returns a value of type <code>Size</code>.  The value returned by the <code>data</code> method is a pointer to the data underlying the value, and the value returned by the <code>dataSize</code> method is the number of bytes the value occupies in memory.  The only values which do not support the <code>data</code> and <code>dataSize</code> methods are dictionaries as well as other derived types that do not lay out their elements or members contiguously in memory.
         
         <programlisting language="KL"><![CDATA[
 Integer integers[];
@@ -819,5 +819,234 @@ s.dataSize = 6
       ]]></screen>
       </example>
     </section>
+  </chapter>
+  
+  <chapter>
+    <title>KL Functions</title>
+
+    <section>
+      <title>Function Declarations</title>
+
+      <para>
+        Function declarations in KL are much the same as the <quotation>traditional</quotation> function declaration syntax in JavaScript, with the following key differences:
+
+        <itemizedlist>
+          <listitem><para>The return type and the type of each function parameter must be explicitly declared.  If a function does not return a value, the return type must be omitted.</para></listitem>
+          <listitem><para>The parameter declarations may additionally declare the parameter as input (read-only; the default) by preceding the type by <code>in</code> or input-output (read-write) by preceding the value by <code>io</code>.</para></listitem>
+        </itemizedlist>
+      </para>
+
+      <example>
+        <title>Example function returning a value and using only input parameters</title>
+        <programlisting language="KL"><![CDATA[
+function Scalar add(Scalar lhs, Scalar rhs) {
+  return lhs + rhs;
+}
+        ]]></programlisting>
+      </example>
+
+      <example>
+        <title>Example function not returning a value and using both input and input-output parameters</title>
+        <programlisting language="KL"><![CDATA[
+function add(in Scalar lhs, in Scalar rhs, io Scalar result) {
+  result = lhs + rhs;
+}
+        ]]></programlisting>
+      </example>
+    </section>
+    
+    <section>
+      <title>Function Polymorphism</title>
+      
+      <para>
+        KL support <glossterm>compile-type function polymorphism</glossterm>.  This means that you can have multiple functions with the same name so long as they have a different number of parameters or those parameters differ by type and/or their input versus input-output qualification.
+
+        <note><para>You cannot have two functions that take exactly the same parameter types but return different types</para></note>
+      </para>
+
+      <para>
+        When a function call is made in KL source, if their are multiple functions with the same name then the KL compiler uses a best-match system to determine which function to call.  Exact parameter type matches are always prioritized over type casts.  If the compiler is unable to choose a unique best match then an error will be reported showing the ambiguity.
+      </para>
+
+      <example>
+        <title>Example of function polymorphism</title>
+        <programlisting language="KL"><![CDATA[
+function display(Integer a) {
+  report "integer value is " + a;
+}
+
+function display(String s) {
+  report "string value is '" + s + "'";
+}
+
+operator entry() {
+  Integer integer = 42;
+  display(integer);
+  
+  String string = "hello";
+  display(string);
+  
+  Byte byte = 64;
+  display(byte);
+}
+        ]]></programlisting>
+      </example>
+    </section>
+    
+    <section>
+      <title>Setting the External Function Name</title>
+
+- Advanced note: when writing functions and or prototypes for use within Fabric extensions, it may be necessary to tell Fabric to export the function with a different name in the global function namespace.  You can do this as follows:
+
+```javascript
+// A function that is called as "foo" from KL but is actually called "bar" in the global function namespace
+function Scalar foo(Scalar x) = "bar" {
+  return 1.0 / x;
+}
+```
+
+### Function Calls
+
+Function calls are made using the same syntax as Javascript.  All function parameters are required, and currently there must be a precise match for the parameter types; this may require explicit casting in your code.  This will be fixed in a future version of Fabric.
+
+An example function declaration and call:
+
+```javascript
+function Integer add(Integer lhs, Integer rhs) {
+  return lhs + rhs;
+}
+
+function entry() {
+  report "2 plus 2 is " + add(2, 2);
+}
+```
+
+The output is:
+
+```
+2 plus 2 is 4
+```
+
+### Operators
+
+The `operator` keyword in KL is used to mark functions that are to be used as entry points into KL from the Fabric dependency graph.  Operators are declared in the same way as functions except that they must not return a value.  Fabric does special type-checking to ensure that operators are bound properly to nodes in a Fabric dependency graph.
+
+An example operator declaration is:
+
+```javascript
+operator addElements(io Scalar lhs, io Scalar rhs, io Scalar result) {
+  result = lhs + rhs;
+}
+```
+
+### Type Constructors
+
+If `Type` is a user-defined structure type or an alias, then a *constructor* for the type, ie. a function which initializes a variable of the time, can be created using the following syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function Type(Integer a, Scalar b) {
+  this.a = a;
+  this.b = b;
+}
+```
+
+Note that KL does not distinguish between construction and casting.  Note also that prior to version 1.0.11-alpha, the name `self` was used in place of `this`.
+
+```javascript
+struct Type {
+  Scalar m[2][2];
+};
+
+function Type(Scalar m[2][2]) {
+  this.m = m;
+}
+
+function entry() {
+  Scalar mat22[2][2];
+  mat22[0][0] = 1.0;
+  mat22[0][1] = 3.0;
+  mat22[1][0] = 4.0;
+  mat22[1][1] = 2.0;
+  
+  // The following statements both call the given constructor:
+  Type a(mat22);
+  report Type(mat22);
+  report (Type)mat22;
+}
+```
+
+### Type Methods
+
+If `Type` is a structure or alias, then a *method* can be added to the type using the following syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function String Type.desc() {
+  return "a:" + this.a + "; b:" + this.b;
+}
+```
+
+If a method takes no parameters, then it is optional to use parentheses when calling it:
+
+```javascript
+function entry() {
+  Type t;
+  t.a = 1;
+  t.b = 3.14;
+  // Both report 'a:1; b:3.14'
+  report t.desc();
+  report t.desc;
+}
+```
+
+### Overloaded Operators
+
+Binary operators can be overloaded using the following syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function Type +(Type lhs, Type rhs) {
+  Type result;
+  result.a = lhs.a + rhs.a;
+  result.b = lhs.b + rhs.b;
+  return result;
+}
+```
+
+Compound assignments are methods which return no value (in fact, as an expression they are always equal to the variable being assigned to) and so they have the syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function Type.+=(Type rhs) {
+  this.a += rhs.a;
+  this.b += rhs.b;
+}
+```
+
+### Prototypes
+
+When a Fabric extension defines a function that it provides to KL programs, it does so by providing a *prototype* of the function in the KL code that is included in the extension manifest file (.fpm.json).  A function prototype is simply a function definition without a function body:
+
+```javascript
+function String currentTimeString();
+```
+    
   </chapter>
 </book>
