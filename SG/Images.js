@@ -562,6 +562,9 @@ FABRIC.SceneGraph.registerNodeType('Video', {
     dgnode.addMember('pixelCacheIndex','Integer[]');
     dgnode.addMember('pixelCacheLimit','Integer',options.nbCachedFrames);
     
+    // Here the timerange of the controller is set using the video time range.
+    // Note: this is not strictly legal in our dependency graph model
+    // as we should not be modifying our dependencies data.
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoSetTimeRange',
       srcFile: 'FABRIC_ROOT/SG/KL/loadVideo.kl',
