@@ -99,11 +99,12 @@
     </section>
     <section>
       <title>Public and Private Interfaces</title>
-      <para>SceneGraphNodes provide a private as well as a public interface. Outside of constructor
-        functions it's only possible to access the public interface, while inside of constructor
-        functions it's possible to access the private interface. This allows to include helper
-        functions in the each node, such as setter functions for private members for example, that
-        are only accessible in constructor functions of other nodes. Since the options used for the
+      <para>Each SceneGraphNode provides a private as well as a public interface. The public
+        interface provide the public interface for the node. Outside of constructor functions it's
+        only possible to access the public interface, while inside of constructor functions it's
+        possible to access the private interface. This allows to include helper functions in the
+        each node, such as setter functions for private members for example, that are only
+        accessible in constructor functions of other nodes. Since the options used for the
         construction of a node can contain references to a public interface, you can retrieve the
         private interface by using this call:</para>
       <programlisting>var privateInterface = scene.getPrivateInterface(publicInterface);</programlisting>
@@ -160,9 +161,9 @@
       <programlisting language="JavaScript">console.log(FABRIC.RT);</programlisting>
       <para>Types are typically implemented in separate JavaScript files. The ones provided by the
         SceneGraph can be found in the RT directory. The SceneGraph uses a <emphasis role="bold"
-          >require</emphasis> framework which ensures that all required scripts are automatically
-        included into the application. You can find more details about this in the tutorials section
-        of this document, covering the creation of a custom SceneGraphNode.</para>
+          >require</emphasis> framework which ensures that all required scripts are load into the
+        application. You can find more details about this in the tutorials section of this document,
+        covering the creation of a custom SceneGraphNode.</para>
     </section>
     <section>
       <title>JavaScript and KL</title>
@@ -237,13 +238,14 @@ var hierarchicalTransform = scene.constructNode('Transform', {
   hierarchical: true,
   parentTransformNode: globalTransform
 });</programlisting>
-      <para>When contructed in global mode (hierarchical: false), the transform simply uses a global
-        matrix. When contructed in hierarchical mode, the construction options need to contain a
-        parent transform. An operator will be attached to the transform node, which computes the
-        global matrix based on the parent as well as a local matrix. This way hierarchies of
-        transforms can be constructed.</para>
-      <para>When creating the transform node, you can specify the global resp. the local matrix by a
-          <emphasis role="bold">FABRIC.RT.Xfo</emphasis>, like this:</para>
+      <para>When contructed in global mode (hierarchical: false), the transform simply constructs
+        global matrix based on the localXfo value. When contructed in hierarchical mode, a parent
+        Transform node must also be provided. The transform node builds its global Xfo by
+        multiplying the parent's global Xfo by its own local Xfo to get a new global Xfo.
+        Hierarchies of transforms can be connected together to drive complex hierarchical
+        animation.</para>
+      <para>When creating the transform node, you can specify the global or the local transform by
+        providing a <emphasis role="bold">FABRIC.RT.Xfo</emphasis>:</para>
       <programlisting language="JavaScript">var globalTransform = scene.constructNode('Transform', {
   hierarchical: false,
   globalXfo: new FABRIC.RT.Xfo({
@@ -289,8 +291,8 @@ var hierarchicalTransform = scene.constructNode('Transform', {
       </listitem>
     </itemizedlist>
     <para>The actual evaluation of the animation is done in KL operators on the target nodes. In the
-      image above the animation is driving a transform node, but any node can be driven by animation
-      in Fabric Engine's SceneGraph.</para>
+      image above the animation is driving a transform node, but any member on any kind of node can
+      be driven by animation in Fabric Engine's SceneGraph.</para>
     <section>
       <title>The Animation Controller node</title>
       <para>An Animation Controller is responsible for computing a time value from given inputs.
@@ -320,7 +322,7 @@ var hierarchicalTransform = scene.constructNode('Transform', {
             <imagedata fileref="images/sg_animation_02.png" width="30%"/>
           </imageobject>
         </inlinemediaobject></para>
-      <para>The TrackAnimationContainer represents a single animation using multiple tracks. The
+      <para>The TrackAnimationContainer represents a single animation of multiple tracks. The
         benefit of the TrackAnimationContainer is that tracks are stores in slices, and processing
         on the tracks can happen in a multi-threaded fashion.</para>
       <programlisting language="JavaScript">var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
