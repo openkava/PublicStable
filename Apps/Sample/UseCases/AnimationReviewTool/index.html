@@ -44,7 +44,6 @@ $(document).ready(function() {
     modal: true
   });
   
-  
   $('#lightDirection').slider();
   $('#localtime').slider();
   $('#planeblend').slider();
@@ -62,19 +61,8 @@ $(document).ready(function() {
       flat: true,
       color: { r: 255, g: 0, b: 0}
     });
-  $('#brushOpacity').slider({
-      min: 1.0,
-      max: 60.0,
-      step: 1.0,
-      value: brushColor.a
-    });  
-  $('#brushRadius').slider({
-      min: 0.5,
-      max: 5.0,
-      step: 0.01,
-      value: brushRadius
-    });
-  
+  $('#brushOpacity').slider();  
+  $('#brushRadius').slider();
   
     
 FABRIC.require(["SG/SceneGraph",
