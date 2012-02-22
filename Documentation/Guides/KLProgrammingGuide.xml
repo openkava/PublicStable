@@ -411,90 +411,89 @@ function entry() {
           ]]></screen>
         </example>
       </section>
-    </section>
 
-    <section>
-      <title>Arrays</title>
+      <section>
+        <title>Arrays</title>
       
-      <para>
-        An <glossterm>array</glossterm> is a sequence of values of the same type (referred to as the array's <glossterm>element type</glossterm>) that are indexed by integers and placed sequentially in memory.  <acronym>KL</acronym> supports three types of arrays: variable-size arrays, fixed-length arrays, and sliced arrays.  The details of each array type are discussed below.
-      </para>
+        <para>
+          An <glossterm>array</glossterm> is a sequence of values of the same type (referred to as the array's <glossterm>element type</glossterm>) that are indexed by integers and placed sequentially in memory.  <acronym>KL</acronym> supports three types of arrays: variable-size arrays, fixed-length arrays, and sliced arrays.  The details of each array type are discussed below.
+        </para>
       
-      <para xml:id="array-properties">
-        Regardless of specific type, arrays in <acronym>KL</acronym> have several common behaviours:
+        <para xml:id="array-properties">
+          Regardless of specific type, arrays in <acronym>KL</acronym> have several common behaviours:
       
-        <itemizedlist>
-            <listitem><para>
-              Arrays are indexed using the <code>[</code>..<code>]</code> operator, exactly as in JavaScript and C.  The indexing of arrays is 0-based, again just as in JavaScript and C.
+          <itemizedlist>
+              <listitem><para>
+                Arrays are indexed using the <code>[</code>..<code>]</code> operator, exactly as in JavaScript and C.  The indexing of arrays is 0-based, again just as in JavaScript and C.
               
-              <informalexample>
-                <programlisting language="KL"><![CDATA[
+                <informalexample>
+                  <programlisting language="KL"><![CDATA[
 Size sizes[];    // Declare a variable-size array
 sizes.push(42);  // Push some elements onto the end of the array
 sizes.push(21);
 sizes.push(3);
 report sizes[1]; // outputs "21"
-                ]]></programlisting>
-              </informalexample>
-            </para></listitem>
+                  ]]></programlisting>
+                </informalexample>
+              </para></listitem>
             
-            <listitem><simpara>The size of an array is of type <code>Size</code> and the indexing operator takes an index of type <code>Index</code> (which is an alias for <code>Size</code>).</simpara></listitem>
+              <listitem><simpara>The size of an array is of type <code>Size</code> and the indexing operator takes an index of type <code>Index</code> (which is an alias for <code>Size</code>).</simpara></listitem>
             
-            <listitem><para>
-              Array declarations can be nested, and can be co-nested with other array types.
-              <informalexample>
-                <programlisting language="KL"><![CDATA[
+              <listitem><para>
+                Array declarations can be nested, and can be co-nested with other array types.
+                <informalexample>
+                  <programlisting language="KL"><![CDATA[
 Integer b[][];  // A variable-size array of variable-size arrays of integers
 Boolean a[2][]; // An array of 2 variable-size arrays of booleans
 String c<>[];   // A sliced array of variable-size 
-                ]]></programlisting>
-              </informalexample>
-            </para></listitem>
+                  ]]></programlisting>
+                </informalexample>
+              </para></listitem>
 
-            <listitem><simpara>
-              Arrays are <glossterm>passed by reference</glossterm> into functions and operators, ie. they are not copied.  This means that it takes just a long to pass an array with one million elements to a function as it does to pass an array with one element.
-            </simpara></listitem>
+              <listitem><simpara>
+                Arrays are <glossterm>passed by reference</glossterm> into functions and operators, ie. they are not copied.  This means that it takes just a long to pass an array with one million elements to a function as it does to pass an array with one element.
+              </simpara></listitem>
             
-            <listitem><simpara>
-              When running within a web browser, indexing into arrays using the indexing operator is bounds-checked; if the index runs off the end of the array, an exception is thrown.  When running Fabric from the command line, arrays are not bounds-checked.
-            </simpara></listitem>            
-        </itemizedlist>
-      </para>
-      
-      <section>
-        <title>Variable-Size Arrays</title>
-        
-        <para>
-          A <glossterm>variable-size array</glossterm> is an array whose size can be changed at runtime.  Variable-size arrays are declared by appending <code>[]</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings[]</code>.
-        </para>
-          
-        <para>
-          Variable-size arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
-          
-          <itemizedlist>
-            <listitem><para>
-              The maximum size of a variable-size array is the maximum value of the <code>Size</code> type.  This means that variable-size arrays can be much larger on 64-bit machines than they can on 32-bit machines.
-            </para></listitem>
-            
-            <listitem><para>
-              Variable-size arrays are copied when they are assigned.
-              <warning><simpara>This means that there is no inexpensive way to assign variable-size arrays; this will probably be fixed in a future version of Fabric.</simpara></warning>
-            </para></listitem>
-            
-            <listitem><para>
-              Variable-size arrays support the following methods:
-              <itemizedlist>
-                <listitem><simpara>The <code>push(element)</code> method appends an element to the end of the variable-size array</simpara></listitem>
-                <listitem><simpara>The <code>size()</code> method returns the number of elements in the variable-size array</simpara></listitem>
-                <listitem><simpara>The <code>resize(newSize)</code> method resizes the array.  Any new elements at the end are initialized with the default value for the underlying type.</simpara></listitem>
-              </itemizedlist>
-            </para></listitem>
+              <listitem><simpara>
+                When running within a web browser, indexing into arrays using the indexing operator is bounds-checked; if the index runs off the end of the array, an exception is thrown.  When running Fabric from the command line, arrays are not bounds-checked.
+              </simpara></listitem>            
           </itemizedlist>
         </para>
+      
+        <section>
+          <title>Variable-Size Arrays</title>
         
-        <example>
-          <title>Example use of variable-size arrays</title>
-          <programlisting><![CDATA[
+          <para>
+            A <glossterm>variable-size array</glossterm> is an array whose size can be changed at runtime.  Variable-size arrays are declared by appending <code>[]</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings[]</code>.
+          </para>
+          
+          <para>
+            Variable-size arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
+          
+            <itemizedlist>
+              <listitem><para>
+                The maximum size of a variable-size array is the maximum value of the <code>Size</code> type.  This means that variable-size arrays can be much larger on 64-bit machines than they can on 32-bit machines.
+              </para></listitem>
+            
+              <listitem><para>
+                Variable-size arrays are copied when they are assigned.
+                <warning><simpara>This means that there is no inexpensive way to assign variable-size arrays; this will probably be fixed in a future version of Fabric.</simpara></warning>
+              </para></listitem>
+            
+              <listitem><para>
+                Variable-size arrays support the following methods:
+                <itemizedlist>
+                  <listitem><simpara>The <code>push(element)</code> method appends an element to the end of the variable-size array</simpara></listitem>
+                  <listitem><simpara>The <code>size()</code> method returns the number of elements in the variable-size array</simpara></listitem>
+                  <listitem><simpara>The <code>resize(newSize)</code> method resizes the array.  Any new elements at the end are initialized with the default value for the underlying type.</simpara></listitem>
+                </itemizedlist>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+        
+          <example>
+            <title>Example use of variable-size arrays</title>
+            <programlisting><![CDATA[
 operator entry() {
   Integer a[];
   report "The array a has size " + a.size + " and value " + a;
@@ -504,42 +503,42 @@ operator entry() {
   a.resize(4);
   report "The array NOW has size " + a.size + " and value " + a;
 }
-          ]]></programlisting>
-          <simpara>Output:</simpara>
-          <screen><![CDATA[
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
 The array a has size 0 and value []
 The array NOW has size 2 and value [42,84]
 The array NOW has size 4 and value [42,84,0,0]
-          ]]></screen>
-        </example>
-      </section>
+            ]]></screen>
+          </example>
+        </section>
       
-      <section>
-        <title>Fixed-Size Arrays</title>
+        <section>
+          <title>Fixed-Size Arrays</title>
         
-        <para>
-          A <glossterm>fixed-size array</glossterm> is an array whose size is fixed at runtime.  Fixed-size arrays have much faster performance characteristics than variable-size arrays, therefore should be used in place of variable-sized arrays when the size of an array is known at compile time.  Fixed-size arrays are declared by appending <code>[<replaceable>size</replaceable>]</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings[4]</code>.
-        </para>
+          <para>
+            A <glossterm>fixed-size array</glossterm> is an array whose size is fixed at runtime.  Fixed-size arrays have much faster performance characteristics than variable-size arrays, therefore should be used in place of variable-sized arrays when the size of an array is known at compile time.  Fixed-size arrays are declared by appending <code>[<replaceable>size</replaceable>]</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings[4]</code>.
+          </para>
         
-        <para>
-          Fixed-size arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
+          <para>
+            Fixed-size arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
           
-          <itemizedlist>
-            <listitem><para>
-              The maximum size of a fixed-size array is the maximum value of the <code>Size</code> type.
-              <warning><para>Since fixed-size arrays are allocated on the stack (instead of the heap), using very large fixed-size arrays may result in a stack overflow.  It is recommended that fixed-size arrays only be used for arrays that are reasonably small.</para></warning>              
-            </para></listitem>
+            <itemizedlist>
+              <listitem><para>
+                The maximum size of a fixed-size array is the maximum value of the <code>Size</code> type.
+                <warning><para>Since fixed-size arrays are allocated on the stack (instead of the heap), using very large fixed-size arrays may result in a stack overflow.  It is recommended that fixed-size arrays only be used for arrays that are reasonably small.</para></warning>              
+              </para></listitem>
             
-            <listitem><para>
-              Fixed-size arrays are copied when they are assigned.
-              <note><simpara>Unlike variable-size arrays, this behaviour of fixed-size arrays will never change.</simpara></note>
-            </para></listitem>
-          </itemizedlist>
-        </para>
+              <listitem><para>
+                Fixed-size arrays are copied when they are assigned.
+                <note><simpara>Unlike variable-size arrays, this behaviour of fixed-size arrays will never change.</simpara></note>
+              </para></listitem>
+            </itemizedlist>
+          </para>
         
-        <example>
-          <title>Example use of fixed-size arrays</title>
-          <programlisting><![CDATA[
+          <example>
+            <title>Example use of fixed-size arrays</title>
+            <programlisting><![CDATA[
 function Scalar det(Scalar mat[2][2]) {
   return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
 }
@@ -552,12 +551,84 @@ operator entry() {
   mat[1][1] = 8.6;
   report "The determinant of " + mat + " is " + det(mat);
 }
-          ]]></programlisting>
-          <simpara>Output:</simpara>
-          <screen><![CDATA[
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
 The determinant of [[3.5,-9.2],[-2.1,8.6]] is 10.78
-          ]]></screen>
-        </example>
+            ]]></screen>
+          </example>
+        </section>
+
+        <section>
+          <title>Sliced Arrays</title>
+        
+          <para>
+            A <glossterm>sliced array</glossterm> is an array whose size is fixed when it is created.  Sliced arrays have the unique feature that new sliced arrays can be created that access a sub-range of the elements of an existing sliced array.  Sliced arrays are primarily used for operator parameters bound to sliced data inside Fabric's dependency graph, but can also be used on their own within <acronym>KL</acronym>.  Sliced arrays are declared by appending <code>&lt;&gt;</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings&lt;&gt;</code>.
+          </para>
+          
+          <para>
+            Sliced arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
+          
+            <itemizedlist>
+              <listitem><para>
+                Within <acronym>KL</acronym>, sliced arrays can only be created using one of two syntaxes, shown in the example below:
+                
+                <informalexample>
+                  <programlisting language="KL"><![CDATA[
+Size sizes<>(8);                // Create a sliced array of 8 elements of type Size
+for (Size i=0; i<8; ++i)
+  sizes[i] = i;
+  
+Size subSizes<>( sizes, 2, 4 ); // A sliced array of elements of type Size that accesses
+                                // elements 2 through 5 (inclusive) of the underlying
+                                // sliced array
+report subSizes[0];             // will output '2'
+report subSizes.size;           // will output '4'
+                  ]]></programlisting>
+                </informalexample>
+              </para></listitem>
+            
+              <listitem><para>
+                Sliced arrays as a whole cannot be the target of an assignment.  However, an element of a sliced array (accessed through the <code>[</code>...<code>]</code> index operator) can be assigned to.
+              </para></listitem>
+            
+              <listitem><para>
+                Sliced arrays support the following methods:
+                <itemizedlist>
+                  <listitem><simpara>The <code>size()</code> method returns the number of elements in the sliced array.  If a sliced array refers to a subrange of another sliced array, the value returned is the size of the subrange.</simpara></listitem>
+                </itemizedlist>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+        
+          <example>
+            <title>Example use of sliced arrays</title>
+            <programlisting><![CDATA[
+operator entry() {
+  String strings<>(8);
+  for (Size i=0; i<8; ++i)
+    strings[i] = "string " + (i+1);
+  report "strings = " + strings;
+  
+  String subStrings<>(strings, 2, 4);
+  report "subStrings = " + subStrings;
+  
+  report "Replacing subStrings element...";
+  subStrings[3] = "replaced string";
+  report "subStrings = " + subStrings;
+  report "strings = " + strings;
+}
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+strings = ["string 1","string 2","string 3","string 4","string 5","string 6","string 7","string 8"]
+subStrings = ["string 3","string 4","string 5","string 6"]
+Replacing subStrings element...
+subStrings = ["string 3","string 4","string 5","replaced string"]
+strings = ["string 1","string 2","string 3","string 4","string 5","replaced string","string 7","string 8"]
+            ]]></screen>
+          </example>
+        </section>
       </section>
     </section>
 
