@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 var q=null;window.PR_SHOULD_USE_CONTINUATION=!0;
