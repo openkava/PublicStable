@@ -91,7 +91,11 @@ namespace Fabric
       
       std::string const *scopeName = getScopeName( cgManager );
       if ( !buildFunctionBodies && scopeName && moduleBuilder.getScope().has( *scopeName ) )
-        throw CG::Error( getLocation(), "symbol " + _(*scopeName) + " already exists" );
+      {
+        RC::ConstHandle<CG::Symbol> symbol = moduleBuilder.getScope().get( *scopeName );
+        if ( !symbol->isPencil() )
+          throw CG::Error( getLocation(), "non-function symbol " + _(*scopeName) + " already exists" );
+      }
         
       RC::ConstHandle<CG::Adapter> returnAdapter = getReturnAdapter( cgManager );
       if ( returnAdapter )
