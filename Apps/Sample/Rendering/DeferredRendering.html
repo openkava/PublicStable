@@ -24,7 +24,7 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Parsers/parseOBJ"], function() {
 
 FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePassPhongMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongInstancingExtShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePassPhongInstancingMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongInstancingExtShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostPhongSpotLightInstancingExtShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('FlatInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/FlatInstancingExtShader.xml');
 
@@ -163,7 +163,7 @@ $(document).ready(function() {
       }),
       materialNode: scene.constructNode('DeferredPrePassPhongMaterial', {
         diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3),
-        specularFactor: 0.1
+        specularFactor: 0.1,
         rendererNode: deferredRenderer
       })
     });
@@ -192,12 +192,7 @@ $(document).ready(function() {
         length: streetLength,
         width: streetWidth
       }),
-      materialNode: scene.constructNode('DeferredPrePassPhongMaterial', {
-        diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3),
-        specularFactor: 0.1,
-        rendererNode: deferredRenderer
-      })
-    materialNode: scene.constructNode('PrePassPhongInstancingMaterial',{
+    materialNode: scene.constructNode('DeferredPrePassPhongInstancingMaterial',{
       diffuseColor: FABRIC.RT.rgb(0.6, 0.6, 0.6),
       transformTextureNode: scene.constructNode('TransformTexture', {
         transformNode: streetSlicedTransform,
@@ -301,14 +296,14 @@ $(document).ready(function() {
   scene.importAssetFile('Models/carmod2.obj', {}, function(assetNodes){
     scene.constructNode('Instance', {
       geometryNode: assetNodes['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
-      materialNode: scene.constructNode('PrePassPhongInstancingMaterial', {
+      materialNode: scene.constructNode('DeferredPrePassPhongInstancingMaterial', {
         diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
         transformTextureNode: scene.constructNode('TransformTexture', {
           transformNode: carSlicedTransform,
           dynamic: true
         }),
         specularFactor: 1.0,
-        rendererNode: deferredRenderNode.pub
+        rendererNode: deferredRenderer
       }),
       transformNode: carSlicedTransform
     });
@@ -348,7 +343,7 @@ $(document).ready(function() {
         transformNode: carLightSlicedTransform,
         dynamic: true
       }),
-      rendererNode: deferredRenderNode.pub
+      rendererNode: deferredRenderer
     }),
     transformNode: carLightSlicedTransform
   });
@@ -492,7 +487,7 @@ $(document).ready(function() {
         transformNode: streetLightSlicedTransform,
         dynamic: false
       }),
-      rendererNode: deferredRenderNode.pub
+      rendererNode: deferredRenderer
     }),
     transformNode: streetLightSlicedTransform
   });
