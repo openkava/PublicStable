@@ -293,43 +293,6 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
       renderTargetTextures.push(imageNode);
     }
 
-
-    deferredRenderNode.pub.addPostPassMaterial = function(materialName, options) {
-
-      options.parentEventHandler = shaderPassRedrawEventHandler;
-      var materialNodePub = scene.pub.constructNode(materialName, options);
-      var material = scene.getPrivateInterface(materialNodePub);
-
-      for(i = 0; i < nbRenderTargets; ++i) {
-        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'TextureNode';
-        if(material.pub[setTextureFuncName] !== undefined) {
-          material.pub[setTextureFuncName]( renderTargetTextures[i].pub );
-        }
-      }
-
-      var materialRedrawHandler = material.getRedrawEventHandler();
-
-      if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
-        materialRedrawHandler.postDescendBindings.insert(
-          scene.constructOperator({
-              operatorName: 'drawShaderQuad',
-              srcCode:'use OGLTexture2D, OGLShaderProgram;\n' +
-                      'operator drawShaderQuad(io OGLShaderProgram program){ \n' +
-                      '  drawScreenQuad(program.programId, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);}',
-              entryFunctionName: 'drawShaderQuad',
-              parameterLayout: [
-                'shader.shaderProgram'
-              ]
-        }),0);
-      }
-      return materialNodePub;
-    };
-   
-    deferredRenderNode.pub.addPrePassMaterial = function(materialName, options) {
-      options.parentEventHandler = renderTargetRedrawEventHandler;
-      return scene.pub.constructNode(materialName, options);
-    };
-
     deferredRenderNode.getOglRenderTargetTextureNames = function(){ return oglRenderTargetTextureNames; }
     deferredRenderNode.getRenderTargetTextures = function(){ return renderTargetTextures; }
     ///////////////////////////////
