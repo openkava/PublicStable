@@ -17,12 +17,6 @@
 
     <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
     <script type="text/javascript">
-    
-FABRIC.require(["SG/SceneGraph",
-                "SG/Geometry",
-                "SG/Materials",
-                "SG/Manipulation",
-                "SG/Alembic"], function() {
 
 $(document).ready(function() {
 
@@ -38,6 +32,18 @@ $(document).ready(function() {
       primary: 'ui-icon-step'
     }
   });
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
+  
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Alembic"], function() {
+
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
@@ -70,9 +76,6 @@ $(document).ready(function() {
     });
   
 
-  $('#loadingDialog').dialog({
-    modal: true
-  });
 
   // create the alembic content, and fire the load once it is loaded
   var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
@@ -93,11 +96,7 @@ $(document).ready(function() {
         inst.addMaterialNode(wireMaterial);
       }
     }
-      
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-
-    return 'remove';
+    return true;
   });
 
     $('#play').button()
@@ -131,11 +130,12 @@ $(document).ready(function() {
         value: (1.0-(doneWeight/totalWeight))*100
       });
       if (nbRemaining===0) {
-        viewport.redraw();
         var errors = scene.getErrors();
         if (errors.length > 0) {
           throw (errors.toString());
         }
+        $('#loadingDialog').dialog('close');
+        viewport.redraw();
         return true;
       }
     });

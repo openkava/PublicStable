@@ -18,14 +18,18 @@
     <script type="text/javascript">
     
     
+$(document).ready(function() {
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
     
 FABRIC.require(["SG/SceneGraph",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Lidar"], function() {
  
-$(document).ready(function() {
-
+  
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
@@ -46,9 +50,6 @@ $(document).ready(function() {
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(10, 30, 100).multiplyScalar(3) });
 
-  $('#loadingDialog').dialog({
-    modal: true
-  });
 
   var pointMaterial = scene.constructNode('FlatGradientMaterial', {
     prototypeMaterialType: 'PointMaterial',

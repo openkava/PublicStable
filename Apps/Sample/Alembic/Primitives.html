@@ -15,7 +15,13 @@
     <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
 
     <script type="text/javascript">
-    
+      
+$(document).ready(function() {
+ 
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
                 "SG/Materials",
@@ -46,12 +52,7 @@ FABRIC.require(["SG/SceneGraph",
     diffuseColor: FABRIC.RT.rgb(0.5, 0.5, 0.5, 1),
     lightNode: light,
   });
-  
-$(document).ready(function() {
- 
-  $('#loadingDialog').dialog({
-    modal: true
-  });
+
 
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'primitives';
@@ -72,9 +73,7 @@ $(document).ready(function() {
         });
       }
     }
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-    return 'remove';
+    return true;
   });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -86,6 +85,8 @@ $(document).ready(function() {
       if (errors.length > 0) {
         throw (errors.toString());
       }
+      $('#loadingDialog').dialog('close');
+      viewport.redraw();
       return true;
     }
   });

@@ -31,7 +31,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
   
@@ -83,9 +83,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         });
       }
     }
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-    return 'remove';
+    return true;
   });
   
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -98,6 +96,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         if (errors.length > 0) {
           throw (errors.toString());
         }
+        $('#loadingDialog').dialog('close');
         return true;
       }
     });
