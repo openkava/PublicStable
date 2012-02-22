@@ -54,13 +54,13 @@
         functionality. The VideoNode, for example, contains the Dependency Graph Nodes to store all
         of the video related data, as well as all of the Operators to read and manipulate the video
         stream. Moreover it provides JavaScript functions to access and manipulate the video. </para>
-      <para>SceneGraphNodes that don't contain any Dependency Graph Node, and are used mainly to
-        provide utility functionality, are called <emphasis role="bold">Managers</emphasis>. One
-        example of a manager is the UndoManager.</para>
-      <para>The SceneGraph furthermore provides graphical utilities, such as the <emphasis
-          role="bold">Debugger</emphasis>, which allows to inspect the constructed core Dependency
-        Graph, and other tools, for example the <emphasis role="bold">Curve Editor</emphasis>, which
-        allows to inspect and edit FCurve animation.</para>
+      <para><emphasis role="bold">Managers</emphasis> are similar to SceneGraphNodes and are used
+        mainly to provide utility functionality. One example of a manager is the UndoManager.
+        Managers are genrally singletons, in that only on of each type of Manager is constructed. </para>
+      <para>The SceneGraph also provides graphical utilities, such as the <emphasis role="bold"
+          >Debugger</emphasis>, which provides an graph based representation of the constructed core
+        Dependency Graph. Other tools, for example the <emphasis role="bold">Curve
+        Editor</emphasis>, provide a graphical Curve editor for keyframe animation curves.</para>
     </section>
     <section>
       <title>Abstraction of the Dependency Graph</title>
@@ -79,24 +79,23 @@
     </section>
     <section>
       <title>Scene Object and SceneGraphNode Construction</title>
-      <para>The <emphasis role="bold">scene</emphasis> object is the accessor for the SceneGraph
-        factory, and is used to construct any SceneGraphNode.</para>
+      <para>The <emphasis role="bold">scene</emphasis> provides basic services such as time
+        management, and and is used to construct SceneGraphNodes.</para>
       <para>
         <programlisting>var scene = FABRIC.SceneGraph.createScene();</programlisting>
       </para>
       <para>The first SceneGraph object to be constructed is usually the scene object. The scene
-        object creates a Fabric dependency graph context, a dependency graph node for containing
-        globals, and some event handlers that are used in rendering. It returns an interface for
-        constructing SceneGrapNodes. </para>
-      <para>All SceneGraphNodes implemented in the SceneGraph are registered by providing their type
-        as well as a constructor function. A node of a registered type can be constructed by using
-        JavaScript like this:</para>
+        object creates a Fabric Engine context, a dependency graph node for containing globals, and
+        some event handlers that are used in rendering. It returns a public interface which provides
+        methods for constructing SceneGrapNodes. </para>
+      <para>All SceneGraphNode types implemented in the SceneGraph are registered by providing their
+        type as well as a constructor function. A SceneGraphNode can be constructed iin the
+        following way:</para>
       <para>
         <programlisting>var sgNode = scene.constructNode('Image2D', { name: 'myImageNode' } );</programlisting>
       </para>
-      <para>The options supported by each SceneGraphNode can be found in the following chapters,
-        respectively in the <emphasis role="bold">SceneGraphNode Reference</emphasis> of this
-        document. </para>
+      <para>The construction options supported by each SceneGraphNode can be found in the <emphasis
+          role="bold">SceneGraphNode Reference</emphasis> of this document. </para>
     </section>
     <section>
       <title>Public and Private Interfaces</title>
