@@ -1421,4 +1421,121 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         sample applications.</para>
     </section>
   </section>
+  <section>
+    <title>SceneGraphNode Reference</title>
+    <para>In this section you can find documentation for all of the current SceneGraphNodes provided
+      by the JavaScript SceneGraph. For each node a short description is provided, as well as a
+      reference to its options. Only the methods on the public interface are documented here. For
+      further information on the private interfaces please refer to the JavaScript file providing
+      the respective nodes.</para>
+    <section>
+      <title>SceneGraph.js</title>
+      <section>
+        <title>SceneGraphNode</title>
+        <para>ParentNode: <emphasis role="bold">None</emphasis></para>
+        <para>This is the base node for all nodes in the SceneGraph. It is never constructed
+          directly, but all other nodes use it as their base. The SceneGraphNode is responsible for
+          constructing the dependency graph nodes and eventhandler nodes in the core, as well as
+          deploying all of the base features provided by the SceneGraph, such as eventhandling
+          etc.</para>
+        <para>Event related functions are only available on certain instances of the SceneGraphNode.
+          This depends on the construction and if <emphasis role="bold"
+            >addEventHandlingFunctions</emphasis> was called.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>SceneGraphNode Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>name</entry>
+                <entry>The name of the SceneGraph node. If not specified, it will default to its
+                  type.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>SceneGraphNode Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getName()</entry>
+                <entry>Returns the name of the node.</entry>
+              </row>
+              <row>
+                <entry>setName(name)</entry>
+                <entry>Sets the new name of the node.</entry>
+              </row>
+              <row>
+                <entry>addEventListener(event, func)</entry>
+                <entry>Adds a new function to the given event name.</entry>
+              </row>
+              <row>
+                <entry>removeEventListener(event,func)</entry>
+                <entry>Removes a function from listening to a given event name.</entry>
+              </row>
+              <row>
+                <entry>fireEvent(event)</entry>
+                <entry>Executes all of the listening functions of a given event name.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>ResourceLoad</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>This node is used for loading external resources into Fabric Engine. Resources can be
+          images, 3D files or any external binary content. The node supports loading the data to
+          memory or storing it to a temporary file (default). The node also fires an <emphasis
+            role="italic">loadSuccess</emphasis> event once the load is finished, so event listener
+          can be attached accordingly.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>ResourceLoad Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>url</entry>
+                <entry>The url of the external data resource</entry>
+              </row>
+              <row>
+                <entry>storeDataAsFile</entry>
+                <entry>If true the data is stored to a temporary file, otherwise the content is
+                  stored in memory.</entry>
+              </row>
+              <row>
+                <entry>redrawOnLoad</entry>
+                <entry>If true the viewport will be refreshed automatically once loading is
+                  finished.</entry>
+              </row>
+              <row>
+                <entry>blockRedrawingTillResourceIsLoaded</entry>
+                <entry>If true the viewport will not refresh during the load of the
+                  resource.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>ResourceLoad Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>setUrl(url, force)</entry>
+                <entry>Sets the new URL for the resource. If force is true the node is force to
+                  evaluate immediately.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+    </section>
+  </section>
 </article>
