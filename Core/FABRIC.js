@@ -2292,7 +2292,9 @@ var requirejs, require, define;
   
     var context;
     try {
-      context = embedTag.wrapFabricClient(embedTag, function(s) { console.log(s); } );
+      context = embedTag.wrapFabricClient(embedTag, function(s) {
+        console.log(s);
+        } );
     }
     catch (e) {
       // [andrew 20120214] should only happen if they pass an invalid contextID
