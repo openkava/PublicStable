@@ -1,5 +1,5 @@
 #
-#  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+#  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
 #
 
 # test that setting slice count to 'None' gives exception
