@@ -630,77 +630,108 @@ strings = ["string 1","string 2","string 3","string 4","string 5","replaced stri
           </example>
         </section>
       </section>
-    </section>
 
-<!--
-#### Dictionaries
+      <section>
+        <title>Dictionaries</title>
+      
+        <para>
+          <acronym>KL</acronym> supports key-value pair dictionaries.  The type of the key of a dictionary can be any of the <acronym>KL</acronym> atomic types (e.g. <code>Boolean</code>, <code>String</code>, or any integer or floating-point type) and the type of the value can be any type.  Dictionaries are declared by appending <code>[<replaceable>KeyType</replaceable>]</code> to the variable, parameter or member name.  For example:
+        
+          <informalexample><programlisting language="KL"><![CDATA[
+String scalarToString[Scalar];      // A Scalar-to-String dictionary
+Boolean integerToBoolean[Integer];  // An Integer-to-Boolean dictionary
+          ]]></programlisting></informalexample>
+        </para>
 
-KL supports key-value pair dictionaries.  The type of the key of a dictionary can be any of the KL atomic types (e.g. Integer, String) and the type of the Value can be any type.  An example of the declaration and use of a dictionary:
-
-```javascript
-String a[String];
-a["uno"] = "one";
-a["dos"] = "two";
-a["tres"] = "three";
-a["cuatro"] = "four";
-report a["dos"]; // Reports 'two'
-```
-
-Dictionaries have the following properties:
-
-- Dictionaries are copy-by-value.  However, they are always passed by reference to functions, so it is not necessary to pass them as an `io` parameter to avoid copies.
-- Dictionaries can be nested, and can be co-nested with array types.  For example,
-```javascript
+        <para>
+          Dictionaries in <acronym>KL</acronym> have the following properties:
+        
+          <itemizedlist>
+            <listitem><para>
+              Dictionaries are copied on assignment.  However, they are always passed by reference to functions.
+              <note><para>The copy-on-assignment property of dictionaries is likely to change in a future version of <acronym>KL</acronym>.</para></note>
+            </para></listitem>
+          
+            <listitem><para>
+              Dictionaries can be nested, and can be co-nested with array types.  For example:
+            
+              <informalexample><programlisting language="KL"><![CDATA[
 Integer b[String][2]; // An String-to-Fixed-Length-Integer-Array dictionary
 Boolean a[][Integer]; // A variable array of Integer-to-Boolean dictionaries
-```
-- There is no limit to the size of dictionaries other than available memory
-- Dictionaries support the `has` method to test for inclusion of a key in the dictionary
-- Dictionaries support indexing using the `[]` indexing operator as both r-values and l-values
-- Dictionaries support the `delete` method to delete the entry with a given key
-- Dictionaries can be iterated over using Javascript-like `in` iteration:
-```javascript
+              ]]></programlisting></informalexample>
+            </para></listitem>
+          
+            <listitem><para>There is no limit to the size of dictionaries other than available memory</para></listitem>
+            <listitem><para>
+              Dictionaries support indexing using the <code>[<replaceable>key</replaceable>]</code> indexing operator to both return the element at the give key or assign to the element at the given key.  When retrieving a value from a dictionary, if there is no value for the given key then an exception is thrown.</para></listitem>
+            <listitem><para>Dictionaries support the <code>has(<replaceable>key</replaceable>)</code> method that returns a <code>Boolean</code> value indicating whether there is a value in the dictionary for the given key.</para></listitem>
+            <listitem><para>Dictionaries support the <code>delete(<replaceable>key</replaceable>)</code> method that deletes the value for the given key.  If there is no value for the given key, nothing happens.</para></listitem>
+
+            <listitem><para>
+              Dictionaries can be iterated over using JavaScript-like <code>in</code> iteration:
+            
+              <informalexample><programlisting language="KL"><![CDATA[
 String dict[String];
 for (k in dict)
   report "dict["+k+"] = "+dict[k];
-```
-- For improved performance, both the key and value can be made available through dictionary iteration.  The value is an l-value if and only if the dictionary is an l-value.
-```javascript
+              ]]></programlisting></informalexample>
+            
+              For improved performance, both the key and value can be made available through <code>in</code> iteration.  The value can be assigned to if and only if the dictionary can be assigned to.  For example:
+            
+              <informalexample><programlisting language="KL"><![CDATA[
 String dict[String];
 for (k, v in dict)
   report "dict["+k+"] = "+v;
-```
-- Insertion order (not sort order!) is the iteration order for dictionaries, just like Javascript
-- Access to a non-existent key as an r-value will throw an exception.
-- Access to a non-existent key as an l-value will create a new entry with the default value of the type.
+              ]]></programlisting></informalexample>
+            </para></listitem>
 
-Example use of dictionaries:
+            <listitem><para>
+              Insertion order (not sort order!) is the iteration order for dictionaries, just as for JavaScript objects.
 
-```javascript
+              <informalexample><programlisting language="KL"><![CDATA[
+operator entry() {
+  String numbers[Integer];
+  numbers[3] = "three";
+  numbers[2] = "two";
+  report numbers; // outputs '{3:"three",2:"two"}'
+  numbers[1] = "one";
+  report numbers; // outputs '{3:"three",2:"two",1:"one"}'
+}
+              ]]></programlisting></informalexample>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+
+        <example>
+          <title>Example use of dictionaries</title>
+          <programlisting><![CDATA[
+operator entry() {
   Scalar a[String];
   a['pi'] = 3.14;
   a['e'] = 2.71;
   report "a is:";
-  for ( k in a ) {
-    report "a['" + k + "'] = " + a[k];
+  for ( k, v in a ) {
+    report "a['" + k + "'] = " + v;
   }
-  a.delete['pi'];
+  a.delete('pi');
   report "a is now:";
-  for ( k in a ) {
-    report "a['" + k + "'] = " + a[k];
+  for ( k, v in a ) {
+    report "a['" + k + "'] = " + v;
   }
-```
-
-The output is:
-
-```
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
 a is:
 a['pi'] = 3.14
 a['e'] = 2.71
 a is now:
 a['e'] = 2.71
-```
-
+        ]]></screen>
+        </example>
+      </section>
+    </section>
+<!--
 ### Type Aliases
 
 The `alias` statement can be used to alias a type to make code more readable:
