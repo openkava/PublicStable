@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 operator evaluateCharacterManipulator(in Size index, io Vec3 positions[], io Vec3 originalpositions[], io Xfo offset, io Integer boneindex, io Xfo pose[]) {
