@@ -731,65 +731,93 @@ a['e'] = 2.71
         </example>
       </section>
     </section>
-<!--
-### Type Aliases
 
-The `alias` statement can be used to alias a type to make code more readable:
-
-```javascript
+    <section>
+      <title>Type Aliases</title>
+      
+      <para>
+        The <code>alias</code> statement can be used to alias a type to make code more readable.  Its syntax is the same as a variable declaration:
+        
+        <programlisting language="KL">
+          alias Integer Int32;        // Int32 is now an alias for Integer
+          alias Scalar Float32;       // Float32 is now an alias for Scalar
+          alias Float32 Mat22[2][2];  // Mat22 is now an alias for Float32[2][2], ie. a size-2-array-of-size-2-arrays-of-Float32
+        </programlisting>
+        
+        <code>alias</code> statements must appear within the global scope of a <acronym>KL</acronym> program.
+      </para>
+      
+      <example>
+        <title>Example use of <code>alias</code></title>
+        <programlisting><![CDATA[
 alias Scalar Mat22[2][2];
 
-function entry() {
+operator entry() {
   Mat22 mat22;
   report mat22;
 }
-```
-
-The output is:
-
-```
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
 [[0,0],[0,0]]
-```
+      ]]></screen>
+      </example>
+    </section>
 
-### The Data Type and the data and dataSize Methods
+    <section>
+      <title>The <code>Data</code> Type and the <code>data</code> and <code>dataSize</code> Methods</title>
 
-When interfacing with external libraries such as OpenGL, it is sometimes necessary to get direct access to the data underlying a value.  An example is a library call that takes a pointer to data.  KL itself has no notion of pointers; instead, KL has the concept of the `Data` type whose value is a pointer to data which can be passed to an external library call.
+      <para>
+        When interfacing with external libraries such as OpenGL, it is sometimes necessary to get direct access to the data underlying a value.  An example is a library call that takes a pointer to data.  <acronym>KL</acronym> itself has no notion of pointers; instead, <acronym>KL</acronym> has the concept of the <code>Data</code> type whose value is a pointer to data which can be passed to an external library call.
+      </para>
 
-Most values in KL have a built-in method called `data` which returns a value of type `Data`, and a built-in method called `dataSize` which returns a value of type `Size`.  The value returned by the `data` method is a pointer to the data underlying the value, and the value returned by the `dataSize` method is the number of bytes the value occupies in memory.  The only values which do not support the `data` and `dataSize` methods are structures which contain strings or values arrays; this is because such structures do not store their contents contiguously in memory.
+      <para>
+        Most values in <acronym>KL</acronym> have a built-in method called <code>data</code> that returns a value of type <code>Data</code>, and a built-in method called <code>dataSize</code> that returns a value of type <code>Size</code>.  The value returned by the <code>data</code> method is a pointer to the data underlying the value, and the value returned by the <code>dataSize</code> method is the number of bytes the value occupies in memory.  The only values which do not support the <code>data</code> and <code>dataSize</code> methods are dictionaries as well as other derived types that do not lay out their elements or members contiguously in memory.
+        
+        <programlisting language="KL"><![CDATA[
+Integer integers[];
+report integers.data;  // OK: integers are contiguous in memory
+String strings[];
+report strings.data;   // ERROR: string data is not contiguous in memory
+        ]]></programlisting>
+      </para>
 
-Unlike C, the "pointers" returned by the `data` methods cannot be inspected or used in any expressions; the only thing which can be done is a cast to `Boolean`, which will be `true` if and only if the `Data` value points to a value whose size is greater than zero.  However, these `Data` values can be passed directly to external library functions provided by Fabric itself or Fabric extensions, where they are used as pointers to data in memory.
+      <para>
+        Unlike pointers in C, the values returned by <code>data</code> methods cannot be inspected or used in any expressions; the only thing which can be done is a cast to <code>Boolean</code>, which will be <code>true</code> if and only if the <code>Data</code> value points to a value whose size is greater than zero.  However, these <code>Data</code> values can be passed directly to external library functions provided by Fabric itself or Fabric extensions, where they are used as pointers to data in memory.
+      </para>
 
-Note that for values of type `String`, the value returned by `dataSize` includes a null terminator which is automatically appended to the string by Fabric; this is so that the string data can be directly used in C library calls as a regular C string.
+      <note><para>
+        For values of type <code>String</code>, the value returned by <code>dataSize</code> includes a null terminator which is automatically appended to the string by Fabric; this is so that the string data can be directly used in C library calls as a regular C string.  If you want to pass the number of characters in the string, pass <code>string.length</code> instead.
+      </para></note>
 
-Example code illustrating the use of `Data` values and the `data` and `dataSize` methods:
-
-```javascript
-function entry() {
+      <example>
+        <title>Example use of <code>Data</code> values and the <code>data</code> and <code>dataSize</code> methods</title>
+        <programlisting language="KL"><![CDATA[
+operator entry() {
   String s;
   report "s = '" + s + "'";
   report "s.data = " + s.data;
-  report "(Boolean)s.data = " + (Boolean)s.data;
+  report "Boolean(s.data) = " + Boolean(s.data);
   report "s.dataSize = " + s.dataSize;
   s = "Hello";
   report "s = '" + s + "'";
   report "s.data = " + s.data;
-  report "(Boolean)s.data = " + (Boolean)s.data;
+  report "Boolean(s.data) = " + Boolean(s.data);
   report "s.dataSize = " + s.dataSize;
 }
-```
-
-The output is:
-
-```
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
 s = ''
 s.data = <Opaque>
-(Boolean)s.data = false
+Boolean(s.data) = false
 s.dataSize = 1
 s = 'Hello'
 s.data = <Opaque>
-(Boolean)s.data = true
+Boolean(s.data) = true
 s.dataSize = 6
-```
--->
+      ]]></screen>
+      </example>
+    </section>
   </chapter>
 </book>
