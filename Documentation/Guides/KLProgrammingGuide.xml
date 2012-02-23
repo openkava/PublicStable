@@ -975,11 +975,11 @@ operator entry() {
       <para>
         KL support <glossterm>compile-type function polymorphism</glossterm>.  This means that you can have multiple functions with the same name so long as they have a different number of parameters or those parameters differ by type and/or their input versus input-output qualification.
 
-        <note><para>You cannot have two functions that take exactly the same parameter types but return different types</para></note>
+        <note><para>It is an error to have two functions with the same name that take exactly the same parameter types but return different types</para></note>
       </para>
 
       <para>
-        When a function call is made in KL source, if their are multiple functions with the same name then the KL compiler uses a best-match system to determine which function to call.  Exact parameter type matches are always prioritized over type casts.  If the compiler is unable to choose a unique best match then an error will be reported showing the ambiguity.
+        When a function call is made in KL source, if there are multiple functions with the same name then the KL compiler uses a best-match system to determine which function to call.  Exact parameter type matches are always prioritized over type casts.  If the compiler is unable to choose a unique best match then an error will be reported showing the ambiguity.
       </para>
 
       <example>
