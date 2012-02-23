@@ -78,6 +78,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     fabricwindow.windowNode.addMember('numDrawnVerticies', 'Size');
     fabricwindow.windowNode.addMember('numDrawnTriangles', 'Size');
     fabricwindow.windowNode.addMember('numDrawnGeometries', 'Size');
+    fabricwindow.windowNode.addMember('fboId', 'Integer', -1);
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnVerticies', false);
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnTriangles', false);
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnGeometries', false);
@@ -90,7 +91,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           parameterLayout: [
             'window.numDrawnVerticies',
             'window.numDrawnTriangles',
-            'window.numDrawnGeometries'
+            'window.numDrawnGeometries',
+            'window.fboId'
           ]
         }));
     

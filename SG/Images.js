@@ -684,6 +684,13 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
     screenGrabEventHandler.addMember('pixels', 'RGBA[]');
     screenGrabEventHandler.addMember('resource', 'FabricResource');
     
+    var viewportNode;
+    screenGrabNode.addReferenceInterface('Viewport', 'Viewport',
+      function(nodePrivate){
+        viewportNode = nodePrivate;
+        screenGrabEventHandler.setScope('window', viewportNode.getFabricWindowObject().windowNode);
+    });
+    
     screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'grabViewport',
       srcFile: 'FABRIC_ROOT/SG/KL/grabViewport.kl',
@@ -691,7 +698,8 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
       parameterLayout: [
         'self.width',
         'self.height',
-        'self.pixels'
+        'self.pixels',
+        'window.fboId'
       ],
       async: false
     }));
@@ -708,7 +716,6 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
       ],
       async: false
     }));
-
 
     screenGrabNode.pub.saveAs = function() {
       screenGrabEvent.fire();
@@ -739,6 +746,9 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
       }
       screenGrabEvent.fire();
     };
+    if(options.viewport){
+      screenGrabNode.pub.setViewportNode(options.viewport);
+    }
     
     return screenGrabNode;
   }

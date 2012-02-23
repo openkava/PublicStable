@@ -20,26 +20,12 @@ operator writeFile(
   
   FabricFileHandleWrapper handle;
   handle.setAbsolutePath(path);
-  /*
+  
   FabricFileStream stream;
-  stream.open(handle,"w");
+  stream.open(handle.m_handle,"w");
   
   if(stream.isValid()) {
    stream.writeData(resource.data.data(), resource.data.dataSize());
    stream.close();
   }
-  */
-  
-  
-  FabricFolderHandle handle2;
-  handle2.setAbsolutePath(path);
-  
-  FabricFileHandleWrapper childHandles[];
-  String children[];
-  handle2.getFiles(childHandles);
-  children.resize(childHandles.size());
-  for(Size i=0;i<childHandles.size();i++) {
-    childHandles[i].getAbsolutePath(children[i]);
-  }
-  report children;
 }
