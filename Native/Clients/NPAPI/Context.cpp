@@ -42,7 +42,7 @@ namespace Fabric
       RC::Handle<IOManager> const &ioManager,
       std::vector<std::string> const &pluginDirs
       )
-      : DG::Context( ioManager, pluginDirs, GetCompileOptions(), false, false )
+      : DG::Context( ioManager, pluginDirs, GetCompileOptions(), false )
       , m_ioManager( ioManager )
     {
     }
