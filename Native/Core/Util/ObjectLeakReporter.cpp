@@ -44,7 +44,7 @@ namespace Fabric
         {
           int ID = (int)m_classToIDMap.size();
           m_classToIDMap[s.str()] = ID;
-          FABRIC_ASSERT( ID < kMaxNbClasses );
+          FABRIC_ASSERT( (size_t)ID < kMaxNbClasses );
         }
         return m_classToIDMap[s.str()];
       }
@@ -71,7 +71,7 @@ namespace Fabric
         {
           if( m_classRefCounts[ it->second ].getValue() )
           {
-            FABRIC_LOG("Leak detected: %d unreleased references to %s", m_classRefCounts[ it->second ],  it->first.c_str() );
+            FABRIC_LOG("Leak detected: %d unreleased references to %s", m_classRefCounts[ it->second ].getValue(),  it->first.c_str() );
             ++nbLeakingClasses;
           }
         }
