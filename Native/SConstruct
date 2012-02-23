@@ -30,7 +30,7 @@ print "Running with -j" + str(GetOption('num_jobs'))
 FABRIC_NAME='Fabric Engine'
 FABRIC_COMPANY_NAME='Fabric Engine Inc.'
 FABRIC_DESC='High Performance Computing for the Web'
-FABRIC_COPYRIGHT='Copyright 2010-2011 ' + FABRIC_COMPANY_NAME + '  All rights reserved.'
+FABRIC_COPYRIGHT='Copyright 2010-2012 ' + FABRIC_COMPANY_NAME + '  All rights reserved.'
 FABRIC_URL="http://fabric-engine.com"
 FABRIC_VERSION_MAJ='1'
 FABRIC_VERSION_MIN='0'
