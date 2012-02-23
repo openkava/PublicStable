@@ -399,6 +399,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return scene.getContext().VP.viewPort.getFPS();
     };
     
+    
+    var screenGrabber;
+    viewportNode.pub.takeScreenShot = function(filename){
+      if(!screenGrabber){
+        screenGrabber = scene.pub.constructNode('ScreenGrab' );
+      }
+      screenGrabber.writeImageFile(filename);
+    }
+    
     if (options.enableRaycasting)
       viewportNode.pub.enableRaycasting();
 
