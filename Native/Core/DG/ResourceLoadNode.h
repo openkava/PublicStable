@@ -32,9 +32,12 @@ namespace Fabric
       static RC::Handle<ResourceLoadNode> Create( std::string const &name, RC::Handle<Context> const &context );
       static void jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder );
 
-      virtual void retain() const;
-      virtual void release() const;
-
+#if defined( FABRIC_RC_LEAK_REPORT )
+      REPORT_RC_LEAKS
+#else
+      virtual void retain() const{ return Node::retain(); }
+      virtual void release() const{ return Node::release(); }
+#endif
     protected:
     
       ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context );

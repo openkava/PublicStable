@@ -20,6 +20,7 @@ namespace Fabric
     class FloatImpl : public NumericImpl
     {
     public:
+      REPORT_RC_LEAKS
     
       // NumericImpl
 
@@ -38,6 +39,7 @@ namespace Fabric
       friend class Manager;
       
     public:
+      REPORT_RC_LEAKS
 
       // Impl
       

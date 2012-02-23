@@ -35,6 +35,8 @@ namespace Fabric
     class ResourceProvider : public RC::Object
     {
     public:
+      REPORT_RC_LEAKS
+
       virtual char const * getUrlScheme() const = 0;
       virtual void get( char const *url, bool getAsFile, void* userData ) = 0;
     };
@@ -42,6 +44,7 @@ namespace Fabric
     class ResourceManager : public RC::Object
     {
     public:
+      REPORT_RC_LEAKS
 
       static RC::Handle<ResourceManager> Create( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData, float progressMaxFrequencySeconds = 0.3f );
 

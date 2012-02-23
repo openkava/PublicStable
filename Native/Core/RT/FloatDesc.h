@@ -15,6 +15,9 @@ namespace Fabric
     class FloatDesc : public NumericDesc
     {
       friend class Manager;
+
+    public:
+      REPORT_RC_LEAKS
       
     protected:
     
