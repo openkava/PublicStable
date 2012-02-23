@@ -43,6 +43,7 @@ namespace Fabric
       };
       
     public:
+      REPORT_RC_LEAKS
     
       typedef void (*FunctionPtr)( ... );
 

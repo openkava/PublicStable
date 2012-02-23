@@ -21,6 +21,7 @@ namespace Fabric
       friend class Manager;
     
     public:
+      REPORT_RC_LEAKS
       
       virtual std::string toString( void const *data ) const;
     

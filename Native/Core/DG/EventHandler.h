@@ -51,6 +51,7 @@ namespace Fabric
       
       
     public:
+      REPORT_RC_LEAKS
     
       typedef Util::UnorderedMap< std::string, RC::Handle<Node> > Bindings;
       typedef std::vector< RC::Handle<EventHandler> > ChildEventHandlers;

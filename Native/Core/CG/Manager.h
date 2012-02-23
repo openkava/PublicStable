@@ -51,6 +51,7 @@ namespace Fabric
       typedef std::map< RC::ConstHandle<RT::Desc>, RC::ConstHandle<Adapter> > DescToAdapterMap;
       
     public:
+      REPORT_RC_LEAKS
     
       static RC::Handle<Manager> Create( RC::Handle<RT::Manager> const &rtManager );
       
