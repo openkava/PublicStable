@@ -666,10 +666,10 @@ namespace Fabric
   FABRIC_EXT_EXPORT void FabricEDKInit( const Fabric::EDK::Callbacks& callbacks ) \
   { \
     Fabric::EDK::s_callbacks = callbacks; \
-  } \
+  }
 
-#define IMPLEMENT_FABRIC_EDK_ENTRIES \
-  IMPLEMENT_FABRIC_EDK_ENTRIES_BASE \
+#if defined( FABRIC_RC_LEAK_REPORT ) 
+# define IMPLEMENT_FABRIC_EDK_ENTRIES IMPLEMENT_FABRIC_EDK_ENTRIES_BASE \
   namespace Fabric \
   { \
     namespace RC \
@@ -680,5 +680,8 @@ namespace Fabric
       void _ReportLeaks(){} \
     } \
   }
+#else
+# define IMPLEMENT_FABRIC_EDK_ENTRIES IMPLEMENT_FABRIC_EDK_ENTRIES_BASE
+#endif
 
 #endif //_FABRIC_EDK_H
