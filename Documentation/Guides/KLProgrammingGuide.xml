@@ -177,7 +177,7 @@ operator entry() {
         </para>
         
         <example xml:id="ex.boolean">
-          <title>Example use of a <code>Boolean</code> value</title>
+          <title>The <code>Boolean</code> type</title>
           <programlisting language="KL"><![CDATA[
 operator entry() {
   Boolean a = true;
@@ -237,7 +237,7 @@ true
         </para>
         
         <example xml:id="ex.integers">
-          <title>Example use of <glossterm>integer types</glossterm></title>
+          <title>Integer types</title>
           <programlisting language="KL"><![CDATA[
 operator entry() {
   Byte b = 64;
@@ -289,6 +289,26 @@ operator entry() {
             </para></listitem>
           </itemizedlist>
         </para>
+
+        <example xml:id="ex.floats">
+          <title>Floating-point types</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  Scalar x = 3.141;
+  report x;
+  Float64 y = 2.718;
+  report y;
+  Scalar z = x*x + y*y;
+  report z;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+3.141
+2.718
+17.2534
+          ]]></screen>
+        </example>
       </section>
 
       <section>
@@ -322,7 +342,7 @@ operator entry() {
         </para>
 
         <example>
-          <title>Example use of string values</title>
+          <title>String values</title>
           <programlisting language="KL"><![CDATA[
 operator entry() {
   String a = "A string";
@@ -363,10 +383,10 @@ Another string now includes A string
         </para>
         
         <para>
-          Structures are usually declared outside of KL using Fabric's <glossterm>registered type system</glossterm>, but they can also be declared in KL source code itself using the <code>struct</code> keyword:
+          Structures are usually defined outside of KL using Fabric's <glossterm>registered type system</glossterm>, but they can also be declared in KL source code itself using the <code>struct</code> keyword:
           
           <example>
-            <title>Example structure declaration in KL</title>
+            <title>Structure definition in KL</title>
             <programlisting language="KL"><![CDATA[
 struct NewType {
   Scalar firstMember;
@@ -391,7 +411,7 @@ struct NewType {
         </para>
 
         <example>
-          <title>Example definition and use of a structure</title>
+          <title>Definition and use of a structure</title>
           <programlisting language="KL"><![CDATA[
 struct MyNewType {
   Integer i;
@@ -492,7 +512,7 @@ String c<>[];   // A sliced array of variable-size
           </para>
         
           <example>
-            <title>Example use of variable-size arrays</title>
+            <title>Variable-size arrays</title>
             <programlisting><![CDATA[
 operator entry() {
   Integer a[];
@@ -537,7 +557,7 @@ The array NOW has size 4 and value [42,84,0,0]
           </para>
         
           <example>
-            <title>Example use of fixed-size arrays</title>
+            <title>Fixed-size arrays</title>
             <programlisting><![CDATA[
 function Scalar det(Scalar mat[2][2]) {
   return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
@@ -602,7 +622,7 @@ report subSizes.size;           // will output '4'
           </para>
         
           <example>
-            <title>Example use of sliced arrays</title>
+            <title>Sliced arrays</title>
             <programlisting><![CDATA[
 operator entry() {
   String strings<>(8);
@@ -703,7 +723,7 @@ operator entry() {
         </para>
 
         <example>
-          <title>Example use of dictionaries</title>
+          <title>Dictionaries</title>
           <programlisting><![CDATA[
 operator entry() {
   Scalar a[String];
@@ -738,17 +758,17 @@ a['e'] = 2.71
       <para>
         The <code>alias</code> statement can be used to alias a type to make code more readable.  Its syntax is the same as a variable declaration:
         
-        <programlisting language="KL">
-          alias Integer Int32;        // Int32 is now an alias for Integer
-          alias Scalar Float32;       // Float32 is now an alias for Scalar
-          alias Float32 Mat22[2][2];  // Mat22 is now an alias for Float32[2][2], ie. a size-2-array-of-size-2-arrays-of-Float32
-        </programlisting>
+        <programlisting language="KL"><![CDATA[
+alias Integer Int32;        // Int32 is now an alias for Integer
+alias Scalar Float32;       // Float32 is now an alias for Scalar
+alias Float32 Mat22[2][2];  // Mat22 is now an alias for Float32[2][2], ie. a size-2-array-of-size-2-arrays-of-Float32
+        ]]></programlisting>
         
         <code>alias</code> statements must appear within the global scope of a KL program.
       </para>
       
       <example>
-        <title>Example use of <code>alias</code></title>
+        <title>Type aliases</title>
         <programlisting><![CDATA[
 alias Scalar Mat22[2][2];
 
@@ -791,7 +811,7 @@ report strings.data;   // ERROR: string data is not contiguous in memory
       </para></note>
 
       <example>
-        <title>Example use of <code>Data</code> values and the <code>data</code> and <code>dataSize</code> methods</title>
+        <title><code>Data</code> values and the <code>data</code> and <code>dataSize</code> methods</title>
         <programlisting language="KL"><![CDATA[
 operator entry() {
   String s;
@@ -828,7 +848,7 @@ s.dataSize = 6
       <title>Function Declarations</title>
 
       <para>
-        Function declarations in KL are much the same as the <quotation>traditional</quotation> function declaration syntax in JavaScript, with the following key differences:
+        Function declarations in KL are much the same as the <quote>traditional</quote> function declaration syntax in JavaScript, with the following key differences:
 
         <itemizedlist>
           <listitem><para>The return type and the type of each function parameter must be explicitly declared.  If a function does not return a value, the return type must be omitted.</para></listitem>
@@ -837,7 +857,7 @@ s.dataSize = 6
       </para>
 
       <example>
-        <title>Example function returning a value and using only input parameters</title>
+        <title>Function returning a value and using only input parameters</title>
         <programlisting language="KL"><![CDATA[
 function Scalar add(Scalar lhs, Scalar rhs) {
   return lhs + rhs;
@@ -846,13 +866,107 @@ function Scalar add(Scalar lhs, Scalar rhs) {
       </example>
 
       <example>
-        <title>Example function not returning a value and using both input and input-output parameters</title>
+        <title>Function not returning a value and using both input and input-output parameters</title>
         <programlisting language="KL"><![CDATA[
 function add(in Scalar lhs, in Scalar rhs, io Scalar result) {
   result = lhs + rhs;
 }
         ]]></programlisting>
       </example>
+    </section>
+    
+    <section>
+      <title>Function Calls</title>
+      
+      <para>
+        Function calls are made using the same syntax as JavaScript, namely by appending a comma-delimited list of arguments, surrounded by parentheses, to the function name.
+      </para>
+      
+      <example>
+        <title>Function call</title>
+        <programlisting language="KL"><![CDATA[
+function Integer add(Integer lhs, Integer rhs) {
+  return lhs + rhs;
+}
+
+operator entry() {
+  report "2 plus 2 is " + add(2, 2);
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+2 plus 2 is 4
+        ]]></screen>
+      </example>
+    </section>
+    
+    <section>
+      <title>Function Prototypes</title>
+      
+      <para>
+        A <glossterm>function prototype</glossterm> in KL is a function declaration that is missing a body.  Providing a function prototype allows the function to be called before it is defined.  This is useful under two circumstances:
+        
+        <itemizedlist>
+          <listitem><para>
+            When two or more functions call each other.  Such functions are sometimes referred to as <glossterm>co-recursive</glossterm>.
+            
+            <example>
+              <title>Co-recursion using a prototype</title>
+              <programlisting language="KL"><![CDATA[
+// Function prototype for 'two', so that 'one' can call it before it is defined
+function two(Integer n);
+
+// The function 'one' calls 'two' even though it is not yet defined
+function one(Integer n) {
+  report "one";
+  if (n > 0)
+    two(n - 1);
+}
+
+// The definition of the function 'two' comes after its prototype
+function two(Integer n) {
+  report "two";
+  if (n > 0)
+    one(n - 1);
+}
+
+operator entry() {
+  one(4);
+}
+              ]]></programlisting>
+              <simpara>Output:</simpara>
+              <screen><![CDATA[
+one
+two
+one
+two
+one
+              ]]></screen>
+            </example>
+          </para></listitem>
+          
+          <listitem><para>
+            When a function definition is provided by a Fabric extension.  The name of the symbol of the function in the Fabric extension is provided by appending <code>= "<replaceable>symbol name</replaceable>"</code> or <code>= '<replaceable>symbol name</replaceable>'</code> to the function prototype.
+            
+            <example>
+              <title>External function</title>
+              <programlisting language="KL"><![CDATA[
+// The prototype 'libc_perror' is linked to an external function 'perror'
+function libc_perror(Data cString) = 'perror';
+
+// The KL function 'perror' is what KL functions actually call
+function perror(String string) {
+  libc_perror(string.data);
+}
+
+operator entry() {
+  perror("something that caused an error");
+}
+              ]]></programlisting>
+            </example>
+          </para></listitem>
+        </itemizedlist>
+      </para>
     </section>
     
     <section>
@@ -869,7 +983,7 @@ function add(in Scalar lhs, in Scalar rhs, io Scalar result) {
       </para>
 
       <example>
-        <title>Example of function polymorphism</title>
+        <title>Function polymorphism</title>
         <programlisting language="KL"><![CDATA[
 function display(Integer a) {
   report "integer value is " + a;
@@ -890,96 +1004,265 @@ operator entry() {
   display(byte);
 }
         ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+integer value is 42
+string value is 'hello'
+integer value is 64
+        ]]></screen>
       </example>
     </section>
-    
+
     <section>
-      <title>Setting the External Function Name</title>
+      <title>Operators</title>
+      
+      <para>
+        The <code>operator</code> keyword in KL is used to mark functions that are to be used as entry points into KL from the Fabric dependency graph.  Operators are declared in the same way as functions except that they must not return a value.  Fabric does special type-checking to ensure that operators are bound properly to nodes in a Fabric dependency graph.
+      </para>
 
-- Advanced note: when writing functions and or prototypes for use within Fabric extensions, it may be necessary to tell Fabric to export the function with a different name in the global function namespace.  You can do this as follows:
-
-```javascript
-// A function that is called as "foo" from KL but is actually called "bar" in the global function namespace
-function Scalar foo(Scalar x) = "bar" {
-  return 1.0 / x;
-}
-```
-
-### Function Calls
-
-Function calls are made using the same syntax as Javascript.  All function parameters are required, and currently there must be a precise match for the parameter types; this may require explicit casting in your code.  This will be fixed in a future version of Fabric.
-
-An example function declaration and call:
-
-```javascript
-function Integer add(Integer lhs, Integer rhs) {
-  return lhs + rhs;
-}
-
-function entry() {
-  report "2 plus 2 is " + add(2, 2);
-}
-```
-
-The output is:
-
-```
-2 plus 2 is 4
-```
-
-### Operators
-
-The `operator` keyword in KL is used to mark functions that are to be used as entry points into KL from the Fabric dependency graph.  Operators are declared in the same way as functions except that they must not return a value.  Fabric does special type-checking to ensure that operators are bound properly to nodes in a Fabric dependency graph.
-
-An example operator declaration is:
-
-```javascript
+      <example>
+        <title>Operator definition</title>
+        <programlisting language="KL"><![CDATA[
 operator addElements(io Scalar lhs, io Scalar rhs, io Scalar result) {
   result = lhs + rhs;
 }
-```
+        ]]></programlisting>
+      </example>
+    </section>
 
-### Type Constructors
+    <section>
+      <title>Constructors</title>
+      
+      <para>
+        A <glossterm>constructor</glossterm> for a user-defined type is a function that initializes a value with the given the type from other values.
+      </para>
+      
+      <section>
+        <title>Constructor Declarations</title>
+        
+        <para>
+          A constructor is declared as a function whose name is the name of the user-defined type.  The function can take any number of parameters, all of which must be input parameters; constructors cannot take input-output parameters.  Constructors cannot return values.
+        </para>
+        
+        <para>
+          Within the body of a constructor definition, the value being initialized is referred to with the <code>this</code> keyword; its members are accessed using the <code>.</code> operator.  In this context, <code>this</code> is always read-write, ie. its members can be modified.
+        </para>
 
-If `Type` is a user-defined structure type or an alias, then a *constructor* for the type, ie. a function which initializes a variable of the time, can be created using the following syntax:
-
-```javascript
-struct Type {
-  Integer a;
-  Scalar b;
+        <example>
+          <title>Constructor declarations</title>
+          <programlisting language="KL"><![CDATA[
+struct Complex {
+  Scalar re;
+  Scalar im;
 };
 
-function Type(Integer a, Scalar b) {
-  this.a = a;
-  this.b = b;
+// The empty constructor; 
+function Complex() {
+  this.re = this.im = 0.0;
 }
-```
 
-Note that KL does not distinguish between construction and casting.  Note also that prior to version 1.0.11-alpha, the name `self` was used in place of `this`.
+// Construct a Complex from a Scalar
+function Complex(Scalar x) {
+  this.re = x;
+  this.im = 0.0;
+}
 
-```javascript
-struct Type {
-  Scalar m[2][2];
+// Construct a Complex from two Scalars
+function Complex(Scalar x, Scalar y) {
+  this.re = x;
+  this.im = y;
+}
+          ]]></programlisting>
+        </example>
+      </section>
+      
+      <section>
+        <title>Constructor Invocation</title>
+        
+        <para>
+          Constructors are invoked in one of several ways:
+          
+          <itemizedlist>
+            <listitem><para>
+              If a variable is declared without any initialization, the <glossterm>empty constructor</glossterm> (ie. the constructor that takes no parameters) is invoked to initialize the variable.  This is referred to as <glossterm>naked initialization</glossterm>.
+              
+              <example>
+                <title>Constructor invocation using naked initialization</title>
+                <programlisting language="KL"><![CDATA[
+struct MyType {
+  Integer n;
+  Scalar x;
 };
 
-function Type(Scalar m[2][2]) {
-  this.m = m;
+// The empty constructor
+function MyType() {
+  this.n = 42;
+  this.x = 3.141;
 }
 
-function entry() {
-  Scalar mat22[2][2];
-  mat22[0][0] = 1.0;
-  mat22[0][1] = 3.0;
-  mat22[1][0] = 4.0;
-  mat22[1][1] = 2.0;
+operator entry() {
+  MyType myType; // invokes the empty constructor
+  report myType;
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{n:42,x:3.141}
+                ]]></screen>
+              </example>
+            </para></listitem>
+            
+            <listitem><para>
+              If a variable is assigned to as part of its declaration, a single-parameter constructor is invoked.  This is referred to as <glossterm>assignment initialization</glossterm>.  If there isn't an exact match for the type of the value assigned, best-match polymorphism rules are used to choose the constructor to invoke.
+              
+              <example>
+                <title>Constructor invocation using assignment initialization</title>
+                <programlisting language="KL"><![CDATA[
+struct MyType {
+  String string;
+};
+
+// Construct from a string
+function MyType(String string) {
+  this.string = "The string was '" + string + "'";
+}
+
+// Construct from a scalar
+function MyType(Scalar scalar) {
+  this.string = "The scalar was " + scalar;
+}
+
+operator entry() {
+  // Construct MyType from String value
+  MyType myTypeFromString = "foo";
+  report myTypeFromString;
   
-  // The following statements both call the given constructor:
-  Type a(mat22);
-  report Type(mat22);
-  report (Type)mat22;
+  // Construct MyType from Float64 value
+  MyType myTypeFromScalar = 2.718;
+  report myTypeFromScalar;
+  
+  // There is no constructor that takes a Boolean but
+  // there is a cast from Boolean to String
+  MyType myTypeFromBoolean = true;
+  report myTypeFromBoolean;
 }
-```
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{string:"The string was 'foo'"}
+{string:"The scalar was 2.718"}
+{string:"The string was 'true'"}
+                ]]></screen>
+              </example>
+            </para></listitem>
+            
+            <listitem><para>
+              If a variable is <quote>called</quote> (ie. using function call syntax) as part of its declaration, the constructor taking the given arguments is invoked.  This is referred to as <glossterm>invocation initialization</glossterm>.  If there isn't an exact match for the arguments passed to the call, best-match polymorphism rules are used to choose the constructor to invoke.
+              
+              <example>
+                <title>Constructor invocation using invocation initialization</title>
+                <programlisting language="KL"><![CDATA[
+struct Vec2 {
+  Float64 x;
+  Float64 y;
+};
 
+// Construct from two scalars
+function Vec2(Float64 x, Float64 y) {
+  this.x = x;
+  this.y = y;
+}
+
+operator entry() {
+  Vec2 vec2FromFloat64s(3.141, 2.718);
+  report vec2FromFloat64s;
+  Vec2 vec2FromIntegers(42, -7);  // Uses best-match polymorphism to convert Integer to Float64
+  report vec2FromIntegers;
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{x:3.141,y:2.718}
+{x:42,y:-7}
+                ]]></screen>
+              </example>
+            </para></listitem>
+
+            
+            <listitem><para>
+              If a function call is performed where the name of the function is the name of the type, the constructor taking the given arguments is invoked to create a temporary value of the named type.  If there isn't an exact match for the arguments passed to the call, best-match polymorphism rules are used to choose the constructor to invoke.
+              
+              <note><para>Note that KL does not distinguish between construction and casting.  Casting a value to a different type is the same as constructing a temporary value of the given type and initializing it, using the appropriate constructor, from the given value.</para></note>
+              
+              <example>
+                <title>Constructor invocation using temporary value</title>
+                <programlisting language="KL"><![CDATA[
+struct Vec2 {
+  Float64 x;
+  Float64 y;
+};
+
+// Construct from two scalars
+function Vec2(Float64 x, Float64 y) {
+  this.x = x;
+  this.y = y;
+}
+
+operator entry() {
+  report Vec2(3.141, 2.718);
+  report Vec2(42, -7);  // Uses best-match polymorphism to convert Integer to Float64
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{x:3.141,y:2.718}
+{x:42,y:-7}
+                ]]></screen>
+              </example>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+    </section>
+    
+    <section>
+      <title>Destructors</title>
+      
+      <para>
+        A destructor is a function that is called when a variable goes out of scope and its resources are freed.  Destructors are declared by prepending <code>~</code> in front of the name of the type and using it as a function.  Destructors cannot take any parameters or return values.  The destructor is called before the value is freed so that its members are still accessible.  In the body of the destructor the value is referred to using the <code>this</code> keyword; the value is input-ouput, ie. it can be modified in the destructor.
+      </para>
+      
+      <example>
+        <title>Destructor</title>
+        <programlisting language="KL"><![CDATA[
+struct MyType {
+  String s;
+};
+
+// Empty constructor
+function MyType() {
+  this.s = "foo";
+  report "Creating MyType: this.s = " + this.s;
+}
+
+// Destructor
+function ~MyType() {
+  report "Destroying MyType: this.s = " + this.s;
+}
+
+operator entry() {
+  MyType myType;
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+Creating MyType: this.s = foo
+Destroying MyType: this.s = foo
+        ]]></screen>
+      </example>
+    </section>
+
+<!--
 ### Type Methods
 
 If `Type` is a structure or alias, then a *method* can be added to the type using the following syntax:
@@ -1039,14 +1322,6 @@ function Type.+=(Type rhs) {
   this.b += rhs.b;
 }
 ```
-
-### Prototypes
-
-When a Fabric extension defines a function that it provides to KL programs, it does so by providing a *prototype* of the function in the KL code that is included in the extension manifest file (.fpm.json).  A function prototype is simply a function definition without a function body:
-
-```javascript
-function String currentTimeString();
-```
-    
+-->    
   </chapter>
 </book>
