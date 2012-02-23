@@ -28,7 +28,7 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Parsers/parseCollada"], function() {
 
   // Create the scene.
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
 
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: true,
@@ -165,6 +165,7 @@ $(document).ready(function() {
 	$(".box h2").addClass("ui-widget-header ui-corner-all");
 	$(".content").addClass("ui-widget-content");
 });
+
 
 </script>
 

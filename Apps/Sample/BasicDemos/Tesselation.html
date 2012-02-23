@@ -24,7 +24,7 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Manipulation",
                 "SG/Parsers/parseCollada"], function() {
   
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
   });

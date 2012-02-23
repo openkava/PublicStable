@@ -146,10 +146,12 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       // TOOD: figure out why this is required. 
       retrieveBrowserZoom();
       fabricwindow.needsRedraw();
+      viewportNode.pub.fireEvent('show');
     };
     viewportNode.pub.hide = function(){
       fabricwindow.hide();
       visible = false;
+      viewportNode.pub.fireEvent('hide');
     };
     window.addEventListener('resize', retrieveBrowserZoom, false);
     
