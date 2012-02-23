@@ -10,36 +10,22 @@
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class SimpleString;
-  };
-  
   namespace CG
   {
     class BasicBlockBuilder;
     class Diagnostics;
     class Manager;
-    class ModuleBuilder;
   };
   
   namespace AST
   {
     class VarDecl : public Node
     {
-      FABRIC_AST_NODE_DECL( VarDecl );
-      
     public:
 
-      static RC::ConstHandle<VarDecl> Create(
-        CG::Location const &location,
-        std::string const &name,
-        std::string const &arrayModifier
-        );
-      
       virtual void registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
-      
-      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+
+      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const = 0;
      
     protected:
     
@@ -60,7 +46,7 @@ namespace Fabric
       std::string m_name;
       std::string m_arrayModifier;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_AST_VAR_DECL_H
