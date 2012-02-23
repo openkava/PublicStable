@@ -72,6 +72,7 @@ namespace Fabric
       void registerCoreTypes();
     
     public:
+      REPORT_RC_LEAKS
     
       class NotificationBracket
       {

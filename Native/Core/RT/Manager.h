@@ -51,6 +51,7 @@ namespace Fabric
     class Manager : public RC::Object
     {
     public:
+      REPORT_RC_LEAKS
     
       class KLCompiler : public RC::Object
       {
