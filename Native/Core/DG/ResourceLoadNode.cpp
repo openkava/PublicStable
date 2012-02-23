@@ -204,16 +204,6 @@ namespace Fabric
       }
     }
 
-    void ResourceLoadNode::retain() const
-    {
-      Node::retain();
-    }
-
-    void ResourceLoadNode::release() const
-    {
-      Node::release();
-    }
-
     void ResourceLoadNode::setResourceData(
       char const *errorDesc,
       bool notify

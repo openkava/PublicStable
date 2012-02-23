@@ -10,6 +10,7 @@ namespace Fabric
     class SimpleImpl : public ComparableImpl
     {
     public:
+      REPORT_RC_LEAKS
     
       // Impl
     

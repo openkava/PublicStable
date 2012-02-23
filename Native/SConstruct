@@ -98,6 +98,9 @@ env.Append( BUILDERS = { 'Template': template } )
 if buildType == 'Release':
   env.Append( CPPDEFINES = ['NDEBUG'] )
 
+# Uncomment the following to have RC leaks logged
+# env.Append( CPPDEFINES = ['FABRIC_RC_LEAK_REPORT'] )
+
 if buildOS == 'Windows' and buildType == 'Debug':
   env.Append( PDB='${TARGET.base}.pdb' )
 

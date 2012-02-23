@@ -27,6 +27,7 @@ namespace Fabric
     class Interface : public DG::Client
     {
     public:
+      REPORT_RC_LEAKS
       
       static RC::Handle<Interface> Create( NPP npp, RC::Handle<Context> const &context );
       
