@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
+
 (function(){return (
 function (fabricClient, logCallback, debugLogCallback) {
 
@@ -495,6 +499,8 @@ function (fabricClient, logCallback, debugLogCallback) {
           result.size = diff.size;
       };
 
+      result.sizeNeedsRefresh = true;
+
       var parentHandleNotification = result.handle;
       result.handle = function(cmd, arg) {
         if (cmd == 'dataChange') {
@@ -508,25 +514,24 @@ function (fabricClient, logCallback, debugLogCallback) {
       };
 
       result.pub.getCount = function() {
-        if (!('size' in result))
+        if (result.sizeNeedsRefresh) {
+          delete result.sizeNeedsRefresh;
           executeQueuedCommands();
+        }
         return result.size;
       };
 
       result.pub.size = function() {
-        if (!('size' in result))
-          executeQueuedCommands();
-        return result.size;
+        return result.pub.getCount();
       };
 
       result.pub.setCount = function(count) {
         result.queueCommand('resize', count);
-        delete result.size;
+        result.sizeNeedsRefresh = true;
       };
 
       result.pub.resize = function(count) {
-        result.queueCommand('resize', count);
-        delete result.size;
+        result.pub.setCount( count );
       };
 
       result.pub.getMembers = function() {

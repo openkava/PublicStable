@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #ifndef _FABRIC_RT_CONST_STRING_DESC_H
 #define _FABRIC_RT_CONST_STRING_DESC_H
 
@@ -18,6 +18,7 @@ namespace Fabric
       friend class Manager;
       
     public:
+      REPORT_RC_LEAKS
       
       virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
             

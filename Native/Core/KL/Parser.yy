@@ -107,6 +107,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/MemberDeclVector.h>
 #include <Fabric/Core/AST/MethodOp.h>
 #include <Fabric/Core/AST/MethodOpImpl.h>
+#include <Fabric/Core/AST/NakedVarDecl.h>
 #include <Fabric/Core/AST/NotOp.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/OrOp.h>
@@ -785,7 +786,7 @@ var_decl
   }
   | TOKEN_IDENTIFIER array_modifier 
   {
-    $$ = AST::VarDecl::Create( RTLOC, *$1, *$2 ).take();
+    $$ = AST::NakedVarDecl::Create( RTLOC, *$1, *$2 ).take();
     delete $1;
     delete $2;
   }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_IO_FILERESOURCEPROVIDER_H
@@ -15,6 +15,8 @@ namespace Fabric
     class FileResourceProvider : public IO::ResourceProvider
     {
     public:
+      REPORT_RC_LEAKS
+
       static RC::Handle<FileResourceProvider> Create();
 
       virtual char const * getUrlScheme() const;

@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/ResourceManager.h>
@@ -20,6 +20,7 @@ namespace Fabric
     class TestSynchronousFileResourceProvider : public IO::ResourceProvider
     {
     public:
+      REPORT_RC_LEAKS
 
       static RC::Handle<TestSynchronousFileResourceProvider> Create();
       virtual char const * getUrlScheme() const;
@@ -32,6 +33,7 @@ namespace Fabric
     class IOManager : public IO::Manager
     {
     public:
+      REPORT_RC_LEAKS
     
       static RC::Handle<IOManager> Create(
         IO::ScheduleAsyncCallbackFunc scheduleFunc,

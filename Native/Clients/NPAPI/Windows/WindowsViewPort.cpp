@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Halfdan Ingvarsson on 11-01-21.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #include "WindowsViewPort.h"

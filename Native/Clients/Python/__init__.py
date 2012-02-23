@@ -1,3 +1,7 @@
+#
+#  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+#
+
 import os
 import sys
 import json
@@ -751,7 +755,8 @@ class _DG( _NAMESPACE ):
       super( _DG._CONTAINER, self ).__init__( dg, name )
       self.__rt = dg._getClient().rt
       self.__members = None
-      self.__count = None
+      self.__size = None
+      self.__sizeNeedRefresh = True
 
     def _patch( self, diff ):
       super( _DG._CONTAINER, self )._patch( diff )
@@ -760,7 +765,7 @@ class _DG( _NAMESPACE ):
         self.__members = diff[ 'members' ]
 
       if 'size' in diff:
-        self.__count = diff[ 'size' ]
+        self.__size = diff[ 'size' ]
 
     def _handle( self, cmd, arg ):
       if cmd == 'dataChange':
@@ -771,22 +776,20 @@ class _DG( _NAMESPACE ):
         super( _DG._CONTAINER, self )._handle( cmd, arg )
 
     def getCount( self ):
-      if self.__count is None:
+      if self.__sizeNeedRefresh:
+        self.__sizeNeedRefresh = None
         self._dg._executeQueuedCommands()
-      return self.__count
+      return self.__size
 
     def size( self ):
-      if self.__count is None:
-        self._dg._executeQueuedCommands()
-      return self.__count
+      return self.getCount()
 
     def setCount( self, count ):
       self._nObjQueueCommand( 'resize', count )
-      self.__count = None
+      self.__sizeNeedRefresh = True
 
     def resize( self, count ):
-      self._nObjQueueCommand( 'resize', count )
-      self.__count = None
+      self.setCount( count )
 
     def getMembers( self ):
       if self.__members is None:

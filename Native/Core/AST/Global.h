@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #ifndef _FABRIC_AST_GLOBAL_H
 #define _FABRIC_AST_GLOBAL_H
 
@@ -30,6 +30,7 @@ namespace Fabric
     class Global : public Node
     {
     public:
+      REPORT_RC_LEAKS
     
       virtual void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
     
