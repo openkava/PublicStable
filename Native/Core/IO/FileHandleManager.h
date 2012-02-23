@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_IO_FILEHANDLEMANAGER_H
@@ -17,6 +17,8 @@ namespace Fabric
     class FileHandleManager : public RC::Object
     {
     public:
+      REPORT_RC_LEAKS
+
       static RC::Handle<FileHandleManager> Create();
       char const * getUrlScheme() const;
 

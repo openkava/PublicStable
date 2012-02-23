@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #ifndef _FABRIC_DG_CONTEXT_H
 #define _FABRIC_DG_CONTEXT_H
 
@@ -72,6 +72,7 @@ namespace Fabric
       void registerCoreTypes();
     
     public:
+      REPORT_RC_LEAKS
     
       class NotificationBracket
       {
@@ -99,8 +100,7 @@ namespace Fabric
         RC::Handle<IO::Manager> const &ioManager,
         std::vector<std::string> const &pluginDirs,
         CG::CompileOptions const &compileOptions,
-        bool optimizeSynchronously,
-        bool checkExpiry
+        bool optimizeSynchronously
         );
       static RC::Handle<Context> Bind( std::string const &contextID );
       
@@ -161,8 +161,7 @@ namespace Fabric
         RC::Handle<IO::Manager> const &ioManager,
         std::vector<std::string> const &pluginDirs,
         CG::CompileOptions const &compileOptions,
-        bool optimizeSynchronously,
-        bool checkExpiry
+        bool optimizeSynchronously
         );
       ~Context();
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_IO_MANAGER_H
@@ -36,6 +36,7 @@ namespace Fabric
     {
 
     public:
+      REPORT_RC_LEAKS
     
       RC::Handle<ResourceManager> getResourceManager() const;
       RC::Handle<FileHandleManager> getFileHandleManager() const;

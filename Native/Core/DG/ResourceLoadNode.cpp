@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #include <Fabric/Core/DG/ResourceLoadNode.h>
@@ -202,16 +202,6 @@ namespace Fabric
         m_inProgress = false;//[JeromeCG 20111221] Important: set m_inProgress to false since setResourceData's notifications can trigger an evaluation
         setResourceData( NULL, true );
       }
-    }
-
-    void ResourceLoadNode::retain() const
-    {
-      Node::retain();
-    }
-
-    void ResourceLoadNode::release() const
-    {
-      Node::release();
     }
 
     void ResourceLoadNode::setResourceData(

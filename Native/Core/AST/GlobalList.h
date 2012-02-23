@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #ifndef _FABRIC_AST_GLOBAL_LIST_H
 #define _FABRIC_AST_GLOBAL_LIST_H
 
@@ -35,6 +35,7 @@ namespace Fabric
     class GlobalList : public RC::Object
     {
     public:
+      REPORT_RC_LEAKS
       
       static RC::ConstHandle<GlobalList> Create( RC::ConstHandle<Global> const &first = 0, RC::ConstHandle<GlobalList> const &remaining = 0 );
       static RC::ConstHandle<GlobalList> Create( RC::ConstHandle<GlobalList> const &lhs, RC::ConstHandle<GlobalList> const &rhs );

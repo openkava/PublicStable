@@ -1,0 +1,1327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+  <info>
+    <title>KL Programming Guide</title>
+    <copyright>
+      <year>2011-2012</year>
+      <holder>Fabric Engine Inc.</holder>
+    </copyright>
+  </info>
+  
+  <chapter>
+    <title>Introduction</title>
+
+    <para>
+      KL (pronounced <emphasis>kale</emphasis>) is the programming language used for Fabric operators.  KL stands for <quote>kernel language</quote>; in this context, <emphasis>kernel</emphasis> refers to the concept of a computational kernel as used in multithreaded programming.
+    </para>
+
+    <para>
+      KL was designed with the following goals:
+
+      <itemizedlist>
+        <listitem><para>
+          KL should be easy to learn for someone who is already familiar with programming in Javascript.
+        </para></listitem>
+
+        <listitem><para>
+          It must be possible to compile most KL programs to run on different architectures and kinds of hardware, specifically <acronym>CPU</acronym>s and <acronym>GPU</acronym>s.
+        </para></listitem>
+      </itemizedlist>
+
+      As such, KL is a language with a syntax very similar to Javascript but which is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike Javascript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike Javascript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
+    </para>
+
+    <para>
+      Before diving in to the details of the language, here is a simple example of a KL program that outputs the first few elements of the Fibonacci sequence:
+
+      <example xml:id="ex.fibonacci">
+        <title>KL Fibonacci sequence generator</title>
+        <programlisting language="KL"><![CDATA[
+function Integer fibonacci(Integer n) {
+  if (n <= 1)
+    return 1;
+  else 
+    return fibonacci(n - 2) + fibonacci(n - 1);
+}
+
+operator entry() {
+  for (Integer i = 0; i < 10; ++i)
+    report fibonacci(i);
+}
+        ]]></programlisting>
+      </example>
+
+      The output of calling the function <function>entry</function> is:
+
+      <screen><![CDATA[
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+      ]]></screen>
+
+      This example highlights a few simple features of KL, including:
+
+      <itemizedlist>
+        <listitem><para>Function and parameter declaration</para></listitem>
+        <listitem><para>Recursion</para></listitem>
+        <listitem><para>Conditional statements</para></listitem>
+        <listitem><para>Loops</para></listitem>
+        <listitem><para>The <function>report</function> statement</para></listitem>
+      </itemizedlist>
+
+      All of these will be discussed in more detail below.
+    </para>
+  </chapter>
+
+  <chapter>
+    <title>The KL Type System</title>
+
+    <para>
+      Unlike most languages, KL has a dynamic type system that is inherited from the Fabric environment.  In most cases, compound types are registered from the Fabric environment running in a dynamic language (eg. JavaScript or Python); those types are then automatically made available to KL programs running in that environment.  This does not, however, affect the semantics of the language; the KL type system can still be explained purely from the point of view of the language itself.
+    </para>
+
+    <para>
+      Like most programming languages, KL has support for both a fixed set of atomic types from which other types are derived as well as different kinds of derived types.
+    </para>
+
+    <section>
+      <title>Atomic Types</title>
+
+      <para>
+        The KL atomic types are the following:
+
+        <variablelist>
+          <varlistentry>
+            <term><code>Boolean</code></term>
+            <listitem><para>a type whose value can be either <code>true</code> or <code>false</code></para></listitem>
+          </varlistentry>
+    
+          <varlistentry>
+            <term><code>Byte</code></term>
+            <listitem><para>an 8-bit unsigned integer value</para></listitem>
+          </varlistentry>
+    
+          <varlistentry>
+            <term><code>Integer</code></term>
+            <listitem><para>a 32-bit signed integer value</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><code>Size</code></term>
+            <listitem><para>an unsigned integer value which is 32-bit on 32-bit platforms and 64-bit on 64-bit platforms.  <code>Size</code> is usually used to either index into or count the number of elements in an array</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><code>Index</code></term>
+            <listitem><para>an alias for <code>Size</code></para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><code>Scalar</code></term>
+            <listitem><para>a 32-bit IEEE floating point value</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><code>Float64</code></term>
+            <listitem><para>a 64-bit IEEE floating point value</para></listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><code>String</code></term>
+            <listitem><para>a sequence of zero or more characters</para></listitem>
+          </varlistentry>
+        </variablelist>
+      </para>
+      
+      <section>
+        <title>The <code>Boolean</code> Type</title>
+
+        <para>
+          The value of an expression of <code>Boolean</code> type is either logical true or logical false.  The type has the following properties:
+
+          <itemizedlist>
+            <listitem><para>
+              The constants <code>true</code> and <code>false</code> are <code>Boolean</code> values with logical values true and false, respectively.
+            </para></listitem>
+
+            <listitem><para>
+              All other atomic types cast to Boolean as follows:
+              
+              <itemizedlist>
+                <listitem><para><code>Byte</code>, <code>Integer</code> and <code>Size</code> values cast to true if and only if the value is non-zero</para></listitem>
+                <listitem><para><code>Scalar</code> and <code>Float64</code> values cast true if and only if the value is not equal to <code>0.0</code> or <code>-0.0</code></para></listitem>
+                <listitem><para><code>String</code> values cast to true if and only if their length is greater than zero</para></listitem>
+                <listitem><para>arrays and dictionaries cast to true if and only if they are non-empty</para></listitem>
+                <listitem><para>by default, structures do not cast to <code>Boolean</code>, but you can implement the cast if desired</para></listitem>
+              </itemizedlist>
+            </para></listitem>
+
+            <listitem><para>
+              For operators:
+              
+              <itemizedlist>
+                <listitem><para>None of the arithmetic operators (binary <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> as well as unary <code>-</code> and <code>+</code>) are valid for <code>Boolean</code> values</para></listitem>
+                <listitem><para>Only the <code>==</code> and <code>!=</code> comparison operators are valid for <code>Boolean</code> values</para></listitem>
+                <listitem><para>All of the bitwise binary operators (<code>|</code>, <code>&amp;</code>, <code>^</code> and <code>~</code>) are valid for <code>Boolean</code> values and treat the value as if were a single bit</para></listitem>
+              </itemizedlist>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+        
+        <example xml:id="ex.boolean">
+          <title>The <code>Boolean</code> type</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  Boolean a = true;
+  report a;
+  Boolean b = a & false;
+  report b;
+  report a != b;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+true
+false
+true              
+          ]]></screen>
+        </example>
+      </section>
+
+      <section>
+        <title>Integer Types</title>
+        
+        <para>
+          The <code>Byte</code>, <code>Integer</code> and <code>Size</code> types (collectively known as <glossterm>integer types</glossterm>) represent whole integers.  These types differ only in their bit width and whether they are signed or unsigned, as follows:
+          
+          <variablelist>
+            <varlistentry>
+              <term><code>Byte</code></term>
+              <listitem><simpara>8-bit unsigned integer</simpara></listitem>
+            </varlistentry>
+            
+            <varlistentry>
+              <term><code>Integer</code></term>
+              <listitem><simpara>32-bit signed integer</simpara></listitem>
+            </varlistentry>
+            
+            <varlistentry>
+              <term><code>Size</code></term>
+              <listitem><simpara>unsigned integer that is 32-bit on 32-bit systems and 64-bit on 64-bit systems</simpara></listitem>
+            </varlistentry>
+          </variablelist>
+        </para>
+        
+        <note><simpara><code>Index</code> is an alias for <code>Size</code></simpara></note>
+
+        <para>
+          <glossterm>Integer types</glossterm> behave as follows:
+          
+          <itemizedlist>
+            <listitem><simpara>
+              Integer constants (eg. <code>43562</code>) are of type <code>Integer</code> if their value is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation>, otherwise they are of type <code>Size</code>.
+            </simpara></listitem>
+
+            <listitem><simpara>
+              All of the arithmetic, comparison and bitwise operators work as expected for <glossterm>integer types</glossterm>, with the exception of unary <code>-</code> which does not work for values of type <code>Size</code> and <code>Byte</code>.
+            </simpara></listitem>
+          </itemizedlist>
+        </para>
+        
+        <example xml:id="ex.integers">
+          <title>Integer types</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  Byte b = 64;
+  report b;
+  Size s = 45 * Size(b) + 32;
+  report s;
+  Integer i = -75 * Integer(s) + 18;
+  report i;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+64
+2912
+-218382
+          ]]></screen>
+        </example>
+      </section>
+
+      <section>
+        <title>Floating-Point Types</title>
+        
+        <para>
+          The <code>Scalar</code>, and <code>Float64</code> types (collectively known as <glossterm>floating-point types</glossterm>) represent <acronym>IEEE</acronym> floating-point numbers.  These types differ only in their bit width, as follows:
+          
+          <variablelist>
+            <varlistentry>
+              <term><code>Scalar</code></term>
+              <listitem><simpara>32-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
+            </varlistentry>
+            
+            <varlistentry>
+              <term><code>Integer</code></term>
+              <listitem><simpara>64-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
+            </varlistentry>
+          </variablelist>
+        </para>
+        
+        <para>
+          <glossterm>Floating-point types</glossterm> behave as follows:
+          
+          <itemizedlist>
+            <listitem><para>
+              Floating-point constants have the same syntax as in Javascript and C, and are of type <code>Float64</code>.  The following are examples of Scalar constants: <code>0.0</code>, <code>1.0</code>, <code>3.14159265358979</code>, <code>8.9e-6</code>, <code>4356.123E42</code>
+            </para></listitem>
+            
+            <listitem><para>
+              All of the arithmetic and comparison operators are valid for floating-point values.  None of the bitwise operators are valid for floating-point values.
+            </para></listitem>
+          </itemizedlist>
+        </para>
+
+        <example xml:id="ex.floats">
+          <title>Floating-point types</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  Scalar x = 3.141;
+  report x;
+  Float64 y = 2.718;
+  report y;
+  Scalar z = x*x + y*y;
+  report z;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+3.141
+2.718
+17.2534
+          ]]></screen>
+        </example>
+      </section>
+
+      <section>
+        <title>The <code>String</code> Type</title>
+        
+        <para>
+          The <code>String</code> type represents a text string, ie. a sequence of zero or more characters.  A value of type <code>String</code> is referred to as a <glossterm>string value</glossterm>.
+        </para>
+
+        <para>          
+          The semantics of the <code>String</code> type in KL are important to understand.  Strings have the following key properties:
+          
+          <itemizedlist>
+            <listitem><simpara>A string is a sequence of zero or more characters.</simpara></listitem>
+            <listitem><simpara>The length of a string is value of type <code>Size</code>, and the maximum length of a string is the maximum value of type <code>Size</code>.</simpara></listitem>
+            <listitem><simpara>String constants can be specified inline in KL source files using single- or double-quotation marks, just as JavaScript.  Examples of string constants: <code>"Hello, world!"</code>, <code>'A string\nwith a newline'</code>, <code>"A string containing \"double quotes\""</code></simpara></listitem>
+            <listitem><simpara>Strings are <emphasis>reference-counted</emphasis> and <emphasis>copy-on-write</emphasis>.  This means that if you assign a string value to multiple variables, there is only one copy of the actual string until someone changes one of the strings.</simpara></listitem>
+            <listitem><para>
+              Strings support the following operations and properties, which are all exactly the same as JavaScript:
+              <itemizedlist>
+                <listitem><simpara>They have a <property>.length</property> property which returns the number of characters in the string</simpara></listitem>
+                <listitem><simpara>The <code>+=</code> assignment operator is used to append another string to a given string</simpara></listitem>
+                <listitem><simpara>A new string can be created by concatenating two other strings using the <code>+</code> binary operation</simpara></listitem>
+                <listitem><simpara>Strings can be compared using the usual <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code> logical operators.</simpara></listitem>
+              </itemizedlist>
+            </para></listitem>
+            <listitem><simpara>Unlike C or C++, strings can contain the null character (ASCII 0).</simpara></listitem>
+            <listitem><simpara>Strings have no notion of encoding; they are just sequences of bytes.  String encodings are determined by the application space where the strings are used.  Note that everything in Fabric itself uses the UTF-8 encoding, but Fabric extensions may need to convert strings into other encodings.</simpara></listitem>
+            <listitem><simpara>All other types in KL can be converted to strings through a cast; this conversion simply creates a string which is a human-readable version of the value.</simpara></listitem>
+          </itemizedlist>
+        </para>
+
+        <example>
+          <title>String values</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  String a = "A string";
+  report a;
+  report "a has length " + a.length;
+  String b = "Another string";
+  report b;
+  String c = a + " and " + b;
+  report c;
+  b += " now includes " + a;
+  report b;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+A string
+a has length 8
+Another string
+A string and Another string
+Another string now includes A string
+          ]]></screen>
+        </example>
+      </section>
+    </section>
+
+    <section>
+      <title>Derived Types</title>
+      
+      <para>
+        In addition to the atomic types, KL supports three classes of derived types: structures, arrays and dictionaries.
+      </para>
+      
+      <section>
+        <title>Structures</title>
+        
+        <para>
+          A <glossterm>structure</glossterm> is a collection of typed values that are placed together in memory.
+        </para>
+        
+        <para>
+          Structures are usually defined outside of KL using Fabric's <glossterm>registered type system</glossterm>, but they can also be declared in KL source code itself using the <code>struct</code> keyword:
+          
+          <example>
+            <title>Structure definition in KL</title>
+            <programlisting language="KL"><![CDATA[
+struct NewType {
+  Scalar firstMember;
+  String secondMember;
+  Integer thirdMemberVarArray[];
+};
+            ]]></programlisting>
+
+            <note><simpara>Note the use of the variable-size array as the last member; derived types can nest arbitrarily.</simpara></note>
+            <warning><simpara>All structure declarations in KL must be in the global scope; it is not possible to declare a structure within a function scope.</simpara></warning>
+          </example>
+        </para>
+        
+        <para>
+          More details about structures:
+          
+          <itemizedlist>
+            <listitem><simpara>Access to structure members is through the <code>.</code> operator, as in JavaScript.</simpara></listitem>
+            <listitem><simpara>Currently, the structure members are <glossterm>packed</glossterm>, meaning that there is no space in member between the structure members.  In a future version of Fabric it will be possible to explicitly specify structure member alignment and packing.</simpara></listitem>
+            <listitem><simpara>It is possible to overload operators and add <glossterm>methods</glossterm> to structures; this will be described below.</simpara></listitem>
+          </itemizedlist>
+        </para>
+
+        <example>
+          <title>Definition and use of a structure</title>
+          <programlisting language="KL"><![CDATA[
+struct MyNewType {
+  Integer i;
+  String s;
+};
+
+function entry() {
+  MyNewType mnt;
+  mnt.s = "Hello!";
+  mnt.i = 42;
+  report mnt;
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+{i:42,s:"Hello!"}
+          ]]></screen>
+        </example>
+      </section>
+
+      <section>
+        <title>Arrays</title>
+      
+        <para>
+          An <glossterm>array</glossterm> is a sequence of values of the same type (referred to as the array's <glossterm>element type</glossterm>) that are indexed by integers and placed sequentially in memory.  KL supports three types of arrays: variable-size arrays, fixed-length arrays, and sliced arrays.  The details of each array type are discussed below.
+        </para>
+      
+        <para xml:id="array-properties">
+          Regardless of specific type, arrays in KL have several common behaviours:
+      
+          <itemizedlist>
+              <listitem><para>
+                Arrays are indexed using the <code>[</code>..<code>]</code> operator, exactly as in JavaScript and C.  The indexing of arrays is 0-based, again just as in JavaScript and C.
+              
+                <informalexample>
+                  <programlisting language="KL"><![CDATA[
+Size sizes[];    // Declare a variable-size array
+sizes.push(42);  // Push some elements onto the end of the array
+sizes.push(21);
+sizes.push(3);
+report sizes[1]; // outputs "21"
+                  ]]></programlisting>
+                </informalexample>
+              </para></listitem>
+            
+              <listitem><simpara>The size of an array is of type <code>Size</code> and the indexing operator takes an index of type <code>Index</code> (which is an alias for <code>Size</code>).</simpara></listitem>
+            
+              <listitem><para>
+                Array declarations can be nested, and can be co-nested with other array types.
+                <informalexample>
+                  <programlisting language="KL"><![CDATA[
+Integer b[][];  // A variable-size array of variable-size arrays of integers
+Boolean a[2][]; // An array of 2 variable-size arrays of booleans
+String c<>[];   // A sliced array of variable-size 
+                  ]]></programlisting>
+                </informalexample>
+              </para></listitem>
+
+              <listitem><simpara>
+                Arrays are <glossterm>passed by reference</glossterm> into functions and operators, ie. they are not copied.  This means that it takes just a long to pass an array with one million elements to a function as it does to pass an array with one element.
+              </simpara></listitem>
+            
+              <listitem><simpara>
+                When running within a web browser, indexing into arrays using the indexing operator is bounds-checked; if the index runs off the end of the array, an exception is thrown.  When running Fabric from the command line, arrays are not bounds-checked.
+              </simpara></listitem>            
+          </itemizedlist>
+        </para>
+      
+        <section>
+          <title>Variable-Size Arrays</title>
+        
+          <para>
+            A <glossterm>variable-size array</glossterm> is an array whose size can be changed at runtime.  Variable-size arrays are declared by appending <code>[]</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings[]</code>.
+          </para>
+          
+          <para>
+            Variable-size arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
+          
+            <itemizedlist>
+              <listitem><para>
+                The maximum size of a variable-size array is the maximum value of the <code>Size</code> type.  This means that variable-size arrays can be much larger on 64-bit machines than they can on 32-bit machines.
+              </para></listitem>
+            
+              <listitem><para>
+                Variable-size arrays are copied when they are assigned.
+                <warning><simpara>This means that there is no inexpensive way to assign variable-size arrays; this will probably be fixed in a future version of Fabric.</simpara></warning>
+              </para></listitem>
+            
+              <listitem><para>
+                Variable-size arrays support the following methods:
+                <itemizedlist>
+                  <listitem><simpara>The <code>push(element)</code> method appends an element to the end of the variable-size array</simpara></listitem>
+                  <listitem><simpara>The <code>size()</code> method returns the number of elements in the variable-size array</simpara></listitem>
+                  <listitem><simpara>The <code>resize(newSize)</code> method resizes the array.  Any new elements at the end are initialized with the default value for the underlying type.</simpara></listitem>
+                </itemizedlist>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+        
+          <example>
+            <title>Variable-size arrays</title>
+            <programlisting><![CDATA[
+operator entry() {
+  Integer a[];
+  report "The array a has size " + a.size + " and value " + a;
+  a.push(42);
+  a.push(84);
+  report "The array NOW has size " + a.size + " and value " + a;
+  a.resize(4);
+  report "The array NOW has size " + a.size + " and value " + a;
+}
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+The array a has size 0 and value []
+The array NOW has size 2 and value [42,84]
+The array NOW has size 4 and value [42,84,0,0]
+            ]]></screen>
+          </example>
+        </section>
+      
+        <section>
+          <title>Fixed-Size Arrays</title>
+        
+          <para>
+            A <glossterm>fixed-size array</glossterm> is an array whose size is fixed at runtime.  Fixed-size arrays have much faster performance characteristics than variable-size arrays, therefore should be used in place of variable-sized arrays when the size of an array is known at compile time.  Fixed-size arrays are declared by appending <code>[<replaceable>size</replaceable>]</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings[4]</code>.
+          </para>
+        
+          <para>
+            Fixed-size arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
+          
+            <itemizedlist>
+              <listitem><para>
+                The maximum size of a fixed-size array is the maximum value of the <code>Size</code> type.
+                <warning><para>Since fixed-size arrays are allocated on the stack (instead of the heap), using very large fixed-size arrays may result in a stack overflow.  It is recommended that fixed-size arrays only be used for arrays that are reasonably small.</para></warning>              
+              </para></listitem>
+            
+              <listitem><para>
+                Fixed-size arrays are copied when they are assigned.
+                <note><simpara>Unlike variable-size arrays, this behaviour of fixed-size arrays will never change.</simpara></note>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+        
+          <example>
+            <title>Fixed-size arrays</title>
+            <programlisting><![CDATA[
+function Scalar det(Scalar mat[2][2]) {
+  return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+}
+
+operator entry() {
+  Scalar mat[2][2];
+  mat[0][0] = 3.5;
+  mat[0][1] = -9.2;
+  mat[1][0] = -2.1;
+  mat[1][1] = 8.6;
+  report "The determinant of " + mat + " is " + det(mat);
+}
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+The determinant of [[3.5,-9.2],[-2.1,8.6]] is 10.78
+            ]]></screen>
+          </example>
+        </section>
+
+        <section>
+          <title>Sliced Arrays</title>
+        
+          <para>
+            A <glossterm>sliced array</glossterm> is an array whose size is fixed when it is created.  Sliced arrays have the unique feature that new sliced arrays can be created that access a sub-range of the elements of an existing sliced array.  Sliced arrays are primarily used for operator parameters bound to sliced data inside Fabric's dependency graph, but can also be used on their own within KL.  Sliced arrays are declared by appending <code>&lt;&gt;</code> to the name of the variable, parameter or structure member where they are declared, eg. <code>String strings&lt;&gt;</code>.
+          </para>
+          
+          <para>
+            Sliced arrays have all the <link linkend="array-properties">properties of arrays</link> as well as the following additional properties:
+          
+            <itemizedlist>
+              <listitem><para>
+                Within KL, sliced arrays can only be created using one of two syntaxes, shown in the example below:
+                
+                <informalexample>
+                  <programlisting language="KL"><![CDATA[
+Size sizes<>(8);                // Create a sliced array of 8 elements of type Size
+for (Size i=0; i<8; ++i)
+  sizes[i] = i;
+  
+Size subSizes<>( sizes, 2, 4 ); // A sliced array of elements of type Size that accesses
+                                // elements 2 through 5 (inclusive) of the underlying
+                                // sliced array
+report subSizes[0];             // will output '2'
+report subSizes.size;           // will output '4'
+                  ]]></programlisting>
+                </informalexample>
+              </para></listitem>
+            
+              <listitem><para>
+                Sliced arrays as a whole cannot be the target of an assignment.  However, an element of a sliced array (accessed through the <code>[</code>...<code>]</code> index operator) can be assigned to.
+              </para></listitem>
+            
+              <listitem><para>
+                Sliced arrays support the following methods:
+                <itemizedlist>
+                  <listitem><simpara>The <code>size()</code> method returns the number of elements in the sliced array.  If a sliced array refers to a subrange of another sliced array, the value returned is the size of the subrange.</simpara></listitem>
+                </itemizedlist>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+        
+          <example>
+            <title>Sliced arrays</title>
+            <programlisting><![CDATA[
+operator entry() {
+  String strings<>(8);
+  for (Size i=0; i<8; ++i)
+    strings[i] = "string " + (i+1);
+  report "strings = " + strings;
+  
+  String subStrings<>(strings, 2, 4);
+  report "subStrings = " + subStrings;
+  
+  report "Replacing subStrings element...";
+  subStrings[3] = "replaced string";
+  report "subStrings = " + subStrings;
+  report "strings = " + strings;
+}
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+strings = ["string 1","string 2","string 3","string 4","string 5","string 6","string 7","string 8"]
+subStrings = ["string 3","string 4","string 5","string 6"]
+Replacing subStrings element...
+subStrings = ["string 3","string 4","string 5","replaced string"]
+strings = ["string 1","string 2","string 3","string 4","string 5","replaced string","string 7","string 8"]
+            ]]></screen>
+          </example>
+        </section>
+      </section>
+
+      <section>
+        <title>Dictionaries</title>
+      
+        <para>
+          KL supports key-value pair dictionaries.  The type of the key of a dictionary can be any of the KL atomic types (e.g. <code>Boolean</code>, <code>String</code>, or any integer or floating-point type) and the type of the value can be any type.  Dictionaries are declared by appending <code>[<replaceable>KeyType</replaceable>]</code> to the variable, parameter or member name.  For example:
+        
+          <informalexample><programlisting language="KL"><![CDATA[
+String scalarToString[Scalar];      // A Scalar-to-String dictionary
+Boolean integerToBoolean[Integer];  // An Integer-to-Boolean dictionary
+          ]]></programlisting></informalexample>
+        </para>
+
+        <para>
+          Dictionaries in KL have the following properties:
+        
+          <itemizedlist>
+            <listitem><para>
+              Dictionaries are copied on assignment.  However, they are always passed by reference to functions.
+              <note><para>The copy-on-assignment property of dictionaries is likely to change in a future version of KL.</para></note>
+            </para></listitem>
+          
+            <listitem><para>
+              Dictionaries can be nested, and can be co-nested with array types.  For example:
+            
+              <informalexample><programlisting language="KL"><![CDATA[
+Integer b[String][2]; // An String-to-Fixed-Length-Integer-Array dictionary
+Boolean a[][Integer]; // A variable array of Integer-to-Boolean dictionaries
+              ]]></programlisting></informalexample>
+            </para></listitem>
+          
+            <listitem><para>There is no limit to the size of dictionaries other than available memory</para></listitem>
+            <listitem><para>
+              Dictionaries support indexing using the <code>[<replaceable>key</replaceable>]</code> indexing operator to both return the element at the give key or assign to the element at the given key.  When retrieving a value from a dictionary, if there is no value for the given key then an exception is thrown.</para></listitem>
+            <listitem><para>Dictionaries support the <code>has(<replaceable>key</replaceable>)</code> method that returns a <code>Boolean</code> value indicating whether there is a value in the dictionary for the given key.</para></listitem>
+            <listitem><para>Dictionaries support the <code>delete(<replaceable>key</replaceable>)</code> method that deletes the value for the given key.  If there is no value for the given key, nothing happens.</para></listitem>
+
+            <listitem><para>
+              Dictionaries can be iterated over using JavaScript-like <code>in</code> iteration:
+            
+              <informalexample><programlisting language="KL"><![CDATA[
+String dict[String];
+for (k in dict)
+  report "dict["+k+"] = "+dict[k];
+              ]]></programlisting></informalexample>
+            
+              For improved performance, both the key and value can be made available through <code>in</code> iteration.  The value can be assigned to if and only if the dictionary can be assigned to.  For example:
+            
+              <informalexample><programlisting language="KL"><![CDATA[
+String dict[String];
+for (k, v in dict)
+  report "dict["+k+"] = "+v;
+              ]]></programlisting></informalexample>
+            </para></listitem>
+
+            <listitem><para>
+              Insertion order (not sort order!) is the iteration order for dictionaries, just as for JavaScript objects.
+
+              <informalexample><programlisting language="KL"><![CDATA[
+operator entry() {
+  String numbers[Integer];
+  numbers[3] = "three";
+  numbers[2] = "two";
+  report numbers; // outputs '{3:"three",2:"two"}'
+  numbers[1] = "one";
+  report numbers; // outputs '{3:"three",2:"two",1:"one"}'
+}
+              ]]></programlisting></informalexample>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+
+        <example>
+          <title>Dictionaries</title>
+          <programlisting><![CDATA[
+operator entry() {
+  Scalar a[String];
+  a['pi'] = 3.14;
+  a['e'] = 2.71;
+  report "a is:";
+  for ( k, v in a ) {
+    report "a['" + k + "'] = " + v;
+  }
+  a.delete('pi');
+  report "a is now:";
+  for ( k, v in a ) {
+    report "a['" + k + "'] = " + v;
+  }
+}
+          ]]></programlisting>
+          <simpara>Output:</simpara>
+          <screen><![CDATA[
+a is:
+a['pi'] = 3.14
+a['e'] = 2.71
+a is now:
+a['e'] = 2.71
+        ]]></screen>
+        </example>
+      </section>
+    </section>
+
+    <section>
+      <title>Type Aliases</title>
+      
+      <para>
+        The <code>alias</code> statement can be used to alias a type to make code more readable.  Its syntax is the same as a variable declaration:
+        
+        <programlisting language="KL"><![CDATA[
+alias Integer Int32;        // Int32 is now an alias for Integer
+alias Scalar Float32;       // Float32 is now an alias for Scalar
+alias Float32 Mat22[2][2];  // Mat22 is now an alias for Float32[2][2], ie. a size-2-array-of-size-2-arrays-of-Float32
+        ]]></programlisting>
+        
+        <code>alias</code> statements must appear within the global scope of a KL program.
+      </para>
+      
+      <example>
+        <title>Type aliases</title>
+        <programlisting><![CDATA[
+alias Scalar Mat22[2][2];
+
+operator entry() {
+  Mat22 mat22;
+  report mat22;
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+[[0,0],[0,0]]
+      ]]></screen>
+      </example>
+    </section>
+
+    <section>
+      <title>The <code>Data</code> Type and the <code>data</code> and <code>dataSize</code> Methods</title>
+
+      <para>
+        When interfacing with external libraries such as OpenGL, it is sometimes necessary to get direct access to the data underlying a value.  An example is a library call that takes a pointer to data.  KL itself has no notion of pointers; instead, KL has the concept of the <code>Data</code> type whose value is a pointer to data which can be passed to an external library call.
+      </para>
+
+      <para>
+        Most values in KL have a built-in method called <code>data</code> that returns a value of type <code>Data</code>, and a built-in method called <code>dataSize</code> that returns a value of type <code>Size</code>.  The value returned by the <code>data</code> method is a pointer to the data underlying the value, and the value returned by the <code>dataSize</code> method is the number of bytes the value occupies in memory.  The only values which do not support the <code>data</code> and <code>dataSize</code> methods are dictionaries as well as other derived types that do not lay out their elements or members contiguously in memory.
+        
+        <programlisting language="KL"><![CDATA[
+Integer integers[];
+report integers.data;  // OK: integers are contiguous in memory
+String strings[];
+report strings.data;   // ERROR: string data is not contiguous in memory
+        ]]></programlisting>
+      </para>
+
+      <para>
+        Unlike pointers in C, the values returned by <code>data</code> methods cannot be inspected or used in any expressions; the only thing which can be done is a cast to <code>Boolean</code>, which will be <code>true</code> if and only if the <code>Data</code> value points to a value whose size is greater than zero.  However, these <code>Data</code> values can be passed directly to external library functions provided by Fabric itself or Fabric extensions, where they are used as pointers to data in memory.
+      </para>
+
+      <note><para>
+        For values of type <code>String</code>, the value returned by <code>dataSize</code> includes a null terminator which is automatically appended to the string by Fabric; this is so that the string data can be directly used in C library calls as a regular C string.  If you want to pass the number of characters in the string, pass <code>string.length</code> instead.
+      </para></note>
+
+      <example>
+        <title><code>Data</code> values and the <code>data</code> and <code>dataSize</code> methods</title>
+        <programlisting language="KL"><![CDATA[
+operator entry() {
+  String s;
+  report "s = '" + s + "'";
+  report "s.data = " + s.data;
+  report "Boolean(s.data) = " + Boolean(s.data);
+  report "s.dataSize = " + s.dataSize;
+  s = "Hello";
+  report "s = '" + s + "'";
+  report "s.data = " + s.data;
+  report "Boolean(s.data) = " + Boolean(s.data);
+  report "s.dataSize = " + s.dataSize;
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+s = ''
+s.data = <Opaque>
+Boolean(s.data) = false
+s.dataSize = 1
+s = 'Hello'
+s.data = <Opaque>
+Boolean(s.data) = true
+s.dataSize = 6
+      ]]></screen>
+      </example>
+    </section>
+  </chapter>
+  
+  <chapter>
+    <title>KL Functions</title>
+
+    <section>
+      <title>Function Declarations</title>
+
+      <para>
+        Function declarations in KL are much the same as the <quote>traditional</quote> function declaration syntax in JavaScript, with the following key differences:
+
+        <itemizedlist>
+          <listitem><para>The return type and the type of each function parameter must be explicitly declared.  If a function does not return a value, the return type must be omitted.</para></listitem>
+          <listitem><para>The parameter declarations may additionally declare the parameter as input (read-only; the default) by preceding the type by <code>in</code> or input-output (read-write) by preceding the value by <code>io</code>.</para></listitem>
+        </itemizedlist>
+      </para>
+
+      <example>
+        <title>Function returning a value and using only input parameters</title>
+        <programlisting language="KL"><![CDATA[
+function Scalar add(Scalar lhs, Scalar rhs) {
+  return lhs + rhs;
+}
+        ]]></programlisting>
+      </example>
+
+      <example>
+        <title>Function not returning a value and using both input and input-output parameters</title>
+        <programlisting language="KL"><![CDATA[
+function add(in Scalar lhs, in Scalar rhs, io Scalar result) {
+  result = lhs + rhs;
+}
+        ]]></programlisting>
+      </example>
+    </section>
+    
+    <section>
+      <title>Function Calls</title>
+      
+      <para>
+        Function calls are made using the same syntax as JavaScript, namely by appending a comma-delimited list of arguments, surrounded by parentheses, to the function name.
+      </para>
+      
+      <example>
+        <title>Function call</title>
+        <programlisting language="KL"><![CDATA[
+function Integer add(Integer lhs, Integer rhs) {
+  return lhs + rhs;
+}
+
+operator entry() {
+  report "2 plus 2 is " + add(2, 2);
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+2 plus 2 is 4
+        ]]></screen>
+      </example>
+    </section>
+    
+    <section>
+      <title>Function Prototypes</title>
+      
+      <para>
+        A <glossterm>function prototype</glossterm> in KL is a function declaration that is missing a body.  Providing a function prototype allows the function to be called before it is defined.  This is useful under two circumstances:
+        
+        <itemizedlist>
+          <listitem><para>
+            When two or more functions call each other.  Such functions are sometimes referred to as <glossterm>co-recursive</glossterm>.
+            
+            <example>
+              <title>Co-recursion using a prototype</title>
+              <programlisting language="KL"><![CDATA[
+// Function prototype for 'two', so that 'one' can call it before it is defined
+function two(Integer n);
+
+// The function 'one' calls 'two' even though it is not yet defined
+function one(Integer n) {
+  report "one";
+  if (n > 0)
+    two(n - 1);
+}
+
+// The definition of the function 'two' comes after its prototype
+function two(Integer n) {
+  report "two";
+  if (n > 0)
+    one(n - 1);
+}
+
+operator entry() {
+  one(4);
+}
+              ]]></programlisting>
+              <simpara>Output:</simpara>
+              <screen><![CDATA[
+one
+two
+one
+two
+one
+              ]]></screen>
+            </example>
+          </para></listitem>
+          
+          <listitem><para>
+            When a function definition is provided by a Fabric extension.  The name of the symbol of the function in the Fabric extension is provided by appending <code>= "<replaceable>symbol name</replaceable>"</code> or <code>= '<replaceable>symbol name</replaceable>'</code> to the function prototype.
+            
+            <example>
+              <title>External function</title>
+              <programlisting language="KL"><![CDATA[
+// The prototype 'libc_perror' is linked to an external function 'perror'
+function libc_perror(Data cString) = 'perror';
+
+// The KL function 'perror' is what KL functions actually call
+function perror(String string) {
+  libc_perror(string.data);
+}
+
+operator entry() {
+  perror("something that caused an error");
+}
+              ]]></programlisting>
+            </example>
+          </para></listitem>
+        </itemizedlist>
+      </para>
+    </section>
+    
+    <section>
+      <title>Function Polymorphism</title>
+      
+      <para>
+        KL support <glossterm>compile-type function polymorphism</glossterm>.  This means that you can have multiple functions with the same name so long as they have a different number of parameters or those parameters differ by type and/or their input versus input-output qualification.
+
+        <note><para>You cannot have two functions that take exactly the same parameter types but return different types</para></note>
+      </para>
+
+      <para>
+        When a function call is made in KL source, if their are multiple functions with the same name then the KL compiler uses a best-match system to determine which function to call.  Exact parameter type matches are always prioritized over type casts.  If the compiler is unable to choose a unique best match then an error will be reported showing the ambiguity.
+      </para>
+
+      <example>
+        <title>Function polymorphism</title>
+        <programlisting language="KL"><![CDATA[
+function display(Integer a) {
+  report "integer value is " + a;
+}
+
+function display(String s) {
+  report "string value is '" + s + "'";
+}
+
+operator entry() {
+  Integer integer = 42;
+  display(integer);
+  
+  String string = "hello";
+  display(string);
+  
+  Byte byte = 64;
+  display(byte);
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+integer value is 42
+string value is 'hello'
+integer value is 64
+        ]]></screen>
+      </example>
+    </section>
+
+    <section>
+      <title>Operators</title>
+      
+      <para>
+        The <code>operator</code> keyword in KL is used to mark functions that are to be used as entry points into KL from the Fabric dependency graph.  Operators are declared in the same way as functions except that they must not return a value.  Fabric does special type-checking to ensure that operators are bound properly to nodes in a Fabric dependency graph.
+      </para>
+
+      <example>
+        <title>Operator definition</title>
+        <programlisting language="KL"><![CDATA[
+operator addElements(io Scalar lhs, io Scalar rhs, io Scalar result) {
+  result = lhs + rhs;
+}
+        ]]></programlisting>
+      </example>
+    </section>
+
+    <section>
+      <title>Constructors</title>
+      
+      <para>
+        A <glossterm>constructor</glossterm> for a user-defined type is a function that initializes a value with the given the type from other values.
+      </para>
+      
+      <section>
+        <title>Constructor Declarations</title>
+        
+        <para>
+          A constructor is declared as a function whose name is the name of the user-defined type.  The function can take any number of parameters, all of which must be input parameters; constructors cannot take input-output parameters.  Constructors cannot return values.
+        </para>
+        
+        <para>
+          Within the body of a constructor definition, the value being initialized is referred to with the <code>this</code> keyword; its members are accessed using the <code>.</code> operator.  In this context, <code>this</code> is always read-write, ie. its members can be modified.
+        </para>
+
+        <example>
+          <title>Constructor declarations</title>
+          <programlisting language="KL"><![CDATA[
+struct Complex {
+  Scalar re;
+  Scalar im;
+};
+
+// The empty constructor; 
+function Complex() {
+  this.re = this.im = 0.0;
+}
+
+// Construct a Complex from a Scalar
+function Complex(Scalar x) {
+  this.re = x;
+  this.im = 0.0;
+}
+
+// Construct a Complex from two Scalars
+function Complex(Scalar x, Scalar y) {
+  this.re = x;
+  this.im = y;
+}
+          ]]></programlisting>
+        </example>
+      </section>
+      
+      <section>
+        <title>Constructor Invocation</title>
+        
+        <para>
+          Constructors are invoked in one of several ways:
+          
+          <itemizedlist>
+            <listitem><para>
+              If a variable is declared without any initialization, the <glossterm>empty constructor</glossterm> (ie. the constructor that takes no parameters) is invoked to initialize the variable.  This is referred to as <glossterm>naked initialization</glossterm>.
+              
+              <example>
+                <title>Constructor invocation using naked initialization</title>
+                <programlisting language="KL"><![CDATA[
+struct MyType {
+  Integer n;
+  Scalar x;
+};
+
+// The empty constructor
+function MyType() {
+  this.n = 42;
+  this.x = 3.141;
+}
+
+operator entry() {
+  MyType myType; // invokes the empty constructor
+  report myType;
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{n:42,x:3.141}
+                ]]></screen>
+              </example>
+            </para></listitem>
+            
+            <listitem><para>
+              If a variable is assigned to as part of its declaration, a single-parameter constructor is invoked.  This is referred to as <glossterm>assignment initialization</glossterm>.  If there isn't an exact match for the type of the value assigned, best-match polymorphism rules are used to choose the constructor to invoke.
+              
+              <example>
+                <title>Constructor invocation using assignment initialization</title>
+                <programlisting language="KL"><![CDATA[
+struct MyType {
+  String string;
+};
+
+// Construct from a string
+function MyType(String string) {
+  this.string = "The string was '" + string + "'";
+}
+
+// Construct from a scalar
+function MyType(Scalar scalar) {
+  this.string = "The scalar was " + scalar;
+}
+
+operator entry() {
+  // Construct MyType from String value
+  MyType myTypeFromString = "foo";
+  report myTypeFromString;
+  
+  // Construct MyType from Float64 value
+  MyType myTypeFromScalar = 2.718;
+  report myTypeFromScalar;
+  
+  // There is no constructor that takes a Boolean but
+  // there is a cast from Boolean to String
+  MyType myTypeFromBoolean = true;
+  report myTypeFromBoolean;
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{string:"The string was 'foo'"}
+{string:"The scalar was 2.718"}
+{string:"The string was 'true'"}
+                ]]></screen>
+              </example>
+            </para></listitem>
+            
+            <listitem><para>
+              If a variable is <quote>called</quote> (ie. using function call syntax) as part of its declaration, the constructor taking the given arguments is invoked.  This is referred to as <glossterm>invocation initialization</glossterm>.  If there isn't an exact match for the arguments passed to the call, best-match polymorphism rules are used to choose the constructor to invoke.
+              
+              <example>
+                <title>Constructor invocation using invocation initialization</title>
+                <programlisting language="KL"><![CDATA[
+struct Vec2 {
+  Float64 x;
+  Float64 y;
+};
+
+// Construct from two scalars
+function Vec2(Float64 x, Float64 y) {
+  this.x = x;
+  this.y = y;
+}
+
+operator entry() {
+  Vec2 vec2FromFloat64s(3.141, 2.718);
+  report vec2FromFloat64s;
+  Vec2 vec2FromIntegers(42, -7);  // Uses best-match polymorphism to convert Integer to Float64
+  report vec2FromIntegers;
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{x:3.141,y:2.718}
+{x:42,y:-7}
+                ]]></screen>
+              </example>
+            </para></listitem>
+
+            
+            <listitem><para>
+              If a function call is performed where the name of the function is the name of the type, the constructor taking the given arguments is invoked to create a temporary value of the named type.  If there isn't an exact match for the arguments passed to the call, best-match polymorphism rules are used to choose the constructor to invoke.
+              
+              <note><para>Note that KL does not distinguish between construction and casting.  Casting a value to a different type is the same as constructing a temporary value of the given type and initializing it, using the appropriate constructor, from the given value.</para></note>
+              
+              <example>
+                <title>Constructor invocation using temporary value</title>
+                <programlisting language="KL"><![CDATA[
+struct Vec2 {
+  Float64 x;
+  Float64 y;
+};
+
+// Construct from two scalars
+function Vec2(Float64 x, Float64 y) {
+  this.x = x;
+  this.y = y;
+}
+
+operator entry() {
+  report Vec2(3.141, 2.718);
+  report Vec2(42, -7);  // Uses best-match polymorphism to convert Integer to Float64
+}
+                ]]></programlisting>
+                <simpara>Output:</simpara>
+                <screen><![CDATA[
+{x:3.141,y:2.718}
+{x:42,y:-7}
+                ]]></screen>
+              </example>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+    </section>
+    
+    <section>
+      <title>Destructors</title>
+      
+      <para>
+        A destructor is a function that is called when a variable goes out of scope and its resources are freed.  Destructors are declared by prepending <code>~</code> in front of the name of the type and using it as a function.  Destructors cannot take any parameters or return values.  The destructor is called before the value is freed so that its members are still accessible.  In the body of the destructor the value is referred to using the <code>this</code> keyword; the value is input-ouput, ie. it can be modified in the destructor.
+      </para>
+      
+      <example>
+        <title>Destructor</title>
+        <programlisting language="KL"><![CDATA[
+struct MyType {
+  String s;
+};
+
+// Empty constructor
+function MyType() {
+  this.s = "foo";
+  report "Creating MyType: this.s = " + this.s;
+}
+
+// Destructor
+function ~MyType() {
+  report "Destroying MyType: this.s = " + this.s;
+}
+
+operator entry() {
+  MyType myType;
+}
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+Creating MyType: this.s = foo
+Destroying MyType: this.s = foo
+        ]]></screen>
+      </example>
+    </section>
+
+<!--
+### Type Methods
+
+If `Type` is a structure or alias, then a *method* can be added to the type using the following syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function String Type.desc() {
+  return "a:" + this.a + "; b:" + this.b;
+}
+```
+
+If a method takes no parameters, then it is optional to use parentheses when calling it:
+
+```javascript
+function entry() {
+  Type t;
+  t.a = 1;
+  t.b = 3.14;
+  // Both report 'a:1; b:3.14'
+  report t.desc();
+  report t.desc;
+}
+```
+
+### Overloaded Operators
+
+Binary operators can be overloaded using the following syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function Type +(Type lhs, Type rhs) {
+  Type result;
+  result.a = lhs.a + rhs.a;
+  result.b = lhs.b + rhs.b;
+  return result;
+}
+```
+
+Compound assignments are methods which return no value (in fact, as an expression they are always equal to the variable being assigned to) and so they have the syntax:
+
+```javascript
+struct Type {
+  Integer a;
+  Scalar b;
+};
+
+function Type.+=(Type rhs) {
+  this.a += rhs.a;
+  this.b += rhs.b;
+}
+```
+-->    
+  </chapter>
+</book>
