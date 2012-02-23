@@ -37,6 +37,7 @@ namespace Fabric
     class CompiledObject : public RC::Object
     {
     public:
+      REPORT_RC_LEAKS
 
       typedef std::vector<std::string> Errors;
     
