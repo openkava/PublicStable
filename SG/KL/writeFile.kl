@@ -1,0 +1,22 @@
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
+
+use RGBA;
+use FabricOGL;
+
+use FabricFILESYSTEM;
+use FabricFolderHandle;
+use FabricFileHandleWrapper;
+
+operator writeFile(
+  io FabricResource resource,
+  io String path
+) {
+  FabricFolderHandle parentHandle;
+  parentHandle.setAbsolutePath(path);
+  FabricFileStream stream;
+  stream.open(handle,"w");
+  stream.writeData(resource.data(),resource.dataSize());
+  stream.close();
+}

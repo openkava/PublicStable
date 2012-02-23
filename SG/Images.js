@@ -674,48 +674,64 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
     //We should include a way to 'mute' and 'unmute' it. The problem
     //is how to know when it is filled with content; an event should be sent. Can
     //we do this without modifying the core?
-    var screenGrabNode = scene.constructNode('SceneGraphNode', options),
-    screenGrabEventHandler;
+    var screenGrabNode = scene.constructNode('SceneGraphNode', options);
+    var screenGrabEventHandler = screenGrabNode.constructEventHandlerNode('ScreenGrab');
+    var dgnode = screenGrabNode.constructDependencyGraphNode('ScreenGrab');
+    dgnode.addMember('width', 'Size');
+    dgnode.addMember('height', 'Size');
+    dgnode.addMember('pixels', 'RGBA[]');
 
-    screenGrabEventHandler = screenGrabNode.constructEventHandlerNode('ScreenGrab');
-    screenGrabEventHandler.addMember('width', 'Size');
-    screenGrabEventHandler.addMember('height', 'Size');
-    screenGrabEventHandler.addMember('pixels', 'RGBA[]');
-    screenGrabEventHandler.addMember('resource', 'FabricResource');
-
+    screenGrabEventHandler.setScope('screenGrabData', dgnode);
+    
     screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'grabViewport',
       srcFile: 'FABRIC_ROOT/SG/KL/grabViewport.kl',
       entryFunctionName: 'grabViewport',
       parameterLayout: [
-            'self.width',
-            'self.height',
-            'self.pixels'
+            'screenGrabData.width',
+            'screenGrabData.height',
+            'screenGrabData.pixels'
           ]
     }));
+    scene.getScenePostRedrawEventHandler().appendChildEventHandler(screenGrabEventHandler);
 
-    screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
+    var writeFileEvent = screenGrabNode.constructEventNode('WriteFile');
+    var writeFileEventHandler = screenGrabNode.constructEventHandlerNode('WriteFile');
+    writeFileEventHandler.addMember('resource', 'FabricResource');
+    writeFileEventHandler.setScope('screenGrabData', dgnode);
+    writeFileEvent.appendEventHandler(writeFileEventHandler);
+    
+    writeFileEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'encodeImage',
       srcFile: 'FABRIC_ROOT/SG/KL/encodeImage.kl',
       entryFunctionName: 'encodeImageLDR',
       parameterLayout: [
-            'self.width',
-            'self.height',
-            'self.pixels',
+            'screenGrabData.width',
+            'screenGrabData.height',
+            'screenGrabData.pixels',
             'self.resource'
           ]
     }));
 
-    scene.getScenePostRedrawEventHandler().appendChildEventHandler(screenGrabEventHandler);
 
     screenGrabNode.pub.saveAs = function() {
+      writeFileEvent.fire();
+      try {
+          var userFileHandle = scene.pub.IO.queryUserFileHandle(scene.pub.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
+          writeFileEventHandler.putResourceToFile(userFileHandle,'resource');
+      }
+      catch (e) { }
+    };
+
+    screenGrabNode.pub.writeImageFile = function(path) {
+      screenGrabEvent.
       try {
           var userFileHandle = scene.pub.IO.queryUserFileHandle(scene.pub.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
           screenGrabEventHandler.putResourceToFile(userFileHandle,'resource');
       }
       catch (e) { }
     };
-
+    
     return screenGrabNode;
   }
 });
