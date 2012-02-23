@@ -13,17 +13,6 @@ namespace Fabric
 {
   namespace AST
   {
-    FABRIC_AST_NODE_IMPL( VarDecl );
-    
-    RC::ConstHandle<VarDecl> VarDecl::Create(
-      CG::Location const &location,
-      std::string const &name,
-      std::string const &arrayModifier
-      )
-    {
-      return new VarDecl( location, name, arrayModifier );
-    }
-    
     VarDecl::VarDecl(
       CG::Location const &location,
       std::string const &name,
@@ -60,11 +49,6 @@ namespace Fabric
     void VarDecl::registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       getAdapter( baseType, cgManager, diagnostics );
-    }
-
-    void VarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
-    {
-      llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
     }
 
     CG::ExprValue VarDecl::llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
