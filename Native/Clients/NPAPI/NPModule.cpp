@@ -44,10 +44,6 @@ static void llvmInitialize()
 static void displayHeader()
 {
   FABRIC_LOG( "%s version %s", Fabric::buildName, Fabric::buildFullVersion );
-  struct tm const *lt = localtime( &Fabric::buildExpiry );
-  char buf[1024];
-  strftime( buf, 1024, "This build of Fabric will expire on %Y-%m-%d at %H:%M:%S", lt );
-  FABRIC_LOG( "%s", buf );
   FABRIC_LOG( "Plugin loaded." );
 }
 
