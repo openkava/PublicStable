@@ -675,61 +675,69 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
     //is how to know when it is filled with content; an event should be sent. Can
     //we do this without modifying the core?
     var screenGrabNode = scene.constructNode('SceneGraphNode', options);
+    var screenGrabEvent = screenGrabNode.constructEventNode('ScreenGrabEvent');
     var screenGrabEventHandler = screenGrabNode.constructEventHandlerNode('ScreenGrab');
-    var dgnode = screenGrabNode.constructDependencyGraphNode('ScreenGrab');
-    dgnode.addMember('width', 'Size');
-    dgnode.addMember('height', 'Size');
-    dgnode.addMember('pixels', 'RGBA[]');
-
-    screenGrabEventHandler.setScope('screenGrabData', dgnode);
+    
+    screenGrabEvent.appendEventHandler(screenGrabEventHandler);
+    screenGrabEventHandler.addMember('width', 'Size');
+    screenGrabEventHandler.addMember('height', 'Size');
+    screenGrabEventHandler.addMember('pixels', 'RGBA[]');
+    screenGrabEventHandler.addMember('resource', 'FabricResource');
     
     screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'grabViewport',
       srcFile: 'FABRIC_ROOT/SG/KL/grabViewport.kl',
       entryFunctionName: 'grabViewport',
       parameterLayout: [
-            'screenGrabData.width',
-            'screenGrabData.height',
-            'screenGrabData.pixels'
-          ]
+        'self.width',
+        'self.height',
+        'self.pixels'
+      ],
+      async: false
     }));
-    scene.getScenePostRedrawEventHandler().appendChildEventHandler(screenGrabEventHandler);
 
-    var writeFileEvent = screenGrabNode.constructEventNode('WriteFile');
-    var writeFileEventHandler = screenGrabNode.constructEventHandlerNode('WriteFile');
-    writeFileEventHandler.addMember('resource', 'FabricResource');
-    writeFileEventHandler.setScope('screenGrabData', dgnode);
-    writeFileEvent.appendEventHandler(writeFileEventHandler);
-    
-    writeFileEventHandler.postDescendBindings.append(scene.constructOperator({
+    screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'encodeImage',
       srcFile: 'FABRIC_ROOT/SG/KL/encodeImage.kl',
       entryFunctionName: 'encodeImageLDR',
       parameterLayout: [
-            'screenGrabData.width',
-            'screenGrabData.height',
-            'screenGrabData.pixels',
-            'self.resource'
-          ]
+        'self.width',
+        'self.height',
+        'self.pixels',
+        'self.resource'
+      ],
+      async: false
     }));
 
 
     screenGrabNode.pub.saveAs = function() {
-      writeFileEvent.fire();
+      screenGrabEvent.fire();
       try {
-          var userFileHandle = scene.pub.IO.queryUserFileHandle(scene.pub.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
-          writeFileEventHandler.putResourceToFile(userFileHandle,'resource');
+        var userFileHandle = FABRIC.IO.queryUserFileHandle(FABRIC.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
+        screenGrabEventHandler.putResourceToFile(userFileHandle,'resource');
       }
       catch (e) { }
     };
 
+    var writeFileOperatorAttached = false;
     screenGrabNode.pub.writeImageFile = function(path) {
-      screenGrabEvent.
-      try {
-          var userFileHandle = scene.pub.IO.queryUserFileHandle(scene.pub.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
-          screenGrabEventHandler.putResourceToFile(userFileHandle,'resource');
+      if(!writeFileOperatorAttached){
+        screenGrabEventHandler.addMember('path', 'String', path);
+        screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
+          operatorName: 'writeFile',
+          srcFile: 'FABRIC_ROOT/SG/KL/writeFile.kl',
+          entryFunctionName: 'writeFile',
+          parameterLayout: [
+            'self.resource',
+            'self.path'
+          ],
+          async: false
+        }));
+        writeFileOperatorAttached = true;
+      }else{
+        screenGrabEventHandler.setData('path', 0, path);
       }
-      catch (e) { }
+      screenGrabEvent.fire();
     };
     
     return screenGrabNode;
