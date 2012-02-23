@@ -6,7 +6,6 @@ import os, shutil
 Import( 'baseEnv', 'buildOS', 'buildArch', 'fabricExtsDistDir' )
 
 extsEnv = baseEnv.Clone()
-extsEnv.Append( CPPDEFINES = [ 'FABRIC_EXTENSION' ] )
 
 def ExtSLName( baseName ):
   return baseName + "-" + buildOS + "-" + buildArch
