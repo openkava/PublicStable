@@ -354,7 +354,7 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
       if(timeRange.x < timeRange.y) {
         // create an animation controller for the sample
         var animationController = scene.constructNode('AnimationController');
-        resourceLoadNode.pub.getAnimationController = function() {
+        resourceLoadNode.pub.getAnimationControllerNode = function() {
           return animationController.pub;
         };
 
