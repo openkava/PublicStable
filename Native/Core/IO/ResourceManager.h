@@ -10,6 +10,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <fstream>
 
 namespace Fabric
 {
@@ -51,6 +52,9 @@ namespace Fabric
       void registerProvider( RC::Handle<ResourceProvider> const &provider, bool setAsDefault = false );
       void get( char const *url, ResourceClient* client, bool getAsFile, void* userData );
 
+      void releaseFile( char const *fileName );
+      void releaseAllFiles();
+
       static void onProgress( char const *mimeType, size_t done, size_t total, void *userData );
       static void onData( size_t offset, size_t size, void const *data, void *userData );
       static void onFile( char const *fileName, void *userData );
@@ -79,6 +83,9 @@ namespace Fabric
       ScheduleAsyncCallbackFunc m_scheduleFunc;
       void *m_scheduleFuncUserData;
       size_t m_progressMaxFrequencyMS;
+
+      typedef std::multimap<std::string, std::ifstream> FilesInUseMap;
+      FilesInUseMap m_filesInUse;
     };
   };
 };
