@@ -129,6 +129,7 @@ $(document).ready(function() {
     if (nbRemaining===0) {
       $('#loadingDialog').dialog('close');
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });
