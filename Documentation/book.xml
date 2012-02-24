@@ -1550,7 +1550,7 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
     <section>
       <title>Geometry.js</title>
       <section>
-        <title>Geomtry</title>
+        <title>Geometry</title>
         <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
         <para>The Geometry node is a base abstract node for all geometry nodes. The Geometry node
           provides basic OpenGL Vertex Buffer Object (VBO) management and other services common to
@@ -1632,20 +1632,13 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
                 <entry>Gets the number of vertices stored in the attributes node.</entry>
               </row>
               <row>
-                <entry>getBulkAttributeData</entry>
-                <entry/>
-              </row>
-              <row>
-                <entry>setBulkAttributeData</entry>
-                <entry/>
-              </row>
-              <row>
                 <entry>loadGeometryData</entry>
-                <entry/>
+                <entry>This method is used to load data into the geometry node. The Collada parser
+                  uses this method to load parsed geometry data.s</entry>
               </row>
               <row>
                 <entry>getBoundingBox</entry>
-                <entry/>
+                <entry>Returns the corner coordinates of the bounding box for this node.s</entry>
               </row>
             </tbody>
           </tgroup>
@@ -1828,6 +1821,675 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
                 <entry>Adds a new Boolean value to the Layer Manger with the given name. Each
                   assigned layer generates getter and setter functions to toggle the state of the
                   drawing for that layer. </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+    </section>
+    <section>
+      <title>Primitives.js</title>
+      <para>The Primitives are generated geometries, using operators to procedurally generate the
+        data of the geometry. They expose methods to access and modify the paramters used by the
+        generator operators.</para>
+      <section>
+        <title>LineVector</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The LineVector node simply draws a static line between 2 predefined points.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>LineVector Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>from</entry>
+                <entry>The start point of the line in the coordinte space of the line.</entry>
+              </row>
+              <row>
+                <entry>to</entry>
+                <entry>The end point of the line in the coordinte space of the line.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Cross</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The Cross node uses an operator to control the size and position of the 6 points that
+          make up the 3 orthogonal line segments that make up the cross. The cross is drawn as 3
+          line degments aligned to the majior axes of the local coordinate frame.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Cross Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>size</entry>
+                <entry>The size of the generated cross.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Cross Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getSize/setSize</entry>
+                <entry>Accessor methods for the size of the cross</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Axis</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The Axis node uses an operator to draw a set of labeled coordinate system axis. The
+          axes are labeled 'X', 'Y', and 'Z'</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Axis Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>size</entry>
+                <entry>The size of the generated cross.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Axis Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getSize/setSize</entry>
+                <entry>Accessor methods for the size of the cross</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Rectangle</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The Rectangle primitive displays a rectangle aligned to the X/Z plane.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Rectangle Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>length</entry>
+                <entry>The length of the generated rectangle in the local X axis.</entry>
+              </row>
+              <row>
+                <entry>width</entry>
+                <entry>The width of the generated rectangle in the local Z axis.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Rectangle Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="252pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getLength/setLength</entry>
+                <entry>Accessor methods for the length of the rectangle primitive</entry>
+              </row>
+              <row>
+                <entry>getWidth/setWidth</entry>
+                <entry>Accessor methods for the width of the rectangle primitive</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>BoundingBox</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The BoundingBox primitive displays a box using top left, and bottom right coordinates
+          to control the size and offset of the box.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>BoundingBox Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>bboxmin</entry>
+                <entry>The length of the generated rectangle in the local X axis.</entry>
+              </row>
+              <row>
+                <entry>bboxmax</entry>
+                <entry>The width of the generated rectangle in the local Z axis.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>BoundingBox Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="252pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getBoundingBoxMin/setBoundingBoxMin</entry>
+                <entry>Accessor methods for the min coordinates of the bounding box.</entry>
+              </row>
+              <row>
+                <entry>getBoundingBoxMax/setBoundingBoxMax</entry>
+                <entry>Accessor methods for the max coordinates of the bounding box.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Grid</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The Grid primitive displays a 3 dimensional grid</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Grid Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>size_x</entry>
+                <entry>The size of the grid in the X axis</entry>
+              </row>
+              <row>
+                <entry>size_y</entry>
+                <entry>The size of the grid in the Y axis</entry>
+              </row>
+              <row>
+                <entry>size_z</entry>
+                <entry>The size of the grid in the Z axis</entry>
+              </row>
+              <row>
+                <entry>sections_x</entry>
+                <entry>The number of sections of the grid along the X axis</entry>
+              </row>
+              <row>
+                <entry>sections_y</entry>
+                <entry>The number of sections of the grid along the Y axis</entry>
+              </row>
+              <row>
+                <entry>sections_z</entry>
+                <entry>The number of sections of the grid along the Z axis</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>CameraPrimitive</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The CameraPrimitive is used to draw a Camera icon on screen. The camera primitive
+          draws a box with a cone attached indicating the oriantation of the camera. This can be
+          used to visualize cameras in the 3d viewport.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CameraPrimitive Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>size</entry>
+                <entry>The size of the generated cross.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CameraPrimitive Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getSize/setSize</entry>
+                <entry>Accessor methods for the size of the drawn primitive</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Circle</title>
+        <para>ParentNode: <emphasis role="bold">Lines</emphasis></para>
+        <para>The Circle primitive can be used to draw either a circle, or an arc if a the arc ancle
+          specified is less than 2pi.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CameraPrimitive Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>radius</entry>
+                <entry>The size of the generated cross.</entry>
+              </row>
+              <row>
+                <entry>arcAngle</entry>
+                <entry>the angle, specified in radians of the drawn Circle. By default the 'Circle'
+                  draws a complete circle, however, an arc can be drawn by specifying a value less
+                  than 2 pi.</entry>
+              </row>
+              <row>
+                <entry>numSegments</entry>
+                <entry>The number of line segments used to draw the circle/arc.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CameraPrimitive Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getRadius/setRadius</entry>
+                <entry>Accessor methods for the radius of the drawn circle/arc</entry>
+              </row>
+              <row>
+                <entry>getArcAngle/setArcAngle</entry>
+                <entry>Accessor methods for the angle of the drawn circle/arc</entry>
+              </row>
+              <row>
+                <entry>getNumSegments/setNumSegments</entry>
+                <entry>Accessor methods for the number of line segments use when drawing the
+                  arc/circle</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Plane</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Plane primitive draws </para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Plane Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>length</entry>
+                <entry>The length of the plane in the X axis</entry>
+              </row>
+              <row>
+                <entry>width</entry>
+                <entry>The width of the plane in the Z axis</entry>
+              </row>
+              <row>
+                <entry>lengthSections</entry>
+                <entry>The number of length sections to use when building the plane.</entry>
+              </row>
+              <row>
+                <entry>widthSections</entry>
+                <entry>The number of width sections to use when building the plane</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Plane Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getLength/setLength</entry>
+                <entry>Accessor methods for the length of the drawn plane</entry>
+              </row>
+              <row>
+                <entry>getWidth/setWidth</entry>
+                <entry>Accessor methods for the width of the drawn plane</entry>
+              </row>
+              <row>
+                <entry>getLengthSections/setLengthSections</entry>
+                <entry>Accessor methods for the number of length sections to use when drawing the
+                  plane.</entry>
+              </row>
+              <row>
+                <entry>getWidthSections/setWidthSections</entry>
+                <entry>Accessor methods for the number of width sections to use when drawing the
+                  plane.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Cuboid</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Cuboid primitive draws a cuboid.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Cuboid Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>length</entry>
+                <entry>The length of the cuboid in the X axis</entry>
+              </row>
+              <row>
+                <entry>width</entry>
+                <entry>The width of the cuboid in the Z axis</entry>
+              </row>
+              <row>
+                <entry>height</entry>
+                <entry>The height of the cuboid in the Y axis</entry>
+              </row>
+              <row>
+                <entry>lengthSections</entry>
+                <entry>The number of length sections to use when building the cuboid.</entry>
+              </row>
+              <row>
+                <entry>widthSections</entry>
+                <entry>The number of width sections to use when building the cuboid</entry>
+              </row>
+              <row>
+                <entry>heightSections</entry>
+                <entry>The number of height sections to use when building the cuboid</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Cuboid Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getLength/setLength</entry>
+                <entry>Accessor methods for the length of the drawn cuboid</entry>
+              </row>
+              <row>
+                <entry>getWidth/setWidth</entry>
+                <entry>Accessor methods for the width of the drawn cuboid</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>getLengthSections/setLengthSections</entry>
+                <entry>Accessor methods for the number of length sections to use when drawing the
+                  cuboid.</entry>
+              </row>
+              <row>
+                <entry>getWidthSections/setWidthSections</entry>
+                <entry>Accessor methods for the number of width sections to use when drawing the
+                  cuboid.</entry>
+              </row>
+              <row>
+                <entry>getHeightSections/setHeightSections</entry>
+                <entry>Accessor methods for the number of height sections to use when drawing the
+                  cuboid</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Sphere</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Sphere primitive draws a sphere on screen using triangles.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Sphere Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>radius</entry>
+                <entry>The radius of the sphere </entry>
+              </row>
+              <row>
+                <entry>detail</entry>
+                <entry>The detail parameter controls the number of length and width sections.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Sphere Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getRadius/setRadius</entry>
+                <entry>Accessor methods for the length of the sphere</entry>
+              </row>
+              <row>
+                <entry>getDetail/setDetail</entry>
+                <entry>Accessor methods for the width of the sphere</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Torus</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Torus primitive draws a torus on screen using triangles.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Torus Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>innerRadius</entry>
+                <entry>The radius of the hole throught he middle of the torus </entry>
+              </row>
+              <row>
+                <entry>outerRadius</entry>
+                <entry>The radius of the body section of the torus</entry>
+              </row>
+              <row>
+                <entry>detail</entry>
+                <entry>The detail parameter controls the number of sections used to generate the
+                  shape of the torus.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Torus Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getInnerRadius/setInnerRadius</entry>
+                <entry>Accessor methods for the length of the torus</entry>
+              </row>
+              <row>
+                <entry>getOuterRadius/setOuterRadius</entry>
+                <entry>Accessor methods for the outer radius of the torus</entry>
+              </row>
+              <row>
+                <entry>getDetail/setDetail</entry>
+                <entry>Accessor methods for the detail paramerer of the torus</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Cone</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Torus primitive draws a torus on screen using triangles.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Torus Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>innerRadius</entry>
+                <entry>The radius of the hole throught he middle of the Cone </entry>
+              </row>
+              <row>
+                <entry>outerRadius</entry>
+                <entry>The radius of the body section of the Cone</entry>
+              </row>
+              <row>
+                <entry>detail</entry>
+                <entry>The detail parameter controls the number of sections used to generate the
+                  shape of the Cone.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Torus Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getInnerRadius/setInnerRadius</entry>
+                <entry>Accessor methods for the length of the Cone</entry>
+              </row>
+              <row>
+                <entry>getOuterRadius/setOuterRadius</entry>
+                <entry>Accessor methods for the outer radius of the Cone</entry>
+              </row>
+              <row>
+                <entry>getDetail/setDetail</entry>
+                <entry>Accessor methods for the detail paramerer of the Cone</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Cylinder</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Cylinder primitive draws a cylinder on screen using triangles.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Cylinder Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>radius</entry>
+                <entry>The radius of the body of the Cylinder </entry>
+              </row>
+              <row>
+                <entry>height</entry>
+                <entry>The height of the body of the Cylinder</entry>
+              </row>
+              <row>
+                <entry>caps</entry>
+                <entry>Constrols whether the generated cylinder is capped at both ends.</entry>
+              </row>
+              <row>
+                <entry>sides</entry>
+                <entry>The number of sides to use when generating the cylinder.</entry>
+              </row>
+              <row>
+                <entry>loops</entry>
+                <entry>the number of loops to use when generating the cylinder.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Cylinder Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getRadius/setRadius</entry>
+                <entry>Accessor methods for the radius of the Cylinder</entry>
+              </row>
+              <row>
+                <entry>getHeight/setHeight</entry>
+                <entry>Accessor methods for the height of the Cylinder</entry>
+              </row>
+              <row>
+                <entry>getCaps/setCaps</entry>
+                <entry>Accessor methods for the caps parameter of the Cylinder</entry>
+              </row>
+              <row>
+                <entry>getSides/setSides</entry>
+                <entry>Accessor methods for the number of sides of the Cylinder</entry>
+              </row>
+              <row>
+                <entry>getLoops/setLoops</entry>
+                <entry>Accessor methods for the number of loops of the Cylinder</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Teapot</title>
+        <para>ParentNode: <emphasis role="bold">Triangles</emphasis></para>
+        <para>The Teapot primitive draws the classic teapot primitive onscreen using
+          triangles.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Teapot Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>size</entry>
+                <entry>The size of the teapot primitive</entry>
+              </row>
+              <row>
+                <entry>detail</entry>
+                <entry>The detail parameter controls the number of sections used to generate the
+                  shape of the Teapot.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Teapot Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="251.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getSize/setSize</entry>
+                <entry>Accessor methods for the length of the Teapot</entry>
+              </row>
+              <row>
+                <entry>getDetail/setDetail</entry>
+                <entry>Accessor methods for the detail paramerer of the Teapot</entry>
               </row>
             </tbody>
           </tgroup>
