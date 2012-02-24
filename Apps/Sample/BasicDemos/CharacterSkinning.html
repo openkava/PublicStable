@@ -21,7 +21,6 @@
     <script type="text/javascript">
     
 
-
 FABRIC.require(["SG/SceneGraph",
                  "SG/Geometry",
                  "SG/Materials",
@@ -126,6 +125,7 @@ FABRIC.require(["SG/SceneGraph",
         throw (errors.toString());
       }
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });
