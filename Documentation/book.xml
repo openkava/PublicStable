@@ -1547,5 +1547,292 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         </table>
       </section>
     </section>
+    <section>
+      <title>Geometry.js</title>
+      <section>
+        <title>Geomtry</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The Geometry node is a base abstract node for all geometry nodes. The Geometry node
+          provides basic OpenGL Vertex Buffer Object (VBO) management and other services common to
+          all type of geometry. The Geometry node provides a uniformsDependency Graph node which is
+          used to contain non-vertex data for the geometry. Non vertex data might be paramters used
+          in a generator opator such as the radius of a sphere. The Geometry node also provides a
+          Vertex Attribute Dependency Graph node. All per-vertex data is stored in the vertex dgnode
+          as a sliced node. Each slice in the sliced node contains the vertex data for one vertex.
+          This special vertex attribute node ensures that every vertex has the same attributes, and
+          by simply adding a new data member, all verticies aquire the new data mamber. This model
+          maps well to GPU memory layouts where all vertex attributes must have identical counts to
+          evaluate efficiently. This model enables efficient multi-threaded operators to be applied
+          to all vertices in a mesh. The trade-off is lightly higher memory usage, as shared vertex
+          attributes are duplicated to each vertex.</para>
+        <db:para>Each of the derrived geometries must provide specialiazed drawing and raycasting
+          operators to enable the derived geometry to inetgrate with the rendering and interaction
+          systems of the Fabric Scene Graph. The combination of flexible vertex attributes sets, and
+          custom draw operator makes it easy to define custom geometry types.</db:para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Geometry Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>createBoundingBoxNode</entry>
+                <entry>Determines whether a bounding box node is constructed. </entry>
+              </row>
+              <row>
+                <entry>drawable</entry>
+                <entry>Determines whether the redraw event hander is set up and VBOs uploaded for
+                  each vertex atribute. Note: drawing would not be required for a collision mesh for
+                  example</entry>
+              </row>
+              <row>
+                <entry>dynamicIndices</entry>
+                <entry>Specifies whether the indices buffer should be dynamic. Geometry which has a
+                  dynamcially chaning topoloy would set this to true. </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Geometry Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>addUniformValue()</entry>
+                <entry>Adds a new member to the uniforms Dependency Graph node.</entry>
+              </row>
+              <row>
+                <entry>addVertexAttributeValue(name, type, attributeoptions)</entry>
+                <entry>Adds a new vertex attribute to the geometry. The options object passed in can
+                  specify ether the given vertex attribute should be used to generate a VBO using
+                  the parameter genVBO: true. </entry>
+              </row>
+              <row>
+                <entry>reloadVBO(name)</entry>
+                <entry>Manually triggers an re-uploading of the vertex buffer to the GPU.</entry>
+              </row>
+              <row>
+                <entry>setAttributeDynamic(name)</entry>
+                <entry>Sets the given attribute to use Dynamic OpenGL buffers. Not this should be
+                  called prior to the first time the geometry is drawn. </entry>
+              </row>
+              <row>
+                <entry>setAttributeStatic(name)</entry>
+                <entry>Sets the given attribute to use Static OpenGL buffers. Not this should be
+                  called prior to the first time the geometry is drawn. </entry>
+              </row>
+              <row>
+                <entry>getVertexCount</entry>
+                <entry>Sets the number of vertices stored in the attributes node.</entry>
+              </row>
+              <row>
+                <entry>setVertexCount</entry>
+                <entry>Gets the number of vertices stored in the attributes node.</entry>
+              </row>
+              <row>
+                <entry>getBulkAttributeData</entry>
+                <entry/>
+              </row>
+              <row>
+                <entry>setBulkAttributeData</entry>
+                <entry/>
+              </row>
+              <row>
+                <entry>loadGeometryData</entry>
+                <entry/>
+              </row>
+              <row>
+                <entry>getBoundingBox</entry>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>GeometryDataCopy</title>
+        <para>ParentNode: <emphasis role="bold">Geometry</emphasis></para>
+        <para>The geometry data copy node provides a methd to create  geometries derived from a base
+          geometry. Per-Point operators can be applied to the Geometry Data Copy, and these
+          operators can reference the base geometry as an input. The GeometryDataCopy is a base type
+          used to construct specialized deforming geometries. The GeometryDataCopy can be used to
+          derive a new Point, Lines, or Triangle mesh as it only provides generic double buffering
+          and operator evaluation of vertex attributes.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>GeometryDataCopy Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>baseGeometryNode</entry>
+                <entry>The geometry to use as the base for this derived geometry.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>GeometryDataCopy Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>setBaseGeometry(geometry)</entry>
+                <entry>Sets the geometry to be used as base geometry.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>Points</title>
+        <para>ParentNode: <emphasis role="bold">Geometry</emphasis></para>
+        <para>The Points node creates a specialization of the gometry node for drawing point. It
+          simply does this by adding a 'positions' vertex attribute, and providing drawing operators
+          that issue the appropriate OpenGL draw comments during rendering.</para>
+      </section>
+      <section>
+        <title>Lines</title>
+        <para>ParentNode: <emphasis role="bold">Geometry</emphasis></para>
+        <para>The Lines node creates a specialization of the gometry node for drawing lines. It
+          simply does this by adding a 'positions' vertex attribute, and an indices Uniform value,
+          and providing drawing operators that issue the appropriate OpenGL draw comments during
+          rendering.</para>
+      </section>
+      <section>
+        <title>LineStrip</title>
+        <para>ParentNode: <emphasis role="bold">Geometry</emphasis></para>
+        <para>The LineStrip node creates a specialization of the gometry node for drawing line
+          strips. The only difference between Lines and LineStrip is the drawing operator provided
+          assumes a GL_LINESTRIP layout of the vertex indices array.</para>
+      </section>
+      <section>
+        <title>Triangles</title>
+        <para>ParentNode: <emphasis role="bold">Geometry</emphasis></para>
+        <para>The Triangles node creates a specialization of the gometry node for drawing triangles.
+          It does this by adding several vertex attrinbutes that are used in drawing triangles. The
+          'positions' and 'normal' vertex attributes are provided, along with optional VU sets
+          ('uvs0'), and tangents.</para>
+      </section>
+      <section>
+        <title>Instance</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The Instance Scene Graph node represents a drawn geometry. The Instance node is used
+          to bind a Geomerty to a Transform and a Material and draw the results on screen. When a
+          geometry is assigned to an instance node, the Instance node requests the geometries 'draw
+          operator', and assigns the draw operator to the instance's draw event handler. The
+          Instance node also handles raycasting of geometries. When a material is assigned to an
+          Instance, the instance connectes its draw event handler to the materials draw event
+          handler. This ensures that when the matierl is set up for rendering, the draw event
+          handler of the Instance is then invoked causing the drawing of the geometry.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Instance Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="249pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>transformNode</entry>
+                <entry>The transform node to use to control the transform the geometry in the
+                  scene.</entry>
+              </row>
+              <row>
+                <entry>transformNodeMember</entry>
+                <entry>TODO: remove me</entry>
+              </row>
+              <row>
+                <entry>transformNodeIndex</entry>
+                <entry>TODO: remove me</entry>
+              </row>
+              <row>
+                <entry>constructDefaultTransformNode</entry>
+                <entry>The Instance node will construct a default transform node if none is
+                  provided. </entry>
+              </row>
+              <row>
+                <entry>geometryNode</entry>
+                <entry>The Geometry node that will be used in drawing/racasting</entry>
+              </row>
+              <row>
+                <entry>transformNode</entry>
+                <entry>The Transform node that will be used in drawing/raycasting.</entry>
+              </row>
+              <row>
+                <entry>materialNode</entry>
+                <entry>The Material node that will be used in drawing.</entry>
+              </row>
+              <row>
+                <entry>enableRaycasting</entry>
+                <entry>The option to enable/disable raycasting for this instance</entry>
+              </row>
+              <row>
+                <entry>enableDrawing</entry>
+                <entry>The option to enable/disable drawing for this instance</entry>
+              </row>
+              <row>
+                <entry>raycastOverlaid</entry>
+                <entry>In some cases, it is required that a given geometry returns raycast results
+                  even if occlueded by other geometries. This is the case when a geometry is being
+                  used as a Manipulator widget. The Manipulator widgets are drawn over the top of
+                  all geometry, and must also respond to mouse events. This option causes the
+                  Instance to alsways return a raycast result with a distance of 0. </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>GeometryDataCopy Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="248.25pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getGeometryNode/setGeometryNode</entry>
+                <entry>Gets/Sets the Geometry node</entry>
+              </row>
+              <row>
+                <entry>getTransformNode/setTransformNode</entry>
+                <entry>Gets/Sets the Transform node</entry>
+              </row>
+              <row>
+                <entry>getMaterialNode/setMaterialNode</entry>
+                <entry>Gets/Sets the Material node</entry>
+              </row>
+              <row>
+                <entry>getLayerManagerNode/setLayerManagerNode</entry>
+                <entry>Gets/Sets the Layer Manager node. When an Instance is assigned to a layer in
+                  a Layer Manager, it binds an operator to its dgnode that drives the draw toggle
+                  from the value of the assigned layer in the layer manger. This means that if the
+                  layer is disabled, all Instances assigned to that layer become disabled.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>LayerManager</title>
+        <para>ParentNode: <emphasis role="bold"/></para>
+        <para>The Layer Manager is a very simply Manager for contolling the drawing of many
+          Instances at once. When an I</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>LayerManager Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>addLayer(geometry)</entry>
+                <entry>Adds a new Boolean value to the Layer Manger with the given name. Each
+                  assigned layer generates getter and setter functions to toggle the state of the
+                  drawing for that layer. </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+    </section>
   </section>
 </article>
