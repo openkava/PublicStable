@@ -102,16 +102,21 @@
       <para>Each SceneGraphNode provides a private as well as a public interface. The public
         interface provide the public interface for the node. Outside of constructor functions it's
         only possible to access the public interface, while inside of constructor functions it's
-        possible to access the private interface. This allows to include helper functions in the
-        each node, such as setter functions for private members for example, that are only
-        accessible in constructor functions of other nodes. Since the options used for the
-        construction of a node can contain references to a public interface, you can retrieve the
-        private interface by using this call:</para>
+        possible to access both the public and the private interface. This private interface enables
+        exposing functions to tother nodes that request access to the private interface. Private
+        interfaces expose methods that are used when building the underlying dependency graph. The
+        public interface of a node should expose functions which define very high level behavior.
+        For example, the sphere primitive exposes a public interface with methods to get and set the
+        radius, and the private interface exposes methods to retrieve the core DGNodes that contain
+        all the vertices. The public interface is what would be used to populte a graphical user
+        interface for a node. Since the options used for the construction of a node can contain
+        references to a public interface, you can retrieve the private interface by using this
+        call:</para>
       <programlisting>var privateInterface = scene.getPrivateInterface(publicInterface);</programlisting>
       <para>To access the public interface from a private one, you simply need to access the
-          <emphasis role="italic">.pub</emphasis> member of the private interface.<emphasis
-          role="bold"> </emphasis>Managers can also access private interfaces, allowing them to
-        perform changes to the private data, for example.</para>
+          <emphasis role="italic">.pub</emphasis> member of the private interface. Managers can also
+        access private interfaces, allowing them to perform changes to the private data, for
+        example.</para>
       <programlisting language="JavaScript">var sgNode = {
   pub: {
     publicMethod: function () {}
@@ -122,13 +127,13 @@
     <section>
       <title>Custom SceneGraphNodes and Inheritance</title>
       <para>Applications can register their own, custom SceneGraphNodes. This can be useful and
-        necessary when extending an existing node, for example, or providing a completely new one.
-        Inside the constructor function of the custom node all other nodes can be accessed through
-        their private interfaces, allowing to modify and access the inner workings of the
-        SceneGraph. Extending the private or the public interface allows to inherit features of
-        another SceneGraphNode. It is also possible to override an existing function on each
-        interface by simply setting it to different function inside the custom node's constructor.
-        For further details refer to the tutorials sections of this document.</para>
+        necessary when extending an existing node or providing a completely new one. In the
+        constructor function of the custom node the other nodes can be accessed through their
+        private interfaces, allowing access the inner workings of the SceneGraph. Each Scene Graph
+        node extends the private or the public interface of its parent node type, enbling
+        inheritance through composition. It is also possible to override an existing function on
+        each interface by simply setting it to different function inside the custom node's
+        constructor. For further details refer to the tutorials sections of this document.</para>
     </section>
     <section>
       <title>The SceneGraph Debugger</title>
@@ -146,12 +151,13 @@
   </section>
   <section role="">
     <title>SceneGraph Type System</title>
-    <para>Fabric Engine can work with any type of data. To define the structure of data, you need to
-      introduce <emphasis role="bold">Types</emphasis>. Types are very similar to structs in C++.
-      Core types, such as <emphasis role="bold">Integer</emphasis>, <emphasis role="bold"
-        >Boolean</emphasis> or <emphasis role="bold">String</emphasis> are defined by the core. More
-      complex types, such as the <emphasis role="bold">Vec3</emphasis>, for example, are defined by
-      the SceneGraph.</para>
+    <para>Fabric Engine enables you to define your own data structures. All data types in Fabric are
+      define dynamically as part of the loading process of your application. To define the structure
+      of data, you need to introduce <emphasis role="bold">Types</emphasis>. Types are very similar
+      to structs in C++. Core types, such as <emphasis role="bold">Integer</emphasis>, <emphasis
+        role="bold">Boolean</emphasis> or <emphasis role="bold">String</emphasis> are defined by the
+      core. More complex types, such as the <emphasis role="bold">Vec3</emphasis>, for example, are
+      defined by the SceneGraph.</para>
     <section>
       <title>Querying types</title>
       <para>You can access all of the currently registered types, by calling on the <emphasis
@@ -276,9 +282,8 @@ var hierarchicalTransform = scene.constructNode('Transform', {
           <imagedata fileref="images/sg_animation_01.png" width="60%"/>
         </imageobject>
       </inlinemediaobject></para>
-    <para>The animation pipeline in Fabric Engine's SceneGraph is heavily inspired by the animation
-      systems commonly found in game engines. The SceneGraphNodes in the animation pipeline
-      are:</para>
+    <para>The animation pipeline in Fabric Engine's SceneGraph is inspired by the animation systems
+      commonly found in game engines. The SceneGraphNodes in the animation pipeline are:</para>
     <itemizedlist>
       <listitem>
         <para><emphasis role="bold">AnimationController</emphasis></para>
@@ -290,16 +295,17 @@ var hierarchicalTransform = scene.constructNode('Transform', {
         <para><emphasis role="bold">CharacterAnimationContainer</emphasis></para>
       </listitem>
     </itemizedlist>
-    <para>The actual evaluation of the animation is done in KL operators on the target nodes. In the
-      image above the animation is driving a transform node, but any member on any kind of node can
-      be driven by animation in Fabric Engine's SceneGraph.</para>
+    <para>The evaluation of the animation is done in KL operators on the target nodes. In the image
+      above the animation is driving a transform node, but any member on any kind of node can be
+      driven by animation in Fabric Engine's SceneGraph.</para>
     <section>
       <title>The Animation Controller node</title>
-      <para>An Animation Controller is responsible for computing a time value from given inputs.
-        This allows to simulate the time in a controller, loop or ping-pong the time or do any kind
-        of manipulation on the time inside the controller. A single controller can be used by many
-        evaluators. The default Animation Controller node is bound to the globals SceneGraph node
-        storing the global scene time.</para>
+      <para>An Animation Controller is responsible for computing a time value from given inputs. The
+        Animation Controller takes in a time paramter and uses it to compute a new time value. For
+        example, an Animaiton Controller might take in global time and compute a, loop or ping-pong
+        time value which is then used to drive an animation evaluation. A single controller can be
+        used by many evaluators. The default Animation Controller node is bound to the globals
+        SceneGraph node storing the global scene time.</para>
       <programlisting language="JavaScript">var controller = scene.constructNode('AnimationController', {
   timeRange: new FABRIC.RT.Vec2(0.0, 10.0), // ten seconds
   outOfRange: 1 // looping
@@ -487,9 +493,11 @@ geometryNode.loadGeometryData({
       <para>Geometry data copies provide a way to split the definition of a rendered geometry into
         multiple sections. A Geometry data copy is used to extend a base geometry, usually by adding
         deformation operators. The base geometry represents the original undeformed geometry, and
-        the data copy is used to apply changes. The Geometry data copy contains only members
-        required for the modification. During rendering, uniforms and attributes are loaded from the
-        base geometry and the data copy.</para>
+        the data copy is used to apply changes. The Geometry data does not contain a complete
+        description of gometry, but only the the data that is a modification of the base geometry.
+        During rendering, uniforms and attributes are loaded from the base geometry and the data
+        copy where any attributes in the data copy verride the attributes in the base
+        geometry.</para>
       <para>Since the Attributes node is sliced, deformation can be performed using
         multi-threading.</para>
       <programlisting language="JavaScript">var geometryCopyNode = scene.constructNode('GeometryDataCopy', {baseGeometryNode: geometryNode} );
@@ -515,11 +523,12 @@ geometryCopyNode.addVertexAttributeValue('positions', 'Vec3', { genVBO:true, dyn
   }
 });</programlisting>
       <para>The last argument to the <emphasis role="bold">importAssetFile</emphasis> method is the
-        function to execute once the parsed result is ready for consumption. The OBJ parser returns
-        a dictionary of triangle geometry nodes representing all of the geometries which are part of
-        the OBJ file. If the <emphasis role="bold">splitMaterials</emphasis> option is set to true,
-        the polygon material assignments of the OBJ file will further split the meshes, to enable
-        the SceneGraph's drawing pipeline to render them with separate shaders.</para>
+        callback function to execute once the parsed result is ready for consumption. The OBJ parser
+        returns a dictionary of triangle geometry nodes representing all of the geometries which are
+        part of the OBJ file. If the <emphasis role="bold">splitMaterials</emphasis> option is set
+        to true, the Obj parser will splith the geometries into multiple geometry sets according to
+        the material assignments in the file.  Each returned geometry can then be assigned  separate
+        materials for rendering.</para>
       <para>Note: The <emphasis role="italic">ModelViewer.html<emphasis role="bold"
           > </emphasis></emphasis>sample application contains an example of the OBJ parser in
         use.</para>
@@ -545,7 +554,7 @@ geometryCopyNode.addVertexAttributeValue('positions', 'Vec3', { genVBO:true, dyn
               nodes</para>
           </listitem>
         </itemizedlist></para>
-      <para>The Collada parser can be deployed like this:</para>
+      <para>The Collada parser can be invoked like this:</para>
       <programlisting language="JavaScript">scene.importAssetFile('Models/character.dae', {
     constructRigFromHierarchy: true
 }, function(assetNodes) {
@@ -553,10 +562,10 @@ geometryCopyNode.addVertexAttributeValue('positions', 'Vec3', { genVBO:true, dyn
     console.log(assetNodes[name]);
   }
 });</programlisting>
-      <para>The last argument of the parser's invocation is a function to be called once the collada
-        data is parsed and ready for consumption. In the example above we simply log the data to the
-        console. For further details on the character related nodes please see the <emphasis
-          role="bold">Character Guide</emphasis> section of this document.</para>
+      <para>The last argument of the parser's invocation is a callback function to be called once
+        the collada data is parsed and ready for consumption. In the example above we simply log the
+        data to the console. For further details on the character related nodes please see the
+          <emphasis role="bold">Character Guide</emphasis> section of this document.</para>
       <para>Note: The <emphasis role="italic">CharacterSkeleton.html<emphasis role="bold"
           > </emphasis></emphasis>sample application contains an example of the Collada parser in
         use.</para>
