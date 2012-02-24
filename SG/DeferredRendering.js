@@ -5,6 +5,75 @@
 FABRIC.define(["SG/Rendering",
                "RT/OGLRenderTarget"], function() {
 
+
+var capitalizeFirstLetter = function(str) {
+  return str[0].toUpperCase() + str.substr(1);
+};
+
+FABRIC.SceneGraph.registerNodeType('DeferredPrePassMaterial', {
+  briefDesc: 'The ShadowMapMaterial allows to draw a shadow.',
+  detailedDesc: 'The ShadowMapMaterial allows to draw a shadow. This is used when working with shadow maps.',
+  parentNodeDesc: 'Material',
+  factoryFn: function(options, scene) {
+    options.parentEventHandler = false;
+    var materialNode = scene.constructNode('Material', options);
+    
+    materialNode.addReferenceInterface('renderer', 'BaseDeferredRenderer',
+      function(nodePrivate){
+        var shader = scene.getPrivateInterface(materialNode.getShaderNode());
+        nodePrivate.getDeferredPrePassEventHandler().appendChildEventHandler(shader.getRedrawEventHandler());
+      });
+    if(options.rendererNode){
+      materialNode.pub.setRendererNode(options.rendererNode);
+    }
+    return materialNode;
+  }});
+
+FABRIC.SceneGraph.registerNodeType('DeferredPostPassMaterial', {
+  briefDesc: 'The ShadowMapMaterial allows to draw a shadow.',
+  detailedDesc: 'The ShadowMapMaterial allows to draw a shadow. This is used when working with shadow maps.',
+  parentNodeDesc: 'Material',
+  factoryFn: function(options, scene) {
+    options.parentEventHandler = false;
+    var materialNode = scene.constructNode('Material', options);
+    
+    materialNode.addReferenceInterface('renderer', 'BaseDeferredRenderer',
+      function(nodePrivate){
+        var shader = scene.getPrivateInterface(materialNode.getShaderNode());
+        nodePrivate.getDeferredPostPassEventHandler().appendChildEventHandler(shader.getRedrawEventHandler());
+        
+        var oglRenderTargetTextureNames = nodePrivate.getOglRenderTargetTextureNames();
+        var renderTargetTextures = nodePrivate.getRenderTargetTextures();
+        for(i = 0; i < renderTargetTextures.length; ++i) {
+          var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'TextureNode';
+          if(materialNode.pub[setTextureFuncName] !== undefined) {
+            materialNode.pub[setTextureFuncName]( renderTargetTextures[i].pub );
+          }
+        }
+  
+        var materialRedrawHandler = materialNode.getRedrawEventHandler();
+  
+        if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
+          materialRedrawHandler.postDescendBindings.insert(
+            scene.constructOperator({
+                operatorName: 'drawShaderQuad',
+                srcCode:'use OGLTexture2D, OGLShaderProgram;\n' +
+                        'operator drawShaderQuad(io OGLShaderProgram program){ \n' +
+                        '  drawScreenQuad(program.programId, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);}',
+                entryFunctionName: 'drawShaderQuad',
+                parameterLayout: [
+                  'shader.shaderProgram'
+                ]
+          }),0);
+        }
+      });
+    if(options.rendererNode){
+      materialNode.pub.setRendererNode(options.rendererNode);
+    }
+    return materialNode;
+  }});
+
+
 FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
   briefDesc: '',
   detailedDesc: '',
@@ -223,46 +292,8 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
       renderTargetTextures.push(imageNode);
     }
 
-    var capitalizeFirstLetter = function(str) {
-      return str[0].toUpperCase() + str.substr(1);
-    };
-
-    deferredRenderNode.pub.addPostPassMaterial = function(materialName, options) {
-
-      options.parentEventHandler = shaderPassRedrawEventHandler;
-      var materialNodePub = scene.pub.constructNode(materialName, options);
-      var material = scene.getPrivateInterface(materialNodePub);
-
-      for(i = 0; i < nbRenderTargets; ++i) {
-        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'TextureNode';
-        if(material.pub[setTextureFuncName] !== undefined) {
-          material.pub[setTextureFuncName]( renderTargetTextures[i].pub );
-        }
-      }
-
-      var materialRedrawHandler = material.getRedrawEventHandler();
-
-      if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
-        materialRedrawHandler.postDescendBindings.insert(
-          scene.constructOperator({
-              operatorName: 'drawShaderQuad',
-              srcCode:'use OGLTexture2D, OGLShaderProgram;\n' +
-                      'operator drawShaderQuad(io OGLShaderProgram program){ \n' +
-                      '  drawScreenQuad(program.programId, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);}',
-              entryFunctionName: 'drawShaderQuad',
-              parameterLayout: [
-                'shader.shaderProgram'
-              ]
-        }),0);
-      }
-      return materialNodePub;
-    };
-   
-    deferredRenderNode.pub.addPrePassMaterial = function(materialName, options) {
-      options.parentEventHandler = renderTargetRedrawEventHandler;
-      return scene.pub.constructNode(materialName, options);
-    };
-
+    deferredRenderNode.getOglRenderTargetTextureNames = function(){ return oglRenderTargetTextureNames; }
+    deferredRenderNode.getRenderTargetTextures = function(){ return renderTargetTextures; }
     ///////////////////////////////
     //Forward render mix pass
 
@@ -322,7 +353,6 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
     return deferredRenderNode;
 }});
 
-var definedDeferredPhongMaterials = false;
 
 FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
   briefDesc: '',
@@ -336,9 +366,8 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
       addPhongShadingLayer: true
       });
 
+    var definedDeferredPhongMaterials = false;
     if( definedDeferredPhongMaterials == false ) {
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongShader.xml');
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongInstancingExtShader.xml');
       FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostPhongShader.xml');
       definedDeferredPhongMaterials = true;
     }
@@ -347,24 +376,16 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
     options.addDepth = true;
 
     var deferredRenderNode = scene.constructNode('BaseDeferredRenderer', options);
-   
-    deferredRenderNode.pub.addPhongShadingLayer = function(options) {
-      options.shadeFullScreen = true;
-      deferredRenderNode.pub.addPostPassMaterial('DeferredPostPhongMaterial', options);
-      options.shadeFullScreen = undefined;
-    };
 
-    deferredRenderNode.pub.addPrePassPhongMaterial = function(options) {
-      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongMaterial', options);
-    };
-
-    deferredRenderNode.pub.addPrePassPhongInstancingMaterial = function(options) {
-      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongInstancingExtMaterial', options);
-    };
-
-    if(options.addPhongShadingLayer) {
-      deferredRenderNode.pub.addPhongShadingLayer(options);
-    }
+    // Note: the renderer owns the post render shader.
+    // Persistence will not save the post material,
+    // unless someone explicitly requested it from the
+    // renderer, and then added it to the persistence manager.
+    scene.constructNode('DeferredPostPhongMaterial', {
+      shadeFullScreen: true,
+      rendererNode: deferredRenderNode.pub,
+      lightNode: options.lightNode
+    });
 
     return deferredRenderNode;
 }});
