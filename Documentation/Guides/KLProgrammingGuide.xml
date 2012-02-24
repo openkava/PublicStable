@@ -1262,26 +1262,51 @@ Destroying MyType: this.s = foo
       </example>
     </section>
 
-<!--
-### Type Methods
+    <section>
+      <title>Methods</title>
 
-If `Type` is a structure or alias, then a *method* can be added to the type using the following syntax:
+      <para>
+        If <code><replaceable>Type</replaceable></code> is a structure or alias, then a <glossterm>method</glossterm> can be added to the type using the following syntax:
+        
+        <programlisting language="KL">
+// A method that returns a value
+function <replaceable>ReturnType</replaceable> <replaceable>Type</replaceable>.<replaceable>methodName</replaceable>(<replaceable>parameter list</replaceable>) {
+  <replaceable>method body</replaceable>
+}
 
-```javascript
+// A method that does not return a value
+function <replaceable>Type</replaceable>.<replaceable>methodName</replaceable>(<replaceable>parameter list</replaceable>) {
+  <replaceable>method body</replaceable>
+}
+        </programlisting>
+        
+        Within the method body, <code>this</code> refers to the value on which the method is called.  <code>this</code> is read-only if the method returns a value and is read-write if the method does not return a value.
+        
+        <note><para>A future version of Fabric will allow the read-only versus read-write status of <code>this</code> to be explicitly specified.</para></note>
+      </para>
+      
+      <para>
+        If <code><replaceable>value</replaceable></code> is a value of type <code><replaceable>Type</replaceable></code> then the method <code><replaceable>methodName</replaceable></code> can be invoked on <code><replaceable>value</replaceable></code> using the expression <code><replaceable>value</replaceable>.<replaceable>methodName</replaceable>(<replaceable>argument list</replaceable>)</code>.  If a method takes no parameters, then it is optional to use parentheses when calling it.
+      </para>
+      
+      <para>
+        Just as their can be multiple functions with the same name, a given type can have multiple methods with the same name.  When deciding which method to invoke, the usual best-match rules apply.
+      </para>
+
+      <example>
+        <title>Method definition and invocation</title>
+        <programlisting language="KL"><![CDATA[
 struct Type {
   Integer a;
   Scalar b;
 };
 
+// Add method desc to Type
 function String Type.desc() {
   return "a:" + this.a + "; b:" + this.b;
 }
-```
 
-If a method takes no parameters, then it is optional to use parentheses when calling it:
-
-```javascript
-function entry() {
+operator entry() {
   Type t;
   t.a = 1;
   t.b = 3.14;
@@ -1289,13 +1314,31 @@ function entry() {
   report t.desc();
   report t.desc;
 }
-```
+        ]]></programlisting>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+a:1; b:3.14
+a:1; b:3.14
+        ]]></screen>
+      </example>
+    </section>
 
-### Overloaded Operators
-
-Binary operators can be overloaded using the following syntax:
-
-```javascript
+    <section>
+      <title>Overloaded Operators</title>
+      
+      <para>
+        KL allows overloading of binary and assignment operators for custom types (ie. specified through <code>struct</code>).
+      </para>
+        
+      <section>
+        <title>Binary Operator Overloads</title>
+      
+        <para>
+          Binary operators can be overloaded using the following syntax:
+      
+          <example>
+            <title>Binary operator overload</title>
+            <programlisting language="KL"><![CDATA[
 struct Type {
   Integer a;
   Scalar b;
@@ -1307,21 +1350,81 @@ function Type +(Type lhs, Type rhs) {
   result.b = lhs.b + rhs.b;
   return result;
 }
-```
 
-Compound assignments are methods which return no value (in fact, as an expression they are always equal to the variable being assigned to) and so they have the syntax:
+operator entry() {
+  Type t1; t1.a = 42; t1.b = 3.14; report t1;
+  Type t2; t2.a = 7; t2.b = 2.72; report t2;
+  Type t3 = t1 + t2; report t3;
+}
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+{a:42,b:3.14}
+{a:7,b:2.72}
+{a:49,b:5.86}
+            ]]></screen>
+          </example>
 
-```javascript
+          Any of the binary arithmetic (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> and <code>%</code>), bitwise (<code>|</code>, <code>&amp;</code>, <code>^</code>, <code>&lt;&lt;</code> and <code>&gt;&gt;</code>) and comparison (<code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code>) operators can be overloaded.
+        </para>
+      
+        <para>
+          Binary operator overloads are subject to the following restrictions:
+        
+          <itemizedlist>
+            <listitem><simpara>They must take exactly two parameters.  The two parameters may be of any type and the two types may be different but they must both be input-only parameters.</simpara></listitem>
+            <listitem><simpara>They must return a value.  However, the return type can be any type.</simpara></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+    
+      <section>
+        <title>Compound Assignment Overloads</title>
+      
+        <para>
+          KL provides a default plain assignment for custom types which simply assigns each of the members.  It also provides a default <glossterm>compound assignment</glossterm> operator (ie. <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code>, <code>|=</code>, <code>&amp;=</code>, <code>^=</code>, <code>&lt;&lt;=</code> and <code>&gt;&gt;=</code>) by composing the associated binary operator, if available, with an assignment.
+        </para>
+      
+        <para>
+          However, it is also possible to provide an overload for any of the compound assignment operators using the following syntax:
+
+          <example>
+            <title>Compound assignment overload</title>
+            <programlisting language="KL"><![CDATA[
 struct Type {
   Integer a;
   Scalar b;
 };
 
-function Type.+=(Type rhs) {
-  this.a += rhs.a;
-  this.b += rhs.b;
+function Type.+=(Type that) {
+  this.a += that.a;
+  this.b += that.b;
 }
-```
--->    
+
+operator entry() {
+  Type t1; t1.a = 42; t1.b = 3.14; report "t1 is " + t1;
+  Type t2; t2.a = 7; t2.b = 2.72; report "t2 is " + t2;
+  t1 += t2; report "t1 is now " + t1;
+}
+            ]]></programlisting>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+t1 is {a:42,b:3.14}
+t2 is {a:7,b:2.72}
+t1 is now {a:49,b:5.86}
+            ]]></screen>
+          </example>
+        </para>
+      
+        <para>
+          Compound assignment overloads are subject to the following restrictions:
+        
+          <itemizedlist>
+            <listitem><simpara>They must take exactly one parameter.  The parameter may be of any type but it must be an input-only parameter.</simpara></listitem>
+            <listitem><simpara>They must not return a value.</simpara></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+    </section>
   </chapter>
 </book>
