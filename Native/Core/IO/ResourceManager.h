@@ -10,7 +10,7 @@
 #include <map>
 #include <list>
 #include <string>
-#include <fstream>
+#include <stdio.h>
 
 namespace Fabric
 {
@@ -84,7 +84,7 @@ namespace Fabric
       void *m_scheduleFuncUserData;
       size_t m_progressMaxFrequencyMS;
 
-      typedef std::multimap<std::string, std::ifstream> FilesInUseMap;
+      typedef std::multimap<std::string, FILE* > FilesInUseMap;
       FilesInUseMap m_filesInUse;
     };
   };

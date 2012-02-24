@@ -39,6 +39,7 @@ namespace Fabric
 
     ResourceManager::~ResourceManager()
     {
+      releaseAllFiles();
       while( !m_pendingRequests.empty() )
       {
         PendingRequestInfo* requestInfo = (PendingRequestInfo*)m_pendingRequests.front();
@@ -186,13 +187,9 @@ namespace Fabric
         return;//Manager might have been destroyed, in which case we should ignore this call
 
       RC::Handle<ResourceManager> manager( requestInfo->m_manager.makeStrong() );
-      FilesInUseMap::iterator it = manager->m_filesInUse.insert( std::make_pair( fileName, std::ifstream() ) );
-
-      try
-      {
-        it->second.open( fileName, std::fstream::in | std::fstream::binary );
-      }
-      catch(...)
+      FilesInUseMap::iterator it = manager->m_filesInUse.insert( std::make_pair( fileName, fopen( fileName, "rb" ) ) );
+      it->second = fopen( fileName, "rb" );
+      if( it->second == NULL )
       {
         manager->m_filesInUse.erase( it );
         throw Exception( "Unable to open tempory file containing data for " + requestInfo->m_url );
@@ -209,7 +206,7 @@ namespace Fabric
       }
       catch ( ... )
       {
-        manager->releaseFile( fileName );//[JeromeCG 20120223] Note: client might have called releaseFile, but it can be safely called multiple times
+        manager->releaseFile( fileName );
         FABRIC_LOG( "ResourceManager: error while calling client's onFile for \"" + requestInfo->m_url + "\"." );
       }
     }
@@ -334,11 +331,17 @@ namespace Fabric
     {
       FilesInUseMap::iterator it = m_filesInUse.find( fileName );
       if( it != m_filesInUse.end() )
+      {
+        fclose( it->second );
         m_filesInUse.erase( it );
+      }
     }
 
     void ResourceManager::releaseAllFiles()
     {
+      for( FilesInUseMap::iterator it = m_filesInUse.begin(); it != m_filesInUse.end(); ++it )
+        fclose( it->second );
+
       m_filesInUse.clear();
     }
   };
