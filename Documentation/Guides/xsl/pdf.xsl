@@ -348,12 +348,6 @@ set       toc,title
     </fo:inline>
   </xsl:template>
   
-  <xsl:template match='d:link'>
-    <fo:inline color="#0000FF">
-      <xsl:call-template name="inline.monoseq" />
-    </fo:inline>
-  </xsl:template>
-  
   <!-- Work in progress --> 
   <!-- <xsl:param name="header.image.filename" select="logo.png" />  -->
 
