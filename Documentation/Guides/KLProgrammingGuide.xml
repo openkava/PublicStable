@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!DOCTYPE book [
+<!ENTITY % allent SYSTEM "w3centities-f.ent">
+%allent;
+]>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
   <info>
     <title>KL Programming Guide</title>
@@ -21,6 +25,10 @@
 
       <itemizedlist>
         <listitem><para>
+          KL is designed to run <glossterm>performance-critical</glossterm> sections of <glossterm>dynamic-language</glossterm> programs.  As such, KL is designed so that KL programs run as quickly as possible on modern hardware.
+        </para></listitem>
+        
+        <listitem><para>
           KL should be easy to learn for someone who is already familiar with programming in Javascript.
         </para></listitem>
 
@@ -31,13 +39,55 @@
 
       As such, KL is a language with a syntax very similar to Javascript but which is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike Javascript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike Javascript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
     </para>
-
+    
     <para>
-      Before diving in to the details of the language, here is a simple example of a KL program that outputs the first few elements of the Fibonacci sequence:
+      Before diving in to the details of the language, we will present some simple examples.  We don't expect you to understand all the details of the examples, but hopefully they will give you a basic idea of what KL programs look like as well as some of what is possible with KL.  All of these examples can be run by downloading and installing the <filename>FabricEngine-KLTool-...</filename> file that is appropriate for your operating system from <link xlink:href="http://dist.fabric-engine.com/latest/">http://dist.fabric-engine.com/latest/</link>.  Once installed, you can copy the source code to a text file and run <command>kl <replaceable>filename.kl</replaceable></command>.
+    </para>
+    
+    <section>
+      <title>Hello World in KL</title>
+      
+      <para>
+        Traditionally, the first program you see in a language is one that says hello.  In KL, the "Hello, world!" program is simple:
+        
+        <example xml:id="ex.helloworld.code">
+          <title>Hello world</title>
+          <programlisting language="KL"><![CDATA[
+operator entry() {
+  report "Hello, world!";
+}
+          ]]></programlisting>
+        </example>
+        
+        Running this program through the <command>kl</command> tool, the output is:
+      
+        <informalfigure>
+          <screen><![CDATA[
+operator entry() {
+  report "Hello, world!";
+}
+          ]]></screen>
+        </informalfigure>
+        
+        There's not much to learn from this program, but it does introduce a few concepts:
+        
+        <itemizedlist>
+          <listitem><para>The <code>entry</code> operator is what is run by the <command>kl</command> tool.  KL distinguishes places in the program that can be called from the outside world&mdash;in this case, the outside world is the <command>kl</command> tool itself.  We discuss more about operators <xref linkend="operators" /></para></listitem>
+          <listitem><para>The <code>report</code> keyword reports something to wherever messages go.  In the case of the <command>kl</command> tool, messages go to standard output; when running within a web browser, messages appear on the JavaScript console.</para></listitem>
+          <listitem><para>The text <code>"Hello, world!"</code> is a <glossterm>string constant</glossterm>.  String constants in KL follow almost exactly the same syntax as JavaScript.</para></listitem>
+        </itemizedlist>
+      </para>
+    </section>
+      
+    <section>
+      <title>Fibonacci Sequence in KL</title>
 
-      <example xml:id="ex.fibonacci">
-        <title>KL Fibonacci sequence generator</title>
-        <programlisting language="KL"><![CDATA[
+      <para>
+        Next, we present a somewhat more sophisticated example that computes the first few terms of the Fibonacci sequence.  The Fibonacci sequence is the number sequence whose first few terms are 1 and 1, and whose further terms are the sum of the previous two in the sequence, ie. 2, 3, 5, 8, and so on.  There are several ways of computing the Fibonacci sequence in a programming language but we choose the naive, recursive way in order to illustrate some more language features of KL.
+
+        <example xml:id="ex.fibonacci.code">
+          <title>Fibonacci sequence generator</title>
+          <programlisting language="KL"><![CDATA[
 function Integer fibonacci(Integer n) {
   if (n <= 1)
     return 1;
@@ -49,12 +99,13 @@ operator entry() {
   for (Integer i = 0; i < 10; ++i)
     report fibonacci(i);
 }
-        ]]></programlisting>
-      </example>
-
-      The output of calling the function <function>entry</function> is:
-
-      <screen><![CDATA[
+          ]]></programlisting>
+        </example>
+        
+        Running this program through the <command>kl</command> tool, the output is:
+      
+        <informalfigure xml:id="fig.fibonacci.out">
+          <screen><![CDATA[
 1
 1
 2
@@ -65,23 +116,161 @@ operator entry() {
 21
 34
 55
-      ]]></screen>
+          ]]></screen>
+        </informalfigure>
+      
+        The Fibonacci example highlights a few simple features of KL, including:
 
-      This example highlights a few simple features of KL, including:
+        <itemizedlist>
+          <listitem><para>Function and parameter declaration</para></listitem>
+          <listitem><para>Recursion</para></listitem>
+          <listitem><para>Conditional statements</para></listitem>
+          <listitem><para>Loops</para></listitem>
+          <listitem><para>The <function>report</function> statement</para></listitem>
+        </itemizedlist>
+      </para>
+    </section>
+    
+    <section>
+      <title>Mandelbrot Set in KL</title>
+      
+      <para>
+        Finally, we present an example of a KL program that generates the Mandelbrot set and outputs it visually as ASCII art.  The Mandelbrot set is a mathematical set defined by complex recursive functions, but that it best known because the patterns it contains are visually stunning.  Refer to the Wikipedia entry on the Mandelbrot set at <link xlink:href="http://en.wikipedia.org/wiki/Mandelbrot_set">http://en.wikipedia.org/wiki/Mandelbrot_set</link> for more information.
+      </para>
+      
+      <para>
+        KL includes very powerful features for extending the language for computational problems such as that of computing the values of the Mandelbrot set, as seen in the source code below:
+        
+        <example xml:id="ex.mandelbrot.code">
+          <title>Mandelbrot set generator</title>
+          <programlisting language="KL"><![CDATA[
+struct Complex32 {
+  Scalar re;
+  Scalar im;
+};
 
-      <itemizedlist>
-        <listitem><para>Function and parameter declaration</para></listitem>
-        <listitem><para>Recursion</para></listitem>
-        <listitem><para>Conditional statements</para></listitem>
-        <listitem><para>Loops</para></listitem>
-        <listitem><para>The <function>report</function> statement</para></listitem>
-      </itemizedlist>
+function Complex32(Scalar re, Scalar im) {
+  this.re = re;
+  this.im = im;
+}
 
-      All of these will be discussed in more detail below.
-    </para>
+function Complex32 +(Complex32 lhs, Complex32 rhs) {
+  return Complex32(lhs.re + rhs.re, lhs.im + rhs.im);
+}
+
+function Complex32 *(Complex32 lhs, Complex32 rhs) {
+  return Complex32(lhs.re*rhs.re-lhs.im*rhs.im, lhs.re*rhs.im + lhs.im*rhs.re);
+}
+
+function Scalar Complex32.normSq() {
+  return this.re*this.re + this.im*this.im;
+}
+
+function Byte computeDwell(Complex32 c) {
+  Complex32 z = c;
+  Size count;
+  for (count = 0; count < 255; ++count) {
+    if (z.normSq > 4)
+      break;
+    z = z*z + c;
+  }
+  return count;
+}
+
+operator entry()
+{
+  Complex32 z;
+  for (Size row=9; row<=31; ++row) {
+    z.im = 4.0 * row / 40.0 - 2.0;
+    String rowString;
+    for (Size col=0; col<=78; ++col) {
+      z.re = 4.0 * col / 78.0 - 2.0;
+      Byte dwell = computeDwell(z);
+      if (dwell & 192)
+        rowString += "#";
+      else if (dwell & 48)
+        rowString += "*";
+      else if (dwell & 12)
+        rowString += ".";
+      else
+        rowString += " ";
+    }
+    report rowString;
+  }
+}
+          ]]></programlisting>
+        </example>
+        
+        Running this program through the <command>kl</command> tool, the output is:
+      
+        <informalfigure xml:id="fig.mandelbrot.out">
+          <screen><![CDATA[
+                                  .....                                        
+                                .......#.                                      
+                              ......**.....                                    
+                            .......####*.....                                  
+                         ..........####.........                               
+                    ........*#**##########*...*..                              
+               .............*#################....                             
+            ...............###################....                             
+          ......*..*.*...*#####################...                             
+        ........*######*.######################*..                             
+      ......*..################################...                             
+############################################*.....                             
+      ......*..################################...                             
+        ........*######*.######################*..                             
+          ......*..*.*...*#####################...                             
+            ...............###################....                             
+               .............*#################....                             
+                    ........*#**##########*...*..                              
+                         ..........####.........                               
+                            .......####*.....                                  
+                              ......**.....                                    
+                                .......#.                                      
+                                  .....                                        
+          ]]></screen>
+        </informalfigure>
+      
+        The Mandelbrot set example highlights a few of the more sophisticated features of KL, including:
+
+        <itemizedlist>
+          <listitem><para>User-defined types</para></listitem>
+          <listitem><para>Constructors</para></listitem>
+          <listitem><para>Operator overloads</para></listitem>
+          <listitem><para>Methods</para></listitem>
+          <listitem><para>Bitwise operators</para></listitem>
+          <listitem><para>Variable-length arrays</para></listitem>
+        </itemizedlist>
+      </para>
+    </section>
+    
+    <section>
+      <title>How This Guide is Organized</title>
+      
+      <para>
+        Unlike other languages, KL is a language designed to add performance-critical sections to programs written in dynamic languages.  As such, this guide assumes that you are already familiar with the basic concepts of modern programming languages, including types, expressions, statements (eg. conditional statements, loop statements, return statements) and functions.
+      </para>
+      
+      <para>
+        Since it's difficult to provide meaningful examples in a computer language without using many concepts of the language, we will often use or even refer to concepts that aren't discussed until later in the guide.  We leave it up to you to decide whether to jump ahead or to just keep reading and see where things go.
+      </para>
+        
+      <para>
+        The remainder of the guide is laid out as follows:
+        
+        <itemizedlist>
+          <listitem><para>
+            <xref linkend="ch.types" /> introduces the type system of KL.  KL comes with a rich set of base types that includes integers, floating-point numbers, strings and booleans, as well as derived types including structures, arrays and dictionaries.
+          </para></listitem>
+          <listitem><para>
+            <xref linkend="ch.functions" /> introduces how functions are declared and called in KL.  KL includes support for basic functions (also referred to as procedures in other languages), but also support more complex function concepts such as prototypes, methods and overloaded operators.
+          </para></listitem>
+        </itemizedlist>
+      </para>
+    </section>
   </chapter>
 
-  <chapter>
+  <chapter xml:id="ch.types">
     <title>The KL Type System</title>
 
     <para>
@@ -93,10 +282,10 @@ operator entry() {
     </para>
 
     <section>
-      <title>Atomic Types</title>
+      <title>Base Types</title>
 
       <para>
-        The KL atomic types are the following:
+        The base types in KL are the following:
 
         <variablelist>
           <varlistentry>
@@ -270,14 +459,14 @@ operator entry() {
             </varlistentry>
             
             <varlistentry>
-              <term><code>Integer</code></term>
+              <term><code>Float64</code></term>
               <listitem><simpara>64-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
             </varlistentry>
           </variablelist>
         </para>
         
         <para>
-          <glossterm>Floating-point types</glossterm> behave as follows:
+          Floating-point types behave as follows:
           
           <itemizedlist>
             <listitem><para>
@@ -841,7 +1030,7 @@ s.dataSize = 6
     </section>
   </chapter>
   
-  <chapter>
+  <chapter xml:id="ch.functions">
     <title>KL Functions</title>
 
     <section>
@@ -1013,7 +1202,7 @@ integer value is 64
       </example>
     </section>
 
-    <section>
+    <section xml:id="operators">
       <title>Operators</title>
       
       <para>

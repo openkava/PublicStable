@@ -29,7 +29,7 @@
 
 
 <!-- xref -->
-<xsl:param name="insert.xref.page.number">yes</xsl:param>
+<xsl:param name="insert.xref.page.number">no</xsl:param>
 
 <!-- Generated Text changes -->
  <xsl:param name="collect.xref.targets">no</xsl:param>
@@ -344,6 +344,12 @@ set       toc,title
   
   <xsl:template match='d:literal'>
     <fo:inline color="#2B541C">
+      <xsl:call-template name="inline.monoseq" />
+    </fo:inline>
+  </xsl:template>
+  
+  <xsl:template match='d:link'>
+    <fo:inline color="#0000FF">
       <xsl:call-template name="inline.monoseq" />
     </fo:inline>
   </xsl:template>
