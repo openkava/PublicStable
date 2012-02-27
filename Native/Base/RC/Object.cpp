@@ -26,12 +26,9 @@ namespace Fabric
 #endif
       if ( m_refCount.decrementAndGetValue() == 0 )
       {
-        if ( m_weakContainer )//[JeromeCG 20120224] Invalidate weak containers before destructors, since calling "makeStrong" would cause a double delete (temporary ref when count = 0)
-        {
+        if ( m_weakContainer )//[JeromeCG 20120224] Invalidate weak containers before destructors to avoid double release from "makeStrong"
           m_weakContainer->invalidate();
-          m_weakContainer->release();
-          m_weakContainer = 0;
-        }
+
         delete this;
       }
     }
@@ -48,10 +45,7 @@ namespace Fabric
     Object::~Object()
     {
       if ( m_weakContainer )
-      {
-        m_weakContainer->invalidate();
         m_weakContainer->release();
-      }
     }
 
 #if defined( FABRIC_RC_LEAK_REPORT )
