@@ -43,7 +43,7 @@ $(document).ready(function() {
     }
     dataTable += '</tr>\n</thead>\n<tbody class="tableData">\n';
     // Define the body
-    var lines = dgnode.size;
+    var lines = dgnode.getCount();
     var sliceRangeBegin = typeof(sliceRangeBegin) != 'undefined' ? sliceRangeBegin : 0;
     var sliceRangeEnd = typeof(sliceRangeEnd) != 'undefined' ? sliceRangeEnd : Math.min( lines-1, 99 );
 
@@ -73,7 +73,6 @@ $(document).ready(function() {
     }
     
     dataTable += '</tbody>\n';
-    console.log(dataTable);
     
     $('#dataContainer').html( dataTable );
     nodeDataTable = $('#nodeDataTable').dataTable({
