@@ -25,7 +25,15 @@ namespace Fabric
         _LeakReportClassRelease( 0 );
 #endif
       if ( m_refCount.decrementAndGetValue() == 0 )
+      {
+        if ( m_weakContainer )//[JeromeCG 20120224] Invalidate weak containers before destructors, since calling "makeStrong" would cause a double delete (temporary ref when count = 0)
+        {
+          m_weakContainer->invalidate();
+          m_weakContainer->release();
+          m_weakContainer = 0;
+        }
         delete this;
+      }
     }
     
     Object::Object()
