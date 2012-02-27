@@ -66,6 +66,14 @@ var data = node.getData("vec2", 0);
 console.log( JSON.stringify(data) );
 console.log(data.sum());
 
+// test new registerType 'members' layout
+var desc2 = {
+  members: [ { x:'Scalar' }, { y:'Scalar' } ],
+  constructor: Vec2
+};
+FABRIC.RegisteredTypesManager.registerType( 'Vec2a', desc2 );
+console.log(JSON.stringify(FABRIC.RT.getRegisteredTypes()['Vec2a']));
+
 var ComplexType = function() {
   var vec2 = new Vec2(3.14, 2.71);
   var a2_vec2 = [vec2,vec2];
