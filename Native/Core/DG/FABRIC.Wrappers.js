@@ -149,16 +149,54 @@ function (fabricClient, logCallback, debugLogCallback) {
       },
 
       registerType: function(name, desc) {
+        if (typeof desc != 'object')
+          throw "RT.registerType: second parameter: must be an object";
+        if (typeof desc.members != 'object')
+          throw "RT.registerType: second parameter: missing members element";
+          
         var members = [];
-        for (var descMemberName in desc.members) {
-          var member = {
-            name: descMemberName,
-            type: desc.members[descMemberName]
-          };
-          members.push(member);
+
+        // [ { name1:type1 }, { name2:type2 } ]
+        if ( desc.members instanceof Array ) {
+          for (var memberIdx in desc.members) {
+            var descMember = desc.members[memberIdx];
+            var foundOne = false;
+            for (var descMemberName in descMember) {
+              if (foundOne) {
+                throw "RT.registerType: second parameter: invalid members element";
+              }
+              foundOne = true;
+
+              var member = {
+                name: descMemberName,
+                type: descMember[descMemberName]
+              };
+              members.push(member);
+            }
+          }
+        }
+        // support the old method of specifying members for legacy purposes
+        // { name1:type1, name2:type2 }
+        else {
+          for (var descMemberName in desc.members) {
+            var member = {
+              name: descMemberName,
+              type: desc.members[descMemberName]
+            };
+            members.push(member);
+          }
         }
 
-        var defaultValue = new desc.constructor();
+        // validate members
+        for (var memberName in members) {
+          if (typeof members[memberName].name !== 'string' ||
+              typeof members[memberName].type !== 'string') {
+            throw "RT.registerType: members: member name and type must be strings";
+          }
+        }
+
+        var constructor = desc.constructor || Object;
+        var defaultValue = new constructor();
         RT.prototypes[name] = defaultValue.__proto__;
 
         var arg = {
