@@ -1,8 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "RT/OGLTexture2D",
@@ -547,45 +545,33 @@ FABRIC.SceneGraph.registerNodeType('Video', {
       ]
     }));
 
-    // make it dependent on the scene time
-    var timeBinding = 'globals.time';
-    if(options.loop || options.animationControllerNode)
-    {
-      // use the options animation controller
-      var animationController = undefined;
-      if(options.animationControllerNode)
-      {
-        animationController = scene.getPrivateInterface(options.animationControllerNode);
+    var animationController = undefined;
+    var timeBinding;
+    videoNode.addReferenceInterface('AnimationController', 'AnimationController',
+      function(nodePrivate){
+        animationController = nodePrivate;
         var animationControllerDGNode = animationController.getDGNode();
         dgnode.setDependency(animationControllerDGNode, 'controller');
-      }
-      else
-      {
-        animationController = scene.constructNode('AnimationController');
-        var animationControllerDGNode = animationController.getDGNode();
-        dgnode.setDependency(animationControllerDGNode, 'controller');
-        dgnode.bindings.append(scene.constructOperator({
-          operatorName: 'videoSetTimeRange',
-          srcFile: 'FABRIC_ROOT/SG/KL/loadVideo.kl',
-          entryFunctionName: 'videoSetTimeRange',
-          parameterLayout: [
-            'self.handle',
-            'controller.timeRange',
-          ]
-        }));
-      }
-      videoNode.pub.getAnimationController = function(){
-        return animationController.pub;
-      };
-      timeBinding = 'controller.localTime';
-    }
-    else
-      dgnode.setDependency(scene.getGlobalsNode(), 'globals');
-
+        
+      });
+    
     // use a dict for storing the already parsed frames
-    dgnode.addMember('pixelCache','RGB[][]')
-    dgnode.addMember('pixelCacheIndex','Integer[]')
-    dgnode.addMember('pixelCacheLimit','Integer',options.nbCachedFrames)
+    dgnode.addMember('pixelCache','RGB[][]');
+    dgnode.addMember('pixelCacheIndex','Integer[]');
+    dgnode.addMember('pixelCacheLimit','Integer',options.nbCachedFrames);
+    
+    // Here the timerange of the controller is set using the video time range.
+    // Note: this is not strictly legal in our dependency graph model
+    // as we should not be modifying our dependencies data.
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'videoSetTimeRange',
+      srcFile: 'FABRIC_ROOT/SG/KL/loadVideo.kl',
+      entryFunctionName: 'videoSetTimeRange',
+      parameterLayout: [
+        'self.handle',
+        'controller.timeRange',
+      ]
+    }));
     
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoSeekTimeCached',
@@ -593,7 +579,7 @@ FABRIC.SceneGraph.registerNodeType('Video', {
       entryFunctionName: 'videoSeekTime',
       parameterLayout: [
         'self.handle',
-        timeBinding,
+        'controller.localTime',
         'self.pixels',
         'self.pixelCache',
         'self.pixelCacheIndex',
@@ -626,6 +612,13 @@ FABRIC.SceneGraph.registerNodeType('Video', {
     videoNode.pub.getFps = function(){
       return dgnode.getData("fps");
     };
+    
+    if(options.animationControllerNode){
+      videoNode.pub.setAnimationControllerNode(options.animationControllerNode);
+    }
+    else{
+      videoNode.pub.setAnimationControllerNode(scene.constructNode('AnimationController').pub);
+    }
 
     return videoNode;
   }});

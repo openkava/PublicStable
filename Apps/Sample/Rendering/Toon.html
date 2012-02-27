@@ -37,23 +37,23 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      lightNode: undefined
     });
 
     var renderNode = scene.constructNode('BaseDeferredRenderer', {
       colorBuffers: [{name: 'positionsZ', nbChannels: 1}, {name: 'normals', nbChannels: 3}, {name: 'diffuse', nbChannels: 4, internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8}],
       clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
     });
-
-    var toonMaterialPub = renderNode.pub.addPrePassMaterial('DeferredPreToonMaterial', {lightNode: options.lightNode});
-
-    var compositingMaterial = renderNode.pub.addPostPassMaterial('DeferredPostToonMaterial', {shadeFullScreen: true});
-    renderNode.pub.getOutlineWidth = compositingMaterial.getOutlineWidth;
-    renderNode.pub.setOutlineWidth = compositingMaterial.setOutlineWidth;
-    renderNode.pub.getOutlineColor = compositingMaterial.getOutlineColor;
-    renderNode.pub.setOutlineColor = compositingMaterial.setOutlineColor;
+    // Note: the renderer owns the post render shader.
+    var compositingMaterial = scene.constructNode('DeferredPostToonMaterial', {
+      shadeFullScreen: true,
+      rendererNode: renderNode.pub
+     });
+    renderNode.pub.getOutlineWidth = compositingMaterial.pub.getOutlineWidth;
+    renderNode.pub.setOutlineWidth = compositingMaterial.pub.setOutlineWidth;
+    renderNode.pub.getOutlineColor = compositingMaterial.pub.getOutlineColor;
+    renderNode.pub.setOutlineColor = compositingMaterial.pub.setOutlineColor;
     
-    renderNode.pub.getMaterial = function(){return toonMaterialPub;}
+    
     return renderNode;
   }});
 
@@ -80,16 +80,20 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(2.0, 10.0, 5.0) });
   var teapot = scene.constructNode('Teapot', { detail: 8 });
   
-  var toonRenderer = scene.constructNode('ToonRenderer', {lightNode: light});
+  var toonRenderer = scene.constructNode('ToonRenderer');
+  var toonMaterial = scene.constructNode('DeferredPreToonMaterial', {
+    lightNode: light,
+    rendererNode: toonRenderer
+  });
 
   var instance = scene.constructNode('Instance', {
-      transformNode: scene.constructNode('Transform', {
-        hierarchical: false,
-        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
-      }),
-      geometryNode: teapot,
-      materialNode: toonRenderer.getMaterial()
-    });
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
+    }),
+    geometryNode: teapot,
+    materialNode: toonMaterial
+  });
   
   // ========================================
   // UI LOGIC
@@ -97,10 +101,10 @@ $(document).ready(function() {
     min: 2.0,
     max: 10.0,
     step: 1.0,
-    value: toonRenderer.getMaterial().getColorSteps()
+    value: toonMaterial.getColorSteps()
   }).bind('slide',
     function(event, ui) {
-      toonRenderer.getMaterial().setColorSteps(ui.value);
+      toonMaterial.setColorSteps(ui.value);
       viewport.redraw();
     }
   );

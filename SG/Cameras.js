@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "SG/Kinematics",
@@ -79,33 +78,30 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     redrawEventHandler.appendChildEventHandler(scene.getSceneRedrawEventHandler());
 
     // public interface
-    cameraNode.pub.getTransformNode = function() {
-      return transformNode.pub;
-    };
-    cameraNode.pub.setTransformNode = function(node, member) {
-      if (member) {
-        transformNodeMember = member;
-      }
-      node = scene.getPrivateInterface(node);
-      if (!(node.getDGNode() && node.getDGNode().getMembers()[transformNodeMember])) {
-        var message = 'Error in Transform node assignement on :' + node.name +
-          ' \n member not found :' + transformNodeMember + '\n\n';
-        message += 'Members:' + JSON.stringify(node.getDGNode().getMembers());
-        throw (message);
-      }
-      transformNode = node;
-      dgnode.setDependency(transformNode.getDGNode(), 'transform');
-
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'loadXfo',
-        srcCode: 'use Xfo, Mat44; operator loadXfo(io Xfo xfo, io Mat44 mat44){ mat44 = xfo.toMat44().inverse(); }',
-        entryFunctionName: 'loadXfo',
-        parameterLayout: [
-          'transform.' + transformNodeMember,
-          'self.cameraMat44'
-        ]
-      }));
-    };
+    cameraNode.addReferenceInterface('Transform', 'Transform',
+      function(nodePrivate, member){
+        if (member) {
+          transformNodeMember = member;
+        }
+        if (!nodePrivate.getDGNode().getMembers()[transformNodeMember]) {
+          var message = 'Error in Transform node assignement on :' + nodePrivate.getName() +
+            ' \n member not found :' + transformNodeMember + '\n\n';
+          message += 'Members:' + JSON.stringify(nodePrivate.getDGNode().getMembers());
+          throw (message);
+        }
+        transformNode = nodePrivate;
+        dgnode.setDependency(transformNode.getDGNode(), 'transform');
+  
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'loadXfo',
+          srcCode: 'use Xfo, Mat44; operator loadXfo(io Xfo xfo, io Mat44 mat44){ mat44 = xfo.toMat44().inverse(); }',
+          entryFunctionName: 'loadXfo',
+          parameterLayout: [
+            'transform.' + transformNodeMember,
+            'self.cameraMat44'
+          ]
+        }));
+      });
     cameraNode.addMemberInterface(dgnode, 'cameraMat44');
     cameraNode.addMemberInterface(dgnode, 'projectionMat44');
     cameraNode.addMemberInterface(dgnode, 'nearDistance', true);
@@ -122,7 +118,6 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
       if(transformNodeMember){
         nodeData.transformNodeMember = transformNodeMember;
       }
-      sceneSerializer.addNode(transformNode.pub);
       nodeData.transformNode = transformNode.pub.getName();
       
       nodeData.nearDistance = cameraNode.pub.getNearDistance();

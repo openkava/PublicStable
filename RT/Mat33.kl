@@ -1,7 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
 use Math, Vec3;
 
 function Mat33(
@@ -36,7 +36,7 @@ function Mat33.setRows(in Vec3 row0, in Vec3 row1, in Vec3 row2) {
   this.row2 = row2;
 }
 
-function Mat44.setColumns(in Vec3 col0, in Vec3 col1, in Vec3 col2) {
+function Mat33.setColumns(in Vec3 col0, in Vec3 col1, in Vec3 col2) {
   this.row0.x = col0.x; this.row0.y = col1.x; this.row0.z = col2.x;
   this.row1.x = col0.y; this.row1.y = col1.y; this.row1.z = col2.y;
   this.row2.x = col0.z; this.row2.y = col1.z; this.row2.z = col2.z;

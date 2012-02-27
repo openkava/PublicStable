@@ -29,6 +29,11 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/DeferredRendering",
                 "SG/Parsers/parseOBJ"], function() {
     
+  // load out custom shaders
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreShadowCastingToonShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreGroundPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostToonShader.xml');
+  
   function getUrlVars() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
@@ -80,10 +85,6 @@ FABRIC.require(["SG/SceneGraph",
       return workPlaneNode;    
     }});
 
-  // load out custom shaders
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreShadowCastingToonShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreGroundPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostToonShader.xml');
 
 // register our custom renderer
 FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
@@ -101,8 +102,10 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
       colorBuffers: [{name: 'positionsZ', nbChannels: 1}, {name: 'normals', nbChannels: 3}, {name: 'diffuse', nbChannels: 4, internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8}],
       clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
     });
-    var compositingMaterial = renderNode.pub.addPostPassMaterial('DeferredPostToonMaterial', {shadeFullScreen: true});
-
+    var compositingMaterial = scene.constructNode('DeferredPostToonMaterial', {
+      shadeFullScreen: true,
+      rendererNode: renderNode.pub
+     });
     return renderNode;
   }});
 
@@ -144,11 +147,12 @@ $(document).ready(function() {
         width: 100.0,
         length: 100.0,
       }),
-      materialNode: toonRenderer.addPrePassMaterial('DeferredPreGroundPlaneMaterial', {
+      materialNode: scene.constructNode('DeferredPreGroundPlaneMaterial', {
         lightNode: light,
         step: 0.02,
         brightColor: FABRIC.RT.rgba(0.6,0.6,0.6,1),
         darkColor: FABRIC.RT.rgba(0.4,0.4,0.4,1),
+        rendererNode: toonRenderer
       })
     });
 
@@ -235,48 +239,55 @@ $(document).ready(function() {
       detail: 12
     });
     var colorSteps = 2.0;
-    materialNodes['primitiveCube'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    materialNodes['primitiveCube'] = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(165/255,118/255,74/255),
       brightColor: FABRIC.RT.rgb(201/255,168/255,117/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
-    materialNodes['primitiveFlat'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    materialNodes['primitiveFlat'] = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(35/255,52/255,72/255),
       brightColor: FABRIC.RT.rgb(81/255,96/255,115/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
-    materialNodes['primitiveHigh'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    materialNodes['primitiveHigh'] = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(127/255,49/255,45/255),
       brightColor: FABRIC.RT.rgb(176/255,125/255,122/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
-    materialNodes['primitiveSphere'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    materialNodes['primitiveSphere'] = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(128/255,142/255,0/255),
       brightColor: FABRIC.RT.rgb(230/255,255/255,0/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
-    materialNodes['primitiveBall'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    materialNodes['primitiveBall'] = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(128/255,0/255,0/255),
       brightColor: FABRIC.RT.rgb(255/255,0/255,0/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
-    materialNodes['primitiveCoin'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    materialNodes['primitiveCoin'] = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(0/255,0/255,123/255),
       brightColor: FABRIC.RT.rgb(0/255,0/255,255/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
 
-    var highlightMaterial = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
+    var highlightMaterial = scene.constructNode('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(77/255,159/255,70/255),
       brightColor: FABRIC.RT.rgb(207/255,255/255,203/255),
-      colorSteps: colorSteps
+      colorSteps: colorSteps,
+      rendererNode: toonRenderer
     });
 
     //==========================================================
