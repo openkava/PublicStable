@@ -187,6 +187,14 @@ function (fabricClient, logCallback, debugLogCallback) {
           }
         }
 
+        // validate members
+        for (var memberName in members) {
+          if (typeof members[memberName].name !== 'string' ||
+              typeof members[memberName].type !== 'string') {
+            throw "RT.registerType: members: member name and type must be strings";
+          }
+        }
+
         var constructor = desc.constructor || Object;
         var defaultValue = new constructor();
         RT.prototypes[name] = defaultValue.__proto__;
