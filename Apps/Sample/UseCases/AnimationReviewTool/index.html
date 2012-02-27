@@ -38,6 +38,32 @@
     <script type="text/javascript">
     
     
+$(document).ready(function() {
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
+  $('#lightDirection').slider();
+  $('#localtime').slider();
+  $('#planeblend').slider();
+  $('#saveload').button({
+      text: true
+    });
+  $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+  
+  $('#brushColor').ColorPicker({
+      flat: true,
+      color: { r: 255, g: 0, b: 0}
+    });
+  $('#brushOpacity').slider();  
+  $('#brushRadius').slider();
+  
     
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
@@ -451,11 +477,6 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     return instanceNode;    
   }});    
 
-$(document).ready(function() {
-  
-  $('#loadingDialog').dialog({
-    modal: true
-  });
   
 
   var scene = FABRIC.SceneGraph.createScene();
@@ -473,7 +494,7 @@ $(document).ready(function() {
   });
   viewport.setCameraNode(camera);
   
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
   
@@ -553,7 +574,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       var cameraListHtml = "<option value='userCamera'>Free Camera</option>";
         
       // setup the animation time
-      timeRange = alembicLoadNode.getAnimationController().getTimeRange();
+      timeRange = alembicLoadNode.getAnimationControllerNode().getTimeRange();
       $('#localtime').slider({
           min: timeRange.x,
           max: timeRange.y,
@@ -671,7 +692,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     }
 
     // create a key to identify the plane
-    var timeKey = alembicLoadNode.getAnimationController().getLocalTime();
+    var timeKey = alembicLoadNode.getAnimationControllerNode().getLocalTime();
     timeKey = ''+parseInt(timeKey * 30 + 0.5);
     if(currentKey == timeKey)
       return;
@@ -682,8 +703,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         viewportNode: viewport,
         uvViewportNode: uvViewport,
         planeNode: planeGeometry,
-        animationControllerNode: alembicLoadNode.getAnimationController(),
-        planeTime: alembicLoadNode.getAnimationController().getLocalTime(),
+        animationControllerNode: alembicLoadNode.getAnimationControllerNode(),
+        planeTime: alembicLoadNode.getAnimationControllerNode().getLocalTime(),
         planeBlend: options.blend ? options.blend : 5.0 / 30.0,
         resolutionFactor: 0.2,
         paintColor: brushColor,
@@ -695,7 +716,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       planes[timeKey] = {
         camera: usedCamera,
         instance: newPlane,
-        time: alembicLoadNode.getAnimationController().getLocalTime()
+        time: alembicLoadNode.getAnimationControllerNode().getLocalTime()
       };
   
       // re-create the list html
@@ -745,7 +766,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       });
       var localTime = $('#localtime').slider();
       scene.animation.play( function() {
-        localTime.slider('value', alembicLoadNode.getAnimationController().getLocalTime());
+        localTime.slider('value', alembicLoadNode.getAnimationControllerNode().getLocalTime());
       });
     } else if(evt.keyCode == 40) { // down arrow
       $('#play').button('option', {
@@ -801,7 +822,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         cameraManipulator.enable();
       }
     }
-  }; 
+  };
   
   // create a slider for the light direction
   $('#lightDirection').slider({
@@ -895,7 +916,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         for(var key in jsonData.planes) {
           switchCamera(jsonData.planes[key].camera);
           scene.animation.setTime(parseFloat(jsonData.planes[key].time));
-          alembicLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
+          alembicLoadNode.getAnimationControllerNode().setLocalTime(jsonData.planes[key].time);
           var planeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
           $('#planeblend').slider("option", "value", jsonData.planes[key].blend);
           paintPlane({resourceFileHandle: planeFileHandle, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
@@ -912,7 +933,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         switchCamera(jsonData.currentCamera);
 
         scene.animation.setTime(parseFloat(jsonData.currentTime));
-        alembicLoadNode.getAnimationController().setLocalTime(jsonData.currentTime);
+        alembicLoadNode.getAnimationControllerNode().setLocalTime(jsonData.currentTime);
         $('#localtime').slider('value', parseFloat(jsonData.currentTime));
 
         viewport.redraw();
@@ -947,7 +968,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
      
-      $('#localtime').slider().slider('value', alembicLoadNode.getAnimationController().getTime());
+      $('#localtime').slider().slider('value', alembicLoadNode.getAnimationControllerNode().getTime());
     }
   });
 
@@ -983,8 +1004,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         brushRadius = ui.value;
         currentPlane.instance.setPaintRadius(brushRadius);
         scene.redrawAllViewports();
-    });  
-  $('#planeblend').slider({
     });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {

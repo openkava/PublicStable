@@ -32,7 +32,7 @@ $(document).ready(function() {
   var errorColor = FABRIC.rgb255(250,0,0);
 
   var dependencyConnectionColor = FABRIC.rgb255(100,180,250);
-  var bindingConnectionColor = FABRIC.rgb255(200,200,80);
+  var bindingConnectionColor = FABRIC.rgb255(150,150,80);
   var eventPropagationConnectionColor = FABRIC.rgb255(200,80,80);
   
   
@@ -342,7 +342,8 @@ $(document).ready(function() {
       svgnode.addOutPort({
           color: eventPropagationConnectionColor,
           allowMultipleConnections:true,
-          createLabelEventCatcher:false
+          createLabelEventCatcher:false,
+          connectable: false
         });
       return svgnode;
     }
@@ -366,12 +367,14 @@ $(document).ready(function() {
       svgnode.addInPort({
           color: eventPropagationConnectionColor,
           allowMultipleConnections:true,
-          createLabelEventCatcher:false
+          createLabelEventCatcher:false,
+          connectable: false
         });
       svgnode.addOutPort({
           color: eventPropagationConnectionColor,
           allowMultipleConnections:true,
-          createLabelEventCatcher:false
+          createLabelEventCatcher:false,
+          connectable: false
         });
       var scopes = eventHandler.getScopes();
       for(var i in scopes){
@@ -379,7 +382,8 @@ $(document).ready(function() {
             text: i,
             color: bindingConnectionColor,
             allowMultipleConnections:false,
-            createLabelEventCatcher:false
+            createLabelEventCatcher:false,
+            connectable: false
           });
       }
       displayOperatorList(svgnode, eventHandler.preDescendBindings, preDescendOperatorColor);
@@ -410,19 +414,25 @@ $(document).ready(function() {
             text: i,
             color: dependencyConnectionColor,
             allowMultipleConnections:false,
-            createLabelEventCatcher:false
+            createLabelEventCatcher:false,
+            connectable: false
           });
       }
+      
       svgnode.addOutPort({
           color: bindingConnectionColor,
           allowMultipleConnections:true,
-          createLabelEventCatcher:false
+          createLabelEventCatcher:false,
+          connectable: false
         });
+      
       svgnode.addOutPort({
           color: dependencyConnectionColor,
           allowMultipleConnections:true,
-          createLabelEventCatcher:false
+          createLabelEventCatcher:false,
+          connectable: false
         });
+      
       displayOperatorList(svgnode, dgnode.bindings, operatorColor);
       return svgnode;
     }
@@ -493,17 +503,17 @@ $(document).ready(function() {
         }
       }
       var scopes = eventHandler.getScopes();
-      var scropeId = 0;
+      var scopeId = 0;
       for(var i in scopes){
         if(!displayNodes[scopes[i].getName()]){
           continue;
         }
         displayNodes[scopes[i].getName()].getOutPort(0)
-          .connectTo(displayNodes[eventHandler.getName()].getInPort(scropeId+1), {
+          .connectTo(displayNodes[eventHandler.getName()].getInPort(scopeId+1), {
             fireCallbacks: false,
             connectable: false
           });
-        scropeId++;
+        scopeId++;
       }
     }
     

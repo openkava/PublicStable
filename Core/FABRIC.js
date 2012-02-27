@@ -1,8 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
- 
 var FABRIC = (function() {
 
   var requiredVersion = [1,0,21];
@@ -2292,7 +2291,9 @@ var requirejs, require, define;
   
     var context;
     try {
-      context = embedTag.wrapFabricClient(embedTag, function(s) { console.log(s); } );
+      context = embedTag.wrapFabricClient(embedTag, function(s) {
+        console.log(s);
+        } );
     }
     catch (e) {
       // [andrew 20120214] should only happen if they pass an invalid contextID

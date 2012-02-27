@@ -1,7 +1,7 @@
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
 use Math, Vec2;
 
 function Mat22(
@@ -31,7 +31,7 @@ function Mat22.setRows(in Vec2 row0, in Vec2 row1) {
   this.row1 = row1;
 }
 
-function Mat44.setColumns(in Vec2 col0, in Vec2 col1) {
+function Mat22.setColumns(in Vec2 col0, in Vec2 col1) {
   this.row0.x = col0.x; this.row0.y = col1.x;
   this.row1.x = col0.y; this.row1.y = col1.y;
 }
