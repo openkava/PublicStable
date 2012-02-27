@@ -15,7 +15,7 @@ import signal
 if os.name == 'posix':
   _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
 else:
-  raise Exception('not implemented for Windows yet!')
+  _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/FabricPython.dll' )
 
 # FIXME Windows
 _caughtSIGINT = False
