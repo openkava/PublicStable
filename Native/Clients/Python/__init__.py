@@ -251,6 +251,8 @@ class _CLIENT( object ):
       raise Exception( 'unable to parse JSON results: ' + jsonEncodedResults )
     self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
+    self.__processAllNotifications()
+
     for i in range(len(results)):
       result = results[i]
       callback = callbacks[i]
@@ -264,8 +266,6 @@ class _CLIENT( object ):
         raise Exception( 'Fabric core exception: ' + result[ 'exception' ] )
       elif ( callback is not None ):
         callback( result[ 'result' ] )
-
-    self.__processAllNotifications()
 
   def _handleStateNotification( self, newState ):
     self.__state = {}
