@@ -405,7 +405,7 @@ FABRIC.SceneGraph.registerNodeType('Points', {
       }));
     }
 
-    pointsNode.getRayIntersectionOperator = function(transformNodeMember) {
+    pointsNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectPoints',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectPoints.kl',
@@ -415,7 +415,7 @@ FABRIC.SceneGraph.registerNodeType('Points', {
             'raycastData.threshold',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'boundingbox.min',
             'boundingbox.max'
@@ -458,7 +458,7 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
       }));
     }
 
-    linesNode.getRayIntersectionOperator = function(transformNodeMember) {
+    linesNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectLines',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectLines.kl',
@@ -468,7 +468,7 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
             'raycastData.threshold',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
             'boundingbox.min',
@@ -510,7 +510,7 @@ FABRIC.SceneGraph.registerNodeType('LineStrip', {
       }));
     }
     
-    linesNode.getRayIntersectionOperator = function(transformNodeMember) {
+    linesNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectLineStrip',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectLines.kl',
@@ -520,7 +520,7 @@ FABRIC.SceneGraph.registerNodeType('LineStrip', {
             'raycastData.threshold',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
             'boundingbox.min',
@@ -568,7 +568,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
       }));
     }
     
-    trianglesNode.getRayIntersectionOperator = function(transformNodeMember) {
+    trianglesNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectTriangles',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectTriangles.kl',
@@ -577,7 +577,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
             'raycastData.ray',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
             'boundingbox.min',
@@ -634,8 +634,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
     transformNode: 'Optional. Specify a Transform node to transform the geometry during rendering',
-    transformNodeMember: 'Default Value:\'globalXfo\'. Specify the XFo member or member array on the transform node to use as the model matrix in rendering',
-    transformNodeIndex: 'Default Value:undefined. Specify the index of the XFo in the member array on the transform node to use as the model matrix in rendering',
     constructDefaultTransformNode: 'Flag specify whether to construct a default transform node if none is provided by the \'transformNode\' option above.',
     geometryNode: 'Optional. Specify a Geometry node to draw during rendering',
     enableRaycasting: 'Flag specify whether this Instance should support raycasting.',
@@ -645,8 +643,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         transformNode: undefined,
-        transformNodeMember: 'globalXfo',
-        transformNodeIndex: undefined,
         constructDefaultTransformNode: true,
         geometryNode: undefined,
         enableRaycasting: false,
@@ -658,7 +654,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       dgnode = instanceNode.constructDGNode('DGNode'),
       redrawEventHandler = instanceNode.constructEventHandlerNode('Redraw'),
       transformNode,
-      transformNodeMember = options.transformNodeMember,
       geometryNode,
       materialNodes = [];
 
@@ -695,35 +690,18 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     var assignLoadTransformOperators = function() {
       var transformdgnode = transformNode.getDGNode();
       redrawEventHandler.setScope('transform', transformdgnode);
-      if(options.transformNodeIndex == undefined){
-        redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-            operatorName: 'loadModelProjectionMatrices',
-            srcFile: 'FABRIC_ROOT/SG/KL/loadModelProjectionMatrices.kl',
-            entryFunctionName: 'loadModelProjectionMatrices',
-            preProcessorDefinitions: preProcessorDefinitions,
-            parameterLayout: [
-              'shader.shaderProgram',
-              'transform.' + transformNodeMember,
-              'camera.cameraMat44',
-              'camera.projectionMat44'
-            ]
-          }));
-      }else{
-        redrawEventHandler.addMember('transformNodeIndex', 'Size', options.transformNodeIndex);
-        redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'loadIndexedModelProjectionMatrices',
+      redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'loadModelProjectionMatrices',
           srcFile: 'FABRIC_ROOT/SG/KL/loadModelProjectionMatrices.kl',
-          entryFunctionName: 'loadIndexedModelProjectionMatrices',
+          entryFunctionName: 'loadModelProjectionMatrices',
           preProcessorDefinitions: preProcessorDefinitions,
           parameterLayout: [
             'shader.shaderProgram',
-            'transform.' + transformNodeMember + '<>',
-            'self.transformNodeIndex',
+            'transform.globalXfo',
             'camera.cameraMat44',
             'camera.projectionMat44'
           ]
         }));
-      }
     }
     var rayIntersectionOperatorsAssigned = false;
     var assignRayIntersectionOperators = function() {
@@ -741,7 +719,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
           // and can provide the raycast. 
           scene.getSceneRaycastEventHandler().appendChildEventHandler(transformNode.getRaycastEventHandler());
         } else {
-          var raycastOperator = geometryNode.getRayIntersectionOperator(transformNodeMember);
+          var raycastOperator = geometryNode.getRayIntersectionOperator();
           raycastEventHandler = instanceNode.constructEventHandlerNode('Raycast');
           raycastEventHandler.setScope('geometry_uniforms', geometryNode.getUniformsDGNode());
           raycastEventHandler.setScope('geometry_attributes', geometryNode.getAttributesDGNode());
@@ -770,16 +748,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       });
     
     instanceNode.addReferenceInterface('Transform', 'Transform',
-      function(nodePrivate, member){
-        if (member){
-          if(!nodePrivate.getDGNode().getMembers()[member]) {
-            var message = 'Error in Transform node assignement on :' + nodePrivate.name +
-              ' \n member not found :' + member + '\n\n';
-            message += ' Members:' + JSON.stringify(nodePrivate.getDGNode().getMembers());
-            throw (message);
-          }
-          transformNodeMember = member;
-        }
+      function(nodePrivate){
         var transformNodeAssigned = (transformNode != undefined);
         transformNode = nodePrivate;
         if(!transformNodeAssigned){
@@ -790,9 +759,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         }
       });
     
-    instanceNode.pub.getTransformNodeMember = function() {
-      return transformNodeMember;
-    };
     instanceNode.addReferenceListInterface('Material', 'Material',
       function(nodePrivate, index){
         nodePrivate.getRedrawEventHandler().appendChildEventHandler(redrawEventHandler);
@@ -847,7 +813,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
 
       if(sceneSerializer.isNodeBeingSaved(transformNode.pub)){
         nodeData.transformNode = transformNode.pub.getName();
-        nodeData.transformNodeMember = transformNodeMember;
       }
       if(sceneSerializer.isNodeBeingSaved(geometryNode.pub)){
         nodeData.geometryNode = geometryNode.pub.getName();
@@ -865,7 +830,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       if (nodeData.transformNode) {
         var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
         if (transformNode) {
-          instanceNode.pub.setTransformNode(transformNode, nodeData.transformNodeMember);
+          instanceNode.pub.setTransformNode(transformNode);
         }
       }
       if (nodeData.geometryNode) {
@@ -888,7 +853,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     scene.addEventHandlingFunctions(instanceNode);
 
     if (options.transformNode) {
-      instanceNode.pub.setTransformNode(options.transformNode, options.transformNodeMember);
+      instanceNode.pub.setTransformNode(options.transformNode);
     }
     else if (options.constructDefaultTransformNode) {
       instanceNode.pub.setTransformNode(scene.pub.constructNode('Transform', { hierarchical: false }));
