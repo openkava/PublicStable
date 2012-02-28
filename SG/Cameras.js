@@ -46,7 +46,7 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     dgnode.addMember('orthographic', 'Boolean', options.orthographic, true);
     dgnode.addMember('projectionMat44', 'Mat44');
     dgnode.addMember('screenOffset', 'Vec2', options.screenOffset, true);
-    
+
     redrawEventHandler.setScope('camera', dgnode);
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
@@ -86,6 +86,12 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
         dgnode.setDependency(transformNode.getDGNode(), 'transform');
   
       });
+    cameraNode.addMemberInterface(dgnode, 'cameraMat44');
+    cameraNode.addMemberInterface(dgnode, 'projectionMat44');
+    cameraNode.addMemberInterface(dgnode, 'nearDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'farDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'fovY', true);
+    cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
 
     scene.addEventHandlingFunctions(cameraNode);
     
