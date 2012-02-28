@@ -584,33 +584,7 @@ FABRIC.SceneGraph = {
       }
       return errors;
     };
-    scene.pub.getTimerProfiles = function() {
-      if (timerStack.length > 0) {
-        throw 'Timer Stack not balanced';
-      }
-      timerTree.stop();
-      var timerProfiles = 'Scene Construction Profiles \n';
-      timerProfiles += 'SceneConstructTime:' + timerTree.time / 1000 + ' seconds\n';
-
-      var logTimer = function(timer, parentTimer, indent) {
-        var str = indent + (
-          timer.name + ' count:' + timer.count + ' time:' + timer.time / 1000 +
-          ' percentage:' + ((timer.time / parentTimer.time) * 100).toFixed(2) + '%\n');
-        for (i in timer.childTimers) {
-          str += logTimer(timer.childTimers[i], timer, indent + '\t');
-        }
-        return str;
-      }
-      var str = logTimer(timerTree, timerTree, '');
-      str += '----------------------------------\n';
-      for (i in profiles) {
-        str += (i + ' count:' + profiles[i].count + ' time:' + profiles[i].time / 1000 +
-          ' costpercall:' + ((profiles[i].time / profiles[i].count) / 1000).toFixed(4) +
-          ' percentage:' + ((profiles[i].time / timerTree.time) * 100).toFixed(2) + '%\n');
-      }
-      return str;
-    };
-
+    
     scene.addEventHandlingFunctions(scene);
     
     window.addEventListener('unload', function(){
