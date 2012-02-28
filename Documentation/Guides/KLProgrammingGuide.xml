@@ -54,7 +54,7 @@
           <title>Hello world</title>
           <programlisting language="KL"><![CDATA[
 operator entry() {
-  report "Hello, world!";
+  report("Hello, world!");
 }
           ]]></programlisting>
         </example>
@@ -64,7 +64,7 @@ operator entry() {
         <informalfigure>
           <screen><![CDATA[
 operator entry() {
-  report "Hello, world!";
+  report("Hello, world!");
 }
           ]]></screen>
         </informalfigure>
@@ -73,7 +73,7 @@ operator entry() {
         
         <itemizedlist>
           <listitem><para>The <code>entry</code> operator is what is run by the <command>kl</command> tool.  KL distinguishes places in the program that can be called from the outside world&mdash;in this case, the outside world is the <command>kl</command> tool itself.  We discuss more about operators <xref linkend="operators" /></para></listitem>
-          <listitem><para>The <code>report</code> keyword reports something to wherever messages go.  In the case of the <command>kl</command> tool, messages go to standard output; when running within a web browser, messages appear on the JavaScript console.</para></listitem>
+          <listitem><para>The <code>report</code> function sends some text to wherever messages go.  In the case of the <command>kl</command> tool, messages go to standard output; when running within a web browser, messages appear on the JavaScript console.</para></listitem>
           <listitem><para>The text <code>"Hello, world!"</code> is a <glossterm>string constant</glossterm>.  String constants in KL follow almost exactly the same syntax as JavaScript.</para></listitem>
         </itemizedlist>
       </para>
@@ -100,7 +100,7 @@ function Integer fibonacci(Integer n) {
 
 operator entry() {
   for (Integer i = 0; i < 10; ++i)
-    report fibonacci(i);
+    report(fibonacci(i));
 }
           ]]></programlisting>
         </example>
@@ -199,7 +199,7 @@ operator entry()
       else
         rowString += " ";
     }
-    report rowString;
+    report(rowString);
   }
 }
           ]]></programlisting>
@@ -324,6 +324,10 @@ operator entry()
       <para>
         If you don't understand exactly what this means, don't worry: plain 7-bit ASCII text files, such as used for C source code (and often for JavaScript source code) are by default UTF-8 encoded.  The only thing to keep in mind is that text files saved on Windows in <quote>Unicode format</quote> (which technically means they are encoded as UCS-2) cannot be read by the KL compiler.  If you want to insert foreign language characters into a KL source file you must use an editor that can write UTF-8 files.
       </para>
+      
+      <para>
+        The benefit of specifying an encoding is that high-bit characters, such as foreign language characters, can be inserted directly into string constants in KL source files.
+      </para>
     </section>
     
     <section>
@@ -356,7 +360,7 @@ operator entry()
 
 operator entry() {
   /* comment can appear in source code
-  report "Hello!"; /* pretty much anywhere */
+  report("Hello!"); /* pretty much anywhere */
   foo( 32 /*, 53*/ ); /* block comments are a simple way to temporarily remove code */
 }
           ]]></programlisting>
@@ -406,7 +410,7 @@ operator entry() {
 
 operator entry() {
   // comment can appear in source code
-  report "Hello!"; // pretty much anywhere
+  report("Hello!"); // pretty much anywhere
   foo( 32 //, 53 ); // can't comment out code in the middle of the line
           ); // but you can continue it on the next line.
 }
@@ -573,6 +577,171 @@ operator entry() {
           The KL compiler is <quote>greedy</quote> when looking for symbols: it looks for the longest sequence of characters that are a valid symbol.  This is why <code>==(</code> is treated as the two symbols <code>==</code> and <code>(</code>: there is no symbol starting with <code>==(</code> but <code>==</code> is a symbol.
         </para>
       </section>
+      
+      <section>
+        <title>Constants</title>
+        
+        <para>
+          A constant is a token that is interpreted as a fixed value of a specific type. KL support five types of constants: boolean constants, integer constants, float-point constants, and string constants.  Each of these are explained below.
+        </para>
+        
+        <section>
+          <title>Boolean Constants</title>
+          
+          <para>
+            The two keywords <code>true</code> and <code>false</code> are the two boolean constants.  They are each a value of type <code>Boolean</code>.
+          </para>
+          
+          <example>
+            <title>Boolean constants</title>
+            <programlisting language="KL"><![CDATA[
+operator entry() {
+  Float32 value = 1.1;
+  Index steps = 0;
+  Boolean done = false;
+  while (!done) {
+    value *= value;
+    if (value > 2)
+      done = true;
+    ++steps;
+  }
+  report("took " + steps + " steps");
+}
+            ]]></programlisting>
+          </example>
+          
+          <simpara>Output:</simpara>
+          
+          <informalfigure>
+            <screen><![CDATA[
+took 3 steps
+            ]]></screen>
+          </informalfigure>
+        </section>
+        
+        <section xml:id="sec.constants.integer">
+          <title>Integer Constants</title>
+          
+          <para>
+            A integer constant can take one of three forms:
+
+            <itemizedlist>
+              <listitem><simpara>The single digit <code>0</code></simpara></listitem>
+              <listitem><simpara>A decimal constant that starts with a single digit in the range <code>1</code>...<code>9</code> followed by zero or more digits in the range <code>0</code>...<code>9</code></simpara></listitem>
+              <listitem><simpara>The two characters <code>0x</code> or <code>0X</code> followed by one or more characters in one of the ranges <code>0</code>...<code>9</code>, <code>a</code>...<code>f</code> and <code>A</code>...<code>F</code></simpara></listitem>
+            </itemizedlist>
+            
+            The type of an integer constant depends on its value:
+            
+            <itemizedlist>
+              <listitem><para>
+                If it is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation> then it is of type <code>Integer</code>;
+              </para></listitem>
+              
+              <listitem><para>
+                If it is at least <inlineequation><mathphrase>2<superscript >31</superscript></mathphrase></inlineequation> but less than <inlineequation><mathphrase>2<superscript >32</superscript>-1</mathphrase></inlineequation> (on 32-bit platforms) or <inlineequation><mathphrase>2<superscript >64</superscript>-1</mathphrase></inlineequation> (on 64-bit platforms) then it is of type <code>Size</code>;
+              </para></listitem>
+              
+              <listitem><para>
+                Otherwise, the integer constant is too large and the compiler will generate a syntax error.
+              </para></listitem>
+            </itemizedlist>
+            
+            <note><para>
+              All integer constants are positive; a <code>-</code> (minus sign) followed by an integer constant is interpreted as the unary minus operator applied to the integer constant.
+            </para></note>
+          </para>
+            
+          <example>
+            <title>Integer constants</title>
+            <programlisting language="KL"><![CDATA[
+operator entry() {
+  report(0);
+  report(1);
+  report(123456789);
+  report(0xA9);
+  report(0xdeadBEEF);
+}
+            ]]></programlisting>
+          </example>
+          
+          <simpara>Output:</simpara>
+          
+          <informalfigure>
+            <screen><![CDATA[
+0
+1
+123456789
+169
+3735928559
+            ]]></screen>
+          </informalfigure>
+        </section>
+        
+        <section xml:id="sec.constants.floating-point">
+          <title>Floating-Point Constants</title>
+          
+          <para>
+            A floating-point constant takes the following form:
+
+            <itemizedlist>
+              <listitem><simpara>Either a single <code>0</code> or one digit in the range <code>1</code>...<code>9</code> followed by zero or more digits in the range <code>0</code>...<code>9</code> (the <glossterm>whole part</glossterm>; the same syntax as a decimal integer constant)...</simpara></listitem>
+              <listitem><simpara>...optionally followed by a <code>.</code> and zero or more characters in the range <code>0</code>...<code>9</code> (the <glossterm>fractional part</glossterm>)...</simpara></listitem>
+              <listitem><simpara>...optionally followed by an <code>e</code> or an <code>E</code>, then optionally by a <code>+</code> or a <code>-</code>, then by one or more characters in the range <code>0</code>...<code>9</code> (the <glossterm>exponent</glossterm>).</simpara></listitem>
+            </itemizedlist>
+            
+            <note><para>C accepts floating-point constants that start with a <code>.</code> but floating-point constants in KL must start with a digit</para></note>
+            
+            However, for a constant to be floating-point (and not integer) it must have a fractional part, an exponent, or both.
+            
+            <note><para>
+              It is not possible to represent many decimal fractional expressions in IEEE floating point format.  As such, do not be surprised if the output values of such expressions appear to be slightly off, as seen in the example below with the constant <code>8.9e-6</code>.
+            </para></note>
+          </para>
+            
+          <para>
+            In KL, all floating-point constants are of type <code>Float64</code>, regardless of value.
+            
+            <note><para>
+              All floating-point constants are positive; a <code>-</code> (minus sign) followed by a floating-point constant is interpreted as the unary minus operator applied to the floating-point constant.
+            </para></note>
+          </para>
+            
+          <example>
+            <title>Floating-point constants</title>
+            <programlisting language="KL"><![CDATA[
+operator entry() {
+  report(0.0);
+  report(1.4142);
+  report(3.14159265358979);
+  report(8.9e-6);
+  report(4356.123E42);
+}
+            ]]></programlisting>
+          </example>
+          
+          <informalfigure>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+0
+1.4142
+3.14159265358979
+8.899999999999999e-06
+4.356123e+45
+            ]]></screen>
+          </informalfigure>
+        </section>
+        
+        <section xml:id="sec.constants.string">
+          <title>String Constants</title>
+          
+          <para>
+            A string constant takes the following form:
+
+            TBD
+          </para>
+        </section>
+      </section>
     </section>
     
     <section>
@@ -687,10 +856,10 @@ operator entry() {
           <programlisting language="KL"><![CDATA[
 operator entry() {
   Boolean a = true;
-  report a;
+  report(a);
   Boolean b = a & false;
-  report b;
-  report a != b;
+  report(b);
+  report(a != b);
 }
           ]]></programlisting>
         </example>
@@ -715,17 +884,17 @@ true
           <variablelist>
             <varlistentry>
               <term><code>Byte</code></term>
-              <listitem><simpara>8-bit unsigned integer</simpara></listitem>
+              <listitem><simpara>an 8-bit unsigned integer</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
               <term><code>Integer</code></term>
-              <listitem><simpara>32-bit signed integer</simpara></listitem>
+              <listitem><simpara>a 32-bit signed integer</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
               <term><code>Size</code></term>
-              <listitem><simpara>unsigned integer that is 32-bit on 32-bit systems and 64-bit on 64-bit systems</simpara></listitem>
+              <listitem><simpara>an unsigned integer that is 32-bit on 32-bit systems and 64-bit on 64-bit systems</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
@@ -740,7 +909,7 @@ true
           
           <itemizedlist>
             <listitem><simpara>
-              Integer constants (eg. <code>43562</code>) are of type <code>Integer</code> if their value is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation>, otherwise they are of type <code>Size</code>.
+              Integer constants (eg. <code>43562</code>) are of type <code>Integer</code> if their value is less than <inlineequation><mathphrase>2<superscript >31</superscript>-1</mathphrase></inlineequation>, otherwise they are of type <code>Size</code>.  For more details, see <xref linkend="sec.constants.integer" />.
             </simpara></listitem>
 
             <listitem><simpara>
@@ -754,11 +923,11 @@ true
           <programlisting language="KL"><![CDATA[
 operator entry() {
   Byte b = 64;
-  report b;
+  report(b);
   Size s = 45 * Size(b) + 32;
-  report s;
+  report(s);
   Integer i = -75 * Integer(s) + 18;
-  report i;
+  report(i);
 }
           ]]></programlisting>
           <simpara>Output:</simpara>
@@ -779,12 +948,12 @@ operator entry() {
           <variablelist>
             <varlistentry>
               <term><code>Float32</code></term>
-              <listitem><simpara>32-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
+              <listitem><simpara>a 32-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
               <term><code>Float64</code></term>
-              <listitem><simpara>64-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
+              <listitem><simpara>a 64-bit <acronym>IEEE</acronym> floating-point number</simpara></listitem>
             </varlistentry>
             
             <varlistentry>
@@ -802,14 +971,7 @@ operator entry() {
           
           <itemizedlist>
             <listitem><para>
-              Floating-point constants have the same syntax as in JavaScript and C, and are of type <code>Float64</code>.  The following are examples of floating-point constants:
-              <itemizedlist>
-                <listitem><simpara><code>0.0</code></simpara></listitem>
-                <listitem><simpara><code>1.4142</code></simpara></listitem>
-                <listitem><simpara><code>3.14159265358979</code></simpara></listitem>
-                <listitem><simpara><code>8.9e-6</code></simpara></listitem>
-                <listitem><simpara><code>4356.123E42</code></simpara></listitem>
-              </itemizedlist>
+              Floating-point constants have the same syntax as in JavaScript and C, and are of type <code>Float64</code>.  For more details, see <xref linkend="sec.constants.floating-point" />.
             </para></listitem>
             
             <listitem><para>
@@ -823,11 +985,11 @@ operator entry() {
           <programlisting language="KL"><![CDATA[
 operator entry() {
   Float32 x = 3.141;
-  report x;
+  report(x);
   Float64 y = 2.718;
-  report y;
+  report(y);
   Float32 z = x*x + y*y;
-  report z;
+  report(z);
 }
           ]]></programlisting>
           <simpara>Output:</simpara>
@@ -882,14 +1044,14 @@ operator entry() {
           <programlisting language="KL"><![CDATA[
 operator entry() {
   String a = "A string";
-  report a;
-  report "a has length " + a.length;
+  report(a);
+  report("a has length " + a.length);
   String b = "Another string";
-  report b;
+  report(b);
   String c = a + " and " + b;
-  report c;
+  report(c);
   b += " now includes " + a;
-  report b;
+  report(b);
 }
           ]]></programlisting>
           <simpara>Output:</simpara>
@@ -958,7 +1120,7 @@ function entry() {
   MyNewType mnt;
   mnt.s = "Hello!";
   mnt.i = 42;
-  report mnt;
+  report(mnt);
 }
           ]]></programlisting>
           <simpara>Output:</simpara>
@@ -988,7 +1150,7 @@ Size sizes[];    // Declare a variable-size array
 sizes.push(42);  // Push some elements onto the end of the array
 sizes.push(21);
 sizes.push(3);
-report sizes[1]; // outputs "21"
+report(sizes[1]); // outputs "21"
                   ]]></programlisting>
                 </informalexample>
               </para></listitem>
@@ -1052,12 +1214,12 @@ String c<>[];   // A sliced array of variable-size
             <programlisting><![CDATA[
 operator entry() {
   Integer a[];
-  report "The array a has size " + a.size + " and value " + a;
+  report("The array a has size " + a.size + " and value " + a);
   a.push(42);
   a.push(84);
-  report "The array NOW has size " + a.size + " and value " + a;
+  report("The array NOW has size " + a.size + " and value " + a);
   a.resize(4);
-  report "The array NOW has size " + a.size + " and value " + a;
+  report("The array NOW has size " + a.size + " and value " + a);
 }
             ]]></programlisting>
             <simpara>Output:</simpara>
@@ -1105,7 +1267,7 @@ operator entry() {
   mat[0][1] = -9.2;
   mat[1][0] = -2.1;
   mat[1][1] = 8.6;
-  report "The determinant of " + mat + " is " + det(mat);
+  report("The determinant of " + mat + " is " + det(mat));
 }
             ]]></programlisting>
             <simpara>Output:</simpara>
@@ -1138,8 +1300,8 @@ for (Size i=0; i<8; ++i)
 Size subSizes<>( sizes, 2, 4 ); // A sliced array of elements of type Size that accesses
                                 // elements 2 through 5 (inclusive) of the underlying
                                 // sliced array
-report subSizes[0];             // will output '2'
-report subSizes.size;           // will output '4'
+report(subSizes[0]);            // will output '2'
+report(subSizes.size);          // will output '4'
                   ]]></programlisting>
                 </informalexample>
               </para></listitem>
@@ -1164,15 +1326,15 @@ operator entry() {
   String strings<>(8);
   for (Size i=0; i<8; ++i)
     strings[i] = "string " + (i+1);
-  report "strings = " + strings;
+  report("strings = " + strings);
   
   String subStrings<>(strings, 2, 4);
-  report "subStrings = " + subStrings;
+  report("subStrings = " + subStrings);
   
-  report "Replacing subStrings element...";
+  report("Replacing subStrings element...");
   subStrings[3] = "replaced string";
-  report "subStrings = " + subStrings;
-  report "strings = " + strings;
+  report("subStrings = " + subStrings);
+  report("strings = " + strings);
 }
             ]]></programlisting>
             <simpara>Output:</simpara>
@@ -1229,7 +1391,7 @@ Boolean a[][Integer]; // A variable array of Integer-to-Boolean dictionaries
               <informalexample><programlisting language="KL"><![CDATA[
 String dict[String];
 for (k in dict)
-  report "dict["+k+"] = "+dict[k];
+  report("dict[" + k + "] = " + dict[k]);
               ]]></programlisting></informalexample>
             
               For improved performance, both the key and value can be made available through <code>in</code> iteration.  The value can be assigned to if and only if the dictionary can be assigned to.  For example:
@@ -1237,7 +1399,7 @@ for (k in dict)
               <informalexample><programlisting language="KL"><![CDATA[
 String dict[String];
 for (k, v in dict)
-  report "dict["+k+"] = "+v;
+  report("dict[" + k + "] = " + v);
               ]]></programlisting></informalexample>
             </para></listitem>
 
@@ -1249,9 +1411,9 @@ operator entry() {
   String numbers[Integer];
   numbers[3] = "three";
   numbers[2] = "two";
-  report numbers; // outputs '{3:"three",2:"two"}'
+  report(numbers); // outputs '{3:"three",2:"two"}'
   numbers[1] = "one";
-  report numbers; // outputs '{3:"three",2:"two",1:"one"}'
+  report(numbers); // outputs '{3:"three",2:"two",1:"one"}'
 }
               ]]></programlisting></informalexample>
             </para></listitem>
@@ -1265,14 +1427,14 @@ operator entry() {
   Float32 a[String];
   a['pi'] = 3.14;
   a['e'] = 2.71;
-  report "a is:";
+  report("a is:");
   for ( k, v in a ) {
-    report "a['" + k + "'] = " + v;
+    report("a['" + k + "'] = " + v);
   }
   a.delete('pi');
-  report "a is now:";
+  report("a is now:");
   for ( k, v in a ) {
-    report "a['" + k + "'] = " + v;
+    report("a['" + k + "'] = " + v);
   }
 }
           ]]></programlisting>
@@ -1310,7 +1472,7 @@ alias Float32 Mat22[2][2];
 
 operator entry() {
   Mat22 mat22;
-  report mat22;
+  report(mat22);
 }
         ]]></programlisting>
         <simpara>Output:</simpara>
@@ -1332,9 +1494,9 @@ operator entry() {
         
         <programlisting language="KL"><![CDATA[
 Integer integers[];
-report integers.data;  // OK: integers are contiguous in memory
+report(integers.data);  // OK: integers are contiguous in memory
 String strings[];
-report strings.data;   // ERROR: string data is not contiguous in memory
+report(strings.data);   // ERROR: string data is not contiguous in memory
         ]]></programlisting>
       </para>
 
@@ -1351,15 +1513,15 @@ report strings.data;   // ERROR: string data is not contiguous in memory
         <programlisting language="KL"><![CDATA[
 operator entry() {
   String s;
-  report "s = '" + s + "'";
-  report "s.data = " + s.data;
-  report "Boolean(s.data) = " + Boolean(s.data);
-  report "s.dataSize = " + s.dataSize;
+  report("s = '" + s + "'");
+  report("s.data = " + s.data);
+  report("Boolean(s.data) = " + Boolean(s.data));
+  report("s.dataSize = " + s.dataSize);
   s = "Hello";
-  report "s = '" + s + "'";
-  report "s.data = " + s.data;
-  report "Boolean(s.data) = " + Boolean(s.data);
-  report "s.dataSize = " + s.dataSize;
+  report("s = '" + s + "'");
+  report("s.data = " + s.data);
+  report("Boolean(s.data) = " + Boolean(s.data));
+  report("s.dataSize = " + s.dataSize);
 }
         ]]></programlisting>
         <simpara>Output:</simpara>
@@ -1426,7 +1588,7 @@ function Integer add(Integer lhs, Integer rhs) {
 }
 
 operator entry() {
-  report "2 plus 2 is " + add(2, 2);
+  report("2 plus 2 is " + add(2, 2));
 }
         ]]></programlisting>
         <simpara>Output:</simpara>
@@ -1454,14 +1616,14 @@ function two(Integer n);
 
 // The function 'one' calls 'two' even though it is not yet defined
 function one(Integer n) {
-  report "one";
+  report("one");
   if (n > 0)
     two(n - 1);
 }
 
 // The definition of the function 'two' comes after its prototype
 function two(Integer n) {
-  report "two";
+  report("two");
   if (n > 0)
     one(n - 1);
 }
@@ -1528,11 +1690,11 @@ operator entry() {
         <title>Function polymorphism</title>
         <programlisting language="KL"><![CDATA[
 function display(Integer a) {
-  report "integer value is " + a;
+  report("integer value is " + a);
 }
 
 function display(String s) {
-  report "string value is '" + s + "'";
+  report("string value is '" + s + "'");
 }
 
 operator entry() {
@@ -1616,9 +1778,9 @@ function Complex32(Float32 x, Float32 y) {
 }
 
 operator entry() {
-  report Complex32();
-  report Complex32(3.141);
-  report Complex32(3.141, 2.718);
+  report(Complex32());
+  report(Complex32(3.141));
+  report(Complex32(3.141, 2.718));
 }
           ]]></programlisting>
         </example>
@@ -1660,7 +1822,7 @@ function MyType() {
 
 operator entry() {
   MyType myType; // invokes the empty constructor
-  report myType;
+  report(myType);
 }
                 ]]></programlisting>
                 <simpara>Output:</simpara>
@@ -1693,16 +1855,16 @@ function MyType(Float64 float64) {
 operator entry() {
   // Construct MyType from String value
   MyType myTypeFromString = "foo";
-  report myTypeFromString;
+  report(myTypeFromString);
   
   // Construct MyType from Float64 value
   MyType myTypeFromFloat64 = 2.718;
-  report myTypeFromFloat64;
+  report(myTypeFromFloat64);
   
   // There is no constructor that takes a Boolean but
   // there is a cast from Boolean to String
   MyType myTypeFromBoolean = true;
-  report myTypeFromBoolean;
+  report(myTypeFromBoolean);
 }
                 ]]></programlisting>
                 <simpara>Output:</simpara>
@@ -1733,9 +1895,9 @@ function Vec2(Float64 x, Float64 y) {
 
 operator entry() {
   Vec2 vec2FromFloat64s(3.141, 2.718);
-  report vec2FromFloat64s;
+  report(vec2FromFloat64s);
   Vec2 vec2FromIntegers(42, -7);  // Uses best-match polymorphism to convert Integer to Float64
-  report vec2FromIntegers;
+  report(vec2FromIntegers);
 }
                 ]]></programlisting>
                 <simpara>Output:</simpara>
@@ -1767,8 +1929,8 @@ function Vec2(Float64 x, Float64 y) {
 }
 
 operator entry() {
-  report Vec2(3.141, 2.718);
-  report Vec2(42, -7);  // Uses best-match polymorphism to convert Integer to Float64
+  report(Vec2(3.141, 2.718));
+  report(Vec2(42, -7));  // Uses best-match polymorphism to convert Integer to Float64
 }
                 ]]></programlisting>
                 <simpara>Output:</simpara>
