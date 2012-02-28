@@ -15,7 +15,7 @@ import signal
 if os.name == 'posix':
   _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/libFabricPython.so' )
 else:
-  raise Exception('not implemented for Windows yet!')
+  _fabric = ctypes.CDLL( os.path.dirname( __file__ ) + '/FabricPython.dll' )
 
 # FIXME Windows
 _caughtSIGINT = False
@@ -32,6 +32,33 @@ def _excepthook( type, value, traceback):
   _uncaughtException = True
   _oldExceptHook( type, value, traceback )
 sys.excepthook = _excepthook
+
+# declare explicit prototypes for all the external library calls
+_fabric.identify.argtypes = []
+_fabric.createClient.argtypes = [
+  ctypes.c_void_p
+]
+_fabric.jsonExec.argtypes = [
+  ctypes.c_void_p,
+  ctypes.c_char_p,
+  ctypes.c_size_t,
+  ctypes.c_void_p
+]
+_fabric.runScheduledCallbacks.argtypes = [
+  ctypes.c_void_p
+]
+_fabric.freeClient.argtypes = [
+  ctypes.c_void_p
+]
+_fabric.freeString.argtypes = [
+  ctypes.c_void_p,
+  ctypes.c_char_p
+]
+_NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
+_fabric.setJSONNotifyCallback.argtypes = [
+  ctypes.c_void_p,
+  _NOTIFYCALLBACK
+]
 
 # print app and version information
 _fabric.identify()
@@ -152,7 +179,6 @@ class _CLIENT( object ):
 
     # declare all class variables needed in the notifyCallback above
     # here as the closure remembers the current class members immediately
-    self.__NOTIFYCALLBACK = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
     self.__registerNotifyCallback()
     self.__processAllNotifications()
 
@@ -337,7 +363,7 @@ class _CLIENT( object ):
     # this is important, we have to maintain a reference to the CFUNCTYPE
     # ptr and not just return it, otherwise it will be garbage collected
     # and callbacks will fail
-    self.__CFUNCTYPE_notifyCallback = self.__NOTIFYCALLBACK ( notifyCallback )
+    self.__CFUNCTYPE_notifyCallback = _NOTIFYCALLBACK ( notifyCallback )
     return self.__CFUNCTYPE_notifyCallback
 
   def __registerNotifyCallback( self ):

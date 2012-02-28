@@ -2,10 +2,10 @@
  *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
+#include <Fabric/EDK/EDK.h>
 #include <Fabric/Clients/CLI/Client.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Base/JSON/Encoder.h>
-#include <Fabric/EDK/EDK.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/ResourceManager.h>
