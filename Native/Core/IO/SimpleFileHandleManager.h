@@ -49,7 +49,7 @@ namespace Fabric
       SimpleFileHandleManager();
 
       std::string makeHandle( std::string const& path ) const;
-      Data const *validateHandleAndGetData( std::string const &handle ) const;
+      Data const *getHandleData( std::string const &handle ) const;
 
       HandleToDataMap m_handleToData;
     };

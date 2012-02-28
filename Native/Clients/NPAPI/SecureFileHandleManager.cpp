@@ -4,6 +4,7 @@
 
 #include "SecureFileHandleManager.h"
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Random.h>
@@ -38,7 +39,7 @@ namespace Fabric
       data.m_isFolder = folder;
       data.m_readOnly = readOnly;
 
-      validateAbsolutePath( data.m_path );//Ensure no '..'
+      IO::validateAbsolutePath( data.m_path );//Ensure no '..'
 
       std::pair< PathToHandleMap::const_iterator, PathToHandleMap::const_iterator > existingRange = m_pathToHandle.equal_range( data.m_path );
       while( existingRange.first != existingRange.second )
@@ -124,8 +125,8 @@ namespace Fabric
         if( relativePathPostfix[0] != '/' )
           throw Exception( "FileHandle relative paths must start with '/'" );
 
-        relativePathPostfix = ChangeSeparatorsURLToFile( relativePathPostfix );
-        validateAbsolutePath( relativePathPostfix );//ensure no '..'
+        relativePathPostfix = IO::ChangeSeparatorsURLToFile( relativePathPostfix );
+        IO::validateAbsolutePath( relativePathPostfix );//ensure no '..'
       }
       return iter->second;
     }
@@ -152,7 +153,7 @@ namespace Fabric
         return data.m_isFolder;
       FABRIC_ASSERT( data.m_isFolder );//checked by validateHandleAndGetData
       std::string fullPath = data.m_path + relativePathPostfix;
-      return DirExists( fullPath );
+      return IO::DirExists( fullPath );
     }
   };
 };

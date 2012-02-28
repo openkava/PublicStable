@@ -16,6 +16,10 @@ namespace Fabric
 {
   namespace IO
   {
+    FileHandleManager::FileHandleManager()
+    {
+    }
+
     bool FileHandleManager::targetExists( std::string const &handle ) const
     {
       std::string path = getPath( handle );
