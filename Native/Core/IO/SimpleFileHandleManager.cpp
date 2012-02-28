@@ -72,7 +72,7 @@ namespace Fabric
     bool SimpleFileHandleManager::hasRelativePath( std::string const &handle ) const
     {
       //[JeromeCG 20120227] For consistency, just check if we have data related to that handle (this function is more relevant for secure file handles).
-      return m_handleToData.find( makeHandle( handle ) ) != m_handleToData.end();
+      return m_handleToData.find( makeHandle( handle ) ) == m_handleToData.end();
     }
 
     SimpleFileHandleManager::Data const *SimpleFileHandleManager::getHandleData( std::string const &handle ) const
