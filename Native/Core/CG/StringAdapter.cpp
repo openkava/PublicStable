@@ -108,7 +108,7 @@ namespace Fabric
         llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
         
         llvm::AttributeWithIndex AWI[1];
-        AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+        AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
         llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
         
         reportFunction = llvm::cast<llvm::Function>( moduleBuilder->getOrInsertFunction( "report", funcType, attrListPtr ) ); 
@@ -635,7 +635,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
       std::string name = "__"+getCodeName()+"_Retain";
@@ -707,7 +707,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
       std::string name = "__"+getCodeName()+"_Release";

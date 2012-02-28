@@ -181,7 +181,7 @@ namespace Fabric
           llvm::FunctionType const *funcType = llvm::FunctionType::get( booleanAdapter->llvmRType( context ), argTypes, false );
           
           llvm::AttributeWithIndex AWI[1];
-          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
           llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
           
           llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Has", funcType, attrListPtr ) ); 
@@ -225,7 +225,7 @@ namespace Fabric
           llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
           
           llvm::AttributeWithIndex AWI[1];
-          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
           llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
           
           llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Delete", funcType, attrListPtr ) ); 
@@ -264,7 +264,7 @@ namespace Fabric
           llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
           
           llvm::AttributeWithIndex AWI[1];
-          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
           llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
           
           llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Clear", funcType, attrListPtr ) ); 
@@ -522,7 +522,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
       
       llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Dispose", funcType, attrListPtr ) ); 
@@ -544,7 +544,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
       
       llvm::Constant *funcAsConstant = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_DefaulAssign", funcType, attrListPtr );
@@ -628,7 +628,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( m_valueAdapter->llvmLType( context ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
       
       llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_GetRValue", funcType, attrListPtr ) ); 
@@ -659,7 +659,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( m_valueAdapter->llvmLType( context ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
       
       llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_GetLValue", funcType, attrListPtr ) ); 
