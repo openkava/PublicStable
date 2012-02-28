@@ -40,18 +40,18 @@ namespace Fabric
       Data data;
       data.m_isFolder = folder;
       data.m_readOnly = readOnly;
-      std::string path = makeHandle( path );
+      std::string handle = makeHandle( path );
 
-      std::pair<HandleToDataMap::iterator, bool> result = m_handleToData.insert( std::make_pair( path, data ) );
+      std::pair<HandleToDataMap::iterator, bool> result = m_handleToData.insert( std::make_pair( handle, data ) );
       if( result.first != m_handleToData.end() )
       {
-        const Data& existingData = result.second;
+        Data& existingData = result.first->second;
         if( existingData.m_isFolder != data.m_isFolder )
             throw Exception( "Invalid: trying to change a Folder handle to a File handle or vice-versa" );
         if( existingData.m_readOnly != data.m_readOnly )
           existingData.m_readOnly = false;//[JeromeCG 20120227] The read only concept is really for secure file handles (to revisit...)
       }
-      return path;
+      return handle;
     }
 
     std::string SimpleFileHandleManager::createRelativeHandle( std::string const &handlePlusRelativePath, bool folder )

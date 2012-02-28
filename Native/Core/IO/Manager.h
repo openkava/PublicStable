@@ -29,7 +29,6 @@ namespace Fabric
   {
     class ResourceManager;
     class FileHandleManager;
-    class FileHandleResourceProvider;
     typedef void (*ScheduleAsyncCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
 
     class Manager : public RC::Object
@@ -67,7 +66,6 @@ namespace Fabric
 
       RC::Handle<ResourceManager> m_resourceManager;
       RC::Handle<FileHandleManager> m_fileHandleManager;
-      RC::Handle<FileHandleResourceProvider> m_fileHandleResourceProvider;
     };
   };
 };

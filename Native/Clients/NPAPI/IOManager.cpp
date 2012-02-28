@@ -31,6 +31,7 @@ namespace Fabric
       , m_httpResourceProvider( HTTPResourceProvider::Create( npp ) )
       , m_context( NULL )
     {
+      getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( IO::FileHandleResourceProvider::Create( getFileHandleManager() ) ) );
       getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_httpResourceProvider ), true );
     }
 

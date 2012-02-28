@@ -6,7 +6,6 @@
 #include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/FileHandleManager.h>
-#include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/IO/ResourceManager.h>
 #include <Fabric/Core/IO/Helpers.h>
 
@@ -20,8 +19,6 @@ namespace Fabric
       : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
       , m_fileHandleManager( fileHandleManager )
     {
-      m_fileHandleResourceProvider = FileHandleResourceProvider::Create( m_fileHandleManager );
-      m_resourceManager->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_fileHandleResourceProvider ) );
     }
 
     RC::Handle<ResourceManager> Manager::getResourceManager() const
