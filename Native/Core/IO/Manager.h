@@ -45,7 +45,7 @@ namespace Fabric
       virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
 
     protected:
-      Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData );
+      Manager( RC::Handle<FileHandleManager> fileHandleManager, ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData );
 
       virtual std::string queryUserFilePath(
         bool existingFile,
