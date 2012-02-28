@@ -82,7 +82,7 @@ void main()
         // Creating displayable edge data.
         fTotalSum = vec4( 1.0,1.0,1.0,1.0) - fTotalSum;
     }
-    
+    fTotalSum.w = 1.0;
     gl_FragColor = ( fTotalSum );
 }
 
