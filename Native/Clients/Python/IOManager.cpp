@@ -3,6 +3,7 @@
  */
 
 #include <Fabric/Clients/Python/IOManager.h>
+#include <Fabric/Core/IO/SimpleFileHandleManager.h>
 
 #include <fstream>
 #include <string>
@@ -81,7 +82,7 @@ namespace Fabric
         void *scheduleFuncUserData
         )
     {
-      return new IOManager( scheduleFunc, scheduleFuncUserData );
+      return new IOManager( IO::SimpleFileHandleManager::Create(), scheduleFunc, scheduleFuncUserData );
     }
 
     std::string IOManager::queryUserFilePath(

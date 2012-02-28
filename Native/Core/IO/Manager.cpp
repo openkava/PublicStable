@@ -16,9 +16,9 @@ namespace Fabric
 {
   namespace IO
   {
-    Manager::Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
+    Manager::Manager( RC::Handle<FileHandleManager> fileHandleManager, ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
       : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
-      , m_fileHandleManager( FileHandleManager::Create() )
+      , m_fileHandleManager( fileHandleManager )
     {
       m_fileHandleResourceProvider = FileHandleResourceProvider::Create( m_fileHandleManager );
       m_resourceManager->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_fileHandleResourceProvider ) );

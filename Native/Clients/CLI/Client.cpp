@@ -9,7 +9,7 @@
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/ResourceManager.h>
-#include <Fabric/Core/IO/FileHandleManager.h>
+#include <Fabric/Core/IO/SimpleFileHandleManager.h>
 #include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -114,7 +114,7 @@ namespace Fabric
   
     protected:
     
-      IOManager( IO::ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData ) : IO::Manager( scheduleFunc, scheduleFuncUserData )
+      IOManager( IO::ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData ) : IO::Manager( IO::SimpleFileHandleManager::Create(), scheduleFunc, scheduleFuncUserData )
       {
         getResourceManager()->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( TestSynchronousFileResourceProvider::Create() ), true );
       }
