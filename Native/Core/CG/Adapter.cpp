@@ -417,7 +417,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( sizeAdapter->llvmRType( context ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
       std::string name = "__Max";
@@ -471,7 +471,7 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( sizeAdapter->llvmRType( context ), argTypes, false );
       
       llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
       std::string name = "__NextPowTwoMinusOne";
