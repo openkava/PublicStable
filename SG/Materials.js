@@ -1177,7 +1177,7 @@ FABRIC.SceneGraph.registerNodeType('EdgeDetectionPostProcessEffect', {
     options.shaderUniforms = {
       width: { name: 'u_width', owner: 'window', type:'Integer' },
       height: { name: 'u_height', owner: 'window', type:'Integer' },
-      colorMix: { name: 'u_colorMix', type:'Scalar' }
+      colorMix: { name: 'u_colorMix', type:'Scalar', defaultValue: options.colorMix,  }
     };
 
     var edgeDetectionEffect = scene.constructNode('PostProcessEffect', options);
