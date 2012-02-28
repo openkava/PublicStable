@@ -20,14 +20,12 @@ FABRIC.SceneGraph.registerNodeType('Light', {
   optionsDesc: {
     color: 'The color of the light when rendered in OpenGL. Note: Not all shaders use the light color',
     transformNode: 'The Transform node used to control the position of the light in the scene',
-    transformNodeMember: 'The Xfo member of the transfrom node used ',
     globalXfo: 'If a transfrom node is not specified, then a default one is constructed, and this is the initial value of the globalXfo on that Transform node.'
   },
   factoryFn: function (options, scene) {
     scene.assignDefaults(options, {
       color: FABRIC.RT.rgb(1.0, 1.0, 1.0),
       transformNode: 'Transform',
-      transformNodeMember: 'globalXfo',
       globalXfo: new FABRIC.RT.Xfo()
     });
 
@@ -38,7 +36,6 @@ FABRIC.SceneGraph.registerNodeType('Light', {
     var lightNode = scene.constructNode('SceneGraphNode', options),
       dgnode = lightNode.constructDGNode('DGNode'),
       transformNode,
-      transformNodeMember,
       redrawEventHandler;
     
     dgnode.addMember('type', 'Integer', options.lightType);
@@ -166,41 +163,24 @@ FABRIC.SceneGraph.registerNodeType('Light', {
       scene.registerShadowCastingLightSourceHandler(shadowRenderEventHandler);
     }
     
-
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'loadLightXfo',
+      srcCode: 'use Xfo; use Mat44; operator loadLightXfo(io Xfo xfo, io Mat44 lightMat44, io Mat44 cameraMat44){ lightMat44 = xfo.toMat44(); cameraMat44 = lightMat44.inverse(); }',
+      entryFunctionName: 'loadLightXfo',
+      parameterLayout: [
+        'transform.globalXfo',
+        'self.lightMat44',
+        'self.cameraMat44',
+      ]
+    }));
+    
     // public interface
     // TODO: try to have base class with input transform (would share with cameraNode)
-    lightNode.pub.getTransformNode = function() {
-      return transformNode.pub;
-    };
-    lightNode.pub.setTransformNode = function(node, member) {
-      if (member) {
-        transformNodeMember = member;
-      }
-      else {
-        transformNodeMember = 'globalXfo';
-      }
-
-      node = scene.getPrivateInterface(node);
-      if (!(node.getDGNode() && node.getDGNode().getMembers()[transformNodeMember])) {
-        var message = 'Error in Transform node assignement on :' + node.name +
-          ' \n member not found :' + transformNodeMember + '\n\n';
-        message += 'Members:' + JSON.stringify(node.getDGNode().getMembers());
-        throw (message);
-      }
-      transformNode = node;
-      dgnode.setDependency(transformNode.getDGNode(), 'transform');
-
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'loadLightXfo',
-        srcCode: 'use Xfo; use Mat44; operator loadLightXfo(io Xfo xfo, io Mat44 lightMat44, io Mat44 cameraMat44){ lightMat44 = xfo.toMat44(); cameraMat44 = lightMat44.inverse(); }',
-        entryFunctionName: 'loadLightXfo',
-        parameterLayout: [
-          'transform.' + transformNodeMember,
-          'self.lightMat44',
-          'self.cameraMat44',
-        ]
-      }));
-    }
+    lightNode.addReferenceInterface('Transform', 'Transform',
+      function(nodePrivate){
+        transformNode = nodePrivate;
+        dgnode.setDependency(transformNode.getDGNode(), 'transform');
+      });
 
     lightNode.addMemberInterface(dgnode, 'color', true);
     lightNode.addMemberInterface(dgnode, 'cameraMat44');
@@ -211,7 +191,7 @@ FABRIC.SceneGraph.registerNodeType('Light', {
           globalXfo:options.globalXfo
         }).pub);
     } else {
-      lightNode.pub.setTransformNode(options.transformNode, options.transformNodeMember);
+      lightNode.pub.setTransformNode(options.transformNode);
     }
 
     return lightNode;
