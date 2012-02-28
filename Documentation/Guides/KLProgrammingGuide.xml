@@ -41,7 +41,7 @@
     </para>
     
     <para>
-      Before diving in to the details of the language, we will present some simple examples.  We don't expect you to understand all the details of the examples, but hopefully they will give you a basic idea of what KL programs look like as well as some of what is possible with KL.  All of these examples can be run by downloading and installing the <filename>FabricEngine-KLTool-...</filename> file that is appropriate for your operating system from <link xlink:href="http://dist.fabric-engine.com/latest/">http://dist.fabric-engine.com/latest/</link>.  Once installed, you can copy the source code to a text file and run <command>kl <replaceable>filename.kl</replaceable></command>.
+      Before diving in to the details of the language, we will present some simple examples.  We don't expect you to understand all the details of the examples, but hopefully they will give you a basic idea of what KL programs look like as well as some of what is possible with KL.  All of these examples can be run by downloading and installing the <filename>FabricEngine-KLTool-...</filename> file that is appropriate for your operating system from <link xlink:href="http://dist.fabric-engine.com/latest/"><uri>http://dist.fabric-engine.com/latest/</uri></link>.  Once installed, you can copy the source code to a text file and run <command>kl <replaceable>filename.kl</replaceable></command>.
     </para>
     
     <section xml:id="introduction.hello-world">
@@ -138,7 +138,7 @@ operator entry() {
       <title>Mandelbrot Set in KL</title>
       
       <para>
-        Finally, we present an example of a KL program that generates the Mandelbrot set and outputs it visually as ASCII art.  The Mandelbrot set is a mathematical set defined by complex recursive functions, but that it best known because the patterns it contains are visually stunning.  Refer to the Wikipedia entry on the Mandelbrot set at <link xlink:href="http://en.wikipedia.org/wiki/Mandelbrot_set">http://en.wikipedia.org/wiki/Mandelbrot_set</link> for more information.
+        Finally, we present an example of a KL program that generates the Mandelbrot set and outputs it visually as ASCII art.  The Mandelbrot set is a mathematical set defined by complex recursive functions, but that it best known because the patterns it contains are visually stunning.  Refer to the Wikipedia entry on the Mandelbrot set at <link xlink:href="http://en.wikipedia.org/wiki/Mandelbrot_set"><uri>http://en.wikipedia.org/wiki/Mandelbrot_set</uri></link> for more information.
       </para>
       
       <para>
@@ -1165,7 +1165,8 @@ struct NewType {
             ]]></programlisting>
           </informalexample>
 
-          <note><simpara>Note the use of the variable-size array as the last member; derived types can nest arbitrarily.</simpara></note>
+          Note the use of the variable-size array as the last member; derived types can nest arbitrarily.
+
           <warning><simpara>All structure declarations in KL must be in the global scope; it is not possible to declare a structure within a function scope.</simpara></warning>
         </para>
         
@@ -1657,7 +1658,6 @@ function add(in Float32 lhs, in Float32 rhs, io Float32 result) {
         ]]></programlisting>
       </example>
     </section>
-    
     <section xml:id="functions.calls">
       <title>Function Calls</title>
       
@@ -1684,7 +1684,6 @@ operator entry() {
         ]]></screen>
       </informalfigure>
     </section>
-    
     <section xml:id="functions.prototypes">
       <title>Function Prototypes</title>
       
@@ -1755,13 +1754,120 @@ operator entry() {
         </itemizedlist>
       </para>
     </section>
-    
     <section xml:id="functions.built-in">
       <title>Built-in Functions</title>
       
-      <para>TBD</para>
+      <para>
+        KL has several built-in functions that are available to all KL programs.
+      </para>
+      
+      <section xml:id="functions.built-in.report">
+        <title>The <code>report</code> Function</title>
+        
+        <para>
+          The <code>report</code> function outputs a message to wherever messages are sent from KL; when KL is used from Fabric running in a browser this is to the JavaScript console, whereas when Fabric is used from the command line or when the KL tool is used the output is sent to standard output.  A newline is appended to the message when it is sent.
+        </para>
+        
+        <para>
+          The prototype of the <code>report</code> function is:
+          
+          <programlisting language="KL"><![CDATA[
+function report(String message);
+          ]]></programlisting>
+        </para>
+        
+        <para>
+          Within Fabric the report function is primarily used for debugging, whereas it is used for general output from the KL tool.
+        </para>
+        
+        <note><simpara>The <code>report</code> function is actually a statement, but this will change in a future version of KL.  As such, even thought the parentheses around the <quote>argument</quote> of <code>report</code> are not strictly required, we recommend that you use them to avoid future syntax errors.</simpara></note>
+      </section>
+      <section xml:id="functions.built-in.numerical">
+        <title>Numerical Functions</title>
+        
+        <para>
+          KL has support for many of the <quote>standard library</quote> numerical functions from C.  Each of these functions has a version that takes a parameter or parameters of type <code>Float32</code>, and another that takes a parameter or parameters of type <code>Float64</code>.  The one that is called is chosen using polymorphism best-match rules; see <xref linkend="functions.polymorphism" />.
+        </para>
+        
+        <section  xml:id="functions.built-in.numerical.trig">
+          <title>Trigonometric Functions</title>
+          <variablelist>
+            <varlistentry xml:id="functions.built-in.numerical.trig.sin">
+              <term><code>sin(x)</code></term>
+              <listitem><simpara>Returns the sine of the argument <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.trig.cos">
+              <term><code>cos(x)</code></term>
+              <listitem><simpara>Returns the cosine of the argument <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.trig.tan">
+              <term><code>tan(x)</code></term>
+              <listitem><simpara>Returns the tangent of the argument <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.trig.asin">
+              <term><code>asin(x)</code></term>
+              <listitem><simpara>Returns the arcsine of the argument <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.trig.acos">
+              <term><code>acos(x)</code></term>
+              <listitem><simpara>Returns the arccosine of the argument <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.trig.atan">
+              <term><code>atan(x)</code></term>
+              <listitem><simpara>Returns the arctangent of the argument <code>x</code>.  <code>atan(x)</code> doesn't work for large <code>x</code> and can only return values in the range <inlineequation><mathphrase>(-&pi;/2,&pi;/2]</mathphrase></inlineequation>; use the <code>atan2</code> function instead when possible.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.trig.atan2">
+              <term><code>atan2(y, x)</code></term>
+              <listitem><para>Returns the arctangent of the ratio <inlineequation><mathphrase>y/x</mathphrase></inlineequation>; the result is in the range  <inlineequation><mathphrase>(-&pi;,&pi;]</mathphrase></inlineequation>.</para></listitem>
+            </varlistentry>
+          </variablelist>
+        </section>
+        
+        <section  xml:id="functions.built-in.numerical.exp">
+          <title>Exponential and Logarithmic Functions</title>
+          <variablelist>
+            <varlistentry xml:id="functions.built-in.numerical.exp.pow">
+              <term><code>pow(x, y)</code></term>
+              <listitem><para>Returns the value of <inlineequation><mathphrase>x<superscript>y</superscript></mathphrase></inlineequation>.</para></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.exp.exp">
+              <term><code>exp(x)</code></term>
+              <listitem><simpara>Returns the value of <inlineequation><mathphrase>e<superscript>y</superscript></mathphrase></inlineequation> where e is the base of the natural logarithm (2.7182818...).</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.exp.log">
+              <term><code>log(x)</code></term>
+              <listitem><simpara>Returns the natural logarithm of <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.exp.log10">
+              <term><code>log10(x)</code></term>
+              <listitem><simpara>Returns the common (base 10) logarithm of <code>x</code>.</simpara></listitem>
+            </varlistentry>
+          </variablelist>
+        </section>
+        
+        <section  xml:id="functions.built-in.numerical.nt">
+          <title>Non-Transcendental Functions</title>
+          <variablelist>
+            <varlistentry xml:id="functions.built-in.numerical.nt.abs">
+              <term><code>abs(x)</code></term>
+              <listitem><para>Returns the absolute value of <code>x</code>.</para></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.nt.round">
+              <term><code>round(x)</code></term>
+              <listitem><simpara>Returns the value of <code>x</code> rounded to the nearest whole (fractional part of zero) floating-point number.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.nt.floor">
+              <term><code>floor(x)</code></term>
+              <listitem><simpara>Returns the greatest whole floating-point number less than or equal to <code>x</code>.</simpara></listitem>
+            </varlistentry>
+            <varlistentry xml:id="functions.built-in.numerical.nt.ceil">
+              <term><code>ceil(x)</code></term>
+              <listitem><simpara>Returns the smallest whole floating-point number greater than or equal to <code>x</code>.</simpara></listitem>
+            </varlistentry>
+          </variablelist>
+        </section>
+      </section>
     </section>
-
     <section xml:id="functions.polymorphism">
       <title>Function Polymorphism</title>
       
@@ -1807,7 +1913,6 @@ integer value is 64
         ]]></screen>
       </informalfigure>
     </section>
-
     <section xml:id="functions.operators">
       <title>Operators</title>
       
@@ -1824,7 +1929,6 @@ operator addElements(io Float32 lhs, io Float32 rhs, io Float32 result) {
         ]]></programlisting>
       </example>
     </section>
-
     <section xml:id="functions.constructors">
       <title>Constructors</title>
       
@@ -2046,7 +2150,6 @@ operator entry() {
         </para>
       </section>
     </section>
-    
     <section xml:id="functions.destructors">
       <title>Destructors</title>
       
@@ -2085,7 +2188,6 @@ Destroying MyType: this.s = foo
         ]]></screen>
       </informalfigure>
     </section>
-
     <section xml:id="functions.methods">
       <title>Methods</title>
 
@@ -2148,7 +2250,6 @@ a:1; b:3.14
         ]]></screen>
       </informalfigure>
     </section>
-
     <section xml:id="functions.overloads">
       <title>Overloaded Operators</title>
       
