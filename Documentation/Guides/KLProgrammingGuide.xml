@@ -72,13 +72,12 @@ operator entry() {
         There's not much to learn from this program, but it does introduce a few concepts:
         
         <itemizedlist>
-          <listitem><para>The <code>entry</code> operator is what is run by the <command>kl</command> tool.  KL distinguishes places in the program that can be called from the outside world&mdash;in this case, the outside world is the <command>kl</command> tool itself.  We discuss more about operators <xref linkend="functions.operators" /></para></listitem>
+          <listitem><para>The <code>entry</code> operator is what is run by the <command>kl</command> tool.  KL distinguishes places in the program that can be called from the outside world&mdash;in this case, the outside world is the <command>kl</command> tool itself.  We discuss more about operators <xref linkend="operators" /></para></listitem>
           <listitem><para>The <code>report</code> function sends some text to wherever messages go.  In the case of the <command>kl</command> tool, messages go to standard output; when running within a web browser, messages appear on the JavaScript console.</para></listitem>
           <listitem><para>The text <code>"Hello, world!"</code> is a <glossterm>string constant</glossterm>.  String constants in KL follow almost exactly the same syntax as JavaScript.</para></listitem>
         </itemizedlist>
       </para>
     </section>
-      
     <section xml:id="introduction.fibonacci">
       <title>Fibonacci Sequence in KL</title>
 
@@ -133,7 +132,6 @@ operator entry() {
         </itemizedlist>
       </para>
     </section>
-    
     <section xml:id="introduction.mandelbrot">
       <title>Mandelbrot Set in KL</title>
       
@@ -247,7 +245,6 @@ operator entry()
         </itemizedlist>
       </para>
     </section>
-    
     <section xml:id="introduction.organization">
       <title>How This Guide is Organized</title>
       
@@ -272,18 +269,17 @@ operator entry()
           </para></listitem>
           
           <listitem><para>
-            <xref linkend="functions" /> describes how functions are declared and called in KL.  KL includes support for basic functions (also referred to as procedures in other languages), but also support more complex function concepts such as prototypes, methods and overloaded operators.
+            <xref linkend="globals" /> describes how functions and other global declarations are made in KL.  KL includes support for basic functions (also referred to as procedures in other languages), but also support more complex function concepts such as prototypes, methods and overloaded operators.  It also support global constants, as well as a facility to import functionality from external modules.
           </para></listitem>
         </itemizedlist>
       </para>
     </section>
   </chapter>
-  
   <chapter xml:id="syntax">
     <title>KL Syntax</title>
     
     <para>
-      When KL was developed it was designed to have a syntax as close as possible to JavaScript, which itself is what is referred to as a <quote>C-like language</quote> (as far as syntax is concerned).  This chapter goes into the details of KL syntax; if you are already familiar with the syntax of JavaScript and/or C, we recommend that you skip this chapter and move on to the next.
+      When KL was developed it was designed to have a syntax as close as possible to JavaScript, which itself is what is referred to as a <quote>C-like language</quote> (as far as syntax is concerned).  This chapter goes into the details of KL syntax, and can act as a reference for you if you are not familiar with C-like languages.  On the other hand, if you are already familiar with the syntax of JavaScript and/or C, we recommend that you skip this chapter and move on to the next.
     </para>
       
     <para>
@@ -333,7 +329,6 @@ operator entry()
         The benefit of specifying an encoding is that high-bit characters, such as foreign language characters, can be inserted directly into string constants in KL source files.
       </para>
     </section>
-    
     <section xml:id="syntax.line-continuations">
       <title>Line Continuations</title>
       
@@ -361,7 +356,6 @@ This is a really, really long string that spans multiple lines.  Note that      
         ]]></screen>
       </informalfigure>
     </section>
-    
     <section xml:id="syntax.comments">
       <title>Comments</title>
       
@@ -423,7 +417,6 @@ operator entry() {
           Be careful with block comments; if either of the errors of the type given above occur in your program it can be very difficult to figure out what has gone wrong; the syntax errors you are given will seem to have nothing to do with your program.  For this reason, we recommend that you use line comments, which are described next.
         </para>
       </section>
-      
       <section xml:id="syntax.comments.line">
         <title>Line Comments</title>
         
@@ -450,7 +443,6 @@ operator entry() {
         </example>
       </section>
     </section>
-    
     <section xml:id="syntax.tokens">
       <title>Tokens</title>
       
@@ -508,7 +500,6 @@ operator entry() {
           Keywords cannot be used as identifiers, ie. cannot be used for variable, parameter, function, constant or type names.
         </para>
       </section>
-    
       <section xml:id="syntax.tokens.identifiers">
         <title>Identifiers</title>
         
@@ -549,7 +540,6 @@ operator entry() {
           </itemizedlist>
         </para>
       </section>
-      
       <section xml:id="syntax.tokens.symbols">
         <title>Symbols</title>
         
@@ -609,7 +599,6 @@ operator entry() {
           The KL compiler is <quote>greedy</quote> when looking for symbols: it looks for the longest sequence of characters that are a valid symbol.  This is why <code>==(</code> is treated as the two symbols <code>==</code> and <code>(</code>: there is no symbol starting with <code>==(</code> but <code>==</code> is a symbol.
         </para>
       </section>
-      
       <section xml:id="syntax.tokens.constants">
         <title>Constants</title>
         
@@ -649,7 +638,6 @@ took 3 steps
             ]]></screen>
           </informalfigure>
         </section>
-        
         <section xml:id="syntax.tokens.constants.integer">
           <title>Integer Constants</title>
           
@@ -707,7 +695,6 @@ operator entry() {
             ]]></screen>
           </informalfigure>
         </section>
-        
         <section xml:id="syntax.tokens.constants.floating-point">
           <title>Floating-Point Constants</title>
           
@@ -761,7 +748,6 @@ operator entry() {
             ]]></screen>
           </informalfigure>
         </section>
-        
         <section xml:id="syntax.tokens.constants.string">
           <title>String Constants</title>
           
@@ -823,8 +809,37 @@ double-quoted containing "double quotes"
         </section>
       </section>
     </section>
+    <section xml:id="syntax.structure">
+      <title>Program Structure</title>
+      
+      <para>
+        A KL program consists of zero or more <glossterm>global declarations</glossterm> in sequence.  A global declaration is one of:
+        
+        <itemizedlist>
+          <listitem><para>
+            A declaration of a function, a function prototype, an operator, a method or an operator overload; see <xref linkend="functions" />.
+          </para></listitem>
+          <listitem><para>
+            A declaration of structure; see <xref linkend="types.derived.struct" />.
+          </para></listitem>
+          <listitem><para>
+            A declaration of global constant; see <xref linkend="global-constants" />.
+          </para></listitem>
+          <listitem><para>
+            A <code>use</code> statement; see <xref linkend="use" />.
+          </para></listitem>
+        </itemizedlist>
+      </para>
+    
+      <para>
+        In turn, functions, operators, and other similar constructs consist of zero or more <glossterm>statements</glossterm>.  Each statement is terminated with a <code>; </code> (semicolon) character.  For more detailed information on all the statements available in KL, see <xref linkend="statements" />.
+      </para>
+      
+      <para>
+        A sequence of statements, surrounded by braces (a <code>{</code> and a <code>}</code>), can take the place of a single statement.  This also introduces a nested variable <glossterm>scope</glossterm>; for more information, see <xref linkend="scope.block" />.
+      </para>
+    </section>
   </chapter>
-
   <chapter xml:id="types">
     <title>The KL Type System</title>
 
@@ -946,7 +961,6 @@ true
           ]]></screen>
         </informalfigure>
       </section>
-
       <section xml:id="types.base.integer">
         <title>Integer Types</title>
         
@@ -1012,7 +1026,6 @@ operator entry() {
           ]]></screen>
         </informalfigure>
       </section>
-
       <section xml:id="types.base.floating-point">
         <title>Floating-Point Types</title>
         
@@ -1076,7 +1089,6 @@ operator entry() {
           ]]></screen>
         </informalfigure>
       </section>
-
       <section xml:id="types.base.string">
         <title>The <code>String</code> Type</title>
         
@@ -1137,7 +1149,6 @@ Another string now includes A string
         </informalfigure>
       </section>
     </section>
-
     <section xml:id="types.derived">
       <title>Derived Types</title>
       
@@ -1203,7 +1214,6 @@ function entry() {
           ]]></screen>
         </informalexample>
       </section>
-
       <section xml:id="types.derived.arrays">
         <title>Arrays</title>
       
@@ -1428,7 +1438,6 @@ strings = ["string 1","string 2","string 3","string 4","string 5","replaced stri
           </informalfigure>
         </section>
       </section>
-
       <section xml:id="types.derived.dicts">
         <title>Dictionaries</title>
       
@@ -1531,7 +1540,6 @@ a['e'] = 2.71
         </informalfigure>
       </section>
     </section>
-
     <section xml:id="types.aliases">
       <title>Type Aliases</title>
       
@@ -1565,7 +1573,6 @@ operator entry() {
       ]]></screen>
       </informalfigure>
     </section>
-
     <section xml:id="types.data">
       <title>The <code>Data</code> Type and the <code>data</code> and <code>dataSize</code> Methods</title>
 
@@ -1624,11 +1631,10 @@ s.dataSize = 6
       </informalfigure>
     </section>
   </chapter>
-  
-  <chapter xml:id="functions">
-    <title>KL Functions</title>
+  <chapter xml:id="globals">
+    <title>Functions and Other Global Declarations</title>
 
-    <section xml:id="functions.declarations">
+    <section xml:id="functions">
       <title>Function Declarations</title>
 
       <para>
@@ -1640,7 +1646,7 @@ s.dataSize = 6
         </itemizedlist>
       </para>
 
-      <example xml:id="functions.declarations.return.ex">
+      <example xml:id="functions.return.ex">
         <title>Function returning a value and using only input parameters</title>
         <programlisting language="KL"><![CDATA[
 function Float32 add(Float32 lhs, Float32 rhs) {
@@ -1649,7 +1655,7 @@ function Float32 add(Float32 lhs, Float32 rhs) {
         ]]></programlisting>
       </example>
 
-      <example xml:id="functions.declarations.no-return.ex">
+      <example xml:id="functions.no-return.ex">
         <title>Function not returning a value and using both input and input-output parameters</title>
         <programlisting language="KL"><![CDATA[
 function add(in Float32 lhs, in Float32 rhs, io Float32 result) {
@@ -1658,7 +1664,7 @@ function add(in Float32 lhs, in Float32 rhs, io Float32 result) {
         ]]></programlisting>
       </example>
     </section>
-    <section xml:id="functions.calls">
+    <section xml:id="function-calls">
       <title>Function Calls</title>
       
       <para>
@@ -1684,7 +1690,7 @@ operator entry() {
         ]]></screen>
       </informalfigure>
     </section>
-    <section xml:id="functions.prototypes">
+    <section xml:id="prototypes">
       <title>Function Prototypes</title>
       
       <para>
@@ -1694,7 +1700,7 @@ operator entry() {
           <listitem><para>
             When two or more functions call each other.  Such functions are sometimes referred to as <glossterm>co-recursive</glossterm>.
             
-            <example xml:id="functions.prototypes.ex">
+            <example xml:id="prototypes.ex">
               <title>Co-recursion using a prototype</title>
               <programlisting language="KL"><![CDATA[
 // Function prototype for 'two', so that 'one' can call it before it is defined
@@ -1719,7 +1725,7 @@ operator entry() {
 }
               ]]></programlisting>
             </example>
-            <informalfigure xml:id="functions.prototypes.ex.out">
+            <informalfigure xml:id="prototypes.ex.out">
               <simpara>Output:</simpara>
               <screen><![CDATA[
 one
@@ -1734,7 +1740,7 @@ one
           <listitem><para>
             When a function definition is provided by a Fabric extension.  The name of the symbol of the function in the Fabric extension is provided by appending <code>= "<replaceable>symbol name</replaceable>"</code> or <code>= '<replaceable>symbol name</replaceable>'</code> to the function prototype.
             
-            <example xml:id="functions.prototypes.external.ex">
+            <example xml:id="prototypes.external.ex">
               <title>External function</title>
               <programlisting language="KL"><![CDATA[
 // The prototype 'libc_perror' is linked to an external function 'perror'
@@ -1754,14 +1760,14 @@ operator entry() {
         </itemizedlist>
       </para>
     </section>
-    <section xml:id="functions.built-in">
+    <section xml:id="built-in-functions">
       <title>Built-in Functions</title>
       
       <para>
         KL has several built-in functions that are available to all KL programs.
       </para>
       
-      <section xml:id="functions.built-in.report">
+      <section xml:id="built-in-functions.report">
         <title>The <code>report</code> Function</title>
         
         <para>
@@ -1782,85 +1788,85 @@ function report(String message);
         
         <note><simpara>The <code>report</code> function is actually a statement, but this will change in a future version of KL.  As such, even thought the parentheses around the <quote>argument</quote> of <code>report</code> are not strictly required, we recommend that you use them to avoid future syntax errors.</simpara></note>
       </section>
-      <section xml:id="functions.built-in.numerical">
+      <section xml:id="built-in-functions.numerical">
         <title>Numerical Functions</title>
         
         <para>
-          KL has support for many of the <quote>standard library</quote> numerical functions from C.  Each of these functions has a version that takes a parameter or parameters of type <code>Float32</code>, and another that takes a parameter or parameters of type <code>Float64</code>.  The one that is called is chosen using polymorphism best-match rules; see <xref linkend="functions.polymorphism" />.
+          KL has support for many of the <quote>standard library</quote> numerical functions from C.  Each of these functions has a version that takes a parameter or parameters of type <code>Float32</code>, and another that takes a parameter or parameters of type <code>Float64</code>.  The one that is called is chosen using polymorphism best-match rules; see <xref linkend="polymorphism" />.
         </para>
         
-        <section  xml:id="functions.built-in.numerical.trig">
+        <section  xml:id="built-in-functions.numerical.trig">
           <title>Trigonometric Functions</title>
           <variablelist>
-            <varlistentry xml:id="functions.built-in.numerical.trig.sin">
+            <varlistentry xml:id="built-in-functions.numerical.trig.sin">
               <term><code>sin(x)</code></term>
               <listitem><simpara>Returns the sine of the argument <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.trig.cos">
+            <varlistentry xml:id="built-in-functions.numerical.trig.cos">
               <term><code>cos(x)</code></term>
               <listitem><simpara>Returns the cosine of the argument <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.trig.tan">
+            <varlistentry xml:id="built-in-functions.numerical.trig.tan">
               <term><code>tan(x)</code></term>
               <listitem><simpara>Returns the tangent of the argument <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.trig.asin">
+            <varlistentry xml:id="built-in-functions.numerical.trig.asin">
               <term><code>asin(x)</code></term>
               <listitem><simpara>Returns the arcsine of the argument <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.trig.acos">
+            <varlistentry xml:id="built-in-functions.numerical.trig.acos">
               <term><code>acos(x)</code></term>
               <listitem><simpara>Returns the arccosine of the argument <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.trig.atan">
+            <varlistentry xml:id="built-in-functions.numerical.trig.atan">
               <term><code>atan(x)</code></term>
               <listitem><simpara>Returns the arctangent of the argument <code>x</code>.  <code>atan(x)</code> doesn't work for large <code>x</code> and can only return values in the range <inlineequation><mathphrase>(-&pi;/2,&pi;/2]</mathphrase></inlineequation>; use the <code>atan2</code> function instead when possible.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.trig.atan2">
+            <varlistentry xml:id="built-in-functions.numerical.trig.atan2">
               <term><code>atan2(y, x)</code></term>
               <listitem><para>Returns the arctangent of the ratio <inlineequation><mathphrase>y/x</mathphrase></inlineequation>; the result is in the range  <inlineequation><mathphrase>(-&pi;,&pi;]</mathphrase></inlineequation>.</para></listitem>
             </varlistentry>
           </variablelist>
         </section>
         
-        <section  xml:id="functions.built-in.numerical.exp">
+        <section  xml:id="built-in-functions.numerical.exp">
           <title>Exponential and Logarithmic Functions</title>
           <variablelist>
-            <varlistentry xml:id="functions.built-in.numerical.exp.pow">
+            <varlistentry xml:id="built-in-functions.numerical.exp.pow">
               <term><code>pow(x, y)</code></term>
               <listitem><para>Returns the value of <inlineequation><mathphrase>x<superscript>y</superscript></mathphrase></inlineequation>.</para></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.exp.exp">
+            <varlistentry xml:id="built-in-functions.numerical.exp.exp">
               <term><code>exp(x)</code></term>
               <listitem><simpara>Returns the value of <inlineequation><mathphrase>e<superscript>y</superscript></mathphrase></inlineequation> where e is the base of the natural logarithm (2.7182818...).</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.exp.log">
+            <varlistentry xml:id="built-in-functions.numerical.exp.log">
               <term><code>log(x)</code></term>
               <listitem><simpara>Returns the natural logarithm of <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.exp.log10">
+            <varlistentry xml:id="built-in-functions.numerical.exp.log10">
               <term><code>log10(x)</code></term>
               <listitem><simpara>Returns the common (base 10) logarithm of <code>x</code>.</simpara></listitem>
             </varlistentry>
           </variablelist>
         </section>
         
-        <section  xml:id="functions.built-in.numerical.nt">
+        <section  xml:id="built-in-functions.numerical.nt">
           <title>Non-Transcendental Functions</title>
           <variablelist>
-            <varlistentry xml:id="functions.built-in.numerical.nt.abs">
+            <varlistentry xml:id="built-in-functions.numerical.nt.abs">
               <term><code>abs(x)</code></term>
               <listitem><para>Returns the absolute value of <code>x</code>.</para></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.nt.round">
+            <varlistentry xml:id="built-in-functions.numerical.nt.round">
               <term><code>round(x)</code></term>
               <listitem><simpara>Returns the value of <code>x</code> rounded to the nearest whole (fractional part of zero) floating-point number.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.nt.floor">
+            <varlistentry xml:id="built-in-functions.numerical.nt.floor">
               <term><code>floor(x)</code></term>
               <listitem><simpara>Returns the greatest whole floating-point number less than or equal to <code>x</code>.</simpara></listitem>
             </varlistentry>
-            <varlistentry xml:id="functions.built-in.numerical.nt.ceil">
+            <varlistentry xml:id="built-in-functions.numerical.nt.ceil">
               <term><code>ceil(x)</code></term>
               <listitem><simpara>Returns the smallest whole floating-point number greater than or equal to <code>x</code>.</simpara></listitem>
             </varlistentry>
@@ -1868,7 +1874,7 @@ function report(String message);
         </section>
       </section>
     </section>
-    <section xml:id="functions.polymorphism">
+    <section xml:id="polymorphism">
       <title>Function Polymorphism</title>
       
       <para>
@@ -1881,7 +1887,7 @@ function report(String message);
         When a function call is made in KL source, if there are multiple functions with the same name then the KL compiler uses a best-match system to determine which function to call.  Exact parameter type matches are always prioritized over type casts.  If the compiler is unable to choose a unique best match then an error will be reported showing the ambiguity.
       </para>
 
-      <example xml:id="functions.polymorphism.ex">
+      <example xml:id="polymorphism.ex">
         <title>Function polymorphism</title>
         <programlisting language="KL"><![CDATA[
 function display(Integer a) {
@@ -1904,7 +1910,7 @@ operator entry() {
 }
         ]]></programlisting>
       </example>
-      <informalfigure xml:id="functions.polymorphism.ex.out">
+      <informalfigure xml:id="polymorphism.ex.out">
         <simpara>Output:</simpara>
         <screen><![CDATA[
 integer value is 42
@@ -1913,14 +1919,14 @@ integer value is 64
         ]]></screen>
       </informalfigure>
     </section>
-    <section xml:id="functions.operators">
+    <section xml:id="operators">
       <title>Operators</title>
       
       <para>
         The <code>operator</code> keyword in KL is used to mark functions that are to be used as entry points into KL from the Fabric dependency graph.  Operators are declared in the same way as functions except that they must not return a value.  Fabric does special type-checking to ensure that operators are bound properly to nodes in a Fabric dependency graph.
       </para>
 
-      <example xml:id="functions.operators.ex">
+      <example xml:id="operators.ex">
         <title>Operator definition</title>
         <programlisting language="KL"><![CDATA[
 operator addElements(io Float32 lhs, io Float32 rhs, io Float32 result) {
@@ -1929,14 +1935,14 @@ operator addElements(io Float32 lhs, io Float32 rhs, io Float32 result) {
         ]]></programlisting>
       </example>
     </section>
-    <section xml:id="functions.constructors">
+    <section xml:id="constructors">
       <title>Constructors</title>
       
       <para>
         A <glossterm>constructor</glossterm> for a user-defined type is a function that initializes a value with the given the type from other values.
       </para>
       
-      <section xml:id="functions.constructors.declaration">
+      <section xml:id="constructors.declaration">
         <title>Constructor Declarations</title>
         
         <para>
@@ -1947,7 +1953,7 @@ operator addElements(io Float32 lhs, io Float32 rhs, io Float32 result) {
           Within the body of a constructor definition, the value being initialized is referred to with the <code>this</code> keyword; its members are accessed using the <code>.</code> operator.  In this context, <code>this</code> is always read-write, ie. its members can be modified.
         </para>
 
-        <example xml:id="functions.constructors.declaration.ex">
+        <example xml:id="constructors.declaration.ex">
           <title>Constructor declarations</title>
           <programlisting language="KL"><![CDATA[
 struct Complex32 {
@@ -1980,7 +1986,7 @@ operator entry() {
           ]]></programlisting>
         </example>
         
-        <informalfigure xml:id="functions.constructors.declaration.ex.out">
+        <informalfigure xml:id="constructors.declaration.ex.out">
           <simpara>Output:</simpara>
           <screen><![CDATA[
 {re:0,im:0}
@@ -1990,18 +1996,18 @@ operator entry() {
         </informalfigure>
       </section>
       
-      <section xml:id="functions.constructors.invocation">
+      <section xml:id="constructors.invocation">
         <title>Constructor Invocation</title>
         
         <para>
           Constructors are invoked in one of several ways:
           
           <itemizedlist>
-            <listitem xml:id="functions.constructors.invocation.naked">
+            <listitem xml:id="constructors.invocation.naked">
               <para>
                 If a variable is declared without any initialization, the <glossterm>empty constructor</glossterm> (ie. the constructor that takes no parameters) is invoked to initialize the variable.  This is referred to as <glossterm>naked initialization</glossterm>.
               
-                <example xml:id="functions.constructors.invocation.naked.ex">
+                <example xml:id="constructors.invocation.naked.ex">
                   <title>Constructor invocation using naked initialization</title>
                   <programlisting language="KL"><![CDATA[
   struct MyType {
@@ -2021,7 +2027,7 @@ operator entry() {
   }
                   ]]></programlisting>
                 </example>
-                <informalfigure xml:id="functions.constructors.invocation.naked.ex.out">
+                <informalfigure xml:id="constructors.invocation.naked.ex.out">
                   <simpara>Output:</simpara>
                   <screen><![CDATA[
   {n:42,x:3.141}
@@ -2029,11 +2035,11 @@ operator entry() {
                 </informalfigure>
               </para>
             </listitem>
-            <listitem xml:id="functions.constructors.invocation.assignment">
+            <listitem xml:id="constructors.invocation.assignment">
               <para>
                 If a variable is assigned to as part of its declaration, a single-parameter constructor is invoked.  This is referred to as <glossterm>assignment initialization</glossterm>.  If there isn't an exact match for the type of the value assigned, best-match polymorphism rules are used to choose the constructor to invoke.
               
-                <example xml:id="functions.constructors.invocation.assignment.ex">
+                <example xml:id="constructors.invocation.assignment.ex">
                   <title>Constructor invocation using assignment initialization</title>
                   <programlisting language="KL"><![CDATA[
   struct MyType {
@@ -2066,7 +2072,7 @@ operator entry() {
   }
                   ]]></programlisting>
                 </example>
-                <informalfigure xml:id="functions.constructors.invocation.assignment.ex.out">
+                <informalfigure xml:id="constructors.invocation.assignment.ex.out">
                   <simpara>Output:</simpara>
                   <screen><![CDATA[
   {string:"The string was 'foo'"}
@@ -2076,11 +2082,11 @@ operator entry() {
                 </informalfigure>
               </para>
             </listitem>
-            <listitem xml:id="functions.constructors.invocation.call">
+            <listitem xml:id="constructors.invocation.call">
               <para>
                 If a variable is <quote>called</quote> (ie. using function call syntax) as part of its declaration, the constructor taking the given arguments is invoked.  This is referred to as <glossterm>invocation initialization</glossterm>.  If there isn't an exact match for the arguments passed to the call, best-match polymorphism rules are used to choose the constructor to invoke.
               
-                <example xml:id="functions.constructors.invocation.call.ex">
+                <example xml:id="constructors.invocation.call.ex">
                   <title>Constructor invocation using invocation initialization</title>
                   <programlisting language="KL"><![CDATA[
   struct Vec2 {
@@ -2102,7 +2108,7 @@ operator entry() {
   }
                   ]]></programlisting>
                 </example>
-                <informalfigure xml:id="functions.constructors.invocation.call.ex.out">
+                <informalfigure xml:id="constructors.invocation.call.ex.out">
                   <simpara>Output:</simpara>
                   <screen><![CDATA[
   {x:3.141,y:2.718}
@@ -2111,13 +2117,13 @@ operator entry() {
                 </informalfigure>
               </para>
             </listitem>
-            <listitem xml:id="functions.constructors.invocation.temp">
+            <listitem xml:id="constructors.invocation.temp">
               <para>
                 If a function call is performed where the name of the function is the name of the type, the constructor taking the given arguments is invoked to create a temporary value of the named type.  If there isn't an exact match for the arguments passed to the call, best-match polymorphism rules are used to choose the constructor to invoke.
               
                 <note><para>Note that KL does not distinguish between construction and casting.  Casting a value to a different type is the same as constructing a temporary value of the given type and initializing it, using the appropriate constructor, from the given value.</para></note>
               
-                <example xml:id="functions.constructors.invocation.temp.ex">
+                <example xml:id="constructors.invocation.temp.ex">
                   <title>Constructor invocation using temporary value</title>
                   <programlisting language="KL"><![CDATA[
 struct Vec2 {
@@ -2137,7 +2143,7 @@ operator entry() {
 }
                   ]]></programlisting>
                 </example>
-                <informalfigure xml:id="functions.constructors.invocation.temp.ex.out">
+                <informalfigure xml:id="constructors.invocation.temp.ex.out">
                   <simpara>Output:</simpara>
                   <screen><![CDATA[
 {x:3.141,y:2.718}
@@ -2150,14 +2156,14 @@ operator entry() {
         </para>
       </section>
     </section>
-    <section xml:id="functions.destructors">
+    <section xml:id="destructors">
       <title>Destructors</title>
       
       <para>
         A destructor is a function that is called when a variable goes out of scope and its resources are freed.  Destructors are declared by prepending <code>~</code> in front of the name of the type and using it as a function.  Destructors cannot take any parameters or return values.  The destructor is called before the value is freed so that its members are still accessible.  In the body of the destructor the value is referred to using the <code>this</code> keyword; the value is input-ouput, ie. it can be modified in the destructor.
       </para>
       
-      <example xml:id="functions.destructors.ex">
+      <example xml:id="destructors.ex">
         <title>Destructor</title>
         <programlisting language="KL"><![CDATA[
 struct MyType {
@@ -2180,7 +2186,7 @@ operator entry() {
 }
         ]]></programlisting>
       </example>
-      <informalfigure xml:id="functions.destructors.ex.out">
+      <informalfigure xml:id="destructors.ex.out">
         <simpara>Output:</simpara>
         <screen><![CDATA[
 Creating MyType: this.s = foo
@@ -2188,7 +2194,7 @@ Destroying MyType: this.s = foo
         ]]></screen>
       </informalfigure>
     </section>
-    <section xml:id="functions.methods">
+    <section xml:id="methods">
       <title>Methods</title>
 
       <para>
@@ -2219,7 +2225,7 @@ function <replaceable>Type</replaceable>.<replaceable>methodName</replaceable>(<
         Just as their can be multiple functions with the same name, a given type can have multiple methods with the same name.  When deciding which method to invoke, the usual best-match rules apply.
       </para>
 
-      <example xml:id="functions.methods.ex">
+      <example xml:id="methods.ex">
         <title>Method definition and invocation</title>
         <programlisting language="KL"><![CDATA[
 struct Type {
@@ -2242,7 +2248,7 @@ operator entry() {
 }
         ]]></programlisting>
       </example>
-      <informalfigure xml:id="functions.methods.ex.out">
+      <informalfigure xml:id="methods.ex.out">
         <simpara>Output:</simpara>
         <screen><![CDATA[
 a:1; b:3.14
@@ -2250,20 +2256,20 @@ a:1; b:3.14
         ]]></screen>
       </informalfigure>
     </section>
-    <section xml:id="functions.overloads">
+    <section xml:id="op-overloads">
       <title>Overloaded Operators</title>
       
       <para>
         KL allows overloading of binary and assignment operators for custom types (ie. specified through <code>struct</code>).
       </para>
         
-      <section xml:id="functions.overloads.binop">
+      <section xml:id="op-overloads.binop">
         <title>Binary Operator Overloads</title>
       
         <para>
           Binary operators can be overloaded using the following syntax:
       
-          <example xml:id="functions.overloads.binop.ex">
+          <example xml:id="op-overloads.binop.ex">
             <title>Binary operator overload</title>
             <programlisting language="KL"><![CDATA[
 struct Type {
@@ -2285,7 +2291,7 @@ operator entry() {
 }
             ]]></programlisting>
           </example>
-          <informalfigure xml:id="functions.overloads.binop.ex.out">
+          <informalfigure xml:id="op-overloads.binop.ex.out">
             <simpara>Output:</simpara>
             <screen><![CDATA[
 {a:42,b:3.14}
@@ -2307,7 +2313,7 @@ operator entry() {
         </para>
       </section>
     
-      <section xml:id="functions.overloads.assop">
+      <section xml:id="op-overloads.assop">
         <title>Compound Assignment Overloads</title>
       
         <para>
@@ -2317,7 +2323,7 @@ operator entry() {
         <para>
           However, it is also possible to provide an overload for any of the compound assignment operators using the following syntax:
 
-          <example xml:id="functions.overloads.assop.ex">
+          <example xml:id="op-overloads.assop.ex">
             <title>Compound assignment overload</title>
             <programlisting language="KL"><![CDATA[
 struct Type {
@@ -2337,7 +2343,7 @@ operator entry() {
 }
             ]]></programlisting>
           </example>
-          <informalfigure xml:id="functions.overloads.assop.ex.out">
+          <informalfigure xml:id="op-overloads.assop.ex.out">
             <simpara>Output:</simpara>
             <screen><![CDATA[
 t1 is {a:42,b:3.14}
@@ -2357,5 +2363,83 @@ t1 is now {a:49,b:5.86}
         </para>
       </section>
     </section>
+    <section xml:id="global-constants">
+      <title>Global Constants</title>
+    
+      <para>
+        A <glossterm>global constant</glossterm> in KL is a global declaration of the form:
+      
+        <programlisting>
+          const <replaceable>Type</replaceable> <replaceable>name</replaceable> = <replaceable>value</replaceable>;
+        </programlisting>
+      
+        <code><replaceable>Type</replaceable></code> must be an integer or floating-point type; <code><replaceable>name</replaceable></code> must be an identifier; and <code><replaceable>value</replaceable></code> must be constant of the appropriate type.
+      </para>
+    
+      <example xml:id="global-constants.ex">
+        <title>Global constants</title>
+        <programlisting language="KL"><![CDATA[
+const Size twoToTheSixteen = 65536;
+const Float64 pi = 3.14159365358979;
+
+operator entry() {
+  report("twoToTheSixteen = " + twoToTheSixteen);
+  report("pi = " + pi);
+}
+        ]]></programlisting>
+      </example>
+      <informalfigure xml:id="global-constants.ex.out">
+        <screen><![CDATA[
+twoToTheSixteen = 65536
+pi = 3.14159365358979
+        ]]></screen>
+      </informalfigure>
+    </section>
+    <section xml:id="use">
+      <title>Importing Functionality With <code>use</code></title>
+    
+      <para>
+        Through integration with Fabric, it is possible for derived KL types and/or Fabric extensions to provide KL code that is defined externally to the current source file.  To use these types and code within the current source file, the <code>use</code> statement is provided; it is similar to the <code>import</code> statement in Python.
+      </para>
+      
+      <para>
+        The <code>use</code> statement should be followed by the name of the registered type or extension.  For example, to include the functionality provided by the extension named <quote>Math</quote>, the program should include:
+        
+        <programlisting>
+          use Math;
+        </programlisting>
+        
+        Any <code>use</code> statements must appear at the top of the KL program that uses the associated functionality.
+      </para>
+    </section>
+  </chapter>
+  <chapter xml:id="scope">
+    <title>Scope</title>
+    
+    <section xml:id="scope.global">
+      <title>Block Scope</title>
+      
+      <para>TBD</para>
+    </section>
+    <section xml:id="scope.function">
+      <title>Block Scope</title>
+      
+      <para>TBD</para>
+    </section>
+    <section xml:id="scope.block">
+      <title>Block Scope</title>
+      
+      <para>TBD</para>
+    </section>
+  </chapter>
+  <chapter xml:id="expressions">
+    <title>Expressions</title>
+    
+    <para>TBD</para>
+  </chapter>
+  <chapter xml:id="statements">
+    <title>Statements</title>
+    
+    <para>TBD</para>
   </chapter>
 </book>
