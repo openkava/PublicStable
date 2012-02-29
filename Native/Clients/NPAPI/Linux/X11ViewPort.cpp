@@ -268,7 +268,7 @@ namespace Fabric
       GdkGLDrawableAndContext prevContext( m_gdkGLStack.back() );
       m_gdkGLStack.pop_back();
 
-      if( !gdk_gl_drawable_make_current( prevContext.first, prevContext.second ) )
+      if( prevContext.first && !gdk_gl_drawable_make_current( prevContext.first, prevContext.second ) )
         throw Exception( "Viewport error: unable to restore previous OGL context" );
     }
 
