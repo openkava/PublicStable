@@ -33,6 +33,15 @@ def _excepthook( type, value, traceback):
   _oldExceptHook( type, value, traceback )
 sys.excepthook = _excepthook
 
+# prevent exit until all our threads complete
+_clients = []
+def _waitForClose():
+  # FIXME this will run in a tight loop while waiting
+  while not _uncaughtException and not _caughtSIGINT and len( _clients ) > 0:
+    for c in _clients:
+      c.running()
+atexit.register( _waitForClose )
+
 # declare explicit prototypes for all the external library calls
 _fabric.identify.argtypes = []
 _fabric.createClient.argtypes = [
@@ -128,7 +137,6 @@ class _INTERFACE( object ):
     self.RegisteredTypesManager = self.RT
     self.DG = self.__client.dg
     self.DependencyGraph = self.DG
-    self.VP = self.__client.vp
     self.EX = self.__client.ex
     self.IO = self.__client.io
     self.build = self.__client.build
@@ -141,6 +149,9 @@ class _INTERFACE( object ):
 
   def running( self ):
     return self.__client.running()
+
+  def waitForClose( self ):
+    return self.__client.waitForClose()
 
   def getMemoryUsage( self ):
     # dictionary hack to simulate Python 3.x nonlocal
@@ -167,7 +178,6 @@ class _CLIENT( object ):
     self.mr = _MR( self )
     self.rt = _RT( self )
     self.dg = _DG( self )
-    self.vp = _VP( self )
     self.ex = _EX( self )
     self.io = _IO( self )
     self.build = _BUILD( self )
@@ -182,8 +192,11 @@ class _CLIENT( object ):
     self.__registerNotifyCallback()
     self.__processAllNotifications()
 
-    # prevent exit until all our threads complete
-    atexit.register( self.__waitForClose )
+    _clients.append( self )
+
+  def waitForClose( self ):
+    while not _uncaughtException and not _caughtSIGINT and not self.__closed:
+      self.__processOneNotification()
 
   def running( self ):
     self.__processAllNotifications()
@@ -209,15 +222,6 @@ class _CLIENT( object ):
   def __runScheduledCallbacks( self ):
     self.__fabric.runScheduledCallbacks( self.__fabricClient )
 
-  def __waitForClose( self ):
-    if not _uncaughtException:
-      while not _caughtSIGINT and (
-          not self.__closed or not self.__notifications.empty()
-        ):
-        # FIXME only using timeout so we can allow a Ctrl-C after
-        # trying to exit without correctly using client.close()
-        self.__processOneNotification( 0.1 )
-
   def __createClient( self ):
     result = ctypes.c_void_p()
     self.__fabric.createClient( ctypes.pointer( result ) )
@@ -239,8 +243,21 @@ class _CLIENT( object ):
     return result
 
   def close( self ):
+    _clients.remove( self )
     self.__closed = True
     self.__fabric.freeClient( self.__fabricClient )
+
+    # these must be explicitly set to None due to circular referencing
+    # preventing garbage collection if not
+    self.gc = None
+    self.klc = None
+    self.mr = None
+    self.rt = None
+    self.dg = None
+    self.ex = None
+    self.io = None
+    self.build = None
+    self.__CFUNCTYPE_notifyCallback = None
 
   def getLicenses( self ):
     return self.__state.licenses;
@@ -302,8 +319,6 @@ class _CLIENT( object ):
     self.dg._handleStateNotification( newState[ 'DG' ] )
     self.rt._handleStateNotification( newState[ 'RT' ] )
     self.ex._handleStateNotification( newState[ 'EX' ] )
-    if 'VP' in newState:
-      self.vp.handleStateNotification( newState[ 'VP' ] )
 
   def _patch( self, diff ):
     if 'licenses' in diff:
@@ -333,8 +348,6 @@ class _CLIENT( object ):
         self.dg._route( src, cmd, arg )
       elif firstSrc == 'EX':
         self.ex._route( src, cmd, arg )
-      elif firstSrc == 'VP':
-        self.vp._route( src, cmd, arg )
       elif firstSrc == 'GC':
         self.gc._route( src, cmd, arg )
       elif firstSrc == 'ClientWrap':
@@ -377,10 +390,7 @@ class _GCOBJECT( object ):
     self._nsobj = nsobj
     nsobj._getClient().gc.addObject( self )
 
-  def __del__( self ):
-    self.__dispose()
-
-  def __dispose( self ):
+  def dispose( self ):
     self._gcObjQueueCommand( 'dispose' )
     self.__nsobj._getClient().gc.disposeObject( self )
     self.__id = None
@@ -1962,15 +1972,4 @@ class _BUILD( _NAMESPACE ):
 
   def getArch( self ):
     return self.__build[ 'arch' ]
-
-class _VP( _NAMESPACE ):
-  def __init__( self, client ):
-    super( _VP, self ).__init__( client, 'VP' )
-    self.__viewPorts = {}
-
-  def _handleStateNotification( self, state ):
-    pass
-
-  def _route( self, src, cmd, arg ):
-    pass
 
