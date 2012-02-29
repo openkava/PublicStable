@@ -37,7 +37,7 @@
         </para></listitem>
       </itemizedlist>
 
-      As such, KL is a language with a syntax very similar to JavaScript but which is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike JavaScript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike JavaScript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
+      As such, KL is a language with a syntax very similar to JavaScript but that is <emphasis>procedural</emphasis>, <emphasis>strongly-typed</emphasis> and with <emphasis>low-level data layouts</emphasis>.  Being <emphasis>procedural</emphasis> means that, unlike JavaScript, functions (or, rather, closures) are not first-class objets that can be passed around in the language; instead, functions are always globally declared.  Being <emphasis>strongly-typed</emphasis> means that, in a KL program, the types of all variables and function parameters is known at compile type, unlike JavaScript where types are only known at runtime.  Having <emphasis>low-level data layouts</emphasis> means that the size of data and the way that it is laid out in memory is guaranteed and controllable by the programmer.
     </para>
     
     <para>
@@ -515,7 +515,7 @@ operator entry() {
         <para>
           Identifiers are used in KL for variable names, parameter names, function names, constant names, method names and type names.
           
-          <note><para>The built-in base types in KL (eg. <code>Boolean</code>, <code>String</code>, <code>Float32</code>) are not  keywords but rather identifiers.  This is a technical detail which is important in the design of the language grammar but doesn't make much difference in practice; it simply changes certain syntax errors into semantic errors.</para></note>
+          <note><para>The built-in base types in KL (eg. <code>Boolean</code>, <code>String</code>, <code>Float32</code>) are not  keywords but rather identifiers.  This is a technical detail that is important in the design of the language grammar but doesn't make much difference in practice; it simply changes certain syntax errors into semantic errors.</para></note>
         </para>
         
         <para>
@@ -860,22 +860,22 @@ double-quoted containing "double quotes"
         <variablelist>
           <varlistentry>
             <term><code>Boolean</code></term>
-            <listitem><para>a type whose value can be either <code>true</code> or <code>false</code></para></listitem>
+            <listitem><para>can be either <code>true</code> or <code>false</code></para></listitem>
           </varlistentry>
     
           <varlistentry>
             <term><code>Byte</code></term>
-            <listitem><para>an 8-bit unsigned integer value</para></listitem>
+            <listitem><para>an 8-bit unsigned integer</para></listitem>
           </varlistentry>
     
           <varlistentry>
             <term><code>Integer</code></term>
-            <listitem><para>a 32-bit signed integer value</para></listitem>
+            <listitem><para>a 32-bit signed integer</para></listitem>
           </varlistentry>
 
           <varlistentry>
             <term><code>Size</code></term>
-            <listitem><para>an unsigned integer value which is 32-bit on 32-bit platforms and 64-bit on 64-bit platforms.  <code>Size</code> is usually used to either index into or count the number of elements in an array</para></listitem>
+            <listitem><para>an unsigned integer that is 32-bit on 32-bit platforms and 64-bit on 64-bit platforms.  <code>Size</code> is usually used to either index into or count the number of elements in an array</para></listitem>
           </varlistentry>
 
           <varlistentry>
@@ -885,7 +885,7 @@ double-quoted containing "double quotes"
 
           <varlistentry>
             <term><code>Float32</code></term>
-            <listitem><para>a 32-bit IEEE floating point value</para></listitem>
+            <listitem><para>a 32-bit IEEE floating point</para></listitem>
           </varlistentry>
 
           <varlistentry>
@@ -895,7 +895,7 @@ double-quoted containing "double quotes"
 
           <varlistentry>
             <term><code>Float64</code></term>
-            <listitem><para>a 64-bit IEEE floating point value</para></listitem>
+            <listitem><para>a 64-bit IEEE floating point</para></listitem>
           </varlistentry>
 
           <varlistentry>
@@ -924,7 +924,7 @@ double-quoted containing "double quotes"
                 <listitem><para><code>Float32</code> and <code>Float64</code> values cast true if and only if the value is not equal to <code>0.0</code> or <code>-0.0</code></para></listitem>
                 <listitem><para><code>String</code> values cast to true if and only if their length is greater than zero</para></listitem>
                 <listitem><para>arrays and dictionaries cast to true if and only if they are non-empty</para></listitem>
-                <listitem><para>by default, structures do not cast to <code>Boolean</code>, but you can implement the cast if desired</para></listitem>
+                <listitem><para>by default, structures do not cast to <code>Boolean</code>, but you can implement the cast if desired by creating a <code>Boolean</code> constructor that takes the structure as a parameter; see <xref linkend="constructors" /></para></listitem>
               </itemizedlist>
             </para></listitem>
 
@@ -1117,7 +1117,7 @@ operator entry() {
             </para></listitem>
             <listitem><simpara>Unlike C or C++, strings can contain the null character (ASCII 0).</simpara></listitem>
             <listitem><simpara>Strings have no notion of encoding; they are just sequences of bytes.  String encodings are determined by the application space where the strings are used.  Note that everything in Fabric itself uses the UTF-8 encoding, but Fabric extensions may need to convert strings into other encodings.</simpara></listitem>
-            <listitem><simpara>All other types in KL can be converted to strings through a cast; this conversion simply creates a string which is a human-readable version of the value.</simpara></listitem>
+            <listitem><simpara>All other types in KL can be converted to strings through a cast; this conversion simply creates a string that is a human-readable version of the value.</simpara></listitem>
           </itemizedlist>
         </para>
 
@@ -1596,7 +1596,7 @@ report(strings.data);   // ERROR: string data is not contiguous in memory
       </para>
 
       <note><para>
-        For values of type <code>String</code>, the value returned by <code>dataSize</code> includes a null terminator which is automatically appended to the string by Fabric; this is so that the string data can be directly used in C library calls as a regular C string.  If you want to pass the number of characters in the string, pass <code>string.length</code> instead.
+        For values of type <code>String</code>, the value returned by <code>dataSize</code> includes a null terminator that is automatically appended to the string by Fabric; this is so that the string data can be directly used in C library calls as a regular C string.  If you want to pass the number of characters in the string, pass <code>string.length</code> instead.
       </para></note>
 
       <example xml:id="types.data.ex">
@@ -2415,9 +2415,9 @@ pi = 3.14159365358979
       <para>
         The <code>use</code> statement should be followed by the name of the registered type or extension.  For example, to include the functionality provided by the extension named <quote>Math</quote>, the program should include:
         
-        <programlisting>
-          use Math;
-        </programlisting>
+        <programlisting><![CDATA[
+use Math;
+        ]]></programlisting>
         
         Any <code>use</code> statements must appear at the top of the KL program that uses the associated functionality.
       </para>
