@@ -146,7 +146,7 @@ FABRIC.SceneGraph.registerNodeType('FreeCamera', {
         orientation: new FABRIC.RT.Quat()
       });
 
-    options.transformNode = scene.constructNode('Transform', {
+    options.transformNode = scene.pub.constructNode('Transform', {
       globalXfo: new FABRIC.RT.Xfo({ tr: options.position, ori: options.orientation })
     });
 
