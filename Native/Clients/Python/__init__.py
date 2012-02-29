@@ -37,11 +37,10 @@ sys.excepthook = _excepthook
 _clients = []
 def _waitForClose():
   if not _uncaughtException:
+    # FIXME this will run in a tight loop while waiting
     while not _caughtSIGINT and len( _clients ) > 0:
       for c in _clients:
-        # FIXME only using timeout so we can allow a Ctrl-C after
-        # trying to exit without correctly using client.close()
-        self.__processOneNotification( 0.1 )
+        c.running()
 atexit.register( _waitForClose )
 
 # declare explicit prototypes for all the external library calls
@@ -152,6 +151,9 @@ class _INTERFACE( object ):
   def running( self ):
     return self.__client.running()
 
+  def waitForClose( self ):
+    return self.__client.waitForClose()
+
   def getMemoryUsage( self ):
     # dictionary hack to simulate Python 3.x nonlocal
     memoryUsage = { '_': None }
@@ -192,6 +194,11 @@ class _CLIENT( object ):
     self.__processAllNotifications()
 
     _clients.append( self )
+
+  def waitForClose( self ):
+    if not _uncaughtException:
+      while not _caughtSIGINT and not self.__closed:
+        self.__processOneNotification()
 
   def running( self ):
     self.__processAllNotifications()
@@ -385,10 +392,7 @@ class _GCOBJECT( object ):
     self._nsobj = nsobj
     nsobj._getClient().gc.addObject( self )
 
-  def __del__( self ):
-    self.__dispose()
-
-  def __dispose( self ):
+  def dispose( self ):
     self._gcObjQueueCommand( 'dispose' )
     self.__nsobj._getClient().gc.disposeObject( self )
     self.__id = None
