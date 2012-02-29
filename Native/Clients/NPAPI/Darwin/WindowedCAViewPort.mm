@@ -378,7 +378,7 @@ namespace Fabric
       FABRIC_ASSERT( !m_cglContextStack.empty() );
       CGLContextObj prevContext = m_cglContextStack.back();
       m_cglContextStack.pop_back();
-      if( CGLSetCurrentContext( m_cglContextStack.back() ) != kCGLNoError )
+      if( CGLSetCurrentContext( prevContext ) != kCGLNoError )
         throw Exception( "Viewport error: unable to restore previous OGL context" );
     }
 
