@@ -774,9 +774,9 @@ operator entry() {
               <varlistentry><term><code>\a</code></term><listitem><simpara>a single bell (ASCII 7) character</simpara></listitem></varlistentry>
               <varlistentry><term><code>\b</code></term><listitem><simpara>a single backspace (ASCII 8) character</simpara></listitem></varlistentry>
               <varlistentry><term><code>\0</code></term><listitem><simpara>a single null (ASCII 0) character</simpara></listitem></varlistentry>
-              <varlistentry><term><code>\0</code></term><listitem><simpara>a single double-quote (ASCII 34) character</simpara></listitem></varlistentry>
-              <varlistentry><term><code>\0</code></term><listitem><simpara>a single single-quote (ASCII 39) character</simpara></listitem></varlistentry>
-              <varlistentry><term><code>\0</code></term><listitem><simpara>a single backslash (ASCII 92) character</simpara></listitem></varlistentry>
+              <varlistentry><term><code>\"</code></term><listitem><simpara>a single double-quote (ASCII 34) character</simpara></listitem></varlistentry>
+              <varlistentry><term><code>\'</code></term><listitem><simpara>a single single-quote (ASCII 39) character</simpara></listitem></varlistentry>
+              <varlistentry><term><code>\\</code></term><listitem><simpara>a single backslash (ASCII 92) character</simpara></listitem></varlistentry>
               <varlistentry>
                 <term><code>\x<replaceable>HH</replaceable></code></term>
                 <listitem><para>
