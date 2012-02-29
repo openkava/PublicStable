@@ -2901,5 +2901,303 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         </table>
       </section>
     </section>
+    <section>
+      <title>Materials.js</title>
+      <para>The materials system in Fabric is built using OpenGL shader based rendering using GLSL
+        shaders. </para>
+      <section>
+        <title>Shaders vs Materials</title>
+        <para>The rendering system in Fabric is built around the depth first traversial of the event
+          hander graph atached to the window redraw event. The redraw event graph represents a
+          callstack, where at each event handler, the children are visited in order and executed. A
+          parent nodes is always evaluated before a child node, and a parent node can have many
+          children. The 'Shader' node is the parent of the 'Material' nodes attached to it. The
+          Shader node is responsible for loading the GLSL shader code into the GPU, and setting the
+          shader context. The Material node is responsible for setting shader parameters, such as
+          setting color values, or binding textures. </para>
+        <para>Changing the shader constex is a relatively expensive operation and should be
+          minimized, and this is what drove the design of the rendering pipeline. For each shader,
+          we load the shader and set the context, then for each Material, we set the parameters, and
+          load appropriate textures. This graph structure enables batching of rendered objects
+          acording to the Shader that they use, and also the Material parameters. This means that if
+          you have many objects all drawn using the same shader and material parameters,they will be
+          drawn together using only one shader binding. </para>
+      </section>
+      <section>
+        <title>getShaderParamID</title>
+        <para>The getShaderParamID function is used to generate unique identifier IDs for shader
+          attribute and uniform names. For example, a shader might have a uniform named 'positions'.
+          At graph construciton time, we convert the string 'positions' into a number so that we can
+          match shader uniforms with data in the graph without doing many string comparisons each
+          frame. At the time the rendering system was being developed, KL did not provide strong
+          support for strings, however this has changed, and so this techniqure may be removed in
+          future. </para>
+      </section>
+      <section>
+        <title>Shader</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The Shader node is used to load a GLSL shader onto the GPU. Shader nodes are never
+          constructed directly, and instead are constructed by the Material. Each type of Material
+          shares a common shader node. The Scene maintains a map of constructed Shader nodes,
+          ensuring that only one of each type is constructed. This means that for a given Material
+          type, such as 'FlatTextureMaterial', even if many different instances of the materil are
+          constructed using different textures, only one shader node is constructed, and loaded
+          during rendering.</para>
+      </section>
+      <section>
+        <title>Material</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The Material node is the base node used to construct all types of Materials. The
+          Material node uses many passed in options to define the material interface. The material
+          system is driven using XML files.</para>
+        <section>
+          <title>Material XML File Structure</title>
+          <para>The Material node is the base node used to construct all types of Materials. The
+            Material node uses many passed in options to define the material interface. The material
+            system is driven using XML files.</para>
+          <db:para>The XML files define a mapping between GLSL shader code, and the naming
+            conventions used in the SceneGraph. e.g. in your GLSL shader code you could use a
+            variable called 'u_mvp', which contains your model view projeciton matix. In Fabric, the
+            name this value is 'modelViewProjectionMatrix'. The XML file enables you to specify the
+            mapping between your own variable names, and the naming convention used in Fabric. For
+            variables that do not have a predefined meaning the the scenegraph, such as custom
+            parameters for shaders, the XML file neables providing a user friendly name to be used
+            to generate getters and setters for these paramers in JavaScript.</db:para>
+          <db:para>XML files containing shaders can be used to define custom material nodes using
+            the helper function:</db:para>
+          <db:para><db:code>FABRIC.SceneGraph.defineEffectFromFile('MaterialName',
+              'MaterialXMLFile.XML);</db:code></db:para>
+          <db:para>The genrated node exposes and interface for assigning uniform values such as
+            color and opacoity values, and also exposes an interface for assigning references such
+            as textures and lights.</db:para>
+          <section>
+            <title>name</title>
+            <para>The name parameter is currently not used. </para>
+          </section>
+          <section>
+            <title>prototypeMaterialType</title>
+            <para>The prototypeMaterialType parameter enables the specification of a base material
+              node to derive this custom material from. There are a collection of base material
+              types that provide custom functionality that custom materials can inherit from.</para>
+          </section>
+          <section>
+            <title>uniforms</title>
+            <para>The uniforms section defines the mapping between the uniforms used in the GLSL
+              shader code, and the the interface exposed by the material. </para>
+            <section>
+              <title>name</title>
+              <para>The  name value specifies the name used int he GLSL code. This name value can be
+                different for each  shader, and will often be shortened or abbreviated names used in
+                the glsl code.</para>
+            </section>
+            <section>
+              <title>constant</title>
+              <para>The constant value specifies the lable used in the SceneGraph. For example, if
+                the constant name for the uniform 'u_materialColor' is specified as 'color', then a
+                member called 'color' will be added to the material node, and a getter function
+                called 'getColor', and a setter function called 'setColor' will be defined.</para>
+            </section>
+            <section>
+              <title>type</title>
+              <para>The type value specifies the Fabric registered type to use for this constant.
+                All the GLSL types have corresponding Fabric types that are used when loading the
+                uniform values. </para>
+            </section>
+            <section>
+              <title>owner</title>
+              <para>The owner value is optional. The owner attribute specifies that the Material
+                should not generate a member and getter and setter funcions, because this uniform is
+                loaded by the specified node. For example, when the owner is listed as 'instance',
+                the instance will load that uniform, and the material should not provide loading
+                functions.</para>
+            </section>
+          </section>
+          <section>
+            <title>attributes</title>
+            <para>The attributes section defines the mapping between the attributes used in the GLSL
+              shader code, and the vertex attributes stored in the geometry node. every shader uses
+              the 'positions' attribute, but any custom vertex attributes can be listed, and if they
+              exist on the geometry, they will be loaded prior to shader invocation.</para>
+            <section>
+              <title>name</title>
+              <para>The  name value specifies the name used in the GLSL code. This name value can be
+                different for each  shader, and will often be shortened or abbreviated names used in
+                the glsl code.</para>
+            </section>
+            <section>
+              <title>binding</title>
+              <para>The binding value specifies the name of the member on the geometry's attribute
+                node. For example, all triangles support 'positions', and 'normals' as attributes,
+                but geometries can have any number of attributes assigned, and those attributes can
+                be mapped to GLSL shader attributes using the binding value here.</para>
+            </section>
+          </section>
+          <section>
+            <title>programParams</title>
+            <para>The programParams sections enables the definition of custom GLSL program
+              parameters. Any OpenGL program params can be listed, and can be used, for example, to
+              control tesselation, or geometry shader parameters. An example of a shader that uses
+              custom program params, is the 'NormalShader' that uses the OpenGL 'Geometry Shader' to
+              convert vertex positions and normals to lines to enable drawing of normals on screen. </para>
+            <section>
+              <title>name</title>
+              <para>The  name value specifies the name of the OpenGL program param.</para>
+            </section>
+            <section>
+              <title>value</title>
+              <para>The value attribute specifies the value to set the specified OpenGL program
+                param to.</para>
+            </section>
+          </section>
+          <section>
+            <title>drawParams</title>
+            <para>The drawParams sections enables the definition of custom GLSL draw parameters that
+              are to be set by the shader node. </para>
+            <section>
+              <title>drawMode</title>
+              <para>The drawMode can be set to a custom draw method, instead of using the default fo
+                the drawn geometry type.</para>
+            </section>
+            <section>
+              <title>patchVertices</title>
+              <para>The patchVertices value can be specified when using tesselation shaders to
+                control how the patches are generated at the tesselation stage.</para>
+            </section>
+          </section>
+          <section>
+            <title>Shader Sources</title>
+            <para>For a complete OpenGL shader to run, shader sources must be specified for each
+              relevant shader stage. In the Shader sources of the XML file, source code can be
+              specified for vertex, and fragment shaders, and also the more advanced shaders such as
+              Geometry, and Tesselation shaders. </para>
+            <section>
+              <title>include</title>
+              <para>Each of the various shader sources can include extra files. These included files
+                are simply inlined and evaluated as part of the entire shader source.</para>
+            </section>
+            <section>
+              <title>vertexshader</title>
+              <para>The vertex shader sectionb lists GLSL vertex shader code. </para>
+            </section>
+            <section>
+              <title>fragmentshader</title>
+              <para>The fragment shader sectionb lists GLSL fragment, or pixel shader code. </para>
+            </section>
+          </section>
+        </section>
+      </section>
+      <section>
+        <title>ShadowMapMaterial</title>
+        <para>ParentNode: <emphasis role="bold">Material</emphasis></para>
+        <para>The ShadowMapMaterial is a base material type that enables materials that are used in
+          shadow map rendering to be derived from. The ShadowMapMaterial integrates the material
+          into the drawing pipline at the point where shadow maps are being rendered from the lights
+          point of view. The </para>
+      </section>
+      <section>
+        <title>PointMaterial</title>
+        <para>ParentNode: <emphasis role="bold">Material</emphasis></para>
+        <para>The PointMaterial extends the base Material with parameters for controlling the size
+          of drawn points using the FixedFunction OpenGL calls. By specifying the PointMaterial as
+          the 'PrototypeMaterial' in the shader XML file, shaders can extend this material type with
+          custom drawing code.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Image2D Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>pointSize</entry>
+                <entry>The default size value to be used to draw the points</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Image2D Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="249pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getPointSize/setPointSize</entry>
+                <entry>Get and set the size values used to render the points.</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>LineMaterial</title>
+        <para>ParentNode: <emphasis role="bold">Material</emphasis></para>
+        <para>The LineMaterial extends the base Material with parameters for controlling the
+          thickness of drawn lines using the FixedFunction OpenGL calls. By specifying the
+          LineMaterial as the 'PrototypeMaterial' in the shader XML file, shaders can extend this
+          material type with custom drawing code.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Image2D Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>lineWidth</entry>
+                <entry>The default thickness value to be used when drawing the lines</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Image2D Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="249pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getPointSize/setPointSize</entry>
+                <entry>Get and set the size values used to render the points.</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>TransparentMaterial</title>
+        <para>ParentNode: <emphasis role="bold">Material</emphasis></para>
+        <para>The TransparentMaterial is a base material type that enables transparent materials to
+          be integrated in the drawing pipeline. The TransparentMaterial integrates the material
+          into the drawing pipline after all opaque materials have been drawn. </para>
+      </section>
+      <section>
+        <title>InstancingMaterial</title>
+        <para>ParentNode: <emphasis role="bold">Material</emphasis></para>
+        <para>The InstancingMaterial is a base material type that is used when drawing multiple
+          instances of the same geometry. The InstancingMaterial sets the paramter on the shader
+          program called numInstances. The InstancingMaterial is used in conjunction with
+          TransformTexture. The Texture is used to load an array of model matricies, and the
+          Materials tells the shader how many insances to draw.</para>
+      </section>
+      <section>
+        <title>PostProcessEffect</title>
+        <para>ParentNode: <emphasis role="bold">Material</emphasis></para>
+        <para>The PostProcessEffect is a base material type for post processing effect Material
+          nodes. The PostProcessEffect is attached to the Viewport, and is bound before any of the
+          scenes geometry is rendered. The PostProcessEffect material sets up an Frame Buffer Object
+          and binds it during rendering before rendering traverses to the geometries. On the post
+          descend operator stack, it unbinds the FBO, and binds it as a texture for the shader. A
+          full screen quad is then rendered using the shader. There are several example post
+          processing effect shaders provided that show how the post processing effect integrates
+          with the render pipeline.</para>
+      </section>
+    </section>
   </section>
 </article>
