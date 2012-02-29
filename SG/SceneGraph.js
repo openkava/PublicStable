@@ -735,6 +735,17 @@ FABRIC.SceneGraph = {
         }
       }
     }
+    
+    var loadStartTime = (new Date()).getTime();
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      if (nbRemaining===0) {
+        scene.pub.fireEvent('sceneloaded', {
+          loadTime: ((new Date()).getTime() - loadStartTime)
+        });
+        return true;
+      }
+      return false;
+    });
 
     // only return the public interface to the outside world
     return scene.pub;
