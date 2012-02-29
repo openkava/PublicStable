@@ -2900,6 +2900,25 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           </tgroup>
         </table>
       </section>
+      <section>
+        <title>ScreenGrab</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The ScreenGrab node is used to capture the rendered openGL viewport to an image file. </para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>Image2D Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="249pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>saveAs</entry>
+                <entry>Used to open a saveAs dialog box and write out the image as a PNG
+                  file.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
     </section>
     <section>
       <title>Materials.js</title>
