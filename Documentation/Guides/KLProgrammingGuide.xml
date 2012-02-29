@@ -489,7 +489,7 @@ operator entry() {
             <member><code>struct</code></member>
             <member><code>switch</code></member>
             <member><code>true</code></member>
-            <member><code>use</code></member>
+            <member><code>require</code></member>
             <member><code>ValueProducer</code></member>
             <member><code>var</code></member>
             <member><code>while</code></member>
@@ -826,7 +826,7 @@ double-quoted containing "double quotes"
             A declaration of global constant; see <xref linkend="global-constants" />.
           </para></listitem>
           <listitem><para>
-            A <code>use</code> statement; see <xref linkend="use" />.
+            A <code>require</code> statement; see <xref linkend="use" />.
           </para></listitem>
         </itemizedlist>
       </para>
@@ -2406,20 +2406,20 @@ pi = 3.14159365358979
       </informalfigure>
     </section>
     <section xml:id="use">
-      <title>Importing Functionality With <code>use</code></title>
+      <title>Importing Functionality With <code>require</code></title>
     
       <para>
-        Through integration with Fabric, it is possible for derived KL types and/or Fabric extensions to provide KL code that is defined externally to the current source file.  To use these types and code within the current source file, the <code>use</code> statement is provided; it is similar to the <code>import</code> statement in Python.
+        Through integration with Fabric, it is possible for derived KL types and/or Fabric extensions to provide KL code that is defined externally to the current source file.  To use these types and code within the current source file, the <code>require</code> statement is provided; it is similar to the <code>import</code> statement in Python.
       </para>
       
       <para>
-        The <code>use</code> statement should be followed by the name of the registered type or extension.  For example, to include the functionality provided by the extension named <quote>Math</quote>, the program should include:
+        The <code>require</code> statement should be followed by the name of the registered type or extension.  For example, to include the functionality provided by the extension named <quote>Math</quote> and the registered type named <quote>RegType</quote>, the program should start with:
         
         <programlisting><![CDATA[
-use Math;
+require Math, RegType;
         ]]></programlisting>
         
-        Any <code>use</code> statements must appear at the top of the KL program that uses the associated functionality.
+        Any <code>require</code> statements must appear at the top of the KL program that uses the associated functionality.  You can have as many <code>require</code> statements as you would like.
       </para>
     </section>
   </chapter>
