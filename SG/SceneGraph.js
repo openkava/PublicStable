@@ -360,9 +360,9 @@ FABRIC.SceneGraph = {
   
         descDiags = function(fullCode, diags) {
           var fullCodeLines = fullCode.split('\n');
-          var desc = 'Error compiling operator: ' + operatorDef.operatorName + ' in '+filename+'\n';
-          if (operatorDef.srcFile) desc += 'File:' + operatorDef.srcFile + '\n';
+          var desc = 'Error compiling operator: ' + operatorDef.operatorName;
           for (var i = 0; i < diags.length; ++i) {
+            desc += '\nFile:' + diags[i].filename + '\n';
             if (i == 16) {
               desc += '(' + (diags.length - i) + ' more diagnostic(s) omitted)\n';
               break;
