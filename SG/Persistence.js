@@ -111,7 +111,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
             var nodePrivate = scene.getPrivateInterface(savedNodes[i]);
             var constructionOptions = { };
             var nodeData = {};
-            nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData, writeOptions);
+            nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData);
             savedData[i] = {
               options: constructionOptions,
               data: nodeData
@@ -251,6 +251,9 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           storage.read(function(data){
             if(!data){
               return;
+            }
+            if((typeof data)=='string'){
+              data = JSON.parse(data);
             }
             dataObj = data;
             

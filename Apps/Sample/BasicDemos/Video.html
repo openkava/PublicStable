@@ -129,7 +129,7 @@ $(document).ready(function() {
   
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
-      $('#globalTime').slider('value', videoNode.getAnimationController().getLocalTime());
+      $('#globalTime').slider('value', videoNode.getAnimationControllerNode().getLocalTime());
     }
   });
   

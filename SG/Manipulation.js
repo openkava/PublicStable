@@ -566,7 +566,8 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     scene.assignDefaults(options, {
         targetNode: undefined,
         targetMember: 'globalXfo',
-        localXfo: new FABRIC.RT.Xfo()
+        localXfo: new FABRIC.RT.Xfo(),
+        undoManager: scene.getManager('UndoManager')
       });
     if(!options.targetNode)
       options.targetNode = options.parentNode;
@@ -598,12 +599,11 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
     
     
     // take care of undo
-    var undoManager = scene.getManager('UndoManager');
-    if(undoManager) {
+    if(options.undoManager) {
       manipulatorNode.pub.addEventListener('dragstart', function() {
-        undoManager.openUndoTransaction();
+        options.undoManager.openUndoTransaction();
         var newXfo, prevXfo = manipulatorNode.getTargetXfo();
-        undoManager.addAction({
+        options.undoManager.addTransaction({
           name: 'InstanceManipulation',
           onClose: function() {
             newXfo = manipulatorNode.getTargetXfo();
@@ -617,7 +617,7 @@ FABRIC.SceneGraph.registerNodeType('InstanceManipulator', {
         });
       });
       manipulatorNode.pub.addEventListener('dragend', function() {
-        undoManager.closeUndoTransaction();
+        options.undoManager.closeUndoTransaction();
       });
     }
     

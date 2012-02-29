@@ -160,12 +160,6 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       buffer.bufferUsage = FABRIC.SceneGraph.OpenGLConstants.GL_STATIC_DRAW;
       redrawEventHandler.setData(name + 'Buffer', 0, buffer);
     };
-    geometryNode.pub.getUniformValue = function(name) {
-      return uniformsdgnode.getData(name);
-    };
-    geometryNode.pub.setUniformValue = function(name, value) {
-      return uniformsdgnode.setData(name, 0, value);
-    };
     geometryNode.pub.getVertexCount = function(count) {
       return attributesdgnode.size();
     };
@@ -214,41 +208,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     
     var parentWriteData = geometryNode.writeData;
     var parentReadData = geometryNode.readData;
-    /*
-    geometryNode.writeGeometryData = function(sceneSerializer, constructionOptions, nodeData) {
-      nodeData.attributes = attributes;
-      nodeData.sliceCount = attributesdgnode.size();
-      nodeData.attributeData = attributesdgnode.getBulkData();
-      var uniformMembers = uniformsdgnode.getMembers();
-      if(uniformMembers.indices){
-        nodeData.indices = uniformsdgnode.getData('indices');
-      }
-    }
-    geometryNode.readGeometryData = function(sceneDeserializer, nodeData) {
-      var attributeMembers = attributesdgnode.getMembers();
-      if(nodeData.attributes){
-        for(var attributeName in nodeData.attributes){
-          if(!attributeMembers[attributeName]){
-            geometryNode.pub.addVertexAttributeValue(
-              attributeName,
-              nodeData.attributes[attributeName].type,
-              nodeData.attributes[attributeName].attributeoptions
-            );
-          }
-        }
-      }
-      if(nodeData.sliceCount){
-        attributesdgnode.resize(nodeData.sliceCount);
-      }
-      if(nodeData.attributeData){
-        attributesdgnode.setBulkData(nodeData.attributeData);
-      }
-      var uniformMembers = uniformsdgnode.getMembers();
-      if(nodeData.indices){
-        uniformsdgnode.setData('indices', 0, nodeData.indices );
-      }
-    }
-    */
+    
     var writeGeometryAttributes = true;
     geometryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
@@ -308,8 +268,7 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        baseGeometryNode: undefined,
-        createBoundingBoxNode: false
+        baseGeometryNode: undefined
       });
     
     options.createDrawOperator = false;
@@ -360,7 +319,6 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
     var parentReadData = geometryDataCopyNode.readData;
     geometryDataCopyNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
-      constructionOptions.createBoundingBoxNode = options.createBoundingBoxNode;
       nodeData.geometryDataCopyNode = geometryDataCopyNode.pub.getName();
     };
     geometryDataCopyNode.readData = function(sceneDeserializer, nodeData) {
@@ -385,13 +343,12 @@ FABRIC.SceneGraph.registerNodeType('Points', {
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {
-        assignDrawOperator: true
       });
     
     var pointsNode = scene.constructNode('Geometry', options);
 
     // implement the geometry relevant interfaces
-    if(options.assignDrawOperator){
+    if(options.drawable){
       pointsNode.getRedrawEventHandler().postDescendBindings.append( scene.constructOperator({
         operatorName: 'drawPoints',
         srcFile: 'FABRIC_ROOT/SG/KL/drawPoints.kl',
@@ -405,7 +362,7 @@ FABRIC.SceneGraph.registerNodeType('Points', {
       }));
     }
 
-    pointsNode.getRayIntersectionOperator = function(transformNodeMember) {
+    pointsNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectPoints',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectPoints.kl',
@@ -415,7 +372,7 @@ FABRIC.SceneGraph.registerNodeType('Points', {
             'raycastData.threshold',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'boundingbox.min',
             'boundingbox.max'
@@ -438,12 +395,11 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {
-        assignDrawOperator: true
       });
     
     var linesNode = scene.constructNode('Geometry', options);
     
-    if(options.assignDrawOperator){
+    if(options.drawable){
       linesNode.getRedrawEventHandler().postDescendBindings.append( scene.constructOperator({
         operatorName: 'drawLines',
         srcFile: 'FABRIC_ROOT/SG/KL/drawLines.kl',
@@ -458,7 +414,7 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
       }));
     }
 
-    linesNode.getRayIntersectionOperator = function(transformNodeMember) {
+    linesNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectLines',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectLines.kl',
@@ -468,7 +424,7 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
             'raycastData.threshold',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
             'boundingbox.min',
@@ -492,12 +448,11 @@ FABRIC.SceneGraph.registerNodeType('LineStrip', {
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {
-        assignDrawOperator: true
       });
     
     var linesNode = scene.constructNode('Geometry', options);
 
-    if(options.assignDrawOperator){
+    if(options.drawable){
       linesNode.getRedrawEventHandler().postDescendBindings.append( scene.constructOperator({
         operatorName: 'drawLineStrip',
         srcFile: 'FABRIC_ROOT/SG/KL/drawLines.kl',
@@ -510,7 +465,7 @@ FABRIC.SceneGraph.registerNodeType('LineStrip', {
       }));
     }
     
-    linesNode.getRayIntersectionOperator = function(transformNodeMember) {
+    linesNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectLineStrip',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectLines.kl',
@@ -520,7 +475,7 @@ FABRIC.SceneGraph.registerNodeType('LineStrip', {
             'raycastData.threshold',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
             'boundingbox.min',
@@ -546,13 +501,12 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         uvSets: undefined,
-        tangentsFromUV: undefined,
-        assignDrawOperator: true
+        tangentsFromUV: undefined
       });
 
     var trianglesNode = scene.constructNode('Geometry', options);
     
-    if(options.assignDrawOperator){
+    if(options.drawable){
       trianglesNode.getRedrawEventHandler().postDescendBindings.append( scene.constructOperator({
         operatorName: 'drawTriangles',
         srcFile: 'FABRIC_ROOT/SG/KL/drawTriangles.kl',
@@ -568,7 +522,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
       }));
     }
     
-    trianglesNode.getRayIntersectionOperator = function(transformNodeMember) {
+    trianglesNode.getRayIntersectionOperator = function() {
       return scene.constructOperator({
           operatorName: 'rayIntersectTriangles',
           srcFile: 'FABRIC_ROOT/SG/KL/rayIntersectTriangles.kl',
@@ -577,7 +531,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
             'raycastData.ray',
             'instance.drawToggle',
             'instance.raycastOverlaid',
-            'transform.' + transformNodeMember,
+            'transform.globalXfo',
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
             'boundingbox.min',
@@ -634,8 +588,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
     transformNode: 'Optional. Specify a Transform node to transform the geometry during rendering',
-    transformNodeMember: 'Default Value:\'globalXfo\'. Specify the XFo member or member array on the transform node to use as the model matrix in rendering',
-    transformNodeIndex: 'Default Value:undefined. Specify the index of the XFo in the member array on the transform node to use as the model matrix in rendering',
     constructDefaultTransformNode: 'Flag specify whether to construct a default transform node if none is provided by the \'transformNode\' option above.',
     geometryNode: 'Optional. Specify a Geometry node to draw during rendering',
     enableRaycasting: 'Flag specify whether this Instance should support raycasting.',
@@ -645,10 +597,10 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         transformNode: undefined,
-        transformNodeMember: 'globalXfo',
-        transformNodeIndex: undefined,
         constructDefaultTransformNode: true,
         geometryNode: undefined,
+        materialNode: undefined,
+        transformNode: undefined,
         enableRaycasting: false,
         enableDrawing: true,
         raycastOverlaid: false
@@ -658,7 +610,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       dgnode = instanceNode.constructDGNode('DGNode'),
       redrawEventHandler = instanceNode.constructEventHandlerNode('Redraw'),
       transformNode,
-      transformNodeMember = options.transformNodeMember,
       geometryNode,
       materialNodes = [];
 
@@ -695,35 +646,18 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     var assignLoadTransformOperators = function() {
       var transformdgnode = transformNode.getDGNode();
       redrawEventHandler.setScope('transform', transformdgnode);
-      if(options.transformNodeIndex == undefined){
-        redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-            operatorName: 'loadModelProjectionMatrices',
-            srcFile: 'FABRIC_ROOT/SG/KL/loadModelProjectionMatrices.kl',
-            entryFunctionName: 'loadModelProjectionMatrices',
-            preProcessorDefinitions: preProcessorDefinitions,
-            parameterLayout: [
-              'shader.shaderProgram',
-              'transform.' + transformNodeMember,
-              'camera.cameraMat44',
-              'camera.projectionMat44'
-            ]
-          }));
-      }else{
-        redrawEventHandler.addMember('transformNodeIndex', 'Size', options.transformNodeIndex);
-        redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'loadIndexedModelProjectionMatrices',
+      redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'loadModelProjectionMatrices',
           srcFile: 'FABRIC_ROOT/SG/KL/loadModelProjectionMatrices.kl',
-          entryFunctionName: 'loadIndexedModelProjectionMatrices',
+          entryFunctionName: 'loadModelProjectionMatrices',
           preProcessorDefinitions: preProcessorDefinitions,
           parameterLayout: [
             'shader.shaderProgram',
-            'transform.' + transformNodeMember + '<>',
-            'self.transformNodeIndex',
+            'transform.globalXfo',
             'camera.cameraMat44',
             'camera.projectionMat44'
           ]
         }));
-      }
     }
     var rayIntersectionOperatorsAssigned = false;
     var assignRayIntersectionOperators = function() {
@@ -741,7 +675,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
           // and can provide the raycast. 
           scene.getSceneRaycastEventHandler().appendChildEventHandler(transformNode.getRaycastEventHandler());
         } else {
-          var raycastOperator = geometryNode.getRayIntersectionOperator(transformNodeMember);
+          var raycastOperator = geometryNode.getRayIntersectionOperator();
           raycastEventHandler = instanceNode.constructEventHandlerNode('Raycast');
           raycastEventHandler.setScope('geometry_uniforms', geometryNode.getUniformsDGNode());
           raycastEventHandler.setScope('geometry_attributes', geometryNode.getAttributesDGNode());
@@ -770,16 +704,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       });
     
     instanceNode.addReferenceInterface('Transform', 'Transform',
-      function(nodePrivate, member){
-        if (member){
-          if(!nodePrivate.getDGNode().getMembers()[member]) {
-            var message = 'Error in Transform node assignement on :' + nodePrivate.name +
-              ' \n member not found :' + member + '\n\n';
-            message += ' Members:' + JSON.stringify(nodePrivate.getDGNode().getMembers());
-            throw (message);
-          }
-          transformNodeMember = member;
-        }
+      function(nodePrivate){
         var transformNodeAssigned = (transformNode != undefined);
         transformNode = nodePrivate;
         if(!transformNodeAssigned){
@@ -790,9 +715,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         }
       });
     
-    instanceNode.pub.getTransformNodeMember = function() {
-      return transformNodeMember;
-    };
     instanceNode.addReferenceListInterface('Material', 'Material',
       function(nodePrivate, index){
         nodePrivate.getRedrawEventHandler().appendChildEventHandler(redrawEventHandler);
@@ -804,27 +726,28 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       });
     
     var layerManagerNode;
-    instanceNode.pub.setLayerManager = function(node, layer){
-      var dgnode = instanceNode.getDGNode();
-      if(layerManagerNode){
-        // remove operator
-      }
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'toggleDraw',
-        srcCode: '\n'+
-        'operator toggleDraw(io Boolean drawToggle, io Boolean layerValue) {\n' +
-        '  drawToggle = layerValue;\n' +
-        '}',
-        entryFunctionName: 'toggleDraw',
-        parameterLayout: [
-          'self.drawToggle',
-          'layerManager.'+layer
-        ]
-      }));
+    instanceNode.addReferenceInterface('LayerManager', 'LayerManager',
+      function(nodePrivate, layer){
+        if(layerManagerNode){
+          // remove operator
+        }
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'toggleDraw',
+          srcCode: '\n'+
+          'operator toggleDraw(io Boolean drawToggle, io Boolean layerValue) {\n' +
+          '  drawToggle = layerValue;\n' +
+          '}',
+          entryFunctionName: 'toggleDraw',
+          parameterLayout: [
+            'self.drawToggle',
+            'layerManager.'+layer
+          ]
+        }));
         
-      layerManagerNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(layerManagerNode.getDGNode(), 'layerManager');
-    }
+        layerManagerNode = nodePrivate;
+        dgnode.setDependency(layerManagerNode.getDGNode(), 'layerManager');
+    });
+    
     //////////////////////////////////////////
     // Persistence
     var parentAddDependencies = instanceNode.addDependencies;
@@ -847,7 +770,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
 
       if(sceneSerializer.isNodeBeingSaved(transformNode.pub)){
         nodeData.transformNode = transformNode.pub.getName();
-        nodeData.transformNodeMember = transformNodeMember;
       }
       if(sceneSerializer.isNodeBeingSaved(geometryNode.pub)){
         nodeData.geometryNode = geometryNode.pub.getName();
@@ -865,7 +787,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       if (nodeData.transformNode) {
         var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
         if (transformNode) {
-          instanceNode.pub.setTransformNode(transformNode, nodeData.transformNodeMember);
+          instanceNode.pub.setTransformNode(transformNode);
         }
       }
       if (nodeData.geometryNode) {
@@ -888,7 +810,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     scene.addEventHandlingFunctions(instanceNode);
 
     if (options.transformNode) {
-      instanceNode.pub.setTransformNode(options.transformNode, options.transformNodeMember);
+      instanceNode.pub.setTransformNode(options.transformNode);
     }
     else if (options.constructDefaultTransformNode) {
       instanceNode.pub.setTransformNode(scene.pub.constructNode('Transform', { hierarchical: false }));
@@ -900,7 +822,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       instanceNode.pub.addMaterialNode(options.materialNode);
     }
     if(options.layerManager){
-      instanceNode.pub.setLayerManager(options.layerManager, options.layer);
+      instanceNode.pub.setLayerManagerNode(options.layerManager, options.layer);
     }
     return instanceNode;
   }
@@ -911,7 +833,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
 FABRIC.SceneGraph.registerNodeType('LayerManager', {
   briefDesc: '',
   detailedDesc: '',
-  parentNodeDesc: 'SceneGraphNode',
+  parentNodeDesc: '',
   optionsDesc: {
   },
   factoryFn: function(options, scene) {

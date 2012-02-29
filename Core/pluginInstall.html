@@ -29,6 +29,7 @@ $(document).ready(function() {
         || this.searchVersion(navigator.appVersion)
         || "an unknown version";
       this.OS = this.searchString(this.dataOS) || "an unknown OS";
+      this.OSVersion = this.searchString(this.dataOSVersion) || "an unknown OS Version";
     },
     searchString: function (data) {
       for (var i=0;i<data.length;i++)	{
@@ -135,6 +136,43 @@ $(document).ready(function() {
         subString: "Linux",
         identity: "Linux"
       }
+    ], 
+    dataOSVersion : [
+      {
+        string: navigator.appVersion,
+        subString: "NT 5.1",
+        identity: "XP"
+      },
+      {
+        string: navigator.appVersion,
+        subString: "NT 6.0",
+        identity: "Vista"
+      },
+      {
+        string: navigator.appVersion,
+        subString: "NT 6.1",
+        identity: "7"
+      },
+      {
+        string: navigator.userAgent,
+        subString: "Mac OS X 10.4",
+        identity: "Tiger"
+      },
+      {
+        string: navigator.userAgent,
+        subString: "Mac OS X 10.5",
+        identity: "Leopard"
+      },
+      {
+        string: navigator.userAgent,
+        subString: "Mac OS X 10.6",
+        identity: "Snow Leopard"
+      },
+      {
+        string: navigator.userAgent,
+        subString: "Mac OS X 10_7_3",
+        identity: "Lion"
+      }
     ],
     dataCPUArch : [
       {
@@ -169,10 +207,18 @@ $(document).ready(function() {
     var os, arch, ext;
     switch(BrowserDetect.OS){
       case "Mac":
+        if(BrowserDetect.OSVersion == "Tiger" || BrowserDetect.OSVersion == "Leopard" ){
+          alert("Unsupported Operating system. Fabric supports only Snow Leopard and above.");
+          return false;
+        }
         os = "Darwin";
         arch = "universal";
         break;
       case "Windows":
+        if(BrowserDetect.OSVersion == "XP"){
+          alert("Unsupported Operating system. Fabric supports only Vista and above.");
+          return false;
+        }
         os = "Windows";
         arch = "x86";
         break;
