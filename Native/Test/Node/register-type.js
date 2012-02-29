@@ -48,7 +48,7 @@ console.log( JSON.stringify(data) );
 console.log(data.sum());
 
 var op = FABRIC.DG.createOperator("op");
-op.setSourceCode("(inline)", "use Vec2; operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
+op.setSourceCode("(inline)", "require Vec2; operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
 op.setEntryFunctionName("entry");
 if (op.getErrors().length > 0) {
   console.log(op.getErrors());
