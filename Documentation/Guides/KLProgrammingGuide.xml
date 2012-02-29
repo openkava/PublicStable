@@ -836,7 +836,7 @@ double-quoted containing "double quotes"
       </para>
       
       <para>
-        A sequence of statements, surrounded by braces (a <code>{</code> and a <code>}</code>), can take the place of a single statement.  This also introduces a nested variable <glossterm>scope</glossterm>; for more information, see <xref linkend="scope.block" />.
+        A sequence of statements, surrounded by braces (a <code>{</code> and a <code>}</code>), can take the place of a single statement.  This also introduces a nested  scope; for more information, see <xref linkend="scope.compound-statement" />.
       </para>
     </section>
   </chapter>
@@ -1047,7 +1047,7 @@ operator entry() {
               <term><code>Scalar</code></term>
               <listitem><para>
                 an alias for <code>Float32</code>
-                <note><para>The <code>Scalar</code> alias will probably be removed in a future version of KL.  We recommend that you not use it in any new code.</para></note>
+                <warning><para>The <code>Scalar</code> alias will probably be removed in a future version of KL.  We recommend that you not use it in any new code.</para></warning>
               </para></listitem>
             </varlistentry>
           </variablelist>
@@ -2424,56 +2424,67 @@ pi = 3.14159365358979
     </section>
   </chapter>
   <chapter xml:id="scope">
-    <title>Scope</title>
+    <title>Scopes</title>
     
     <para>
       The term <glossterm>scope</glossterm> in programming languages refers to the parts of a program in which variables, constants and functions are visible.  Scoping rules are also responsible for managing the <quote>lifecycle</quote> of variables; in the case of KL, this refers to when destructors are called for structure values.
     </para>
     
-    <para>
-      In KL, there are four kinds scopes: the global scope, function scopes, compound statement scopes and temporary scopes.  Scopes <glossterm>nest</glossterm> inside each other; when a KL program refers to a variable by name, the compiler determines which variable is being referred to by searching from the current innermost scope outwards through the nested scopes to the outermost scope (which is always the global scope).  Like C, KL is a statically-scoped language, meaning that the exactly variable that is being referred to is resolved at compile time (and not at run time).
-    </para>
+    <section xml:id="scope.types">
+      <title>Types of Scopes</title>
+      
+      <para>
+        In KL, there are four kinds scopes: the global scope, function scopes, compound statement scopes and temporary scopes.  Scopes <glossterm>nest</glossterm> inside each other; when a KL program refers to a variable by name, the compiler determines which variable is being referred to by searching from the current innermost scope outwards through the nested scopes to the outermost scope (which is always the global scope).  Like C, KL is a statically-scoped language, meaning that the exactly variable that is being referred to is resolved at compile time (and not at run time).
+      </para>
+  
+      <section xml:id="scope.global">
+        <title>The Global Scope</title>
     
-    <section xml:id="scope.global">
-      <title>The Global Scope</title>
-      
-      <para>
-        The global scope is the top-level scope of a KL program.  The symbols that are visible in the global scope are global constants as well as functions and operators.  The global scope is always the outermost scope at any point in a KL program.
-      </para>
-    </section>
-    <section xml:id="scope.function">
-      <title>Function Scope</title>
-      
-      <para>
-        Whenever a function or operator is defined, a function scope is created that is nested inside the global scope.  The arguments to the function are provided within the function scope.  Within the function scope, a function definition also creates a compound statement scope corresponding to the compound statement that constitutes the body of the function.
-      </para>
-    </section>
-    <section xml:id="scope.compound-statement">
-      <title>Compound Statement Scope</title>
-      
-      <para>
-        Any time that a <code>{</code> followed by zero or more statements followed by <code>}</code> is used to introduce a compound statement, a new <glossterm>compound statement scope</glossterm> is introduced.  Compound statement scopes are nested inside function scopes (when they correspond to the compound statement that constitutes the body of a function) or inside other compound statement scopes.
-      </para>
-      
-      <para>
-        When control reaches the end of a compound statement (by executing the last statement or via the <code>return</code>, <code>break</code> or <code>continue</code> statements), any structure values that have corresponding destructors will have those destructors executed.
-      </para>
-      
-      <para>
-        Note that declaring a loop index variable inside a loop statement is a special case of a compound statement scope.  In the case that the loop body is a compound statement, the corresponding compound statement scope is nested inside the loop's compound statement scope.
-      </para>
-    </section>
-    <section xml:id="scope.temporary">
-      <title>Temporary Scope</title>
-      
-      <para>
-        Any time that a constructor is directly invoked to create a temporary value (see <xref linkend="constructors.invocation.call" />), a scope is created to contain the temporary value.  The scope encloses the surrounding expression of the temporary value; this means that when the surrounding expression is finished execution, the temporary value's destructor, if it exists, is executed.
-      </para>
-    </section>
+        <para>
+          The global scope is the top-level scope of a KL program.  The symbols that are visible in the global scope are global constants as well as functions and operators.  The global scope is always the outermost scope at any point in a KL program.
+        </para>
+      </section>
+      <section xml:id="scope.function">
+        <title>Function Scope</title>
     
-    <example xml:id="scope.ex">
-      <title>Scopes</title>
-      <programlisting language="KL"><![CDATA[
+        <para>
+          Whenever a function or operator is defined, a function scope is created that is nested inside the global scope.  The arguments to the function are provided within the function scope.  Within the function scope, a function definition also creates a compound statement scope corresponding to the compound statement that constitutes the body of the function.
+        </para>
+      </section>
+      <section xml:id="scope.compound-statement">
+        <title>Compound Statement Scope</title>
+    
+        <para>
+          Any time that a <code>{</code> followed by zero or more statements followed by <code>}</code> is used to introduce a compound statement, a new <glossterm>compound statement scope</glossterm> is introduced.  Compound statement scopes are nested inside function scopes (when they correspond to the compound statement that constitutes the body of a function) or inside other compound statement scopes.
+        </para>
+    
+        <para>
+          When control reaches the end of a compound statement (by executing the last statement or via the <code>return</code>, <code>break</code> or <code>continue</code> statements), any structure values that have corresponding destructors will have those destructors executed.
+        </para>
+    
+        <para>
+          Note that declaring a loop index variable inside a loop statement is a special case of a compound statement scope.  In the case that the loop body is a compound statement, the corresponding compound statement scope is nested inside the loop's compound statement scope.
+        </para>
+      </section>
+      <section xml:id="scope.temporary">
+        <title>Temporary Scope</title>
+    
+        <para>
+          Any time that a constructor is directly invoked to create a temporary value (see <xref linkend="constructors.invocation.call" />), a scope is created to contain the temporary value.  The scope encloses the surrounding expression of the temporary value; this means that when the surrounding expression is finished execution, the temporary value's destructor, if it exists, is executed.
+        </para>
+      </section>
+    </section>
+
+    <section xml:id="scope.example">
+      <title>Nested Scopes Example</title>
+      
+      <para>
+        For a precise understanding of the nesting of KL scopes, study the following example carefully!
+      </para>
+  
+      <example xml:id="scope.ex">
+        <title>Nested scopes</title>
+        <programlisting language="KL"><![CDATA[
 struct T {
   String s;
 };
@@ -2493,7 +2504,7 @@ function foo(T t) {
   report("declared t in foo; t is now " + t);
   for (Index i=0; i<3; ++i) {
     report("top of loop body; t is now " + t);
-    T t("loopT");
+    T t("loopT:" + i);
     report("declared t in loop; t is now " + t);
   }
   report("after loop; t is now " + t);
@@ -2508,8 +2519,36 @@ operator entry() {
   foo(t);
   report("came back from foo; t is now " + t);
 }
-      ]]></programlisting>
-    </example>
+        ]]></programlisting>
+      </example>
+      <informalfigure>
+        <simpara>Output:</simpara>
+        <screen><![CDATA[
+top of entry; t is now 2.75
+created T; s = entryT
+declared t in entry; t is now {s:"entryT"}
+start of foo; t is now {s:"entryT"}
+created T; s = fooT
+declared t in foo; t is now {s:"fooT"}
+top of loop body; t is now {s:"fooT"}
+created T; s = loopT:0
+declared t in loop; t is now {s:"loopT:0"}
+destroying T; s = loopT:0
+top of loop body; t is now {s:"fooT"}
+created T; s = loopT:1
+declared t in loop; t is now {s:"loopT:1"}
+destroying T; s = loopT:1
+top of loop body; t is now {s:"fooT"}
+created T; s = loopT:2
+declared t in loop; t is now {s:"loopT:2"}
+destroying T; s = loopT:2
+after loop; t is now {s:"fooT"}
+destroying T; s = fooT
+came back from foo; t is now {s:"entryT"}
+destroying T; s = entryT
+        ]]></screen>
+      </informalfigure>
+    </section>
   </chapter>
   <chapter xml:id="expressions">
     <title>Expressions</title>
