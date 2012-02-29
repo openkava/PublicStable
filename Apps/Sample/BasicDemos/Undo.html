@@ -95,7 +95,7 @@ $(document).ready(function() {
           // when manipulations caused multiple data values to change.
           undoManager.openUndoTransaction();
           var newVal, prevVal = ui.value;
-          undoManager.addAction({
+          undoManager.addTransaction({
             onClose: function() {
               // When the undo transaction is closed, we record the new value.
               newVal = $slider.slider('value');
