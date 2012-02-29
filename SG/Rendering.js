@@ -373,17 +373,11 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       if(!visible){
         return;
       }
-      if(scene.isPlaying()){
-        if(force){
-          fabricwindow.needsRedraw();
-        }
-      }else{
-        // If we give the browser a millisecond pause, then the redraw will
-        // occur. Otherwist this message gets lost, causing a blank screen when
-        // demos load. 
+      if(!scene.isPlaying() || force){
+        // By setting a timout of 0ms, we let the browser provess any pending JavaScript
         setTimeout(function(){
           fabricwindow.needsRedraw();
-        }, 1);
+        }, 0);
       }
     };
     

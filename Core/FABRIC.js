@@ -4,8 +4,8 @@
 
 var FABRIC = (function() {
 
-  var requiredVersion = [1,0,21];
-  var requiredVersionSuffix = "-beta";
+  var requiredVersion = [1,0,22];
+  var requiredVersionSuffix = "-release";
   var fullRequiredVersionString = requiredVersion.join('.') + requiredVersionSuffix;
 
   // we keep an array of context ids,
@@ -2392,6 +2392,7 @@ var requirejs, require, define;
         //embedTag.style.display = 'none';
       }
       element.appendChild(embedTag);
+      context.swapFabricClient( embedTag );
 
       var showViewport = function() {
         if (options.aspectRatio) {

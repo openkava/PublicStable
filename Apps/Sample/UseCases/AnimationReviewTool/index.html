@@ -72,6 +72,9 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Alembic",
                 "SG/Rendering"], function() {
     
+FABRIC.SceneGraph.defineEffectFromFile('FlatUVMaterial', 'Shaders/FlatUVShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FlatBlendTextureMaterial', 'Shaders/FlatBlendTextureShader.xml');
+
 FABRIC.SceneGraph.registerNodeType('UVViewport', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
@@ -574,7 +577,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
       var cameraListHtml = "<option value='userCamera'>Free Camera</option>";
         
       // setup the animation time
-      timeRange = alembicLoadNode.getAnimationController().getTimeRange();
+      timeRange = alembicLoadNode.getAnimationControllerNode().getTimeRange();
       $('#localtime').slider({
           min: timeRange.x,
           max: timeRange.y,
@@ -692,7 +695,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     }
 
     // create a key to identify the plane
-    var timeKey = alembicLoadNode.getAnimationController().getLocalTime();
+    var timeKey = alembicLoadNode.getAnimationControllerNode().getLocalTime();
     timeKey = ''+parseInt(timeKey * 30 + 0.5);
     if(currentKey == timeKey)
       return;
@@ -703,8 +706,8 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         viewportNode: viewport,
         uvViewportNode: uvViewport,
         planeNode: planeGeometry,
-        animationControllerNode: alembicLoadNode.getAnimationController(),
-        planeTime: alembicLoadNode.getAnimationController().getLocalTime(),
+        animationControllerNode: alembicLoadNode.getAnimationControllerNode(),
+        planeTime: alembicLoadNode.getAnimationControllerNode().getLocalTime(),
         planeBlend: options.blend ? options.blend : 5.0 / 30.0,
         resolutionFactor: 0.2,
         paintColor: brushColor,
@@ -716,7 +719,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
       planes[timeKey] = {
         camera: usedCamera,
         instance: newPlane,
-        time: alembicLoadNode.getAnimationController().getLocalTime()
+        time: alembicLoadNode.getAnimationControllerNode().getLocalTime()
       };
   
       // re-create the list html
@@ -766,7 +769,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
       });
       var localTime = $('#localtime').slider();
       scene.animation.play( function() {
-        localTime.slider('value', alembicLoadNode.getAnimationController().getLocalTime());
+        localTime.slider('value', alembicLoadNode.getAnimationControllerNode().getLocalTime());
       });
     } else if(evt.keyCode == 40) { // down arrow
       $('#play').button('option', {
@@ -916,7 +919,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         for(var key in jsonData.planes) {
           switchCamera(jsonData.planes[key].camera);
           scene.animation.setTime(parseFloat(jsonData.planes[key].time));
-          alembicLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
+          alembicLoadNode.getAnimationControllerNode().setLocalTime(jsonData.planes[key].time);
           var planeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
           $('#planeblend').slider("option", "value", jsonData.planes[key].blend);
           paintPlane({resourceFileHandle: planeFileHandle, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
@@ -933,7 +936,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         switchCamera(jsonData.currentCamera);
 
         scene.animation.setTime(parseFloat(jsonData.currentTime));
-        alembicLoadNode.getAnimationController().setLocalTime(jsonData.currentTime);
+        alembicLoadNode.getAnimationControllerNode().setLocalTime(jsonData.currentTime);
         $('#localtime').slider('value', parseFloat(jsonData.currentTime));
 
         viewport.redraw();
@@ -968,7 +971,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
      
-      $('#localtime').slider().slider('value', alembicLoadNode.getAnimationController().getTime());
+      $('#localtime').slider().slider('value', alembicLoadNode.getAnimationControllerNode().getTime());
     }
   });
 
