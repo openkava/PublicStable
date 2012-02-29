@@ -77,6 +77,7 @@ namespace Fabric
         drawWatermark( m_windowWidth, m_windowHeight );
         glFinish();
 
+        GdkGLDrawable *gdkGLDrawable = gdk_gl_drawable_get_current();
         if ( gdk_gl_drawable_is_double_buffered( gdkGLDrawable ) )
           gdk_gl_drawable_swap_buffers( gdkGLDrawable );
 
