@@ -72,6 +72,9 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Alembic",
                 "SG/Rendering"], function() {
     
+FABRIC.SceneGraph.defineEffectFromFile('FlatUVMaterial', 'Shaders/FlatUVShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FlatBlendTextureMaterial', 'Shaders/FlatBlendTextureShader.xml');
+
 FABRIC.SceneGraph.registerNodeType('UVViewport', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
