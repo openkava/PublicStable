@@ -14,7 +14,9 @@
 <xsl:import href="fo.xml" />
 
 <!-- graphics for the alerts, tips, cautions, warnings, notes, etc. Build your own or turn this off! -->
-<xsl:param name="admon.graphics" select="0" />
+<xsl:param name="admon.textlabel" select="0"></xsl:param>
+<xsl:param name="admon.graphics" select="1" />
+<xsl:param name="admon.graphics.extension">.png</xsl:param>
 
 
 <!--programlisting stuff -->
@@ -162,13 +164,16 @@ set       toc,title
 
 
 <xsl:attribute-set name="admonition.properties">
-  <xsl:attribute name="border">0.5pt solid black</xsl:attribute>
-  <xsl:attribute name="background-color">#ffffee</xsl:attribute>
-  <xsl:attribute name="padding">0.1in</xsl:attribute>
+  <xsl:attribute name="border">none</xsl:attribute>
+  <xsl:attribute name="padding">0</xsl:attribute>
 </xsl:attribute-set>
 
-
-
+<xsl:attribute-set name="admonition.title.properties">
+  <xsl:attribute name="font-size">14pt</xsl:attribute>
+  <xsl:attribute name="font-weight">bold</xsl:attribute>
+  <xsl:attribute name="hyphenate">false</xsl:attribute>
+  <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+</xsl:attribute-set>
 
 <!-- border and shade to screen and programlisting -->
 
