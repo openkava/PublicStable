@@ -29,6 +29,7 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Manipulation",
                 "SG/Lidar"], function() {
  
+  FABRIC.SceneGraph.defineEffectFromFile('FlatGradientMaterial', 'Shaders/FlatGradientShader.xml');
   
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });

@@ -20,6 +20,9 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Lidar"], function() {
+ 
+ 
+FABRIC.SceneGraph.defineEffectFromFile('FlatGradientMaterial', 'Shaders/FlatGradientShader.xml');
 
 FABRIC.SceneGraph.registerNodeType('LidarInstance', {
   factoryFn: function(options, scene) {
@@ -61,7 +64,7 @@ $(document).ready(function() {
   var filesLoaded = 0;
   $('#loadingDesc').html("Downloading "+numLasFiles+" LIDAR files...<br>This may take some time (several minutes).");
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
