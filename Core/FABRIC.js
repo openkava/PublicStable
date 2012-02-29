@@ -2392,6 +2392,7 @@ var requirejs, require, define;
         //embedTag.style.display = 'none';
       }
       element.appendChild(embedTag);
+      context.swapFabricClient( embedTag );
 
       var showViewport = function() {
         if (options.aspectRatio) {
