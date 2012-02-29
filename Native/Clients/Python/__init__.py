@@ -36,11 +36,10 @@ sys.excepthook = _excepthook
 # prevent exit until all our threads complete
 _clients = []
 def _waitForClose():
-  if not _uncaughtException:
-    # FIXME this will run in a tight loop while waiting
-    while not _caughtSIGINT and len( _clients ) > 0:
-      for c in _clients:
-        c.running()
+  # FIXME this will run in a tight loop while waiting
+  while not _uncaughtException and not _caughtSIGINT and len( _clients ) > 0:
+    for c in _clients:
+      c.running()
 atexit.register( _waitForClose )
 
 # declare explicit prototypes for all the external library calls
@@ -196,9 +195,8 @@ class _CLIENT( object ):
     _clients.append( self )
 
   def waitForClose( self ):
-    if not _uncaughtException:
-      while not _caughtSIGINT and not self.__closed:
-        self.__processOneNotification()
+    while not _uncaughtException and not _caughtSIGINT and not self.__closed:
+      self.__processOneNotification()
 
   def running( self ):
     self.__processAllNotifications()
