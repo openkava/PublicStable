@@ -78,6 +78,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     fabricwindow.windowNode.addMember('numDrawnVerticies', 'Size');
     fabricwindow.windowNode.addMember('numDrawnTriangles', 'Size');
     fabricwindow.windowNode.addMember('numDrawnGeometries', 'Size');
+    fabricwindow.windowNode.addMember('fboId', 'Integer', -1);
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnVerticies', false);
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnTriangles', false);
     viewportNode.addMemberInterface(fabricwindow.windowNode, 'numDrawnGeometries', false);
@@ -90,7 +91,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           parameterLayout: [
             'window.numDrawnVerticies',
             'window.numDrawnTriangles',
-            'window.numDrawnGeometries'
+            'window.numDrawnGeometries',
+            'window.fboId'
           ]
         }));
     
@@ -144,10 +146,12 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       // TOOD: figure out why this is required. 
       retrieveBrowserZoom();
       fabricwindow.needsRedraw();
+      viewportNode.pub.fireEvent('show');
     };
     viewportNode.pub.hide = function(){
       fabricwindow.hide();
       visible = false;
+      viewportNode.pub.fireEvent('hide');
     };
     window.addEventListener('resize', retrieveBrowserZoom, false);
     
@@ -392,6 +396,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       // re-write this function.
       return scene.getContext().VP.viewPort.getFPS();
     };
+    
+    
+    var screenGrabber;
+    viewportNode.pub.takeScreenShot = function(filename){
+      if(!screenGrabber){
+        screenGrabber = scene.pub.constructNode('ScreenGrab' );
+      }
+      screenGrabber.writeImageFile(filename);
+    }
     
     if (options.enableRaycasting)
       viewportNode.pub.enableRaycasting();

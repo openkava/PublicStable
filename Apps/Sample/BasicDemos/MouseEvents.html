@@ -26,7 +26,7 @@ FABRIC.require(["SG/SceneGraph",
                  "SG/Materials",
                  "SG/Manipulation"], function() {
   
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
 
   var camera = scene.constructNode('TargetCamera', {
       position: new FABRIC.RT.Vec3(70, 62, 40),
@@ -133,6 +133,7 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });
