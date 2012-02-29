@@ -3,8 +3,9 @@
  */
 
 (function(){return (
-function (fabricClient, logCallback, debugLogCallback) {
+function (originalFabricClient, logCallback, debugLogCallback) {
 
+  var fabricClient = originalFabricClient;
   var queuedCommands = [];
   var queuedUnwinds = [];
   var queuedCallbacks = [];
@@ -2532,6 +2533,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       });
       executeQueuedCommands();
       return memoryUsage;
+    },
+    swapFabricClient: function( newFabricClient ) {
+      executeQueuedCommands();
+      fabricClient = newFabricClient;
     }
   };
 }
