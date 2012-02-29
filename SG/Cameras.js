@@ -92,6 +92,7 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     cameraNode.addMemberInterface(dgnode, 'farDistance', true);
     cameraNode.addMemberInterface(dgnode, 'fovY', true);
     cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'screenOffset', true);
 
     scene.addEventHandlingFunctions(cameraNode);
     
