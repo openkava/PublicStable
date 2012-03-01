@@ -4171,5 +4171,19 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         </tgroup>
       </table>
     </section>
+    <section>
+      <title>OGL Extension Guide</title>
+      <para>The OGL extension provides all valid OpenGL functions to KL. It acts as a wrapper for
+        Glew (http://glew.sourceforge.net/), essentially. With the OGL extension you can use any
+        OpenGL call inside KL. For example:</para>
+      <programlisting language="JavaScript">use FabricOGL;
+
+glClearColor(1.0, 0.0, 0.0, 1.0);
+glEnable(GL_CULL_FACE);
+glPatchParameteri(GL_PATCH_VERTICES, 3);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);</programlisting>
+      <para>Please see any of the SceneGraph KL files for references of this. All of tehe
+        SceneGraph's rendering has been implemented using this extension.</para>
+    </section>
   </section>
 </article>
