@@ -109,7 +109,7 @@ FABRIC.RT.oglDepthRenderTarget = function(size){
 
 
 
-FABRIC.RT.oglPostProcessingRenderTarget = function(){
+FABRIC.RT.oglPostProcessingRenderTarget = function(options){
   return new FABRIC.RT.OGLRenderTarget(
     0,
     0,
@@ -128,7 +128,8 @@ FABRIC.RT.oglPostProcessingRenderTarget = function(){
           FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
           FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE)
       )
-    ]
+    ],
+    options
   )
 }
 
