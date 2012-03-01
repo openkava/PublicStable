@@ -143,7 +143,11 @@ import itertools
 Import( 'baseEnv', 'buildOS' )
 
 if 'dist' in COMMAND_LINE_TARGETS:
-  installers = []
+  Import( 'klToolInstaller', 'fileSystemInstaller' )
+  installers = [klToolInstaller, fileSystemInstaller]
+  if buildOS == 'Windows':
+    Import( 'kinectInstaller' )
+    installers.append( kinectInstaller )
   installers += SConscript( 'Chrome/SConscript' )
   installers += SConscript( 'Firefox/SConscript' )
   installers += SConscript( 'Python/SConscript' )

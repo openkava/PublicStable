@@ -3,7 +3,10 @@
 #
 
 import os.path
-Import( 'coreEnv', 'buildOS', 'buildObject' )
+Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir' )
+
+klToolPackageName = "FabricEngine-KLTool-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
+klToolPackageDir = distDir.Dir(klToolPackageName)
 
 klEnv = coreEnv.Clone()
 
@@ -23,5 +26,35 @@ elif buildOS == 'Linux':
 	klEnv[ '_LIBFLAGS' ] = '-Wl,--start-group ' + klEnv['_LIBFLAGS'] + ' -Wl,--end-group'
 
 klBin = klEnv.Program( 'kl', [ Glob('*.cpp'), extraObjects ] )
+
+klToolInstallerFiles = [
+  Install(
+    klToolPackageDir,
+    klEnv.File("README.txt")
+  ),
+  Install(
+    klToolPackageDir,
+    klBin
+  )
+  ]
+
+if buildOS == 'Windows':
+  installerEnv = klEnv.Clone()
+  generateDistZip( installerEnv )
+  installerEnv.Append( DISTZIP_ROOTDIR = klToolPackageDir )
+  klToolInstaller = installerEnv.DistZip(
+    distDir.File(klToolPackageName+".zip"),
+    installerFiles
+  )
+else:
+  klToolInstaller = klEnv.Command(
+    distDir.File(klToolPackageName+".tar.bz2"),
+    klToolInstallerFiles,
+    [
+      [ "tar", "-C", distDir, "-jcf", "$TARGET", klToolPackageName ]
+    ]
+  )
+Alias( 'klToolInstaller', klToolInstaller )
+Export( 'klToolInstaller' )
   
 Alias( 'kl', klBin )
