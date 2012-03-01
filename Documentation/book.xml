@@ -3997,5 +3997,179 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         </tgroup>
       </table>
     </section>
+    <section>
+      <title>OBJ Extension Guide</title>
+      <para>The OBJ extension provides an OBJ parser to Fabric Engine. It is implemented as a simple
+        type storing the handle to the parser, and KL functions allowing to query the parser.</para>
+      <table frame="none" colsep="0" rowsep="0">
+        <title>OBJDataHandle</title>
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="349pt"/>
+          <colspec colnum="2" colname="c2" colwidth="300pt"/>
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Members</emphasis></entry>
+              <entry/>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Data handle</emphasis></entry>
+              <entry>The private data of the OBJDataHandle type.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <table frame="none" colsep="0" rowsep="0">
+        <title>OBJ Functions</title>
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="349pt"/>
+          <colspec colnum="2" colname="c2" colwidth="300pt"/>
+          <tbody>
+            <row>
+              <entry><emphasis role="italic">FabricOBJDecode( Data objData, Size objDataSize,
+                  Boolean splitByObjects, Boolean splitByGroups, Boolean splitByMaterials, io
+                  OBJDataHandle handle )</emphasis></entry>
+              <entry>Parses an OBJ file stored in memory as a Data pointer of a given size.
+                splitByObjects determines if objects should be merged or represented as separate
+                objects, splitByGroups determines is shading groups should be split into separate
+                objects or not, and splitByMaterial determines if per face shading should be
+                resulting in separate objects or not.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJOpenFileHandle( String fileHandle, Boolean
+                  splitByObjects, Boolean splitByGroups, Boolean splitByMaterials, io OBJDataHandle
+                  handle )</emphasis></entry>
+              <entry>Parses an OBJ file stored in a readable FileHandle. splitByObjects determines
+                if objects should be merged or represented as separate objects, splitByGroups
+                determines is shading groups should be split into separate objects or not, and
+                splitByMaterial determines if per face shading should be resulting in separate
+                objects or not.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJIsHandleValid( OBJDataHandle handle, io
+                  Boolean valid )</emphasis></entry>
+              <entry>Checks if a provided OBJDataHandle is valid.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJFreeParsedData( io OBJDataHandle handle
+                  )</emphasis></entry>
+              <entry>Frees the parsed data from memory. This is useful if the parser is no longer
+                required.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJHadErrors( OBJDataHandle handle, io Boolean
+                  hadErrors )</emphasis></entry>
+              <entry>Checks if the parse contained any errors.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetErrors( OBJDataHandle handle, io String
+                  errors[] )</emphasis></entry>
+              <entry>Returns the errors which happened during the parse.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJHasTextureCoords( OBJDataHandle handle, io
+                  Boolean hasTextureCoords )</emphasis></entry>
+              <entry>Checks if the parsed OBJ file contains texture coordinates.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetMaterialLibraries( OBJDataHandle handle, io
+                  String names[] )</emphasis></entry>
+              <entry>Returns the names of the material libraries contained in the parsed OBJ
+                file.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetMaterialNames( OBJDataHandle handle, io
+                  String names[] )</emphasis></entry>
+              <entry>Returns the names of the materials contained in the parsed OBJ file.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetNbEntities( OBJDataHandle handle, io Size
+                  nbEntities )</emphasis></entry>
+              <entry>Returns the number of entities in the parsed OBJ file.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityObjectName( OBJDataHandle handle,
+                  Integer entity, io String name )</emphasis></entry>
+              <entry>Returns the object name of a given entity.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityGroupName( OBJDataHandle handle,
+                  Integer entity, io String name )</emphasis></entry>
+              <entry>Returns the group name of a given entity.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityMaterialName( OBJDataHandle handle,
+                  Integer entity, io String name )</emphasis></entry>
+              <entry>Returns the material name of a given entity.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetNbEntityPoints( OBJDataHandle handle,
+                  Integer entity, io Size nbPoints )</emphasis></entry>
+              <entry>Returns the number of points for a given entity</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityPoints( OBJDataHandle handle, Integer
+                  entity, io Vec3 points[] )</emphasis></entry>
+              <entry>Returns the point positions of a given entity as a variable array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityPointsSliced( OBJDataHandle handle,
+                  Integer entity, io Vec3 points&lt;> )</emphasis></entry>
+              <entry>Returns the point positions of a given entity as a sliced array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityNormals( OBJDataHandle handle,
+                  Integer entity, io Vec3 normals[] )</emphasis></entry>
+              <entry>Returns the point normals of a given entity as a variable array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityNormalsSliced( OBJDataHandle handle,
+                  Integer entity, io Vec3 normals&lt;> )</emphasis></entry>
+              <entry>Returns the point normals of a given entity as a sliced array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityTextureCoords( OBJDataHandle handle,
+                  Integer, io Vec2 texCoords[] )</emphasis></entry>
+              <entry>Returns the point texture coordinates of a given entity as a variable
+                array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityTextureCoordsSliced( OBJDataHandle
+                  handle, Integer entity, io Vec2 texCoords&lt;> )</emphasis></entry>
+              <entry>Returns the point texture coordinates of a given entity as a sliced
+                array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetNbEntityTriangles( OBJDataHandle handle,
+                  Integer entity, io Size nbTriangles )</emphasis></entry>
+              <entry>Returns the number of triangles of a given entity</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityTriangleIndices( OBJDataHandle
+                  handle, Integer entity, io Integer triangleIndices[] )</emphasis></entry>
+              <entry>Returns the triangle indices of a given entity as a variable array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityTriangleIndicesSliced( OBJDataHandle
+                  handle, Integer entity, io Integer triangleIndices&lt;> )</emphasis></entry>
+              <entry>Returns the triangle indices of a given entity as a sliced array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityTriangleMaterialIndices(
+                  OBJDataHandle handle, Integer entity, io Integer triangleIndices[]
+                )</emphasis></entry>
+              <entry>Returns the triangle material indices of a given entity as a variable
+                array</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricOBJGetEntityTriangleMaterialIndicesSliced(
+                  OBJDataHandle handle, Integer entity, io Integer triangleIndices&lt;>
+                )</emphasis></entry>
+              <entry>Returns the triangle material indices of a given entity as a sliced
+                array</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
   </section>
 </article>
