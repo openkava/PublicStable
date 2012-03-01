@@ -9,7 +9,7 @@ fileSystemPackageDir = distDir.Dir(fileSystemPackageName)
 
 fileSystemPluginEnv = extsEnv.Clone()
 fileSystemPluginEnv.MergeFlags( fileSystemFlags )
-fileSystemPlugin = fileSystemPluginEnv.SharedLibrary( ExtSLName('FabricFILESYSTEM'), Glob('*.cpp') ),
+fileSystemPlugin = fileSystemPluginEnv.SharedLibrary( ExtSLName('FabricFILESYSTEM'), Glob('*.cpp') )
 if buildOS == 'Windows':
   fileSystemPlugin = fileSystemPlugin[0]
 fileSystemManifest = fileSystemPluginEnv.File('FabricFILESYSTEM.fpm.json'),
