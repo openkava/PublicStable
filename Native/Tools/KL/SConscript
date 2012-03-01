@@ -3,7 +3,7 @@
 #
 
 import os.path
-Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir' )
+Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'agplLicenseFile' )
 
 klToolPackageName = "FabricEngine-KLTool-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 klToolPackageDir = distDir.Dir(klToolPackageName)
@@ -27,16 +27,14 @@ elif buildOS == 'Linux':
 
 klBin = klEnv.Program( 'kl', [ Glob('*.cpp'), extraObjects ] )
 
-klToolInstallerFiles = [
-  Install(
-    klToolPackageDir,
-    klEnv.File("README.txt")
-  ),
-  Install(
-    klToolPackageDir,
-    klBin
-  )
+klToolInstallerFiles = Install(
+  klToolPackageDir,
+  [
+    klBin,
+    klEnv.File("README.txt"),
+    agplLicenseFile
   ]
+)
 
 if buildOS == 'Windows':
   installerEnv = klEnv.Clone()
