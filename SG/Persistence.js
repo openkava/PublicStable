@@ -252,6 +252,9 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
             if(!data){
               return;
             }
+            if((typeof data)=='string'){
+              data = JSON.parse(data);
+            }
             dataObj = data;
             
             var loadNodes = function(){

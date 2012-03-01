@@ -56,7 +56,7 @@ factoryFn: function(options, scene) {
 
 $(document).ready(function() {
 
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
@@ -135,6 +135,7 @@ $(document).ready(function() {
           FABRIC.displayDebugger();
         });
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });
