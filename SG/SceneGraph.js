@@ -360,9 +360,9 @@ FABRIC.SceneGraph = {
   
         descDiags = function(fullCode, diags) {
           var fullCodeLines = fullCode.split('\n');
-          var desc = 'Error compiling operator: ' + operatorDef.operatorName + ' in '+filename+'\n';
-          if (operatorDef.srcFile) desc += 'File:' + operatorDef.srcFile + '\n';
+          var desc = 'Error compiling operator: ' + operatorDef.operatorName;
           for (var i = 0; i < diags.length; ++i) {
+            desc += '\nFile:' + diags[i].filename + '\n';
             if (i == 16) {
               desc += '(' + (diags.length - i) + ' more diagnostic(s) omitted)\n';
               break;
@@ -584,33 +584,7 @@ FABRIC.SceneGraph = {
       }
       return errors;
     };
-    scene.pub.getTimerProfiles = function() {
-      if (timerStack.length > 0) {
-        throw 'Timer Stack not balanced';
-      }
-      timerTree.stop();
-      var timerProfiles = 'Scene Construction Profiles \n';
-      timerProfiles += 'SceneConstructTime:' + timerTree.time / 1000 + ' seconds\n';
-
-      var logTimer = function(timer, parentTimer, indent) {
-        var str = indent + (
-          timer.name + ' count:' + timer.count + ' time:' + timer.time / 1000 +
-          ' percentage:' + ((timer.time / parentTimer.time) * 100).toFixed(2) + '%\n');
-        for (i in timer.childTimers) {
-          str += logTimer(timer.childTimers[i], timer, indent + '\t');
-        }
-        return str;
-      }
-      var str = logTimer(timerTree, timerTree, '');
-      str += '----------------------------------\n';
-      for (i in profiles) {
-        str += (i + ' count:' + profiles[i].count + ' time:' + profiles[i].time / 1000 +
-          ' costpercall:' + ((profiles[i].time / profiles[i].count) / 1000).toFixed(4) +
-          ' percentage:' + ((profiles[i].time / timerTree.time) * 100).toFixed(2) + '%\n');
-      }
-      return str;
-    };
-
+    
     scene.addEventHandlingFunctions(scene);
     
     window.addEventListener('unload', function(){
@@ -761,6 +735,17 @@ FABRIC.SceneGraph = {
         }
       }
     }
+    
+    var loadStartTime = (new Date()).getTime();
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      if (nbRemaining===0) {
+        scene.pub.fireEvent('sceneloaded', {
+          loadTime: ((new Date()).getTime() - loadStartTime)
+        });
+        return true;
+      }
+      return false;
+    });
 
     // only return the public interface to the outside world
     return scene.pub;

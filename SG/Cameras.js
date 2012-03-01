@@ -92,6 +92,7 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     cameraNode.addMemberInterface(dgnode, 'farDistance', true);
     cameraNode.addMemberInterface(dgnode, 'fovY', true);
     cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'screenOffset', true);
 
     scene.addEventHandlingFunctions(cameraNode);
     
@@ -145,7 +146,7 @@ FABRIC.SceneGraph.registerNodeType('FreeCamera', {
         orientation: new FABRIC.RT.Quat()
       });
 
-    options.transformNode = scene.constructNode('Transform', {
+    options.transformNode = scene.pub.constructNode('Transform', {
       globalXfo: new FABRIC.RT.Xfo({ tr: options.position, ori: options.orientation })
     });
 

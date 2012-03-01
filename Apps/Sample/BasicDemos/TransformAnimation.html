@@ -54,9 +54,8 @@ factoryFn: function(options, scene) {
     return swirleyMovementTransform;
   }});
 
-    
 
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
@@ -195,6 +194,7 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });

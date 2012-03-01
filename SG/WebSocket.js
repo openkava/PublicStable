@@ -113,8 +113,8 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
         buffer: function(data) {
           bufferedData[actionName] = data;
         },
-        read: function() {
-          return bufferedData[actionName];
+        read: function(callback) {
+          callback(bufferedData[actionName]);
         },
         write: function(data) {
           manager.pub.sendMessage(actionName,data);
