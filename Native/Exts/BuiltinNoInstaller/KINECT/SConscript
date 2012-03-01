@@ -35,11 +35,13 @@ if not os.path.exists(kinectDllPath):
 kinectPluginEnv.Append(CPPPATH = [kinectInclude])
 kinectPluginEnv.Append(LIBS = [kinectLib])
 kinectSources = Glob('*.cpp')
-kinectPlugin = kinectPluginEnv.SharedLibrary( ExtSLName('FabricKINECT'), kinectSources ),
+kinectPlugin = kinectPluginEnv.SharedLibrary( ExtSLName('FabricKINECT'), kinectSources )
+if buildOS == 'Windows':
+  kinectPlugin = kinectPlugin[0]
 kinectManifest = kinectPluginEnv.File('FabricKINECT.fpm.json'),
 kinectKL = kinectPluginEnv.File('FabricKINECT.kl'),
-kinectDLL = kinectPluginEnv.File(kinectDllPath),
-kinectFiles = [kinectManifest, kinectPlugin, kinectKL, kinectDLL]
+kinectExtFiles = [kinectManifest, kinectPlugin, kinectKL]
+Export( 'kinectExtFiles' )
 
 kinectInstallerFiles = [
   Install(
@@ -48,7 +50,7 @@ kinectInstallerFiles = [
   ),
   Install(
     kinectPackageDir.Dir('Exts'),
-    kinectFiles
+    kinectExtFiles
   )
   ]
 
@@ -62,4 +64,4 @@ kinectInstaller = installerEnv.DistZip(
 Alias( 'kinectInstaller', kinectInstaller )
 Export( 'kinectInstaller' )
 
-Return( 'kinectFiles' )
+Return( 'kinectExtFiles' )

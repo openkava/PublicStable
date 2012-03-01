@@ -10,9 +10,12 @@ fileSystemPackageDir = distDir.Dir(fileSystemPackageName)
 fileSystemPluginEnv = extsEnv.Clone()
 fileSystemPluginEnv.MergeFlags( fileSystemFlags )
 fileSystemPlugin = fileSystemPluginEnv.SharedLibrary( ExtSLName('FabricFILESYSTEM'), Glob('*.cpp') ),
+if buildOS == 'Windows':
+  fileSystemPlugin = fileSystemPlugin[0]
 fileSystemManifest = fileSystemPluginEnv.File('FabricFILESYSTEM.fpm.json'),
 fileSystemKL = fileSystemPluginEnv.File('FabricFILESYSTEM.kl'),
-fileSystemFiles = [fileSystemManifest, fileSystemPlugin, fileSystemKL]
+fileSystemExtFiles = [fileSystemManifest, fileSystemPlugin, fileSystemKL]
+Export( 'fileSystemExtFiles' )
 
 fileSystemInstallerFiles = [
   Install(
@@ -21,7 +24,7 @@ fileSystemInstallerFiles = [
   ),
   Install(
     fileSystemPackageDir.Dir('Exts'),
-    fileSystemFiles
+    fileSystemExtFiles
   )
   ]
 
@@ -44,4 +47,4 @@ else:
 Alias( 'fileSystemInstaller', fileSystemInstaller )
 Export( 'fileSystemInstaller' )
 
-Return( 'fileSystemFiles' )
+Return( 'fileSystemExtFiles' )
