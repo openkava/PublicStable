@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fileSystemFlags', 'ExtSLName', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip' )
+Import( 'extsEnv', 'fileSystemFlags', 'ExtSLName', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip', 'agplLicenseFile' )
 
 fileSystemPackageName = "FabricEngine-FileSystemExt-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 fileSystemPackageDir = distDir.Dir(fileSystemPackageName)
@@ -17,7 +17,7 @@ fileSystemFiles = [fileSystemManifest, fileSystemPlugin, fileSystemKL]
 fileSystemInstallerFiles = [
   Install(
     fileSystemPackageDir,
-    fileSystemPluginEnv.File("README.txt")
+    [fileSystemPluginEnv.File("README.txt"), agplLicenseFile]
   ),
   Install(
     fileSystemPackageDir.Dir('Exts'),
