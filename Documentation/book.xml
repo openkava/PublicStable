@@ -3219,4 +3219,127 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
       </section>
     </section>
   </section>
+  <section>
+    <title>Fabric Engine Extension Guides</title>
+    <para>Extensions are additions to Fabric Engine's Kernel Language called KL and provide
+      additional functions and types. Each extension is packaged for a particular use-case, for
+      example the Alembic extension deals with Alembic files. Extensions can be implemented using
+      Fabric Engine's EDK (Extension Developer Kit).</para>
+    <section>
+      <title>Alembic Extension Guide</title>
+      <para>This extension adds a new type to KL, called the <emphasis role="italic"
+          >AlembicHandle</emphasis>. It is used to load Alembic.IO files. The AlembicHandle
+        represents a file handle to an Alembic file, and can be used to gather data.<table
+          frame="none" colsep="0" rowsep="0">
+          <title>AlembicHandle</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="349pt"/>
+            <colspec colnum="2" colname="c2" colwidth="300pt"/>
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">Members</emphasis></entry>
+                <entry/>
+              </row>
+              <row>
+                <entry><emphasis role="italic">Data pointer</emphasis></entry>
+                <entry>The private data of the handle.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">Vec2 timeRange</emphasis></entry>
+                <entry>The min and max time of the Alembic file</entry>
+              </row>
+              <row>
+                <entry><emphasis role="bold">Methods</emphasis></entry>
+                <entry/>
+              </row>
+              <row>
+                <entry><emphasis role="italic">loadResource(io FabricResource
+                  resource)</emphasis></entry>
+                <entry>Loads the content of a FabricResource onto the AlembicHandle if it doesn't
+                  contain any content yet</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">loadFileHandle(io String
+                  fileHandle)</emphasis></entry>
+                <entry>Loads the Alembic file from a given FileHandle</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">getIdentifiers(io String
+                  identifiers[])</emphasis></entry>
+                <entry>Loads all of the identifiers of the Alembic file. This can be used to
+                  determine how many and what kind of objects are stored in the Alembic
+                  file.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parseXform(io String identifier, io Scalar time, io
+                    Xfo transform)</emphasis></entry>
+                <entry>Parses a Xform Alembic node at a given time and returns the Fabric Engine
+                  Xfo.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parseCamera(io String identifier, io Scalar time, io
+                    Scalar near, io Scalar far, io Scalar fovY)</emphasis></entry>
+                <entry>Parses a Camera Alembic node at a given time and returns near and far
+                  clipping, as well as vertical field of view.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parsePolyMeshCount(io String identifier, io Size
+                    count)</emphasis></entry>
+                <entry>Parses a PolyMesh Alembic node and returns the number of vertices of that
+                  mesh.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parsePolyMeshUniforms(io String identifier, io
+                    Integer indices[])</emphasis></entry>
+                <entry>Parses a PolyMesh Alembic node and returns the face indices as a triangles
+                  list.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parsePolyMeshAttributes(io String identifier, io
+                    Scalar time, io Vec3 vertices&lt;>, io Vec3 normals&lt;>, io Boolean uvsLoaded,
+                    io Vec2 uvs&lt;>)</emphasis></entry>
+                <entry>Parses a PolyMesh Alembic node at a given time and returns the mesh's
+                  vertices, normals, and optionally, uvs. All arrays are per vertex data.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parsePointsCount(io String identifier, io Scalar
+                    time, io Size count)</emphasis></entry>
+                <entry>Parses a Points Alembic node at a given time and returns its point
+                  count</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parsePointsAttributes(io String identifier, io Scalar
+                    time, io Vec3 positions&lt;>, io Quat orientations&lt;>, io Scalar sizes&lt;>,
+                    io Vec3 scales&lt;>, io Color colors&lt;>)</emphasis></entry>
+                <entry>Parses a Points Alembic node at a given time and returns its positions,
+                  orientations, sizes, scales and colors. All arrays are per vertex data.</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parseCurvesCount(io String identifier, io Size
+                    count)</emphasis></entry>
+                <entry>Parses a Curves Alembic node at a given time and returns its vertex
+                  count</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parseCurvesUniforms(io String identifier, io Integer
+                    indices[])</emphasis></entry>
+                <entry>Parses a Curves Alembic node and returns its line indices (as a from-to index
+                  list)</entry>
+              </row>
+              <row>
+                <entry><emphasis role="italic">parseCurvesAttributes(io String identifier, io Scalar
+                    time, io Vec3 vertices&lt;>, io Scalar sizes&lt;>, io Boolean uvsLoaded, io Vec2
+                    uvs&lt;>, io Color colors&lt;>)</emphasis></entry>
+                <entry>Parses a Curves Alembic node at a given time and returns its vertices, sizes,
+                  uvs and colors. All arrays are per vertex data.</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
+    </section>
+  </section>
 </article>
