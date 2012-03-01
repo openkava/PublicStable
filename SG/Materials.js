@@ -662,7 +662,7 @@ FABRIC.SceneGraph.registerNodeType('PostProcessEffect', {
         parentEventHandler: false,
         separateShaderNode: false,
         assignUniformsOnPostDescend:true,
-        renderTarget: FABRIC.RT.oglPostProcessingRenderTarget(0)
+        renderTarget: FABRIC.RT.oglPostProcessingRenderTarget()
       });
 
     if (options.fragmentShader === undefined) {
@@ -1140,7 +1140,11 @@ FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect', {
   detailedDesc: 'The BloomPostProcessEffect node draws a bloom effect after the viewport has been drawn.',
   parentNodeDesc: 'PostProcessEffect',
   factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        clearColor : FABRIC.RT.rgba(0.1,0.1,0.1,1)
+    });
     options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/BloomPixelShader.glsl');
+    options.renderTarget = FABRIC.RT.oglPostProcessingRenderTarget( { clearColor : options.clearColor } )
 
     var bloomPostProcessEffect = scene.constructNode('PostProcessEffect', options);
     return bloomPostProcessEffect;
