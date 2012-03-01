@@ -3868,5 +3868,51 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         </tgroup>
       </table>
     </section>
+    <section>
+      <title>CIMG Extension Guide</title>
+      <para>The CIMG extension wraps the CIMG C++ image library (http://cimg.sourceforge.net) and
+        provides read and write access to image within Fabric Engine. The extension doesn't provide
+        any types, but KL functions to perform the image IO.</para>
+      <table frame="none" colsep="0" rowsep="0">
+        <title>CIMG Functions</title>
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="349pt"/>
+          <colspec colnum="2" colname="c2" colwidth="300pt"/>
+          <tbody>
+            <row>
+              <entry><emphasis role="italic">FabricCIMGDecode( Data data, Size dataSize, io String
+                  ext, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[]
+                )</emphasis></entry>
+              <entry>Decodes an image, stored as an encoded Byte array into its width, height and
+                pixel values. The extention has to be provided to inform CIMG what kind of image is
+                stored in the Byte array.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricCIMGOpenFileHandle( String fileHandle, io String
+                  ext, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[]
+                )</emphasis></entry>
+              <entry>Opens an image from a provided FileHandle and reads the image data into the
+                width, height and pixel values. The extention has to be provided to inform CIMG what
+                kind of image is stored in the FileHandle.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricCIMGCreateFromText( String text, io Size
+                  imageWidth, io Size imageHeight, io RGBA imagePixels[] ) </emphasis></entry>
+              <entry>Encodes the text provided into a new image resulting in width, height and pixel
+                values. The image uses a fixed text size and is stored as black and white, where
+                white is the text and black is the background.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricCIMGSaveToFileHandle( String fileHandle, Size
+                  imageWidth, Size imageHeight, Boolean mirrorVertically, io RGBA imagePixels[]
+                  )</emphasis></entry>
+              <entry>Saves a provided image, represented by with, height and pixels into a provided
+                writable FileHandle. If required, the image can be flipped vertically prior to
+                saving.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
   </section>
 </article>
