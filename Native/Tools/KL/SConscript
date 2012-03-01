@@ -3,7 +3,7 @@
 #
 
 import os.path
-Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir' )
+Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip' )
 
 klToolPackageName = "FabricEngine-KLTool-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 klToolPackageDir = distDir.Dir(klToolPackageName)
@@ -44,7 +44,7 @@ if buildOS == 'Windows':
   installerEnv.Append( DISTZIP_ROOTDIR = klToolPackageDir )
   klToolInstaller = installerEnv.DistZip(
     distDir.File(klToolPackageName+".zip"),
-    installerFiles
+    klToolInstallerFiles
   )
 else:
   klToolInstaller = klEnv.Command(

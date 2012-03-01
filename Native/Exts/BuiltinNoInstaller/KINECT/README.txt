@@ -19,10 +19,10 @@ Package.  As of this writing, it is available at:
 
   http://www.microsoft.com/download/en/details.aspx?id=5555
 
-Next, install the Kinect for Windows SDK.  As of this writing
-it is available at:
+Next, install the Kinect for Windows SDK (last tested: v1.0 Beta 2).
+As of this writing it is available at:
 
-  http://www.microsoft.com/download/en/details.aspx?id=28782
+  http://www.microsoft.com/download/en/details.aspx?id=27876
 
 Finally, to install the Fabric Kinect extension, just copy
 the contents of the Exts subdirectory into the directory

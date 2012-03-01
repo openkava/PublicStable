@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fileSystemFlags', 'ExtSLName', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir' )
+Import( 'extsEnv', 'fileSystemFlags', 'ExtSLName', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip' )
 
 fileSystemPackageName = "FabricEngine-FileSystemExt-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 fileSystemPackageDir = distDir.Dir(fileSystemPackageName)
@@ -31,7 +31,7 @@ if buildOS == 'Windows':
   installerEnv.Append( DISTZIP_ROOTDIR = fileSystemPackageDir )
   fileSystemInstaller = installerEnv.DistZip(
     distDir.File(fileSystemPackageName+".zip"),
-    installerFiles
+    fileSystemInstallerFiles
   )
 else:
   fileSystemInstaller = extsEnv.Command(
