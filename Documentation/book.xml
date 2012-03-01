@@ -3914,5 +3914,60 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
         </tgroup>
       </table>
     </section>
+    <section>
+      <title>LIDAR Extension Guide</title>
+      <para>The LIDAR extension is a wrapper for the liblas library (http://liblas.org/). It
+        provides a type to read the contents of a LIDAR file and use it inside Fabric Engine.</para>
+      <table frame="none" colsep="0" rowsep="0">
+        <title>LidarReader</title>
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="349pt"/>
+          <colspec colnum="2" colname="c2" colwidth="300pt"/>
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Members</emphasis></entry>
+              <entry/>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Data pointer</emphasis></entry>
+              <entry>The private data of the LidarReader type.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">String url</emphasis></entry>
+              <entry>The url of the parsed lidar file.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Boolean compressed</emphasis></entry>
+              <entry>After the file is opened this will indicate if it is a compressed file or
+                not.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="bold">Methods</emphasis></entry>
+              <entry/>
+            </row>
+            <row>
+              <entry><emphasis role="italic">loadResource(io FabricResource resource, io String
+                  url)</emphasis></entry>
+              <entry>Loads a lidar file stored in memory. The url value is not used in this case,
+                and is just cosmetic.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">loadFileHandle(in String handle)</emphasis></entry>
+              <entry>Loads a lidar file stored in a readable FIleHandle.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">getCount(io Size count)</emphasis></entry>
+              <entry>Returs the number of points in the lidar file.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">getPoints(io Vec3 positions&lt;>, io Color
+                  colors&lt;>)</emphasis></entry>
+              <entry>Returns all of the point positions and colors inside the lidar file. If the
+                lidar file doesn't contain any colors, they will be all black.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
   </section>
 </article>
