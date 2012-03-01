@@ -70,19 +70,24 @@ void main()
         }
     }
     // Checking status of cartoon effect.
-    if( 0.5 < u_colorMix )
+    if( u_colorMix > 0.5)
     {
-        // Creaing cartoon effect by combining
+        // Creating cartoon effect by combining
         // edge informatioon and original image data.
-        fTotalSum = mix( fTotalSum, texture2D( u_rgbaImage, 
-                         vec2( gl_TexCoord[0].s, gl_TexCoord[0].t)), 0.5);
+        vec2 texcoord = vec2(gl_TexCoord[0]);
+        vec4 col = texture2D(u_rgbaImage, texcoord);
+        float edge = length(fTotalSum);
+        
+        fTotalSum.rgb = mix( col.xyz, vec3(0.0,0.0,0.0), edge);
+        fTotalSum.a = col.a + edge;
     }
     else
     {
         // Creating displayable edge data.
-        fTotalSum = vec4( 1.0,1.0,1.0,1.0) - fTotalSum;
+        float edge = length(fTotalSum);
+        fTotalSum.xyz = vec3(1.0,1.0,1.0) - edge;
+        fTotalSum.a = fTotalSum.a + edge;
     }
-    
     gl_FragColor = ( fTotalSum );
 }
 
