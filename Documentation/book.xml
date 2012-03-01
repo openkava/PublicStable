@@ -4265,5 +4265,97 @@ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);</programlisting>
         </tgroup>
       </table>
     </section>
+    <section>
+      <title>VIDEO Extension Guide</title>
+      <para>The VIDEO extension is a wrapper for the ffmeg library (http://ffmpeg.org/). It provides
+        a type to read as well as write video. The VIDEO extension currently doesn't support audio
+        streams.</para>
+      <table frame="none" colsep="0" rowsep="0">
+        <title>VideoHandle</title>
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="349pt"/>
+          <colspec colnum="2" colname="c2" colwidth="300pt"/>
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Members</emphasis></entry>
+              <entry/>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Data pointer</emphasis></entry>
+              <entry>The private data of the VideoHandle type.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Size width</emphasis></entry>
+              <entry>The width of the video.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Size height</emphasis></entry>
+              <entry>The height of the video.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Scalar duration</emphasis></entry>
+              <entry>The duration of the video in seconds.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Scalar fps</emphasis></entry>
+              <entry>The framerate of the video (frames per seconds).</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">Scalar time</emphasis></entry>
+              <entry>The current time of the video.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <table frame="none" colsep="0" rowsep="0">
+        <title>VIDEO Functions</title>
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="349pt"/>
+          <colspec colnum="2" colname="c2" colwidth="300pt"/>
+          <tbody>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOOpenResource( Data resourceData, Size
+                  resourceDataSize, io VideoHandle handle )</emphasis></entry>
+              <entry>Opens a video handle for reading from memory. The video is stored as a pointer
+                with a provided size.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOOpenFileHandle( String fileHandle, io
+                  VideoHandle handle )</emphasis></entry>
+              <entry>Opens a video handle for reading from a readable FileHandle.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOCreateFromFileHandle( String file, Size
+                  width, Size height, io VideoHandle handle, )</emphasis></entry>
+              <entry>Creates a video handle for writing from a writable FileHandle, with the
+                provided width and height.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOFreeHandle( io VideoHandle handle
+                  )</emphasis></entry>
+              <entry>Closes the video handle.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOSeekTime( io VideoHandle handle, io Scalar
+                  time)</emphasis></entry>
+              <entry>Seeks to a provided time in the video. This only works for reading video
+                handles.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOGetAllPixels( io VideoHandle handle, io RGB
+                  pixels[] )</emphasis></entry>
+              <entry>Returns all RGB pixels of the current video frame. This only works for reading
+                video handles.</entry>
+            </row>
+            <row>
+              <entry><emphasis role="italic">FabricVIDEOWriteAllPixels( io VideoHandle handle, io
+                  RGB pixels[] )</emphasis></entry>
+              <entry>Writes the provided RGB pixels as a new frame to the video handle. This only
+                works with writing video handles.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
   </section>
 </article>
