@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir', 'ExtSLName', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip' )
+Import( 'extsEnv', 'fabricExtsDistDir', 'ExtSLName', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip', 'agplLicenseFile' )
 
 import os
 import os.path
@@ -44,7 +44,7 @@ kinectFiles = [kinectManifest, kinectPlugin, kinectKL, kinectDLL]
 kinectInstallerFiles = [
   Install(
     kinectPackageDir,
-    kinectPluginEnv.File("README.txt")
+    [kinectPluginEnv.File("README.txt"), agplLicenseFile]
   ),
   Install(
     kinectPackageDir.Dir('Exts'),
