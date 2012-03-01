@@ -143,8 +143,8 @@ import itertools
 Import( 'baseEnv', 'buildOS' )
 
 if 'dist' in COMMAND_LINE_TARGETS:
-  Import( 'fileSystemInstaller' )
-  installers = [fileSystemInstaller]
+  Import( 'klToolInstaller', 'fileSystemInstaller' )
+  installers = [klToolInstaller, fileSystemInstaller]
   if buildOS == 'Windows':
     Import( 'kinectInstaller' )
     installers.append( kinectInstaller )
