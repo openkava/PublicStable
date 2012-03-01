@@ -931,9 +931,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       for(var j in options.pathRemapping){
         if(path.substring(0, j.length) === j){
           path = options.pathRemapping[j] + path.substring(j.length);
-          return path;
         }
       }
+      // Now convert back slashes to URL forward slashes.
+      path = path.replace(/\\/g, "/");
     }
     return path;
   }
