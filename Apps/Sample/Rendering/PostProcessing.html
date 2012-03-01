@@ -41,7 +41,7 @@ $(document).ready(function() {
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
-  viewport.addPostProcessEffectNode(scene.constructNode('EdgeDetectionPostProcessEffect'));
+  viewport.addPostProcessEffectNode(scene.constructNode('BloomPostProcessEffect'));
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
 
