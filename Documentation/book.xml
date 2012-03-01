@@ -3218,5 +3218,146 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           with the render pipeline.</para>
       </section>
     </section>
+    <section>
+      <title>Persistence.js</title>
+      <section>
+        <title>SceneSerializer</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The SceneSerializer manages the persistence of objects. Scene Graph nodes are added to
+          the SceneSerializer, and the serializer invokes the weriteData methods on each node. The
+          SceneSerializer also manages storing nodes in order of thier dendencies. By adding a node,
+          all of that nodes dependencies are also added to the SceneSerializer, unless they are
+          filtered by the type, or name filters. </para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>SceneSerializer Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>filteredNodeTypes</entry>
+                <entry>An Array of strings specifying node types that should not be saved by the
+                  serializer. This is usefull for avoiding saving such things as Cameras and
+                  Manipulators to your persisted storage.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>SceneSerializer Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>addNode</entry>
+                <entry>Add a node to the SceneSerializer to be stored.</entry>
+              </row>
+              <row>
+                <entry>filterNode</entry>
+                <entry>Filter this node, ensuring it will not be saved.</entry>
+              </row>
+              <row>
+                <entry>serialize</entry>
+                <entry>Invoke the serialization of all added nodes. </entry>
+              </row>
+              <row>
+                <entry>save</entry>
+                <entry>Write the serialized data to the given storage system.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>SceneDeserializer</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The SceneDeserializer loads data from a given storage medium, and constructs node, and
+          loads thier data.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>SceneDeserializer Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>preLoadScene</entry>
+                <entry>If set to true, the all the nodes in the current scene are preloaded.
+                </entry>
+              </row>
+              <row>
+                <entry>filteredNodeTypes</entry>
+                <entry>An Array of strings specifying node types that should not be loaded by the
+                  deserializer. This is usefull for avoiding loading such things as Cameras and
+                  Manipulators to your persisted storage.</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>SceneDeserializer Methods</title>
+          <tgroup cols="3">
+            <colspec colnum="1" colname="c1" colwidth="179.25pt"/>
+            <colspec colname="newCol2" colnum="2" colwidth="117.75pt"/>
+            <colspec colnum="3" colname="c2" colwidth="396.75pt"/>
+            <tbody>
+              <row>
+                <entry>setPreLoadedNode</entry>
+                <entry>node</entry>
+                <entry>Preload a node into the SceneDeserializer. During deserialization, if a node
+                  has been preloaded, and data for a stored node matches the preloaeded node, then
+                  the data is loaded onto the preloaded node. This is usefull for loading presets
+                  into existing scenes.</entry>
+              </row>
+              <row>
+                <entry>load</entry>
+                <entry>storage, callback</entry>
+                <entry>Passing a storage interface, and a callback, the load function retrieves the
+                  data from the storage, and constructs the graph and/or loads dta into the
+                  preloaded nodes.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>LogWriter</title>
+        <para>The LogWriter is a storage inteface used only in debugging. Instead of storing the
+          data generated by the SceneSerializer, it simply logs the data to the console.</para>
+      </section>
+      <section>
+        <title>LocalStorage</title>
+        <para>The LocalStorage is used to write data to the HTML5 local storage supported in modern
+          browsers. This usefull when the size of the data is small, and also does not require a
+          confimation from the user.</para>
+      </section>
+      <section>
+        <title>FileWriter</title>
+        <para>The FileWriter is a storage inteface used by the scene serializer to write out JSON
+          text files to the users hard drive.</para>
+      </section>
+      <section>
+        <title>FileWriterWithBinary</title>
+        <para>The FileWriterWithBinary is a storage inteface used by the scene serializer to write
+          out JSON text files to the users hard drive, along with an accompanying binary data file.
+          The binary data file ise valuable when the size of the data is very large. The binary data
+          file is written using ZLib to compress the data, resulting in compact data files.</para>
+      </section>
+      <section>
+        <title>FileReader</title>
+        <para>The FileWriter is a storage inteface used by the scene deserializer to load and read
+          JSON text files from the users hard drive.The Fire reader prompts the user to pick a file
+          on construction.</para>
+      </section>
+      <section>
+        <title>XHRReader</title>
+        <para>The XHRReader is a storage inteface used to retrieve data via URLs through
+          XMLHttpRequests. </para>
+      </section>
+    </section>
   </section>
 </article>
