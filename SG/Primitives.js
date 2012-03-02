@@ -471,8 +471,8 @@ FABRIC.SceneGraph.registerNodeType('Torus', {
         entryFunctionName: 'generateTorus',
         parameterLayout: [
           'self',
-          'uniforms.innerRadius',
           'uniforms.outerRadius',
+          'uniforms.innerRadius',
           'uniforms.detail',
 
           'uniforms.indices',
