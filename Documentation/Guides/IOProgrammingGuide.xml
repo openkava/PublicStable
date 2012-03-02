@@ -654,5 +654,26 @@ Other file content: Test file body with appended content
         </para>
       </section>
     </section>
+    <section xml:id="fabricio.extensions">
+      <title>KL Extensions for IO</title>
+      <para>
+        Since the are trusted by definition, Fabric C++ extensions have access to the private information associated to the FabricFileHandle. In particular, they can get and set the associated file or folder full path, along with other attributes, through the EDK::FileHandleWrapper C++ helper class.
+      </para>
+      <para>
+        Fabric provides two built-in C++ extensions in order to enable runtime IO operations directly in KL: the FabricFILESTREAM and FabricFILESYSTEM extensions. However, only the FileSTREAM extension is provided with the browser plug-in Fabric client, as the FileSYSTEM extension would enable to break the security model in KL. Still, the FileSYSTEM extension can added separately in the case of trusted Fabric plug-in configurations.
+      </para>
+      <section xml:id="fabricio.extensions.filestream">
+        <title>FabricFILESTREAM extension</title>
+        <para>
+          The FabricFILESTREAM extension provides the ability to read and write to files directly in KL though a FabricFileStream object, which gets initialized from a FabricFileHandle. Additionally, this extension gives the ability to read and write compressed binary data. This extension is considered secure because it respects the read-write permissions associated with the FabricFileHandle. See the FabricFILESTREAM reference guide for more details about the provided functions.
+        </para>
+      </section>
+      <section xml:id="fabricio.extensions.filesystem">
+        <title>FabricFILESYSTEM extension</title>
+        <para>
+          The FabricFILESYSTEM extension enables to browse and modify the local file system's folders. Because it enables an easy access to the local file system, this extension is not considered secure, and as such is not part of the Fabric browser plug-in, but can be downloaded and installed separately. See the FabricFILESYSTEM reference guide for more details about the provided functions.
+        </para>
+      </section>
+      </section>
   </chapter>
 </book>
