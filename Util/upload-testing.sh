@@ -37,6 +37,8 @@ DIST_DIR="/fabric-distribution/$VERSION"
 SG_DIR="$DIST_DIR/sg"
 if [ "$FORCE" = "1" ]; then
   rexec git --git-dir="$SG_DIR"/.git pull || error
+  rexec git --git-dir="$SG_DIR"/.git reset --hard || error
+  rexec git --git-dir="$SG_DIR"/.git clean --force || error
   rexec svn up "$SG_DIR" || error
 else
   rexec mkdir $DIST_DIR || error "$DIST_DIR already exists -- use -f parameter to force update"
