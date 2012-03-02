@@ -44,6 +44,7 @@ else
   rexec svn co --force http://svn.fabric-engine.com/JSSceneGraphResources/tags/$VERSION "$SG_DIR" || error
 fi
 
+BIN_SRC_DIR="/home/build"
 BIN_DIR="$DIST_DIR/bin"
 rexec mkdir -p "$BIN_DIR" || error
 LOCAL_DIST_DIR="$FABRIC_CORE_PATH/Native/dist"
@@ -53,18 +54,18 @@ for PLATFORM in Windows-x86 Darwin-universal Linux-i686 Linux-x86_64; do
   else
     ARCH_EXT=tar.bz2
   fi
-  rexec cp "~/FabricEngine-ChromeExtension-$PLATFORM-$VERSION.crx" "$BIN_DIR/" || error
-  rexec cp "~/FabricEngine-FirefoxExtension-$PLATFORM-$VERSION.xpi" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/FabricEngine-ChromeExtension-$PLATFORM-$VERSION.crx" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/FabricEngine-FirefoxExtension-$PLATFORM-$VERSION.xpi" "$BIN_DIR/" || error
   if [ "$PLATFORM" != "Windows-x86" ]; then
-    rexec cp "~/FabricEngine-NodeModule-$PLATFORM-$VERSION.tar.bz2" "$BIN_DIR/" || error
+    rexec cp "$BIN_SRC_DIR/FabricEngine-NodeModule-$PLATFORM-$VERSION.tar.bz2" "$BIN_DIR/" || error
   else
-    rexec cp "~/FabricEngine-KinectExt-$PLATFORM-$VERSION.$ARCH_EXT" "$BIN_DIR/" || error
+    rexec cp "$BIN_SRC_DIR/FabricEngine-KinectExt-$PLATFORM-$VERSION.$ARCH_EXT" "$BIN_DIR/" || error
   fi
-  rexec cp "~/FabricEngine-PythonModule-$PLATFORM-$VERSION.tar.bz2" "$BIN_DIR/" || error
-  rexec cp "~/FabricEngine-FileSystemExt-$PLATFORM-$VERSION.$ARCH_EXT" "$BIN_DIR/" || error
-  rexec cp "~/FabricEngine-KLTool-$PLATFORM-$VERSION.$ARCH_EXT" "$BIN_DIR/" || error
-  rexec cp "~/crx-update-$PLATFORM.xml" "$BIN_DIR/" || error
-  rexec cp "~/xpi-update-$PLATFORM.rdf" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/FabricEngine-PythonModule-$PLATFORM-$VERSION.tar.bz2" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/FabricEngine-FileSystemExt-$PLATFORM-$VERSION.$ARCH_EXT" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/FabricEngine-KLTool-$PLATFORM-$VERSION.$ARCH_EXT" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/crx-update-$PLATFORM.xml" "$BIN_DIR/" || error
+  rexec cp "$BIN_SRC_DIR/xpi-update-$PLATFORM.rdf" "$BIN_DIR/" || error
 done
 
 rexec ln -snf "$VERSION" "/fabric-distribution/testing" || error
