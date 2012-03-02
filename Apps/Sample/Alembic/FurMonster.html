@@ -27,11 +27,14 @@ $(document).ready(function() {
   
 });
 
+
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Alembic"], function() { 
+
+FABRIC.SceneGraph.defineEffectFromFile('HairTextureMaterial', 'Shaders/HairTextureShader.xml');
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
