@@ -3121,7 +3121,7 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           the 'PrototypeMaterial' in the shader XML file, shaders can extend this material type with
           custom drawing code.</para>
         <table frame="none" colsep="0" rowsep="0">
-          <title>Image2D Options</title>
+          <title>PointMaterial Options</title>
           <tgroup cols="2">
             <colspec colnum="1" colname="c1" colwidth="250pt"/>
             <colspec colnum="2" colname="c2" colwidth="400pt"/>
@@ -3134,7 +3134,7 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           </tgroup>
         </table>
         <table frame="none" colsep="0" rowsep="0">
-          <title>Image2D Methods</title>
+          <title>PointMaterial Methods</title>
           <tgroup cols="2">
             <colspec colnum="1" colname="c1" colwidth="249pt"/>
             <colspec colnum="2" colname="c2" colwidth="400pt"/>
@@ -3159,7 +3159,7 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           LineMaterial as the 'PrototypeMaterial' in the shader XML file, shaders can extend this
           material type with custom drawing code.</para>
         <table frame="none" colsep="0" rowsep="0">
-          <title>Image2D Options</title>
+          <title>LineMaterial Options</title>
           <tgroup cols="2">
             <colspec colnum="1" colname="c1" colwidth="250pt"/>
             <colspec colnum="2" colname="c2" colwidth="400pt"/>
@@ -3172,7 +3172,7 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           </tgroup>
         </table>
         <table frame="none" colsep="0" rowsep="0">
-          <title>Image2D Methods</title>
+          <title>LineMaterial Methods</title>
           <tgroup cols="2">
             <colspec colnum="1" colname="c1" colwidth="249pt"/>
             <colspec colnum="2" colname="c2" colwidth="400pt"/>
@@ -3216,6 +3216,245 @@ world.addConstraint('mySlider',FABRIC.RT.BulletConstraint.createSlider({
           full screen quad is then rendered using the shader. There are several example post
           processing effect shaders provided that show how the post processing effect integrates
           with the render pipeline.</para>
+      </section>
+    </section>
+    <section>
+      <title>Animation.js</title>
+      <section>
+        <title>AnimationContainer</title>
+        <para>ParentNode: <emphasis role="bold">SceneGraphNode</emphasis></para>
+        <para>The AnimationContainer is a base type for several kinds of animation containers. The
+          Animationcontainer provides functionality common to all types of animation containers.
+          Each animation container can contain only one type of keyframe. For example, most
+          animation containers store Scalar keyframes, and therefore return a Scalar value during
+          evaluation. However, AnimationContainers can also store 'Color', or 'Quat' values. </para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>AnimationContainer Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>controllerNode</entry>
+                <entry>The controller node used to control the evaluated time value can be passed
+                  into the constructor.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>AnimationContainer Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="249pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getValueType</entry>
+                <entry>Returns the data type that this animation container evaluates to.</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>TrackAnimationContainer</title>
+        <para>ParentNode: <emphasis role="bold">AnimationContainer</emphasis></para>
+        <para>The TrackAnimationContainer stores a set of tracks of the same type. The
+          TrackAnimationContainer is a base type for all 'Track Containers'. </para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>TrackAnimationContainer Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>keyframetype</entry>
+                <entry>The type of keyframe this animation container will store.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>TrackAnimationContainer Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="249pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>getTimeRange</entry>
+                <entry>Returns the time range for all keys stored in all tracks. </entry>
+              </row>
+              <row>
+                <entry>getTrack/setTrack</entry>
+                <entry>Gets or sets an individual track.</entry>
+              </row>
+              <row>
+                <entry>getTracks/setTracks</entry>
+                <entry>Gets or sets all the tracks in the container.</entry>
+              </row>
+              <row>
+                <entry>getTrackCount</entry>
+                <entry>Returns the number of tracks the container holds.</entry>
+              </row>
+              <row>
+                <entry>setValues</entry>
+                <entry>Used by the manipulation system. Used to create keyframes on the tracks by
+                  setting new values at a given time.</entry>
+              </row>
+              <row>
+                <entry>bindNodeMembersToTracks</entry>
+                <entry>The tracks stored in a track container can be bound to memebrs on nodes in
+                  the graph. This function generates an operator that evaluates the given tracks and
+                  setting the bound member to the returned value.</entry>
+              </row>
+              <row>
+                <entry>openCurveEditor</entry>
+                <entry>Opens the curve editor to display the tracks in the container.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>CharacterAnimationContainer</title>
+        <para>ParentNode: <emphasis role="bold">AnimationContainer</emphasis></para>
+        <para>The CharacterAnimationContainer stores multiple sets of tracks of the same type. The
+          CharacterAnimationContainer is a base type for track containers used in character
+          animation. Each slice of the Dependency Graph Node stores a complete set of animation
+          tracks. This enables a single CharacterAnimationContainer node to store a library of
+          character animations. Storing all the character animations in a single node enables a
+          character to dynamicaly select which set of animations it is evaluating, enabling such
+          things as non-linear animation editing, animation blending, and crowd simulation.</para>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CharacterAnimationContainer Options</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>keyframetype</entry>
+                <entry>The type of keyframe this animation container will store.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CharacterAnimationContainer Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250.5pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>addTrackSet</entry>
+                <entry>Adds a new track set to the container. The bindings used to evaluate the
+                  track set must also be provided.</entry>
+              </row>
+              <row>
+                <entry>getTimeRange</entry>
+                <entry>Returns the time range for all keys stored in all tracks. </entry>
+              </row>
+              <row>
+                <entry>getTrack/setTrack</entry>
+                <entry>Gets or sets an individual track.</entry>
+              </row>
+              <row>
+                <entry>getTracks/setTracks</entry>
+                <entry>Gets or sets all the tracks in the container.</entry>
+              </row>
+              <row>
+                <entry>getTrackSetCount</entry>
+                <entry>Returns the number of track sets stored in the container.</entry>
+              </row>
+              <row>
+                <entry>setValues</entry>
+                <entry>Used by the manipulation system. Used to create keyframes on the tracks by
+                  setting new values at a given time. </entry>
+              </row>
+              <row>
+                <entry>bindToRig</entry>
+                <entry>Binds the animation tracks to a rig. This function is used when generating
+                  keyframes for a rig, based on the motion of a different rig. </entry>
+              </row>
+              <row>
+                <entry>plotKeyframes</entry>
+                <entry>Once an animation container is bound to a rig, the tracks can be plotted
+                  using leanrly spaced keyframes.</entry>
+              </row>
+              <row>
+                <entry>openCurveEditor</entry>
+                <entry>Opens the curve editor to display the tracks in the container.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <table frame="none" colsep="0" rowsep="0">
+          <title>CharacterAnimationContainer Methods</title>
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1" colwidth="250.5pt"/>
+            <colspec colnum="2" colname="c2" colwidth="400pt"/>
+            <tbody>
+              <row>
+                <entry>addTrackSet</entry>
+                <entry>Adds a new track set to the container. The bindings used to evaluate the
+                  track set must also be provided.</entry>
+              </row>
+              <row>
+                <entry>getTimeRange</entry>
+                <entry>Returns the time range for all keys stored in all tracks. </entry>
+              </row>
+              <row>
+                <entry>getTrack/setTrack</entry>
+                <entry>Gets or sets an individual track.</entry>
+              </row>
+              <row>
+                <entry>getTracks/setTracks</entry>
+                <entry>Gets or sets all the tracks in the container.</entry>
+              </row>
+              <row>
+                <entry>getTrackSetCount</entry>
+                <entry>Returns the number of track sets stored in the container.</entry>
+              </row>
+              <row>
+                <entry>setValues</entry>
+                <entry>Used by the manipulation system. Used to create keyframes on the tracks by
+                  setting new values at a given time. </entry>
+              </row>
+              <row>
+                <entry>bindToRig</entry>
+                <entry>Binds the animation tracks to a rig. This function is used when generating
+                  keyframes for a rig, based on the motion of a different rig. </entry>
+              </row>
+              <row>
+                <entry>plotKeyframes</entry>
+                <entry>Once an animation container is bound to a rig, the tracks can be plotted
+                  using leanrly spaced keyframes.</entry>
+              </row>
+              <row>
+                <entry>openCurveEditor</entry>
+                <entry>Opens the curve editor to display the tracks in the container.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+      <section>
+        <title>LinearTrackAnimationContainer</title>
+        <para>ParentNode: <emphasis role="bold">TrackAnimationContainer</emphasis></para>
+        <para>The LinearTrackAnimationContainer stores tracks or type LinearKeyframe.</para>
+      </section>
+      <section>
+        <title>LinearCharacterAnimationContainer</title>
+        <para>ParentNode: <emphasis role="bold">CharacterAnimationContainer</emphasis></para>
+        <para>The LinearCharacterAnimationContainer stores tracks or type LinearKeyframe.</para>
+      </section>
+      <section>
+        <title>BezierTrackAnimationContainer</title>
+        <para>ParentNode: <emphasis role="bold">TrackAnimationContainer</emphasis></para>
+        <para>The LinearCharacterAnimationContainer stores tracks or type BezierKeyframe.</para>
       </section>
     </section>
     <section>
