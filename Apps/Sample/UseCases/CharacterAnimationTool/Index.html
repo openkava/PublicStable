@@ -481,18 +481,7 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
     rigInstances['eyes'] = assetNodes.eyesMeshMaterial__56CharacterInstance;
     rigInstances['nails'] = assetNodes.nailsMeshMaterial__56CharacterInstance;
     
-    var bodyMaterial;
-    if(FABRIC.getOS() == 'Mac'){
-      bodyMaterial = scene.constructNode('PhongBumpReflectSkinningMaterial', {
-          diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
-          specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_D.png' }),
-          normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_N.png' }),
-          lightNode: light,
-          shininess: 5.0,
-          bumpiness: 0.5
-        })
-    }else{
-      bodyMaterial = scene.constructNode('MonsterMaterial', {
+    var bodyMaterial = scene.constructNode('MonsterMaterial', {
         wireColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
         lightNode: light,
         displacementTextureNode: scene.constructNode('Image2D', { url: 'Textures/body_Disp.png' }),
@@ -519,7 +508,6 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
           bodyMaterial.setTesselationOuter(ui.value);
           viewport.redraw();
         });
-    }
     
     var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: light,
@@ -777,7 +765,11 @@ FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader
       if (errors.length > 0) {
         throw (errors.toString());
       }
-      viewport.redraw();
+      viewport.redraw(); 
+      if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
+        alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
+        throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
+      }
       return true;
     }
   });
