@@ -88,7 +88,9 @@ def Docbook(env, inputDocbookXML):
 			]]
 		)
 	foXML = env.Dir('xsl').File('fo.xml')
-	outputPDFs.append(env.PDFFromPDFFO([pdffo, foXML]))
+	notePNG = env.Dir('images').File('note.png')
+	warningPNG = env.Dir('images').File('warning.png')
+	outputPDFs.append(env.PDFFromPDFFO([pdffo, foXML, notePNG, warningPNG]))
 	return outputPDFs
 AddMethod(docbookEnv, Docbook)
 
