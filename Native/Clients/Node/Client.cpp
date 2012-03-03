@@ -3,7 +3,7 @@
  */
 
 #include <Fabric/EDK/EDK.h>
-#include <Fabric/Clients/CLI/Client.h>
+#include <Fabric/Clients/Node/Client.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/IO/Helpers.h>

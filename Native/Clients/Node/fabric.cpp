@@ -2,7 +2,7 @@
  *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
-#include <Fabric/Clients/CLI/ClientFactory.h>
+#include <Fabric/Clients/Node/ClientFactory.h>
 #include <Fabric/Base/Util/Log.h>
 #include <Fabric/Core/Build.h>
 

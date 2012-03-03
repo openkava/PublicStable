@@ -26,6 +26,7 @@ elif buildOS == 'Linux':
 	klEnv[ '_LIBFLAGS' ] = '-Wl,--start-group ' + klEnv['_LIBFLAGS'] + ' -Wl,--end-group'
 
 klBin = klEnv.Program( 'kl', [ Glob('*.cpp'), extraObjects ] )
+Alias('kl', klBin)
 
 klToolInstallerFiles = Install(
   klToolPackageDir,
@@ -54,5 +55,3 @@ else:
   )
 Alias( 'klToolInstaller', klToolInstaller )
 Export( 'klToolInstaller' )
-  
-Alias( 'kl', klBin )
