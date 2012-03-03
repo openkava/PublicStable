@@ -3,11 +3,11 @@
 #
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricNodePackage', 'fabricNodeAddOn', 'nodeModuleReadMe', 'nodeModuleLicense', 'browserExtFiles', 'fileSystemExtFiles' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'FABRIC_VERSION', 'fabricNodePackage', 'fabricNodeAddOn', 'nodeModuleReadMe', 'nodeModuleLicense', 'browserExtFiles', 'fileSystemExtFiles' )
 
 nodePackageName = "FabricEngine-NodeModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 
-nodePackageDir = distDir.Dir(nodePackageName)
+nodePackageDir = archDistDir.Dir(nodePackageName)
 nodeModuleDir = nodePackageDir.Dir('node_modules').Dir('Fabric')
 
 installerFiles = []
@@ -42,10 +42,10 @@ installerFiles.append( Install(
 ) )
 
 nodeInstaller = baseEnv.Command(
-  distDir.File(nodePackageName+".tar.bz2"),
+  archDistDir.File(nodePackageName+".tar.bz2"),
   installerFiles,
   [
-    [ "tar", "-C", distDir, "-jcf", "$TARGET", nodePackageName ]
+    [ "tar", "-C", archDistDir, "-jcf", "$TARGET", nodePackageName ]
   ]
 )
 Alias( 'nodeInstaller', nodeInstaller )

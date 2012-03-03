@@ -5,15 +5,15 @@
 SConscript( dirs=['md5-1.4','glew-1.6.0','getopt']  )
 
 import os
-Import( ['env','buildOS','buildArch','buildType'] )
+Import('nativeEnv', 'buildOS', 'buildArch', 'buildType')
 
-includeBaseDir = os.path.join( '#ThirdParty', 'Private', 'include' )
-srcBaseDir = os.path.join( '#ThirdParty', 'Private', 'src' )
-osArchIncludeBaseDir = os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'include' )
+includeBaseDir = os.path.join( '#Native', 'ThirdParty', 'Private', 'include' )
+srcBaseDir = os.path.join( '#Native', 'ThirdParty', 'Private', 'src' )
+osArchIncludeBaseDir = os.path.join( '#Native', 'ThirdParty', 'Private', buildOS, buildArch, buildType, 'include' )
 if buildOS == 'Darwin':
-  libBaseDirs = [Dir(os.path.join( '#ThirdParty', 'Private', buildOS, 'i386', buildType, 'lib' )).abspath, Dir(os.path.join( '#ThirdParty', 'Private', buildOS, 'x86_64', buildType, 'lib' )).abspath]
+  libBaseDirs = [Dir(os.path.join( '#Native', 'ThirdParty', 'Private', buildOS, 'i386', buildType, 'lib' )).abspath, Dir(os.path.join( '#Native', 'ThirdParty', 'Private', buildOS, 'x86_64', buildType, 'lib' )).abspath]
 else:
-  libBaseDirs = [Dir(os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'lib' )).abspath]
+  libBaseDirs = [Dir(os.path.join( '#Native', 'ThirdParty', 'Private', buildOS, buildArch, buildType, 'lib' )).abspath]
 
 def staticLibFromLibName( libName ):
   if buildOS == 'Windows':
@@ -108,7 +108,7 @@ Export( 'openexrFlags' )
 
 # libpng
 if buildOS == 'Linux':
-    pngEnv = env.Clone()
+    pngEnv = nativeEnv.Clone()
     pngEnv.ParseConfig( 'pkg-config --cflags --libs libpng' )
     libpngFlags = {
         'CPPPATH': pngEnv['CPPPATH'],

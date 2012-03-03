@@ -3,10 +3,10 @@
 #
 
 import os.path
-Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'distDir', 'generateDistZip', 'agplLicenseFile' )
+Import( 'coreEnv', 'buildObject', 'buildOS', 'buildArch', 'FABRIC_VERSION', 'archDistDir', 'generateDistZip', 'agplLicenseFile' )
 
 klToolPackageName = "FabricEngine-KLTool-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
-klToolPackageDir = distDir.Dir(klToolPackageName)
+klToolPackageDir = archDistDir.Dir(klToolPackageName)
 
 klEnv = coreEnv.Clone()
 
@@ -41,15 +41,15 @@ if buildOS == 'Windows':
   generateDistZip( installerEnv )
   installerEnv.Append( DISTZIP_ROOTDIR = klToolPackageDir )
   klToolInstaller = installerEnv.DistZip(
-    distDir.File(klToolPackageName+".zip"),
+    archDistDir.File(klToolPackageName+".zip"),
     klToolInstallerFiles
   )
 else:
   klToolInstaller = klEnv.Command(
-    distDir.File(klToolPackageName+".tar.bz2"),
+    archDistDir.File(klToolPackageName+".tar.bz2"),
     klToolInstallerFiles,
     [
-      [ "tar", "-C", distDir, "-jcf", "$TARGET", klToolPackageName ]
+      [ "tar", "-C", archDistDir, "-jcf", "$TARGET", klToolPackageName ]
     ]
   )
 Alias( 'klToolInstaller', klToolInstaller )

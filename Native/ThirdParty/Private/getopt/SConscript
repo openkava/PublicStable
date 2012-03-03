@@ -3,10 +3,10 @@
 #
 
 import os
-Import( 'env', 'buildOS' )
+Import('nativeEnv', 'buildOS')
 
 if buildOS == 'Windows':
-	getoptEnv = env.Clone()
+	getoptEnv = nativeEnv.Clone()
 	getoptIncludeDir = getoptEnv.Dir('.');
 	getoptLib = getoptEnv.StaticLibrary(
 	  target = 'getopt',

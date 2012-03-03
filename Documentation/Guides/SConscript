@@ -1,8 +1,7 @@
 import os
+Import('env', 'buildOS')
 
-env = Environment(
-  ENV={ 'PATH': os.environ['PATH'] }
-  )
+docbookEnv = env.Clone()
 
 try:
 	docbookRoot = os.environ['SHORT_ATTENTION_SPAN_DOCBOOK_PATH']
@@ -18,11 +17,9 @@ saxonClassJars = [
   docbookRoot + "/jars/saxon.jar",
   docbookRoot + "/jars/xslthl-2.0.1.jar"
 	]
-saxonClassPath = ':'.join(saxonClassJars)
+saxonClassPath = os.pathsep.join(saxonClassJars)
 
 highlighterConfigPath = "file:///" + docbookRoot + "/xsl/highlighting/xslthl-config.xml"
-
-inputFile = env.Glob('*.docbook.xml')
 
 builderPDFFOFromDocbookXML = Builder(
 	action = [[
@@ -40,7 +37,7 @@ builderPDFFOFromDocbookXML = Builder(
 	suffix = '.pdf.fo',
 	src_suffix = '.docbook.xml'
 	)
-env.Append( BUILDERS = { 'PDFFOFromDocbookXML': builderPDFFOFromDocbookXML } )
+docbookEnv.Append( BUILDERS = { 'PDFFOFromDocbookXML': builderPDFFOFromDocbookXML } )
 
 foClassJars = [
   docbookRoot + "/fop/avalon-framework-4.2.0.jar",
@@ -55,7 +52,7 @@ foClassJars = [
   docbookRoot + "/jars/xml-apis-1.3.04.jar",
   docbookRoot + "/jars/xmlgraphics-commons-1.4.jar"
   ]
-foClassPath = ':'.join(foClassJars)
+foClassPath = os.pathsep.join(foClassJars)
 
 builderPDFFromPDFFO = Builder(
 	action = [[
@@ -68,13 +65,16 @@ builderPDFFromPDFFO = Builder(
 	suffix = '.pdf',
 	src_suffix = '.pdf.fo'
 	)
-env.Append( BUILDERS = { 'PDFFromPDFFO': builderPDFFromPDFFO } )
+docbookEnv.Append( BUILDERS = { 'PDFFromPDFFO': builderPDFFromPDFFO } )
+
+w3cEntities = docbookEnv.File('w3centities-f.ent')
 
 def Docbook(env, inputDocbookXMLs):
 	outputPDFs = []
 	for inputDocbookXML in inputDocbookXMLs:
+		env.Depends(inputDocbookXML, w3cEntities)
 		pdfXSL = env.Dir('xsl').File('pdf.xsl')
-		pdffo = env.PDFFOFromDocbookXML([inputDocbookXML,pdfXSL])
+		pdffo = env.PDFFOFromDocbookXML([inputDocbookXML, pdfXSL])
 		env.AddPreAction(
 			pdffo,
 			[[
@@ -88,8 +88,11 @@ def Docbook(env, inputDocbookXMLs):
 				"$SOURCE"
 				]]
 			)
-		outputPDFs.append(env.PDFFromPDFFO(pdffo))
+		foXML = env.Dir('xsl').File('fo.xml')
+		outputPDFs.append(env.PDFFromPDFFO([pdffo, foXML]))
 	return outputPDFs
-AddMethod(env, Docbook)
+AddMethod(docbookEnv, Docbook)
 
-env.Docbook(inputFile)
+results = []
+results.append(docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml')))
+Return('results')

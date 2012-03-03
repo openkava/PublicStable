@@ -3,9 +3,9 @@
 #
 
 import os
-Import( 'env', 'buildOS' )
+Import( 'nativeEnv', 'buildOS' )
 
-glewEnv = env.Clone()
+glewEnv = nativeEnv.Clone()
 glewIncludeDir = glewEnv.Dir('.');
 glewEnv.Append( CPPDEFINES = ['GLEW_STATIC'] )
 glewEnv.Append( CPPPATH = [glewIncludeDir] )
