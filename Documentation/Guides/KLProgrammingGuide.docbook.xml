@@ -2282,7 +2282,7 @@ a:1; b:3.14
       <title>Overloaded Operators</title>
       
       <para>
-        KL allows overloading of binary and assignment operators for custom types (ie. specified through <code>struct</code>).
+        KL allows overloading of binary operators and compound assignment operators for custom types (ie. specified through <code>struct</code>).
       </para>
         
       <section xml:id="op-overloads.binop">
@@ -2335,7 +2335,7 @@ operator entry() {
         </para>
       </section>
     
-      <section xml:id="op-overloads.assop">
+      <section xml:id="overloading-compound-ass-ops">
         <title>Compound Assignment Overloads</title>
       
         <para>
@@ -2461,17 +2461,38 @@ require Math, RegType;
       <section xml:id="arithmetic-ops">
         <title>Arithmetic Operators</title>
       
+        <section xml:id="add-ops">
+          <title>Add and Subtract</title>
+          
+          <para>
+            When <code>+</code> or <code>-</code> appear between two expressions they are referred to as the <glossterm>add</glossterm> and <glossterm>subtract</glossterm> binary operators.  These operators are pre-defined for all integer and floating point types, where they perform the usual arithmetic operations, but they can also be overloaded to apply to user-defined structures or different combinations of types.  For example, it is possible to define an operator that takes a user-defined <code>Rect</code> on the left and a user-defined <code>Point</code> on the right.
+          </para>
+
+          <para>
+            In addition to being pre-defined for integer and floating-point types, the <code>+</code> (add) operator (but not the <code>-</code> [subtract] operator) is defined for the <code>String</code> type; the result of adding two strings is the two strings concatenated together.
+          </para>
+        </section>
+      
+        <section xml:id="mul-ops">
+          <title>Multiply, Divide and Remainder</title>
+          
+          <para>
+            When <code>*</code>, <code>/</code> or <code>%</code> appear between two expressions they are referred to as the <glossterm>multiply</glossterm>, <glossterm>divide</glossterm> and <glossterm>remainder</glossterm> binary operators.  These operators are pre-defined for all integer and floating point types, where they perform the usual arithmetic operations, but they can also be overloaded to apply to user-defined structures or different combinations of types.  For example, it is possible to define a multiply operator that takes a <code>Float32</code> on the left and a user-defined <code>Vec3</code> on the right.
+          </para>
+        </section>
+      
         <section xml:id="unary-plus-minus-ops">
           <title>Unary Plus and Minus</title>
           
           <para>
-            When <code>+</code> or <code>-</code> appears in front of an integer or floating-point expression without an expression to the left they are referred to as as the <glossterm>unary plus</glossterm> and <glossterm>unary minus</glossterm> operators.  The unary plus operator doesn't do anything to the value it operates on, but the unary minus operator returns the value that, when added to the original, produces zero (for unsigned integer expressions); for signed integer and floating-point expressions, this is value of the expression with its sign reversed.
+            When <code>+</code> or <code>-</code> appears in front of an integer or floating-point expression without an expression to the left they are referred to as the <glossterm>unary plus</glossterm> and <glossterm>unary minus</glossterm> operators.  The unary plus operator doesn't do anything to the value it operates on, but the unary minus operator returns the value that, when added to the original, produces zero (for unsigned integer expressions); for signed integer and floating-point expressions, this is value of the expression with its sign reversed.
           </para>
           
           <note><para>
             It is currently not possible to overload the unary plus and minus operators; this will be fixed in a future version of Fabric.
           </para></note>
         </section>
+
         <section xml:id="inc-dec-ops">
           <title>Increment and Decrement Operators</title>
 
@@ -2498,46 +2519,182 @@ require Math, RegType;
       <section xml:id="logical-ops">
         <title>Logical Operators</title>
     
-        <section xml:id="logical-not">
-          <title>Logical Not</title>
+        <section xml:id="eq-ops">
+          <title>Equality Operators</title>
           
           <para>
-            When <code>!</code> (exclamation mark) appears in front of an expression it inverts the logical value of expression; more specifically, it constructs a new <code>Boolean</code> value from the expression and then inverts its logical value.  Therefore, logical not can be applied to any expression that has a <code>Boolean</code> constructor that takes a single parameter whose types is the type of the expression.
+            When <code>==</code> or <code>!=</code> appear between two expressions they are referred to as the <glossterm>equal-to</glossterm> or <glossterm>not-equal-to</glossterm> binary operators, respectively; collectively, they are referred to as the <glossterm>equality operators</glossterm>.
+          </para>
+
+          <para>
+            The equality operators are pre-defined for all integer and floating-point types as well as the <code>Boolean</code> and <code>String</code> types.  They can also be overloaded to apply to user-defined structure types or combinations of different types.
+          </para>
+        </section>
+    
+        <section xml:id="rel-ops">
+          <title>Relational Operators</title>
+          
+          <para>
+            When <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> or <code>&gt;=</code> appear between two expressions they are referred to as the <glossterm>less-than</glossterm>, <glossterm>less-than-or-equal-to</glossterm>, <glossterm>greater-than</glossterm> or <glossterm>greater-than-or-equal-to</glossterm> binary operators, respectively; collectively, they are referred to as the <glossterm>relational operators</glossterm>.
+          </para>
+
+          <para>
+            The relational operators are pre-defined for all integer and floating-point types as well as the <code>String</code> type.  They can also be overloaded to apply to user-defined structure types or combinations of different types.
+          </para>
+        </section>
+    
+        <section xml:id="log-and-op">
+          <title>Logical AND</title>
+          
+          <para>
+            When <code>&amp;&amp;</code> appears between two expressions it is referred to as the <glossterm>logical AND</glossterm> binary operator.  Logical AND operates as follows: the left operand is cast to a <code>Boolean</code> (ie. a <code>Boolean</code> value is constructed from the left hand operand).  If the result is <code>true</code>, the result is the right operand, otherwise the result is the left operand.
+          </para>
+
+          <note>
+            <para>
+              This behaviour of logical AND is the same as in JavaScript but different than C.
+            </para>
+          </note>
+
+          <note>
+            <para>
+              Logical AND cannot be overloaded.
+            </para>
+          </note>
+        </section>
+     
+        <section xml:id="log-or-op">
+          <title>Logical OR</title>
+          
+          <para>
+            When <code>||</code> appears between two expressions it is referred to as the <glossterm>logical OR</glossterm> binary operator.  Logical OR operates as follows: the left operand is cast to a <code>Boolean</code> (ie. a <code>Boolean</code> value is constructed from the left hand operand).  If the result is <code>true</code>, the result is the left operand, otherwise the result is the right operand.
+          </para>
+
+          <note>
+            <para>
+              This behaviour of logical OR is the same as in JavaScript but different than C.
+            </para>
+          </note>
+
+          <note>
+            <para>
+              Logical OR cannot be overloaded.
+            </para>
+          </note>
+        </section>
+      
+        <section xml:id="logical-not">
+          <title>Logical NOT</title>
+          
+          <para>
+            When <code>!</code> (exclamation mark) appears in front of an expression it is referred to as the <glossterm>logical NOT</glossterm> unary operator.  Logical NOT inverts the logical value of expression; more specifically, it constructs a new <code>Boolean</code> value from the expression and then inverts its logical value.  Therefore, logical not can be applied to any expression that has a <code>Boolean</code> constructor that takes a single parameter whose types is the type of the expression.
           </para>
           
           <note><para>
             It is not possible to overload the logical not operator.  However, you can <quote>enable</quote> it for custom types (structures) by creating a <code>Boolean</code> constructor with a single parameter whose type is the structure.
           </para></note>
         </section>
+      
+        <section xml:id="cond-op">
+          <title>The Conditional Operator</title>
+          
+          <para>
+            When three expressions are separated by <code>?</code> and <code>:</code> it is referred to as the <glossterm>conditional operator</glossterm> (or <glossterm>ternary operator</glossterm>).  The conditional operator constructs a <code>Boolean</code> from the first operand; if it has value <code>true</code>, the result is the second operand, otherwise it is the third.
+          </para>
+          
+          <para>
+            It is not possible to overload the conditional operator.
+          </para>
+        </section>
       </section>
+      
       <section xml:id="bitwise-ops">
         <title>Bitwise Operators</title>
     
+        <section xml:id="bit-bin-ops">
+          <title>Bitwise AND, OR and XOR</title>
+          
+          <para>
+            When <code>&amp;</code>, <code>|</code> or <code>^</code> appear between two expressions they are referred to as <glossterm>bitwise AND</glossterm>, <glossterm>bitwise OR</glossterm> or <glossterm>bitwise XOR</glossterm>, respectively.
+          </para>
+          
+          <para>
+            Bitwise AND, OR and XOR are predefined for all integer types as well as <code>Boolean</code>.  They can also be overloaded for user-defined structures or combinations of different types.
+          </para>
+
+          <note>
+            <para>
+              Bitwise AND, OR and XOR are not predefined for floating-point types.
+            </para>
+          </note>
+        </section>
+    
         <section xml:id="bitwise-not">
-          <title>Bitwise Not</title>
+          <title>Bitwise NOT</title>
           
           <para>
             When <code>~</code> (tilde) appears in front of an expression of integer type, the result is the integer value with its bits inverted.  It can also be applied to an expression of type <code>Boolean</code>, in which case the logical value is inverted.
           </para>
           
           <note><para>
-            The bitwise not operator cannot be applied to floating-point expressions.
+            The bitwise NOT operator is not predefined for floating-point types.
+          </para></note>
+        </section>
+ 
+        <section xml:id="shift-ops">
+          <title>Left and Right Shift</title>
+          
+          <para>
+            When <code>&lt;&lt;</code> or <code>&gt;&gt;</code> appear between two expressions they are referred to as the <glossterm>left shift</glossterm> or <glossterm>right shift</glossterm> binary operators, respectively.  These operators are pre-defined for all integer types, where they perform a left or right bit shift of the left operand by the number of bits given in the right operand.  It is possible to overload the shift operators for user-defined types, and even provide non-integer types as right-hand operands.
+          </para>
+
+          <note><para>
+            A right-shift of a signed integer value will fill the left most bits with the sign bit, not with zeros.  Right shifts of unsigned integer values and left shifts of any integer values always fill with zeros.
+          </para></note>
+
+          <note><para>
+            The left and right shift operators are not defined for floating-point types.
           </para></note>
         </section>
       </section>
+      
+      <section xml:id="ass-ops">
+        <title>Assignment Operators</title>
+    
+        <section xml:id="direct-ass-op">
+          <title>Direct Assignment Operator</title>
+          
+          <para>
+            When <code>=</code> appears between two expressions it is referred to as the <glossterm>direct assignment operator</glossterm>.  The direct assignment operator is predefined for all types; see <xref linkend="types" /> for details on how direct assignment operates for a given type.
+          </para>
+        </section>
+    
+        <section xml:id="compound-ass-ops">
+          <title>Compound Assignment Operators</title>
+          
+          <para>
+            Any of the arithmetic or bitwise (but not logical) binary operators can be combined with <code>=</code> to form a <glossterm>compound assignment operator</glossterm>; these are specifically <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code>, <code>&lt;&lt;=</code>, <code>&gt;&gt;=</code>, <code>&amp;=</code>, <code>^=</code> and <code>|=</code>.
+          </para>
+
+          <para>
+            A compound assignment operator is predefined for a given type if and only if the corresponding binary operator is predefined for the type.  It is also possible to overload the compound assignment operator for any type, and it is even possible to have different types for the left and right operands. See <xref linkend="overloading-compound-ass-ops" />.
+          </para>
+        </section>
+      </section>
     </section>
+
     <section xml:id="exprs">
       <title>Expressions</title>
       
       <para>
-        This section categorizes all of the expression types available in KL.  The expression types are organized into groups; each operation within a group has the same precedence as the other operations in the group, and the groups are listed in order of highest to lowest precedence.
+        There are two types of expressions in KL: simple expressions and compound expressions.
       </para>
       
-      <section xml:id="primary-exprs">
-        <title>Primary Expressions</title>
+      <section xml:id="simple-exprs">
+        <title>Simple Expressions</title>
         
         <para>
-          Primary expressions are the expressions from which more complex expressions are derived.  The primary expressions are:
+          <glossterm>Simple expressions</glossterm> are the expressions from which more complex expressions are derived.  The simple expressions are:
           
           <itemizedlist>
             <listitem><para>Symbols that refer to variables, function arguments or global constants.  The type of the expression is the type of the entity referred to.  Examples: <code>foo</code>, <code>myParam</code>, <code>mathPI</code>.  See FIXME as well as <xref linkend="scope" /> for how symbol names are resolved.</para></listitem>
@@ -2545,46 +2702,214 @@ require Math, RegType;
           </itemizedlist>
         </para>
       </section>
-      <section xml:id="postfix-exprs">
-        <title>Postfix Expressions</title>
-        
+
+      <section xml:id="compound-exprs">
+        <title>Compound Expressions</title>
+
         <para>
-          Postfix expressions operate on the expression to the left, and associate left-to-right.  The postfix expressions are:
-          
-          <itemizedlist>
-            <listitem><para>Function invocations: <code><replaceable>function</replaceable>(<replaceable>args</replaceable>)</code>.  See <xref linkend="function-calls" />.</para></listitem>
-            <listitem><para>Array and dictionary indexing operations: <code><replaceable>expr</replaceable>[<replaceable>expr</replaceable>]</code>.  See <xref linkend="arrays" /> and <xref linkend="dicts" />.</para></listitem>
-            <listitem><para>Structure member access: <code><replaceable>expr</replaceable>.<replaceable>member</replaceable></code>.  See <xref linkend="structs" />.</para></listitem>
-            <listitem><para>
-              Method invocations: <code><replaceable>expr</replaceable>.<replaceable>method</replaceable>(<replaceable>args</replaceable>)</code>.  See <xref linkend="method-calls" />.
-            </para></listitem>
-            <listitem><para>Postfix increment and decrement: <code><replaceable>expr</replaceable>++</code>, <code><replaceable>expr</replaceable>--</code>.  See <xref linkend="inc-dec-ops" />.</para></listitem>
-          </itemizedlist>
+          <glossterm>Compound expressions</glossterm> are built from <link linkend="simple-exprs">simple expressions</link> and/or other compound expressions using <link linkend="ops">operators</link>.
         </para>
-      </section>
-      <section xml:id="prefix-exprs">
-        <title>Prefix Expressions</title>
-        
+
         <para>
-          Prefix expressions operator on the expression to the right, and associated right-to-left.  The prefix expressions are:
-          
-          <itemizedlist>
-            <listitem><para>
-              The unary plus and minus operators: <code>+<replaceable>expr</replaceable></code> and <code>-<replaceable>expr</replaceable></code>.  See <xref linkend="unary-plus-minus-ops" />.
-            </para></listitem>
-            <listitem><para>
-              The prefix increment and decrement operators: <code>++<replaceable>expr</replaceable></code> and <code>--<replaceable>expr</replaceable></code>.  See <xref linkend="inc-dec-ops" />.
-            </para></listitem>
-            <listitem><para>
-              The logical not operator: <code>!<replaceable>expr</replaceable></code>.  See <xref linkend="logical-not" />.
-            </para></listitem>
-            <listitem><para>
-              The bitwise not operator: <code><replaceable>expr</replaceable></code>.  See <xref linkend="bitwise-not" />.
-            </para></listitem>
-          </itemizedlist>
+          The following table lists all the different compound expressions in KL.  Compound expressions are grouped by <glossterm>type</glossterm>; all expressions of the same type are of the same precedence and share the same associativity.  Compound expression types are listed from highest to lowest precedence.
         </para>
+
+        <table frame='all'>
+          <title>Compound expressions</title>
+          <tgroup cols='4' align='left' colsep='1' rowsep='1'>
+            <colspec colname='type' />
+            <colspec colname='assoc' />
+            <colspec colname='expr'/>
+            <colspec colname='ref' />
+            <thead>
+              <row>
+                <entry>Type</entry>
+                <entry>Associativity</entry>
+                <entry>Expression(s)</entry>
+                <entry>Reference</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry morerows="5">Postfix</entry>
+                <entry morerows="5">left-to-right</entry>
+                <entry><code><replaceable>function</replaceable>(<replaceable>args</replaceable>)</code></entry>
+                <entry><xref linkend="function-calls" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable>[<replaceable>expr</replaceable>]</code></entry>
+                <entry><xref linkend="arrays" />; <xref linkend="dicts" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable>.<replaceable>member</replaceable></code></entry>
+                <entry><xref linkend="structs" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable>.<replaceable>method</replaceable>(<replaceable>args</replaceable>)</code></entry>
+                <entry><xref linkend="method-calls" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable>++</code></entry>
+                <entry morerows="1"><xref linkend="inc-dec-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable>--</code></entry>
+              </row>
+              <row>
+                <entry morerows="5">Prefix</entry>
+                <entry morerows="5">right-to-left</entry>
+                <entry><code>+<replaceable>expr</replaceable></code></entry>
+                <entry morerows="1"><xref linkend="unary-plus-minus-ops" /></entry>
+              </row>
+              <row>
+                <entry><code>-<replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code>++<replaceable>expr</replaceable></code></entry>
+                <entry morerows="1"><xref linkend="inc-dec-ops" /></entry>
+              </row>
+              <row>
+                <entry><code>--<replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code>!<replaceable>expr</replaceable></code></entry>
+                <entry><xref linkend="logical-not" /></entry>
+              </row>
+              <row>
+                <entry><code>~<replaceable>expr</replaceable></code></entry>
+                <entry><xref linkend="bitwise-not" /></entry>
+              </row>
+              <row>
+                <entry morerows="2">Multiplicative</entry>
+                <entry morerows="2">left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> * <replaceable>expr</replaceable></code></entry>
+                <entry morerows="2"><xref linkend="mul-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> / <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> % <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry morerows="1">Additive</entry>
+                <entry morerows="1">left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> + <replaceable>expr</replaceable></code></entry>
+                <entry morerows="1"><xref linkend="add-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> - <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry morerows="1">Shift</entry>
+                <entry morerows="1">left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> &lt;&lt; <replaceable>expr</replaceable></code></entry>
+                <entry morerows="1"><xref linkend="shift-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &gt;&gt; <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry morerows="3">Relational</entry>
+                <entry morerows="3">left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> &lt; <replaceable>expr</replaceable></code></entry>
+                <entry morerows="3"><xref linkend="rel-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &lt;= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &gt; <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &gt;= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry morerows="1">Equality</entry>
+                <entry morerows="1">left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> == <replaceable>expr</replaceable></code></entry>
+                <entry morerows="1"><xref linkend="eq-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> != <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry>Bitwise AND</entry>
+                <entry>left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> &amp; <replaceable>expr</replaceable></code></entry>
+                <entry morerows="2"><xref linkend="bit-bin-ops" /></entry>
+              </row>
+              <row>
+                <entry>Bitwise XOR</entry>
+                <entry>left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> ^ <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry>Bitwise OR</entry>
+                <entry>left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> | <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry>Logical AND</entry>
+                <entry>left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> &amp;&amp; <replaceable>expr</replaceable></code></entry>
+                <entry><xref linkend="log-and-op" /></entry>
+              </row>
+              <row>
+                <entry>Logical OR</entry>
+                <entry>left-to-right</entry>
+                <entry><code><replaceable>expr</replaceable> || <replaceable>expr</replaceable></code></entry>
+                <entry><xref linkend="log-or-op" /></entry>
+              </row>
+              <row>
+                <entry>Conditional</entry>
+                <entry>right-to-left</entry>
+                <entry><code><replaceable>expr</replaceable>? <replaceable>expr</replaceable>: <replaceable>expr</replaceable></code></entry>
+                <entry><xref linkend="cond-op" /></entry>
+              </row>
+              <row>
+                <entry morerows="10">Assignment</entry>
+                <entry morerows="10">right-to-left</entry>
+                <entry><code><replaceable>expr</replaceable> = <replaceable>expr</replaceable></code></entry>
+                <entry><xref linkend="direct-ass-op" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> += <replaceable>expr</replaceable></code></entry>
+                <entry morerows="9"><xref linkend="compound-ass-ops" /></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> -= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> *= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> /= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> %= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &lt;&lt;= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &gt;&gt;= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> &amp;= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> ^= <replaceable>expr</replaceable></code></entry>
+              </row>
+              <row>
+                <entry><code><replaceable>expr</replaceable> |= <replaceable>expr</replaceable></code></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
       </section>
     </section>
+
     <section xml:id="order-of-ops">
       <title>Controlling Order of Operations</title>
       
