@@ -3,9 +3,9 @@
 #
 
 import os
-Import( 'env' )
+Import( 'nativeEnv' )
 
-md5Env = env.Clone()
+md5Env = nativeEnv.Clone()
 md5IncludeDir = md5Env.Dir('.');
 builtMD5 = md5Env.StaticLibrary(
   target = 'md5-1.4',

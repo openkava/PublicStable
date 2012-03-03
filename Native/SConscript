@@ -3,8 +3,7 @@
 #
 
 import os, platform, posixpath, glob, sys
-
-CacheDir( '.sconscache' )
+Import('env', 'buildDir', 'distDir')
 
 try:
   buildOS = os.environ['FABRIC_BUILD_OS']
@@ -17,10 +16,14 @@ except:
   print "Must source fabric-build-env.sh first"
   sys.exit(1)
 
-thirdPartyDir = os.path.join(os.getcwd(), 'ThirdParty' )
-
-SetOption('num_jobs', int(os.environ.get('FABRIC_BUILD_JOBS', 1)))
-print "Running with -j" + str(GetOption('num_jobs'))
+path = os.environ['PATH']+os.pathsep+os.path.join('Native', 'ThirdParty', 'bin', buildOS)
+nativeEnv = env.Clone(
+  ENV={ 'PATH': path },
+  FABRIC_BUILD_OS=buildOS,
+  FABRIC_BUILD_ARCH=buildArch,
+  FABRIC_BUILD_TYPE=buildType,
+  TARGET_ARCH = buildArch
+  )
 
 # [pzion 20110726] !!!!!!!!!!!!!!!!!!!!
 # When you change the version number,
@@ -61,15 +64,7 @@ template = Builder( action = "\
     -e 's/{{FABRIC_CACHE_GENERATION}}/"+FABRIC_CACHE_GENERATION+"/g' \
   <$SOURCE >$TARGET \
 " )
-
-path = os.environ['PATH']+os.pathsep+os.path.join(thirdPartyDir,'bin',buildOS)
-env = Environment(
-  ENV={ 'PATH': path },
-  FABRIC_BUILD_OS=buildOS,
-  FABRIC_BUILD_ARCH=buildArch,
-  FABRIC_BUILD_TYPE=buildType,
-  TARGET_ARCH = buildArch
-  )
+nativeEnv.Append( BUILDERS = { 'Template': template } )
 
 if buildOS == 'Windows':
   env['ENV']['TMP'] = os.environ['TMP']
@@ -77,29 +72,28 @@ if buildOS == 'Windows':
 if buildOS == 'Darwin':
   #env.Replace( CC = 'gcc-4.2' )
   #env.Replace( CXX = 'g++-4.2' )
-  env.Replace( YACC = '/opt/local/bin/bison' )
+  nativeEnv.Replace( YACC = '/opt/local/bin/bison' )
 
 if not ARGUMENTS.get( 'VERBOSE' ):
-	env['CCCOMSTR']       = 'Compiling       $SOURCE'
-	env['CXXCOMSTR']      = 'Compiling       $SOURCE'
-	env['SHCCCOMSTR']     = 'Compiling       $SOURCE'
-	env['SHCXXCOMSTR']    = 'Compiling       $SOURCE'
-	env['YACCCOMSTR']     = 'Bison           $SOURCE'
-	env['ARCOMSTR']       = 'StaticLibrary   $TARGET'
-	env['SHLINKCOMSTR']   = 'SharedLibrary   $TARGET'
-	env['RANLIBCOMSTR']   = 'Ranlib          $TARGET'
-	env['LINKCOMSTR']     = 'Linking         $TARGET'
-	env['LDMODULECOMSTR'] = 'LoadableModule  $TARGET'
-env.Append( BUILDERS = { 'Template': template } )
+	nativeEnv['CCCOMSTR']       = 'Compiling       $SOURCE'
+	nativeEnv['CXXCOMSTR']      = 'Compiling       $SOURCE'
+	nativeEnv['SHCCCOMSTR']     = 'Compiling       $SOURCE'
+	nativeEnv['SHCXXCOMSTR']    = 'Compiling       $SOURCE'
+	nativeEnv['YACCCOMSTR']     = 'Bison           $SOURCE'
+	nativeEnv['ARCOMSTR']       = 'StaticLibrary   $TARGET'
+	nativeEnv['SHLINKCOMSTR']   = 'SharedLibrary   $TARGET'
+	nativeEnv['RANLIBCOMSTR']   = 'Ranlib          $TARGET'
+	nativeEnv['LINKCOMSTR']     = 'Linking         $TARGET'
+	nativeEnv['LDMODULECOMSTR'] = 'LoadableModule  $TARGET'
 
 if buildType == 'Release':
-  env.Append( CPPDEFINES = ['NDEBUG'] )
+  nativeEnv.Append( CPPDEFINES = ['NDEBUG'] )
 
 # Uncomment the following to have RC leaks logged
 # env.Append( CPPDEFINES = ['FABRIC_RC_LEAK_REPORT'] )
 
 if buildOS == 'Windows' and buildType == 'Debug':
-  env.Append( PDB='${TARGET.base}.pdb' )
+  nativeEnv.Append( PDB='${TARGET.base}.pdb' )
 
 # check for buildOS specific flags
 buildFlags = { 
@@ -172,13 +166,13 @@ buildFlags = {
 osFlags = buildFlags[buildOS]
 
 if 'ccDefs' in osFlags:
-  env.Append( CPPDEFINES = osFlags['ccDefs'] )  
+  nativeEnv.Append( CPPDEFINES = osFlags['ccDefs'] )  
 if 'ccflags' in osFlags:
-  env.Append( CCFLAGS = osFlags['ccflags'] )
+  nativeEnv.Append( CCFLAGS = osFlags['ccflags'] )
 if 'cxxflags' in osFlags:
-  env.Append( CXXFLAGS = osFlags['cxxflags'] )
+  nativeEnv.Append( CXXFLAGS = osFlags['cxxflags'] )
 if 'linkflags' in osFlags:
-  env.Append( LINKFLAGS = osFlags['linkflags'] )
+  nativeEnv.Append( LINKFLAGS = osFlags['linkflags'] )
 
 subTypes = [ buildArch, buildType ]
 
@@ -186,34 +180,36 @@ for subType in subTypes:
   if subType in osFlags:
     osSubFlags = osFlags[subType]
     if 'ccDefs' in osSubFlags:
-      env.Append( CPPDEFINES = osSubFlags['ccDefs'] )  
+      nativeEnv.Append( CPPDEFINES = osSubFlags['ccDefs'] )  
     if 'ccflags' in osSubFlags:
-      env.Append( CCFLAGS = osSubFlags['ccflags'] )
+      nativeEnv.Append( CCFLAGS = osSubFlags['ccflags'] )
     if 'cxxflags' in osSubFlags:
-      env.Append( CXXFLAGS = osSubFlags['cxxflags'] )
+      nativeEnv.Append( CXXFLAGS = osSubFlags['cxxflags'] )
     if 'linkflags' in osSubFlags:
-      env.Append( LINKFLAGS = osSubFlags['linkflags'] )
+      nativeEnv.Append( LINKFLAGS = osSubFlags['linkflags'] )
 
-buildDirBase = os.path.join( '#build', buildOS, buildArch, buildType )
-buildDir = os.path.join( buildDirBase, 'Fabric' )
-env.Append( BUILDDIR = [Dir(buildDir).abspath] )
+archBuildDirBase = os.path.join(buildDir, 'Native', buildOS, buildArch, buildType)
+nativeEnv.Append( CPPPATH=[archBuildDirBase] )
+archBuildDir = os.path.join(archBuildDirBase, 'Fabric')
+Export('archBuildDir')
 
-distDir = env.Dir( '#dist' )
-archDistDir = distDir.Dir(buildOS).Dir(buildArch).Dir(buildType)
+archDistDir = distDir.Dir('Native').Dir(buildOS).Dir(buildArch).Dir(buildType)
 npapiDistDir = archDistDir.Dir( 'NPAPI' )
 fabricExtsDistDir = archDistDir.Dir( 'Exts' )
-Export( 'distDir', 'archDistDir', 'npapiDistDir', 'fabricExtsDistDir' )
+Export('archDistDir', 'npapiDistDir', 'fabricExtsDistDir')
 
-env.Append( CPPPATH=[buildDirBase] )
-Export( 'env' )
+Export('nativeEnv')
 
-SConscript( dirs=['SConsUtils'], variant_dir=os.path.join( buildDir, 'SConsUtils' ) )
-SConscript( dirs=['Licenses'], variant_dir=os.path.join( buildDir, 'Licenses' ) )
-SConscript( dirs=['ThirdParty'], variant_dir=os.path.join( buildDir, 'ThirdParty' ) )
-SConscript( dirs=['Base'], variant_dir=os.path.join( buildDir, 'Base' ) )
-SConscript( dirs=['Core'], variant_dir=os.path.join( buildDir, 'Core' ) )
-SConscript( dirs=['Tools'], variant_dir=os.path.join( buildDir, 'Tools' ) )
-SConscript( dirs=['Clients'], variant_dir=os.path.join( buildDir, 'Clients' ) )
-SConscript( dirs=['EDK'], variant_dir=os.path.join( buildDir, 'EDK' ) )
-SConscript( dirs=['Exts'], variant_dir=os.path.join( buildDir, 'Exts' ) )
-SConscript( dirs=['Installer'], variant_dir=os.path.join( buildDir, 'Installer' ) )
+subDirs = [
+  'Licenses',
+  'ThirdParty',
+  'Base',
+  'Core',
+  'Tools',
+  'Clients',
+  'EDK',
+  'Exts',
+  'Installer'
+  ]
+for subDir in subDirs:
+  SConscript( dirs=[subDir], variant_dir=os.path.join(archBuildDir, subDir) )
