@@ -41,7 +41,7 @@ Command(
     Copy( "$TARGET", "$SOURCE" )
   ])
 
-Alias( 'NPAPI', [
+Alias( 'npapi', [
   npapiPluginBundlePlist,
   npapiPluginBundleBinary,
 ] )

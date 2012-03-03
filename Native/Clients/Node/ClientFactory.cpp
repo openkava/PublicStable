@@ -2,9 +2,9 @@
  *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
-#include <Fabric/Clients/CLI/ClientFactory.h>
-#include <Fabric/Clients/CLI/Client.h>
-#include <Fabric/Clients/CLI/LogCollector.h>
+#include <Fabric/Clients/Node/ClientFactory.h>
+#include <Fabric/Clients/Node/Client.h>
+#include <Fabric/Clients/Node/LogCollector.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/IO/Helpers.h>

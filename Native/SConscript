@@ -206,10 +206,13 @@ subDirs = [
   'Base',
   'Core',
   'Tools',
-  'Clients',
   'EDK',
   'Exts',
+  'Clients',
   'Installer'
   ]
 for subDir in subDirs:
   SConscript( dirs=[subDir], variant_dir=os.path.join(archBuildDir, subDir) )
+
+Alias('cli', ['cliClients', 'cliTools'])
+Alias('all', ['cli', 'npapi'])
