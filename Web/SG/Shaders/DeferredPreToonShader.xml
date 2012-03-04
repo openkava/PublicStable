@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shader>
   <name>ToonDemoMaterial</name>
+  <prototypeMaterialType>DeferredPrePassMaterial</prototypeMaterialType>
   
   <uniforms>
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>

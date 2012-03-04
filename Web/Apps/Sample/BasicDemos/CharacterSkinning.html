@@ -21,7 +21,6 @@
     <script type="text/javascript">
     
 
-
 FABRIC.require(["SG/SceneGraph",
                  "SG/Geometry",
                  "SG/Materials",
@@ -30,7 +29,7 @@ FABRIC.require(["SG/SceneGraph",
                  "SG/Parsers/parseCollada"], function() {
 
   // Create the scene.
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: true,
     windowElement: document.getElementById('FabricContainer')
@@ -126,6 +125,7 @@ FABRIC.require(["SG/SceneGraph",
         throw (errors.toString());
       }
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });

@@ -19,11 +19,22 @@
     <script type="text/javascript">
     
     
+$(document).ready(function() {
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
+});
+
+
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
                 "SG/Materials",
                 "SG/Manipulation",
                 "SG/Alembic"], function() { 
+
+FABRIC.SceneGraph.defineEffectFromFile('HairTextureMaterial', 'Shaders/HairTextureShader.xml');
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
@@ -51,24 +62,6 @@ FABRIC.require(["SG/SceneGraph",
       lightNode: light,
     });
   
-$(document).ready(function() {
-
-  $('#play').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-play'
-      }
-    });
-  $('#step').button({
-    text: true,
-    icons: {
-      primary: 'ui-icon-step'
-    }
-  });
-  
-  $('#loadingDialog').dialog({
-    modal: true
-  });
 
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'furmonster';
@@ -89,10 +82,7 @@ $(document).ready(function() {
         });
       }
     }
-      
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-    return 'remove';
+    return true;
   });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
@@ -105,11 +95,12 @@ $(document).ready(function() {
       if (errors.length > 0) {
         throw (errors.toString());
       }
+      $('#loadingDialog').dialog('close');
+      viewport.redraw();
       return true;
     }
   });
   
-});
 });
 
 // jQuert UI Styling classes

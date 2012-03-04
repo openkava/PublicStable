@@ -1,4 +1,6 @@
-
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph"], function() {
 
@@ -28,7 +30,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
     var createTransaction = function(name){
       var actions = [];
       return {
-        addAction:function(changeItem){
+        addTransaction:function(changeItem){
           actions.push( changeItem );
         },
         close: function() {
@@ -86,14 +88,14 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
           clearStack(redoStack);// Redos get trashed when a new undo is added.
           undoInProgress = true;
         },
-        addAction: function( action ) {
+        addTransaction: function( action ) {
           if(!undoEnabled || undoRedoing) return;
           var newTransaction = false;
           if( currentUndoTransaction === undefined ){
             this.openUndoTransaction( action.name || "Undo" );
             newTransaction = true;
           }
-          currentUndoTransaction.addAction( action );
+          currentUndoTransaction.addTransaction( action );
           if( newTransaction ){
             this.closeUndoTransaction();
           }

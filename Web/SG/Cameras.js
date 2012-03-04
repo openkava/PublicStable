@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "SG/Kinematics",
@@ -37,24 +36,16 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     var cameraNode = scene.constructNode('SceneGraphNode', options),
       dgnode = cameraNode.constructDGNode('DGNode'),
       redrawEventHandler = cameraNode.constructEventHandlerNode('Redraw'),
-      transformNode,
-      transformNodeMember = 'globalXfo';
+      transformNode;
       
-    dgnode.addMember('nearDistance', 'Scalar', options.nearDistance);
-    dgnode.addMember('farDistance', 'Scalar', options.farDistance);
-    dgnode.addMember('fovY', 'Scalar', options.fovY);
-    dgnode.addMember('focalDistance', 'Scalar', options.focalDistance);
+    dgnode.addMember('nearDistance', 'Scalar', options.nearDistance, true);
+    dgnode.addMember('farDistance', 'Scalar', options.farDistance, true);
+    dgnode.addMember('fovY', 'Scalar', options.fovY, true);
+    dgnode.addMember('focalDistance', 'Scalar', options.focalDistance, true);
     dgnode.addMember('cameraMat44', 'Mat44');
-    dgnode.addMember('orthographic', 'Boolean', options.orthographic);
+    dgnode.addMember('orthographic', 'Boolean', options.orthographic, true);
     dgnode.addMember('projectionMat44', 'Mat44');
-    dgnode.addMember('screenOffset', 'Vec2', options.screenOffset);
-
-    cameraNode.addMemberInterface(dgnode, 'nearDistance', true);
-    cameraNode.addMemberInterface(dgnode, 'farDistance', true);
-    cameraNode.addMemberInterface(dgnode, 'fovY', true);
-    cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
-    cameraNode.addMemberInterface(dgnode, 'orthographic', true);
-    cameraNode.addMemberInterface(dgnode, 'screenOffset', true);
+    dgnode.addMember('screenOffset', 'Vec2', options.screenOffset, true);
 
     redrawEventHandler.setScope('camera', dgnode);
 
@@ -74,44 +65,34 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
       ]
     }));
 
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'loadXfo',
+      srcCode: 'use Xfo, Mat44; operator loadXfo(io Xfo xfo, io Mat44 mat44){ mat44 = xfo.toMat44().inverse(); }',
+      entryFunctionName: 'loadXfo',
+      parameterLayout: [
+        'transform.globalXfo',
+        'self.cameraMat44'
+      ]
+    }));
+        
     // Now register the camera with the Scene Graph so that
     // It will connect the camera with the scene graph rendered elements.(shaders etc)
     redrawEventHandler.appendChildEventHandler(scene.getSceneRedrawEventHandler());
 
     // public interface
-    cameraNode.pub.getTransformNode = function() {
-      return transformNode.pub;
-    };
-    cameraNode.pub.setTransformNode = function(node, member) {
-      if (member) {
-        transformNodeMember = member;
-      }
-      node = scene.getPrivateInterface(node);
-      if (!(node.getDGNode() && node.getDGNode().getMembers()[transformNodeMember])) {
-        var message = 'Error in Transform node assignement on :' + node.name +
-          ' \n member not found :' + transformNodeMember + '\n\n';
-        message += 'Members:' + JSON.stringify(node.getDGNode().getMembers());
-        throw (message);
-      }
-      transformNode = node;
-      dgnode.setDependency(transformNode.getDGNode(), 'transform');
-
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'loadXfo',
-        srcCode: 'use Xfo, Mat44; operator loadXfo(io Xfo xfo, io Mat44 mat44){ mat44 = xfo.toMat44().inverse(); }',
-        entryFunctionName: 'loadXfo',
-        parameterLayout: [
-          'transform.' + transformNodeMember,
-          'self.cameraMat44'
-        ]
-      }));
-    };
+    cameraNode.addReferenceInterface('Transform', 'Transform',
+      function(nodePrivate){
+        transformNode = nodePrivate;
+        dgnode.setDependency(transformNode.getDGNode(), 'transform');
+  
+      });
     cameraNode.addMemberInterface(dgnode, 'cameraMat44');
     cameraNode.addMemberInterface(dgnode, 'projectionMat44');
     cameraNode.addMemberInterface(dgnode, 'nearDistance', true);
     cameraNode.addMemberInterface(dgnode, 'farDistance', true);
     cameraNode.addMemberInterface(dgnode, 'fovY', true);
     cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'screenOffset', true);
 
     scene.addEventHandlingFunctions(cameraNode);
     
@@ -119,10 +100,6 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     var parentWriteData = cameraNode.writeData;
     var parentReadData = cameraNode.readData;
     cameraNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
-      if(transformNodeMember){
-        nodeData.transformNodeMember = transformNodeMember;
-      }
-      sceneSerializer.addNode(transformNode.pub);
       nodeData.transformNode = transformNode.pub.getName();
       
       nodeData.nearDistance = cameraNode.pub.getNearDistance();
@@ -135,7 +112,7 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     cameraNode.readData = function(sceneDeserializer, nodeData) {
       var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
       if(transformNode){
-        cameraNode.pub.setTransformNode(transformNode, nodeData.transformNodeMember);
+        cameraNode.pub.setTransformNode(transformNode);
       }
       cameraNode.pub.setNearDistance(nodeData.nearDistance);
       cameraNode.pub.setFarDistance(nodeData.farDistance);
@@ -169,7 +146,7 @@ FABRIC.SceneGraph.registerNodeType('FreeCamera', {
         orientation: new FABRIC.RT.Quat()
       });
 
-    options.transformNode = scene.constructNode('Transform', {
+    options.transformNode = scene.pub.constructNode('Transform', {
       globalXfo: new FABRIC.RT.Xfo({ tr: options.position, ori: options.orientation })
     });
 

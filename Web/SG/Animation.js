@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph", "RT/KeyframeTrack", "RT/LinearKeyframe", "RT/BezierKeyframe"], function() {
   
@@ -168,7 +167,7 @@ FABRIC.SceneGraph.registerNodeType('TrackAnimationContainer', {
           m_newUndoTransaction = true;
         }
         var newTrackSet, prevTrackSet = trackAnimationContainerNode.pub.getTrack(m_trackId);
-        undoManager.addAction({
+        undoManager.addTransaction({
           onClose: function() {
             newTrackSet = m_track;//trackAnimationContainerNode.pub.getTrack(m_trackId);
           },
@@ -618,7 +617,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterAnimationContainer', {
             m_newUndoTransaction = true;
           }
           var newTrackSet, prevTrackSet = characterAnimationContainerNode.pub.getTrackSet(m_trackSetId);
-          undoManager.addAction({
+          undoManager.addTransaction({
             onClose: function() {
               newTrackSet = m_trackSet;//characterAnimationContainerNode.pub.getTrackSet(m_trackId);
             },
