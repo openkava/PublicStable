@@ -18,8 +18,15 @@ function decodeObj(
   io String groupNames[],
   io String materialNames[]
 ) {
-  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
-  resource.data.resize(0);//Note: this might not be safe if loadObj is called twice on the same data; maybe it should be an option?
+
+  if(!objParseHandle.handle) {
+    if(resource.data.size() > 0) {
+      FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
+      resource.data.resize(0);//Note: this might not be safe if loadObj is called twice on the same data; maybe it should be an option?
+    } else if(resource.dataExternalLocation) {
+      FabricOBJOpenFileHandle(resource.dataExternalLocation, splitByObject, splitByGroup, splitByMaterial, objParseHandle);
+    }
+  }
 
   Boolean hadErrors;
   FabricOBJHadErrors( objParseHandle, hadErrors );
@@ -49,7 +56,7 @@ function decodeObj(
     FabricOBJGetNbEntityPoints(objParseHandle, -1, nbPts);
     FabricOBJGetNbEntityTriangles(objParseHandle, -1, nbTris);
     FabricOBJGetNbEntities(objParseHandle, nbEntities);
-    report "OBJ " + resource.url + ": " + nbEntities + " entities: " + nbPts + " vertices, " + nbTris + "triangles";
+    report "OBJ " + resource.url + ": " + nbEntities + " entities: " + nbPts + " vertices, " + nbTris + " triangles";
     String values[];
     FabricOBJGetMaterialLibraries(objParseHandle, values);
     report "  Materials libraries: " + values;
@@ -87,17 +94,8 @@ operator parseObj(
     decodeObj( resource, printDetailedInfo, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, groupNames, materialNames);
 }
 
-
-operator setVertexCount(
-  io OBJDataHandle objParseHandle,
-  io Integer entityIndex,
-  io Boolean reload,
-  io Size newCount
-) {
-  FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, newCount);
-}
-
 operator setObjGeom(
+  io Container container,
   io OBJDataHandle objParseHandle,
   io Integer entityIndex,
   io Integer indices[],
@@ -106,6 +104,9 @@ operator setObjGeom(
   io Vec2 uvs<>,
   io Boolean reload
 ) {
+  Size count;
+  FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, count);
+  container.resize(count);
   FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
   FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
   FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );

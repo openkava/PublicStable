@@ -61,7 +61,7 @@ FABRIC.RT.KeyframeTrack.prototype = {
 
 
 FABRIC.RT.KeyframeTrackSet = function( name ) {
-  this.name = name ? name : 'animationTrack';
+  this.name = name ? name : 'trackAnimationContainer';
   this.timeRange = new FABRIC.RT.Vec2(0,0);
   this.tracks = [];
 };

@@ -14,7 +14,7 @@ function OGLTexture3D.configure(
 ) {
   if(nbPixels > 0){
     if(this.bufferID == 0){
-      var Size buffers[];
+      var Integer buffers[];
       buffers.resize(1);
       glGenTextures(1, buffers);
       this.bufferID = buffers[0];

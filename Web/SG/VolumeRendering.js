@@ -75,21 +75,12 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     attributes.setDependency(options.textureXfoMat44Node, 'textureTransform');
 
     volumeSlicesNode.setGeneratorOps([
-      //Upper bound for count: 10 per slices (6 with volume bbox cropping, plus 4 for view volume cropping)
-      scene.constructOperator({
-        operatorName: 'setVolumeSlicesVertexCount',
-        srcCode: 'operator setVolumeSlicesVertexCount(io Size nbSlices, io Size count){count = nbSlices*6;}',
-        entryFunctionName: 'setVolumeSlicesVertexCount',
-        parameterLayout: [
-          'uniforms.nbSlices',
-          'self.newCount'
-        ]
-      }),
       scene.constructOperator({
         operatorName: 'generateVolumeSlices',
         srcFile: 'FABRIC_ROOT/SG/KL/generateVolumeSlices.kl',
         entryFunctionName: 'generateVolumeSlices',
         parameterLayout: [
+          'self',
           'uniforms.cropMin',
           'uniforms.cropMax',
           'uniforms.halfPixelCrop',
@@ -218,10 +209,10 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         operatorName: 'initCount',
         parameterLayout: [
           'opacity.depth',
-          'self.newCount'
+          'self'
         ],
         entryFunctionName: 'initCount',
-        srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}',
+        srcCode: 'operator initCount(io Size depth, io Container container){container.resize( depth );}',
         mainThreadOnly: true
       }));
 
@@ -437,20 +428,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       transferFunctionImagePixelsDGNode.setDependency(opacityColorsNode.getDGNode(), 'opacityColors');
       
       transferFunctionImagePixelsDGNode.bindings.append(scene.constructOperator({
-        operatorName: 'resizeImageColor',
-        parameterLayout: [
-          'uniforms.width',
-          'uniforms.height',
-          'self.newCount'
-        ],
-        preProcessorDefinitions: { PIXELFORMAT: 'Color' },
-        entryFunctionName: 'resizeImageColor',
-        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
-      }));
-        
-      transferFunctionImagePixelsDGNode.bindings.append(scene.constructOperator({
         operatorName: 'updateTransferFunctionImage',
         parameterLayout: [
+          'self',
           'uniforms.minOpacity',
           'uniforms.maxOpacity',
           'opacityFactors.values',

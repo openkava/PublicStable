@@ -6,22 +6,8 @@ use Math;
 use Vec3;
 use Vec2;
 
-operator setCylinderVertexCount(
-  io Boolean caps,
-  io Integer sides,
-  io Integer loops,
-  io Size newCount
-) {
-  sides = (sides >= 0) ? sides : 3;
-
-  newCount = 2 * sides * (2 + loops);
-
-  if (caps) {
-    newCount += (sides * 4);
-  }
-}
-
 operator generateCylinder(
+  io Container container,
   io Scalar radius,
   io Scalar height,
   io Boolean caps,
@@ -34,8 +20,8 @@ operator generateCylinder(
   io Vec2 uvs<>
 ) {
 //  report( "Generate cylinder. Radius: " + radius + " Height: " + height + " Caps: " + caps + " Sides: " + sides + " Loops: " + loops );
-  sides = (sides >= 0) ? sides : 3;
-  
+  sides = (sides > 0) ? sides : 3;
+  loops = (loops > 0) ? loops : 1;
   Integer numTriangles, nbSides, nbLoops;
 
   nbLoops = loops + 1;
@@ -46,6 +32,7 @@ operator generateCylinder(
   if (caps) {
     numTriangles += (nbSides * 2) * 2;
   }
+  container.resize(Size(numTriangles));
   indices.resize(numTriangles * 3);
   
   Integer voff = 0;
