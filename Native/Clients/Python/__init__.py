@@ -37,7 +37,7 @@ def createClient():
 
 # used in unit tests
 def stringify( obj ):
-  return json.dumps( _typeToDict( obj ) )
+  return json.dumps( _normalizeForUnitTests( _typeToDict( obj ) ) )
 
 # global for tracking GC ids for core objects
 _gcId = 0
@@ -45,6 +45,28 @@ def _getNextGCId():
   global _gcId
   _gcId = _gcId + 1
   return _gcId
+
+# for unit tests only, make floats use same precision across different
+# versions of python which have different repr() implementations and
+# change dicts to sorted lists so ordering doesn't change
+def _normalizeForUnitTests( obj ):
+  if type( obj ) is list:
+    objlist = []
+    for elem in obj:
+      objlist.append( _normalizeForUnitTests( elem ) )
+    return objlist
+  elif type( obj ) is dict:
+    objdictlist = []
+    for member in obj:
+      elemobj = {}
+      elemobj[ member ] = _normalizeForUnitTests( obj[ member ] )
+      objdictlist.append( elemobj )
+    objdictlist.sort()
+    return objdictlist
+  elif type( obj ) is float:
+    return format( obj, '.4f' )
+  else:
+    return obj
 
 # take a python class and convert its members down to a hierarchy of
 # dictionaries, ignoring methods
@@ -174,6 +196,9 @@ class _CLIENT( object ):
   def __jsonExec( self, data, length ):
     result = ctypes.c_char_p()
 
+    if self.__closed:
+      raise Exception( 'Fabric client has already been closed' )
+
     self.__fabric.jsonExec(
       self.__fabricClient,
       data,
@@ -220,6 +245,7 @@ class _CLIENT( object ):
       results = json.loads( jsonEncodedResults.value )
     except Exception:
       raise Exception( 'unable to parse JSON results: ' + jsonEncodedResults )
+    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
 
     for i in range(len(results)):
       result = results[i]
@@ -230,11 +256,11 @@ class _CLIENT( object ):
           unwind = unwinds[ j ]
           if ( unwind is not None ):
             unwind()
+        self.__processAllNotifications()
         raise Exception( 'Fabric core exception: ' + result[ 'exception' ] )
       elif ( callback is not None ):
         callback( result[ 'result' ] )
 
-    self.__fabric.freeString( self.__fabricClient, jsonEncodedResults )
     self.__processAllNotifications()
 
   def _handleStateNotification( self, newState ):
@@ -733,8 +759,8 @@ class _DG( _NAMESPACE ):
       if 'members' in diff:
         self.__members = diff[ 'members' ]
 
-      if 'count' in diff:
-        self.__count = diff[ 'count' ]
+      if 'size' in diff:
+        self.__count = diff[ 'size' ]
 
     def _handle( self, cmd, arg ):
       if cmd == 'dataChange':
@@ -749,8 +775,17 @@ class _DG( _NAMESPACE ):
         self._dg._executeQueuedCommands()
       return self.__count
 
+    def size( self ):
+      if self.__count is None:
+        self._dg._executeQueuedCommands()
+      return self.__count
+
     def setCount( self, count ):
-      self._nObjQueueCommand( 'setCount', count )
+      self._nObjQueueCommand( 'resize', count )
+      self.__count = None
+
+    def resize( self, count ):
+      self._nObjQueueCommand( 'resize', count )
       self.__count = None
 
     def getMembers( self ):
@@ -1088,9 +1123,9 @@ class _DG( _NAMESPACE ):
   class _EVENT( _CONTAINER ):
     def __init__( self, dg, name ):
       super( _DG._EVENT, self ).__init__( dg, name )
-      self.__didFireCallback = None
       self.__eventHandlers = None
       self.__typeName = None
+      self.__rt = dg._getClient().rt
 
     def _patch( self, diff ):
       super( _DG._EVENT, self )._patch( diff )
@@ -1100,13 +1135,6 @@ class _DG( _NAMESPACE ):
         self.__eventHandlers = []
         for name in diff[ 'eventHandlers' ]:
           self.__eventHandlers.append( self._dg._namedObjects[ name ] )
-
-    def _handle( self, cmd, arg ):
-      if cmd == 'didFire':
-        if self.__didFireCallback is not None:
-          self.__didFireCallback( self )
-      else:
-        super( _DG._EVENT, self )._handle( cmd, arg )
 
     def getType( self ):
       return 'Event'
@@ -1130,25 +1158,18 @@ class _DG( _NAMESPACE ):
       self.__typeName = tn
 
     def select( self ):
-      # dictionary hack to simulate Python 3.x nonlocal
-      data = { '_': None }
+      data = []
       def __callback( results ):
         for i in range( 0, len( results ) ):
           result = results[ i ]
-          data[ '_' ].append( {
-            'node': self._dg._namedObjects[ result ],
-            'value': self.__rt._assignPrototypes( result.data, self.__typeName )
+          data.append( {
+            'node': self._dg._namedObjects[ result[ 'node' ] ],
+            'value': self.__rt._assignPrototypes( result[ 'data' ], self.__typeName )
           })
 
       self._nObjQueueCommand( 'select', self.__typeName, None, __callback )
       self._dg._executeQueuedCommands()
-      return data[ '_' ]
-
-    def getDidFireCallback( self ):
-      return self.__didFireCallback
-
-    def setDidFireCallback( self, callback ):
-      self.__didFireCallback = callback
+      return data
 
   class _EVENTHANDLER( _CONTAINER ):
     def __init__( self, dg, name ):
