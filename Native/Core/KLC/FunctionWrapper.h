@@ -11,10 +11,10 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
-    class JSONObjectGenerator;
+    class Encoder;
+    class ObjectEncoder;
   };
   
   namespace AST
@@ -42,12 +42,12 @@ namespace Fabric
       CG::Diagnostics const &getDiagnostics() const;
       RC::ConstHandle<AST::Function> getASTFunction() const;
       
-      void toJSON( Util::JSONGenerator &jg ) const;
+      void toJSON( JSON::Encoder &jg ) const;
         
       virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &cmd,
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
       
     protected:
@@ -60,18 +60,18 @@ namespace Fabric
         );
        
       virtual char const *getKind() const = 0;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
+      virtual void toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const;
    
     private:
     
       void jsonExecGetDiagnostics(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     
       void jsonExecToJSON(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
+        JSON::Entity const &arg,
+        JSON::ArrayEncoder &resultArrayEncoder
         );
     
       RC::ConstHandle<Executable> m_executable;

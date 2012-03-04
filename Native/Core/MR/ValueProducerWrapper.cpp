@@ -4,8 +4,8 @@
  
 #include <Fabric/Core/MR/ValueProducerWrapper.h>
 #include <Fabric/Core/MR/ValueProducer.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Base/JSON/Integer.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -21,26 +21,26 @@ namespace Fabric
     }
     
     void ValueProducerWrapper::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "produce" )
-        jsonExecProduce( arg, resultJAG );
-      else if ( cmd == "produceAsync" )
-        jsonExecProduceAsync( arg, resultJAG );
-      else if ( cmd == "flush" )
-        jsonExecFlush( arg, resultJAG );
-      else ProducerWrapper::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "produce", 7 ) )
+        jsonExecProduce( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "produceAsync", 12 ) )
+        jsonExecProduceAsync( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "flush", 5 ) )
+        jsonExecFlush( arg, resultArrayEncoder );
+      else ProducerWrapper::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
     void ValueProducerWrapper::jsonExecProduce(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
       getUnwrapped()->createComputeState()->produceJSON( jg );
     }
     
@@ -48,25 +48,25 @@ namespace Fabric
     {
       RC::Handle<ValueProducerWrapper> valueProducerWrapper;
       Util::SimpleString *notifyJSONArg;
-      Util::JSONGenerator notifyJSONArgGenerator;
-      Util::JSONObjectGenerator notifyJSONArgObjectGenerator;
+      JSON::Encoder notifyJSONArgEncoder;
+      JSON::ObjectEncoder notifyJSONArgObjectEncoder;
     
       JSONProduceAsyncUserdata( RC::Handle<ValueProducerWrapper> const &valueProducerWrapper_, int32_t serial )
         : valueProducerWrapper( valueProducerWrapper_ )
         , notifyJSONArg( new Util::SimpleString )
-        , notifyJSONArgGenerator( notifyJSONArg )
-        , notifyJSONArgObjectGenerator( notifyJSONArgGenerator.makeObject() )
+        , notifyJSONArgEncoder( notifyJSONArg )
+        , notifyJSONArgObjectEncoder( notifyJSONArgEncoder.makeObject() )
       {
-        Util::JSONGenerator notifyJSONArgSerialGenerator( notifyJSONArgObjectGenerator.makeMember( "serial" ) );
-        notifyJSONArgSerialGenerator.makeInteger( serial );
+        notifyJSONArgObjectEncoder.makeMember( "serial" ).makeInteger( serial );
       }
     };
     
-    void ValueProducerWrapper::jsonExecProduceAsync( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void ValueProducerWrapper::jsonExecProduceAsync( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      JSONProduceAsyncUserdata *jsonProduceAsyncUserdata = new JSONProduceAsyncUserdata( this, arg->toInteger()->value() );
+      arg.requireInteger();
+      JSONProduceAsyncUserdata *jsonProduceAsyncUserdata = new JSONProduceAsyncUserdata( this, arg.integerValue() );
       getUnwrapped()->createComputeState()->produceJSONAsync(
-        jsonProduceAsyncUserdata->notifyJSONArgObjectGenerator,
+        jsonProduceAsyncUserdata->notifyJSONArgObjectEncoder,
         &ValueProducerWrapper::JSONExecProduceAsyncFinishedCallback,
         jsonProduceAsyncUserdata
         );
@@ -84,8 +84,8 @@ namespace Fabric
     }
 
     void ValueProducerWrapper::jsonExecFlush(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       (const_cast<ValueProducer *>(getUnwrapped().ptr()))->flush();

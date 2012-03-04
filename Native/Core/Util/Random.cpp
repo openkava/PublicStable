@@ -5,7 +5,7 @@
 #include "Random.h"
 #include "Debug.h"
 
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 
 #if defined(FABRIC_POSIX)
 # include <sys/stat.h>
@@ -23,14 +23,14 @@ namespace Fabric
 #if defined(FABRIC_POSIX)
       int fd = open( "/dev/urandom", O_RDONLY );
       FABRIC_ASSERT( fd != -1 );
-      FABRIC_CONFIRM( read( fd, bytes, count ) == int(count) );
+      FABRIC_VERIFY( read( fd, bytes, count ) == int(count) );
       close( fd );
 #elif defined(FABRIC_WIN32)
       HCRYPTPROV  hCryptProvider = NULL;
 
       BOOL    success;
       success = ::CryptAcquireContext( &hCryptProvider, NULL, NULL, PROV_RSA_FULL, 0 );
-      if( success == NTE_BAD_KEYSET )
+	  if( !success && GetLastError() == NTE_BAD_KEYSET )
       {
         //On the very first run, a container might have to be created.
         success = ::CryptAcquireContext( &hCryptProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET );

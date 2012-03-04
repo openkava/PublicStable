@@ -13,11 +13,11 @@ namespace Fabric
     {
     }
 
-    void Global::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
+    void Global::appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const
     {
       if ( m_json.getLength() == 0 )
-        Node::appendJSON( Util::JSONGenerator( &m_json ), includeLocation );
-      jsonGenerator.appendJSON( m_json );
+        Node::appendJSON( JSON::Encoder( &m_json ), includeLocation );
+      encoder.appendJSON( m_json );
     }
     
     void Global::collectUses( UseNameToLocationMap &uses ) const

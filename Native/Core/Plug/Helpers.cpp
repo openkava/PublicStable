@@ -4,10 +4,10 @@
  
 #include <Fabric/Core/Plug/Helpers.h>
 #include <Fabric/Core/IO/Helpers.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Assert.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Assert.h>
+#include <Fabric/Base/Util/Log.h>
 
 #if defined(FABRIC_OS_MACOSX) || defined(FABRIC_OS_LINUX)
 # include <dlfcn.h>

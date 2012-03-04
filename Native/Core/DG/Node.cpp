@@ -13,13 +13,7 @@
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/Util/Base64.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -42,7 +36,7 @@ namespace Fabric
 
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         node->jsonDesc( jg );
       }
       node->jsonNotifyDelta( json );
@@ -92,7 +86,7 @@ namespace Fabric
     
     void Node::setDependency( RC::Handle<Node> const &dependencyNode, std::string const &dependencyName )
     {
-      if ( dependencyName.length() == 0 )
+      if ( dependencyName.empty() )
         throw Exception( "dependencyName must be non-empty" );
       if ( dependencyName == "self" )
         throw Exception( "dependencyName cannot be named 'self'" );
@@ -130,7 +124,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescDependencies( jg );
       }
       jsonNotifyMemberDelta( "dependencies", 12, json );
@@ -154,7 +148,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescDependencies( jg );
       }
       jsonNotifyMemberDelta( "dependencies", 12, json );
@@ -267,6 +261,7 @@ namespace Fabric
     {
       if ( m_dirty )
       {
+        ExecutionEngine::ContextSetter contextSetter( m_context );
         size_t numBindings = m_bindingList->size();
         for ( size_t i=0; i<numBindings; ++i )
         {
@@ -286,7 +281,11 @@ namespace Fabric
           m_runState->m_newCount = oldCount;
           opParallelCall->executeParallel( m_context->getLogCollector(), m_context, binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
+          {
+            for ( size_t j=0; j<numBindings; ++j )
+              m_runState->m_evaluateParallelCallsPerOperator[j] = 0;
             setCount( m_runState->m_newCount );
+          }
         }
         
         m_dirty = false;
@@ -493,94 +492,108 @@ namespace Fabric
     }
 
     void Node::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( dst.size() - dstOffset == 1 && dst[dstOffset] == "bindings" )
+      if ( dst.size() - dstOffset == 1 && dst[dstOffset].stringIs( "bindings", 8 ) )
       {
         try
         {
-          m_bindingList->jsonRoute( dst, dstOffset+1, cmd, arg, resultJAG );
+          m_bindingList->jsonRoute( dst, dstOffset+1, cmd, arg, resultArrayEncoder );
         }
         catch ( Exception e )
         {
           throw "bindings: " + e;
         }
       }
-      else NamedObject::jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+      else NamedObject::jsonRoute( dst, dstOffset, cmd, arg, resultArrayEncoder );
      }
 
-    void Node::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Node::jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      if ( cmd == "setDependency" )
-        jsonExecAddDependency( arg, resultJAG );
-      else if ( cmd == "removeDependency" )
-        jsonExecRemoveDependency( arg, resultJAG );
-      else if ( cmd == "evaluate" )
-        jsonExecEvaluate( resultJAG );
-      else if ( cmd == "evaluateAsync" )
-        jsonExecEvaluateAsync( arg, resultJAG );
-      else Container::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "setDependency", 13 ) )
+        jsonExecAddDependency( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "removeDependency", 16 ) )
+        jsonExecRemoveDependency( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "evaluate", 8 ) )
+        jsonExecEvaluate( resultArrayEncoder );
+      else if ( cmd.stringIs( "evaluateAsync", 13 ) )
+        jsonExecEvaluateAsync( arg, resultArrayEncoder );
+      else Container::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
-    void Node::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
+    void Node::jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      Create( arg->toString()->value(), context );
+      arg.requireString();
+      Create( arg.stringToStdString(), context );
     }
       
     void Node::jsonExecAddDependency(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-    
       std::string name;
-      try
+      RC::Handle<Node> node;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        name = argJSONObject->get( "name" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'name': " + e;
+        try
+        {
+          if ( keyString.stringIs( "name", 4 ) )
+          {
+            valueEntity.requireString();
+            name = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "node", 4 ) )
+          {
+            valueEntity.requireString();
+            std::string nodeName = valueEntity.stringToStdString();
+            node = m_context->getNode( nodeName );
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
       
-      RC::Handle<Node> node;
-      try
-      {
-        node = m_context->getNode( argJSONObject->get( "node" )->toString()->value() );
-      }
-      catch ( Exception e )
-      {
-        throw "'node': " + e;
-      }
+      if ( name.empty() )
+        throw Exception( "missing 'name'" );
+      if ( !node )
+        throw Exception( "missing 'node'" );
       
       setDependency( node, name );
     }
     
-    void Node::jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Node::jsonExecRemoveDependency( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      std::string dependencyName = arg->toString()->value();
+      arg.requireString();
+      std::string dependencyName = arg.stringToStdString();
       removeDependency( dependencyName );
     }
     
-    void Node::jsonExecEvaluate( Util::JSONArrayGenerator &resultJAG )
+    void Node::jsonExecEvaluate( JSON::ArrayEncoder &resultArrayEncoder )
     {
       evaluate();
     }
     
-    void Node::jsonExecEvaluateAsync( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Node::jsonExecEvaluateAsync( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      int32_t serial = arg->toInteger()->value();
+      arg.requireInteger();
+      int32_t serial = arg.integerValue();
       
       JSONEvaluateAsyncUserdata *jsonEvaluateAsyncUserdata = new JSONEvaluateAsyncUserdata;
       jsonEvaluateAsyncUserdata->node = this;
       {
-        Util::JSONGenerator jg( &jsonEvaluateAsyncUserdata->notifyJSONArg );
+        JSON::Encoder jg( &jsonEvaluateAsyncUserdata->notifyJSONArg );
         jg.makeInteger( serial );
       }
         
@@ -596,40 +609,39 @@ namespace Fabric
       delete jsonEvaluateAsyncUserdata;
     }
     
-    void Node::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Node::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Container::jsonDesc( resultJG );
+      Container::jsonDesc( resultEncoder );
     }
     
-    void Node::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void Node::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Container::jsonDesc( resultJOG );
+      Container::jsonDesc( resultObjectEncoder );
       
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "dependencies", 12 );
-        jsonDescDependencies( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "dependencies", 12 );
+        jsonDescDependencies( memberEncoder );
       }
 
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "bindings", 8 );
-        m_bindingList->jsonDesc( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "bindings", 8 );
+        m_bindingList->jsonDesc( memberEncoder );
       }
     }
     
-    void Node::jsonDescType( Util::JSONGenerator &resultJG ) const
+    void Node::jsonDescType( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeString( "Node", 4 );
+      resultEncoder.makeString( "Node", 4 );
     }
       
-    void Node::jsonDescDependencies( Util::JSONGenerator &resultJG ) const
+    void Node::jsonDescDependencies( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( Dependencies::const_iterator it=m_dependencies.begin(); it!=m_dependencies.end(); ++it )
       {
         std::string const &name = it->first;
         RC::Handle<Node> const &node = it->second;
-        Util::JSONGenerator dependencyJG = resultJOG.makeMember( name );
-        dependencyJG.makeString( node->getName() );
+        resultObjectEncoder.makeMember( name ).makeString( node->getName() );
       }
     }
   };

@@ -22,9 +22,7 @@
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/MT/Util.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -368,7 +366,7 @@ namespace Fabric
                           errors.push_back( memberErrorPrefix + "element parmeters must bind to operator io parameters" );
                         void *baseAddress;
                         if ( slicedArrayDesc->getNumMembers( slicedArrayData ) > 0 )
-                          baseAddress = slicedArrayImpl->getMemberData( slicedArrayData, 0 );
+                          baseAddress = slicedArrayImpl->getMutableMemberData( slicedArrayData, 0 );
                         else baseAddress = 0;
                         result->setBaseAddress( prefixCount+param->index(), baseAddress );
                         if ( container->getCount() != 1 )
@@ -422,16 +420,16 @@ namespace Fabric
       return result;
     }
       
-    void Prototype::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Prototype::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONArrayGenerator resultJAG = resultJG.makeArray();
+      JSON::ArrayEncoder resultArrayEncoder = resultEncoder.makeArray();
       
       std::vector<std::string> items = desc();
       for ( size_t i=0; i<items.size(); ++i )
       {
-        Util::JSONGenerator elementJG = resultJAG.makeElement();
-        elementJG.makeString( items[i] );
+        JSON::Encoder elementEncoder = resultArrayEncoder.makeElement();
+        elementEncoder.makeString( items[i] );
       }
     }
-  };
-};
+  }
+}

@@ -35,7 +35,7 @@ binding.setParameterLayout([
 ]);
 
 rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
-rlnode.setData("url", 0, "file:sample.exr");
+rlnode.setData("url", 0, "testfile://sample.exr");
 
 node = FABRIC.DependencyGraph.createNode("node");
 node.setDependency(rlnode, "loadnode");

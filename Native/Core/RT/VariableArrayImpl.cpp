@@ -4,16 +4,13 @@
  
 #include "VariableArrayImpl.h"
 
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Core/Util/Encoder.h>
-#include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
-#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Base/Util/Format.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Bits.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/JSONDecoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 #include <algorithm>
 
@@ -35,6 +32,58 @@ namespace Fabric
       return &defaultData;
     }
 
+    size_t VariableArrayImpl::ComputeAllocatedSize( size_t prevNbAllocated, size_t nbRequested )
+    {
+      //[JeromeCG 20120130] Explanations
+      //The main goals are both to avoid re-allocating repeatedly and memory waste.
+      //Here are a few heuristics I try to take into account while trying to find the default formula. For some of these
+      //I only partially succeed, because I still try to avoid too much complexity.
+      //
+      //  1- On the first resize, just allocate exactly what was asked. Often arrays are only allocated once. For KL, I'd extend that for the case
+      //    where we go from 1 to many elements, since by default an initial slice count of 1.
+      //  2- When an entire array is copied to another one, just allocate the actual size of the source (not its 'reserved' size).
+      //  3- When growing an array, allocate exponentially to avoid scalability problems, but don't over-allocate too much (maybe in the 10% to 25% range)
+      //  4- When shrinking an array, deallocate exponentially to avoid keeping to much unrequired memory
+      //  5- Free the memory when resizing back to 0
+      //  6- The smaller the array, the bigger the proportion of each over-allocated items
+      //  7- Small arrays are frequent, including those which are resized dynamically (push / pop)
+      //  8- Waste while shrinking is less critical than waste when growing, since memory peak has already been reached. However we still need to care about
+      //  it since it can accumulate
+      //
+      //  Note: for 4) and 5), there are scenarios where it can be better to never shrink memory usage, particularly when an array is reused in a loop.
+      //  However, I don't think that many programmers are careful enough to scope arrays outside of loops just in order to avoid reallocations. To support
+      //  these scenarios we would need a 'hint' or a method in which the user can tell to not release memory...
+      //
+      //  Note2: there's no easy answer for both 6) and 7). With very small arrays, we can't at the same time avoid over-allocated items AND frequent reallocs...
+      //  so we need to do a compromise between both.
+      if( nbRequested > prevNbAllocated )
+      {
+        size_t inflatedNbAllocated;
+        if( prevNbAllocated < 16 ) 
+          inflatedNbAllocated = (prevNbAllocated>>1) + 1 + prevNbAllocated;//50% + 1 growth
+        else
+          inflatedNbAllocated = (prevNbAllocated>>3) + 4 + prevNbAllocated;//12.5% + 4 growth  (+4: just to maintain the 'pace' we had when < 16)
+        return std::max( nbRequested, inflatedNbAllocated );
+      }
+      else if( nbRequested < prevNbAllocated )
+      {
+        if( nbRequested == 0 )
+          return 0;
+
+        //Because it's exponentially growing and shrinking, we need to be careful for oscillation problems.
+        //Eg: push -> reallocate with X% more, then pop -> shrink to new size because >X% wasted, then push -> reallocate again by X%...
+        //To avoid this, we simply tolerate 25% of 'wasted' memory when we shrink back, while we grow by 12.5%.
+
+        if( prevNbAllocated < 16 )
+          return prevNbAllocated; //Avoid oscillation problems with small arrays, because of their different allocation policy above
+
+        size_t deflateThreshold = prevNbAllocated - (prevNbAllocated>>2);//25% shrink
+        return nbRequested <= deflateThreshold ? nbRequested : prevNbAllocated;
+      }
+      else
+        return nbRequested;
+    }
+
     void VariableArrayImpl::setData( void const *_src, void *_dst ) const
     {
       bits_t const *src = reinterpret_cast<bits_t const *>(_src);
@@ -44,7 +93,7 @@ namespace Fabric
         m_memberImpl->disposeDatas( dst->memberDatas + src->numMembers * m_memberSize, dst->numMembers - src->numMembers, m_memberSize );
       dst->numMembers = src->numMembers;
 
-      dst->allocNumMembers = AllocNumMembersForNumMembers( src->numMembers );
+      dst->allocNumMembers = src->numMembers;
       if ( dst->memberDatas )
         dst->memberDatas = reinterpret_cast<uint8_t *>( realloc( dst->memberDatas, dst->allocNumMembers * m_memberSize ) );
       else
@@ -63,45 +112,31 @@ namespace Fabric
       }
     }
 
-    RC::Handle<JSON::Value> VariableArrayImpl::getJSONValue( void const *data ) const
+    void VariableArrayImpl::encodeJSON( void const *data, JSON::Encoder &encoder ) const
     {
       size_t numMembers = getNumMembers(data);
       
-      RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( numMembers );
-      for ( size_t i = 0; i < numMembers; ++i )
-      {
-        void const *srcMemberData = getImmutableMemberData_NoCheck( data, i );
-        arrayValue->set( i, m_memberImpl->getJSONValue( srcMemberData ) );
-      }
-      return arrayValue;
-    }
-    
-    void VariableArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
-    {
-      size_t numMembers = getNumMembers(data);
-      
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      JSON::ArrayEncoder jsonArrayEncoder = encoder.makeArray();
       for ( size_t i = 0; i < numMembers; ++i )
       {
         void const *memberData = getImmutableMemberData_NoCheck( data, i );
-        Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
-        m_memberImpl->generateJSON( memberData, elementJG );
+        JSON::Encoder elementEncoder = jsonArrayEncoder.makeElement();
+        m_memberImpl->encodeJSON( memberData, elementEncoder );
       }
     }
     
-    void VariableArrayImpl::decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const
+    void VariableArrayImpl::decodeJSON( JSON::Entity const &entity, void *data ) const
     {
-      if ( entityInfo.type != Util::ET_ARRAY )
-        throw Exception("JSON value is not an array");
+      entity.requireArray();
         
-      setNumMembers( data, entityInfo.value.array.size );
+      setNumMembers( data, entity.value.array.size );
         
       size_t membersFound = 0;
-      Util::JSONArrayParser arrayDecoder( entityInfo );
-      Util::JSONEntityInfo elementEntity;
+      JSON::ArrayDecoder arrayDecoder( entity );
+      JSON::Entity elementEntity;
       while ( arrayDecoder.getNext( elementEntity ) )
       {
-        FABRIC_ASSERT( membersFound < entityInfo.value.array.size );
+        FABRIC_ASSERT( membersFound < entity.value.array.size );
         try
         {
           void *memberData = getMutableMemberData_NoCheck( data, membersFound );
@@ -114,23 +149,7 @@ namespace Fabric
         ++membersFound;
       }
       
-      FABRIC_ASSERT( membersFound == entityInfo.value.array.size );
-    }
-    
-    void VariableArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
-    {
-      if ( !jsonValue->isArray() )
-        throw Exception( "JSON value is not array" );
-      RC::ConstHandle<JSON::Array> jsonArray = RC::ConstHandle<JSON::Array>::StaticCast( jsonValue );
-
-      size_t numMembers = jsonArray->size();
-      setNumMembers( data, numMembers );
-
-      for ( size_t i=0; i<numMembers; ++i )
-      {
-        void *memberData = getMutableMemberData_NoCheck( data, i );
-        getMemberImpl()->setDataFromJSONValue( jsonArray->get(i), memberData );
-      }
+      FABRIC_ASSERT( membersFound == entity.value.array.size );
     }
 
     void VariableArrayImpl::disposeDatasImpl( void *_data, size_t count, size_t stride ) const
@@ -214,7 +233,7 @@ namespace Fabric
       return bits->numMembers;
     }
     
-    void const *VariableArrayImpl::getMemberData( void const *data, size_t index ) const
+    void const *VariableArrayImpl::getImmutableMemberData( void const *data, size_t index ) const
     { 
       bits_t const *bits = reinterpret_cast<bits_t const *>(data);
       size_t numMembers = bits->numMembers;
@@ -223,7 +242,7 @@ namespace Fabric
       return getImmutableMemberData_NoCheck( data, index );
     }
     
-    void *VariableArrayImpl::getMemberData( void *data, size_t index ) const
+    void *VariableArrayImpl::getMutableMemberData( void *data, size_t index ) const
     { 
       bits_t *bits = reinterpret_cast<bits_t *>(data);
       size_t numMembers = bits->numMembers;
@@ -245,7 +264,7 @@ namespace Fabric
       {
         for ( size_t i=0; i<numMembers; ++i )
         {
-          void *memberData = getMemberData( data, i+dstOffset );
+          void *memberData = getMutableMemberData( data, i+dstOffset );
           getMemberImpl()->setData( &((uint8_t const *)members)[i*m_memberSize], memberData );
         }
       }
@@ -277,7 +296,7 @@ namespace Fabric
         {
           if ( newNumMembers > oldAllocNumMembers )
           {
-            size_t newAllocNumMembers = AllocNumMembersForNumMembers( newNumMembers );
+            size_t newAllocNumMembers = ComputeAllocatedSize( oldAllocNumMembers, newNumMembers );
             if ( oldNumMembers )
             {
               size_t size = m_memberSize * newAllocNumMembers;
@@ -328,5 +347,10 @@ namespace Fabric
         total += m_memberImpl->getIndirectMemoryUsage( getImmutableMemberData_NoCheck( data, i ) );
       return total;
     }
-  };
-};
+    
+    bool VariableArrayImpl::isExportable() const
+    {
+      return m_memberImpl->isExportable();
+    }
+  }
+}

@@ -5,10 +5,11 @@
 #ifndef _FABRIC_IO_MANAGER_H
 #define _FABRIC_IO_MANAGER_H
 
-#include <Fabric/Core/IO/Stream.h>
+#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <map>
 #include <vector>
-#include <Fabric/Core/IO/Dir.h>
 
 namespace Fabric
 {
@@ -20,53 +21,30 @@ namespace Fabric
   
   namespace JSON
   {
-    class Value;
+    class ArrayEncoder;
+    class Encoder;
   };
 
   namespace IO
   {
-    class Dir;
+    class ResourceManager;
+    class FileHandleManager;
+    class FileHandleResourceProvider;
+    typedef void (*ScheduleAsyncCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
 
     class Manager : public RC::Object
     {
-      struct DirInfo
-      {
-        DirInfo()
-          :m_writeAccess(false)
-        {}
-
-        RC::ConstHandle<Dir> m_dir;
-        bool m_writeAccess;
-      };
-
-      typedef std::map<std::string, DirInfo > HandleToDirMap;
 
     public:
     
-      virtual RC::Handle<Stream> createStream(
-        std::string const &url,
-        Stream::DataCallback dataCallback,
-        Stream::EndCallback endCallback,
-        Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target,
-        void *userData = NULL
-        ) const = 0;
+      RC::Handle<ResourceManager> getResourceManager() const;
+      RC::Handle<FileHandleManager> getFileHandleManager() const;
 
-      struct ByteContainer
-      {
-        virtual void* Allocate( size_t size ) = 0;
-      };
-
-      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-
-      void jsonExecPutFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecGetFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, bool binary, std::string& filename, std::string& extension, Util::JSONArrayGenerator &resultJAG ) const;
-
-      void jsonExecPutUserFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data, const char* defaultExtension, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecGetUserFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, bool binary, std::string& filename, std::string& extension, Util::JSONArrayGenerator &resultJAG ) const;
+      virtual void jsonRoute( std::vector<JSON::Entity> const &dst, size_t dstOffset, JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
+      virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
 
     protected:
+      Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData );
 
       virtual std::string queryUserFilePath(
         bool existingFile,
@@ -76,20 +54,19 @@ namespace Fabric
         ) const = 0;
 
     private:
+      void jsonQueryUserFile( JSON::Entity const &arg, bool *existingFile, const char *defaultExtension, std::string& fullPath, bool& writeAccess ) const;
 
-      void putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const;
-      void getFile( RC::ConstHandle<Dir>& dir, std::string const &filename, bool binary, ByteContainer& bytes ) const;
+      void jsonExecGetFileInfo( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecQueryUserFileAndFolder( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecQueryUserFile( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecCreateFileHandleFromRelativePath( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecCreateFolderHandleFromRelativePath( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecPutTextFileContent( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
+      void jsonExecGetTextFileContent( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
 
-      void jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename, bool& writeAccess ) const;
-      void jsonGetFileAndDirFromHandlePath( RC::ConstHandle<JSON::Value> const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file ) const;
-
-      void jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-      void jsonExecGetUserTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecPutUserTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
-
-      HandleToDirMap m_handleToDirMap;
+      RC::Handle<ResourceManager> m_resourceManager;
+      RC::Handle<FileHandleManager> m_fileHandleManager;
+      RC::Handle<FileHandleResourceProvider> m_fileHandleResourceProvider;
     };
   };
 };

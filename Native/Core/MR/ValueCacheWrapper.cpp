@@ -6,7 +6,7 @@
 #include <Fabric/Core/MR/ValueCache.h>
 #include <Fabric/Core/MR/ValueProducer.h>
 #include <Fabric/Core/MR/ValueProducerWrapper.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -45,11 +45,11 @@ namespace Fabric
       return "ValueCache";
     }
     
-    void ValueCacheWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ValueCacheWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "input" );
-        m_inputValueProducer->toJSON( jg );
+        JSON::Encoder encoder = objectEncoder.makeMember( "input" );
+        m_inputValueProducer->toJSON( encoder );
       }
     }
   }

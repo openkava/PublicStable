@@ -10,9 +10,9 @@
 
 namespace Fabric
 {
-  namespace Util
+  namespace JSON
   {
-    class JSONGenerator;
+    class Encoder;
   };
   
   namespace CG
@@ -31,7 +31,7 @@ namespace Fabric
     {
     public:
     
-      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
+      virtual void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
     
       virtual bool isFunction() const { return false; }
       

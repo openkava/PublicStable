@@ -6,7 +6,7 @@
  */
 
 #include "Identifiers.h"
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/Util/Assert.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 
 namespace Fabric

@@ -8,34 +8,29 @@
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Node.h>
 #include <Fabric/Core/DG/ResourceLoadNode.h>
-#include <Fabric/Core/DG/FabricFileHandle.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
 #include <Fabric/Core/CG/CompileOptions.h>
-#include <Fabric/Core/RT/OpaqueDesc.h>
-#include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
-#include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Compiler.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/Boolean.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Encode.h>
-#include <Fabric/Base/JSON/Decode.h>
+#include <Fabric/Base/JSON/Encoder.h>
+#include <Fabric/Base/JSON/Decoder.h>
 #include <Fabric/Core/Util/Random.h>
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
 #include <Fabric/EDK/Common.h>
+#include <Fabric/Core/DG/ExecutionEngine.h>
 #include <FabricThirdPartyLicenses/llvm/license.h>
 #include <FabricThirdPartyLicenses/llvm/autoconf/license.h>
 #include <FabricThirdPartyLicenses/llvm/lib/Support/license.h>
@@ -52,7 +47,7 @@ namespace Fabric
     Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
     static bool s_checkExpiry = true;
-    
+
     RC::Handle<Context> Context::Create(
       RC::Handle<IO::Manager> const &ioManager,
       std::vector<std::string> const &pluginDirs,
@@ -133,13 +128,12 @@ namespace Fabric
     void Context::registerClient( Client *client )
     {
       Util::Mutex::Lock clientLock( m_clientsMutex );
-      FABRIC_CONFIRM( m_clients.insert( client ).second );
+      FABRIC_VERIFY( m_clients.insert( client ).second );
     }
 
     void Context::registerCoreTypes()
     {
       RegisterFabricResourceType( m_rtManager );
-      RegisterFabricFileHandleType( m_rtManager );
     }
     
     void Context::jsonNotify(
@@ -153,28 +147,28 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
-        Util::JSONObjectGenerator jog = jg.makeObject();
+        JSON::Encoder jsonEncoder( &json );
+        JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
         
         {
-          Util::JSONGenerator srcsJG = jog.makeMember( "src", 3 );
-          Util::JSONArrayGenerator srcsJAG = srcsJG.makeArray();
+          JSON::Encoder srcsEncoder = jsonObjectEncoder.makeMember( "src", 3 );
+          JSON::ArrayEncoder srcsArrayEncoder = srcsEncoder.makeArray();
           for ( std::vector<std::string>::const_iterator it=srcs.begin(); it!=srcs.end(); ++it )
           {
-            Util::JSONGenerator srcJG = srcsJAG.makeElement();
-            srcJG.makeString( *it );
+            JSON::Encoder srcEncoder = srcsArrayEncoder.makeElement();
+            srcEncoder.makeString( *it );
           }
         }
         
         {
-          Util::JSONGenerator cmdJG = jog.makeMember( "cmd", 3 );
-          cmdJG.makeString( cmdData, cmdLength );
+          JSON::Encoder cmdEncoder = jsonObjectEncoder.makeMember( "cmd", 3 );
+          cmdEncoder.makeString( cmdData, cmdLength );
         }
         
         if ( argJSON )
         {
-          Util::JSONGenerator argJG = jog.makeMember( "arg", 3 );
-          argJG.appendJSON( *argJSON );
+          JSON::Encoder argEncoder = jsonObjectEncoder.makeMember( "arg", 3 );
+          argEncoder.appendJSON( *argJSON );
         }
       }
       
@@ -182,10 +176,10 @@ namespace Fabric
       if ( !m_pendingNotificationsJSON )
       {
         m_pendingNotificationsJSON = new Util::SimpleString;
-        m_pendingNotificationsJSONGenerator = new Util::JSONGenerator( m_pendingNotificationsJSON );
-        m_pendingNotificationsJSONArrayGenerator = m_pendingNotificationsJSONGenerator->newArray();
+        m_pendingNotificationsEncoder = new JSON::Encoder( m_pendingNotificationsJSON );
+        m_pendingNotificationsArrayEncoder = m_pendingNotificationsEncoder->newArray();
       }
-      m_pendingNotificationsJSONArrayGenerator->makeElement().appendJSON( json );
+      m_pendingNotificationsArrayEncoder->makeElement().appendJSON( json );
     }
     
     void Context::unregisterClient( Client *client )
@@ -210,8 +204,8 @@ namespace Fabric
         {
           Util::Mutex::Lock pendingNotificationsMutexLock( m_pendingNotificationsMutex );
           pendingNotificationJSON = m_pendingNotificationsJSON;
-          delete m_pendingNotificationsJSONArrayGenerator;
-          delete m_pendingNotificationsJSONGenerator;
+          delete m_pendingNotificationsArrayEncoder;
+          delete m_pendingNotificationsEncoder;
           m_pendingNotificationsJSON = 0;
         }
 
@@ -369,11 +363,11 @@ namespace Fabric
     }
     
     void Context::jsonRoute(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( IsExpired() )
@@ -384,302 +378,302 @@ namespace Fabric
       }
       
       Util::Mutex::Lock mutexLock( m_mutex );
-
       if ( dst.size() - dstOffset == 0 )
       {
-        jsonExec( cmd, arg, resultJAG );
+        jsonExec( cmd, arg, resultArrayEncoder );
       }
       else
       {
-        std::string const &first = dst[dstOffset];
-        if ( first == "DG" )
-          jsonRouteDG( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( first == "RT" )
-          m_rtManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( first == "IO" )
-          m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( first == "MR" )
+        JSON::Entity const &first = dst[dstOffset];
+        if ( first.stringIs( "DG", 2 ) )
+          jsonRouteDG( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
+        else if ( first.stringIs( "RT", 2 ) )
+          m_rtManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
+        else if ( first.stringIs( "IO", 2 ) )
+          m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
+        else if ( first.stringIs( "MR", 2 ) )
         {
           MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
-          m_mrInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+          m_mrInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
         }
-        else if ( first == "KLC" )
+        else if ( first.stringIs( "KLC", 3 ) )
         {
           MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
-          m_klcInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+          m_klcInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
         }
         else throw Exception( "unroutable" );
       }
     }
 
     void Context::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "getMemoryUsage" )
-        jsonExecGetMemoryUsage( resultJAG );
+      if ( cmd.stringIs( "getMemoryUsage", 14 ) )
+        jsonExecGetMemoryUsage( resultArrayEncoder );
       else throw Exception( "unknown command" );
     }
     
-    static void jsonDescLicenses_llvm_projects_sample_autoconf( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm_projects_sample_autoconf( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::llvm::projects::sample::autoconf::filename );
-      memberJG.makeString( ThirdPartyLicenses::llvm::projects::sample::autoconf::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::llvm::projects::sample::autoconf::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::llvm::projects::sample::autoconf::text );
     }
     
-    static void jsonDescLicenses_llvm_projects_sample( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm_projects_sample( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( "autoconf", 8 );
-      jsonDescLicenses_llvm_projects_sample_autoconf( memberJG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "autoconf", 8 );
+      jsonDescLicenses_llvm_projects_sample_autoconf( memberEncoder );
     }
     
-    static void jsonDescLicenses_llvm_projects( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm_projects( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( "sample", 6 );
-      jsonDescLicenses_llvm_projects_sample( memberJG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "sample", 6 );
+      jsonDescLicenses_llvm_projects_sample( memberEncoder );
     }
     
-    static void jsonDescLicenses_llvm_lib_Support( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm_lib_Support( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::llvm::lib::Support::filename );
-      memberJG.makeString( ThirdPartyLicenses::llvm::lib::Support::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::llvm::lib::Support::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::llvm::lib::Support::text );
     }
     
-    static void jsonDescLicenses_llvm_lib( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm_lib( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( "Support", 7 );
-      jsonDescLicenses_llvm_lib_Support( memberJG );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "Support", 7 );
+      jsonDescLicenses_llvm_lib_Support( memberEncoder );
     }
     
-    static void jsonDescLicenses_llvm_autoconf( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm_autoconf( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::llvm::autoconf::filename );
-      memberJG.makeString( ThirdPartyLicenses::llvm::autoconf::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::llvm::autoconf::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::llvm::autoconf::text );
     }
     
-    static void jsonDescLicenses_llvm( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_llvm( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( ThirdPartyLicenses::llvm::filename );
-        memberJG.makeString( ThirdPartyLicenses::llvm::text );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::llvm::filename );
+        memberEncoder.makeString( ThirdPartyLicenses::llvm::text );
       }
       {
-        Util::JSONGenerator libJG = resultJGObject.makeMember( "lib", 3 );
-        jsonDescLicenses_llvm_lib( libJG );
+        JSON::Encoder libEncoder = resultObjectEncoder.makeMember( "lib", 3 );
+        jsonDescLicenses_llvm_lib( libEncoder );
       }
       {
-        Util::JSONGenerator projectsJG = resultJGObject.makeMember( "projects", 8 );
-        jsonDescLicenses_llvm_projects( projectsJG );
+        JSON::Encoder projectsEncoder = resultObjectEncoder.makeMember( "projects", 8 );
+        jsonDescLicenses_llvm_projects( projectsEncoder );
       }
       {
-        Util::JSONGenerator autoconfJG = resultJGObject.makeMember( "autoconf", 8 );
-        jsonDescLicenses_llvm_autoconf( autoconfJG );
+        JSON::Encoder autoconfEncoder = resultObjectEncoder.makeMember( "autoconf", 8 );
+        jsonDescLicenses_llvm_autoconf( autoconfEncoder );
       }
     }
     
-    static void jsonDescLicenses_libpng( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_libpng( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::libpng::filename );
-      memberJG.makeString( ThirdPartyLicenses::libpng::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::libpng::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::libpng::text );
     }
     
-    static void jsonDescLicenses_md5( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_md5( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::md5::filename );
-      memberJG.makeString( ThirdPartyLicenses::md5::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::md5::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::md5::text );
     }
 
-    static void jsonDescLicenses_liblas( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_liblas( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::liblas::filename );
-      memberJG.makeString( ThirdPartyLicenses::liblas::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::liblas::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::liblas::text );
     }
 
-    static void jsonDescLicenses_teem( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses_teem( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::teem::filename );
-      memberJG.makeString( ThirdPartyLicenses::teem::text );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( ThirdPartyLicenses::teem::filename );
+      memberEncoder.makeString( ThirdPartyLicenses::teem::text );
     }
 
-    static void jsonDescLicenses( Util::JSONGenerator &resultJG )
+    static void jsonDescLicenses( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "llvm", 4 );
-        jsonDescLicenses_llvm( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "llvm", 4 );
+        jsonDescLicenses_llvm( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "md5", 3 );
-        jsonDescLicenses_md5( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "md5", 3 );
+        jsonDescLicenses_md5( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "libpng", 6 );
-        jsonDescLicenses_libpng( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "libpng", 6 );
+        jsonDescLicenses_libpng( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "liblas", 6 );
-        jsonDescLicenses_liblas( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "liblas", 6 );
+        jsonDescLicenses_liblas( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "teem", 4 );
-        jsonDescLicenses_liblas( memberJG );
-      }
-    }
-
-    static void jsonDescBuild( Util::JSONGenerator &resultJG )
-    {
-      Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "isExpired", 9 );
-        memberJG.makeBoolean( IsExpired() );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "name", 4 );
-        memberJG.makeString( buildName );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "pureVersion", 11 );
-        memberJG.makeString( buildPureVersion );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "fullVersion", 11 );
-        memberJG.makeString( buildFullVersion );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "desc", 4 );
-        memberJG.makeString( buildDesc );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "copyright", 9 );
-        memberJG.makeString( buildCopyright );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "url", 3 );
-        memberJG.makeString( buildURL );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "os", 2 );
-        memberJG.makeString( buildOS );
-      }
-      {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "arch", 4 );
-        memberJG.makeString( buildArch );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "teem", 4 );
+        jsonDescLicenses_teem( memberEncoder );
       }
     }
 
-    void Context::jsonDesc( Util::JSONGenerator &resultJG ) const
+    static void jsonDescBuild( JSON::Encoder &resultEncoder )
     {
-      Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
-      jsonDesc( resultJGObject );
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "isExpired", 9 );
+        memberEncoder.makeBoolean( IsExpired() );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "name", 4 );
+        memberEncoder.makeString( buildName );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "pureVersion", 11 );
+        memberEncoder.makeString( buildPureVersion );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "fullVersion", 11 );
+        memberEncoder.makeString( buildFullVersion );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "desc", 4 );
+        memberEncoder.makeString( buildDesc );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "copyright", 9 );
+        memberEncoder.makeString( buildCopyright );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "url", 3 );
+        memberEncoder.makeString( buildURL );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "os", 2 );
+        memberEncoder.makeString( buildOS );
+      }
+      {
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "arch", 4 );
+        memberEncoder.makeString( buildArch );
+      }
+    }
+
+    void Context::jsonDesc( JSON::Encoder &resultEncoder ) const
+    {
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
+      jsonDesc( resultObjectEncoder );
     }
     
-    void Context::jsonDesc( Util::JSONObjectGenerator &resultJGObject ) const
+    void Context::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "contextID", 9 );
-        memberJG.makeString( getContextID() );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "contextID", 9 );
+        memberEncoder.makeString( getContextID() );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "DG", 2 );
-        jsonDescDG( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "DG", 2 );
+        jsonDescDG( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "RT", 2 );
-        m_rtManager->jsonDesc( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "RT", 2 );
+        m_rtManager->jsonDesc( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "EX", 2 );
-        Plug::Manager::Instance()->jsonDesc( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "EX", 2 );
+        Plug::Manager::Instance()->jsonDesc( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "licenses", 8 );
-        jsonDescLicenses( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "licenses", 8 );
+        jsonDescLicenses( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJGObject.makeMember( "build", 5 );
-        jsonDescBuild( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "build", 5 );
+        jsonDescBuild( memberEncoder );
       }
     }
     
-    void Context::jsonExecGetMemoryUsage( Util::JSONArrayGenerator &resultJAG ) const
+    void Context::jsonExecGetMemoryUsage( JSON::ArrayEncoder &resultArrayEncoder ) const
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
-      Util::JSONObjectGenerator jog = jg.makeObject();
-      Util::JSONGenerator dgJG = jog.makeMember( "DG" );
-      jsonDGGetMemoryUsage( dgJG );
+      JSON::Encoder elementEncoder = resultArrayEncoder.makeElement();
+      JSON::ObjectEncoder elementObjectEncoder = elementEncoder.makeObject();
+      JSON::Encoder dgEncoder = elementObjectEncoder.makeMember( "DG" );
+      jsonDGGetMemoryUsage( dgEncoder );
     }
     
-    void Context::jsonDGGetMemoryUsage( Util::JSONGenerator &jg ) const
+    void Context::jsonDGGetMemoryUsage( JSON::Encoder &encoder ) const
     {
-      Util::JSONObjectGenerator jog = jg.makeObject();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       for ( NamedObjectMap::const_iterator it = m_namedObjectRegistry.begin(); it != m_namedObjectRegistry.end(); ++it )
       {
-        Util::JSONGenerator namedObjectJG = jog.makeMember( it->first );
-        it->second->jsonGetMemoryUsage( namedObjectJG );
+        JSON::Encoder namedEncoder = objectEncoder.makeMember( it->first );
+        it->second->jsonGetMemoryUsage( namedEncoder );
       }
     }
 
     void Context::jsonRouteDG(
-      std::vector<std::string> const &dst,
+      std::vector<JSON::Entity> const &dst,
       size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
       if ( dst.size() - dstOffset == 0 )
-        jsonExecDG( cmd, arg, resultJAG );
+        jsonExecDG( cmd, arg, resultArrayEncoder );
       else
       {
-        std::string const &namedObjectName = dst[1];
+        std::string namedObjectName = dst[1].stringToStdString();
         NamedObjectMap::const_iterator it = m_namedObjectRegistry.find( namedObjectName );
         if ( it == m_namedObjectRegistry.end() )
           throw Exception( "NamedObject "+_(namedObjectName)+" not found" );
-        it->second->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        it->second->jsonRoute( dst, dstOffset + 1, cmd, arg, resultArrayEncoder );
       }
     }
 
     void Context::jsonExecDG(
-      std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "createOperator" )
-        Operator::jsonExecCreate( arg, this, resultJAG );
-      else if ( cmd == "createNode" )
-        Node::jsonExecCreate( arg, this, resultJAG );
-      else if ( cmd == "createResourceLoadNode" )
-        ResourceLoadNode::jsonExecCreate( arg, this, resultJAG );
-      else if ( cmd == "createEvent" )
-        Event::jsonExecCreate( arg, this, resultJAG );
-      else if ( cmd == "createEventHandler" )
-        EventHandler::jsonExecCreate( arg, this, resultJAG );
+      if ( cmd.stringIs( "createOperator", 14 ) )
+        Operator::jsonExecCreate( arg, this, resultArrayEncoder );
+      else if ( cmd.stringIs( "createNode", 10 ) )
+        Node::jsonExecCreate( arg, this, resultArrayEncoder );
+      else if ( cmd.stringIs( "createResourceLoadNode", 22 ) )
+        ResourceLoadNode::jsonExecCreate( arg, this, resultArrayEncoder );
+      else if ( cmd.stringIs( "createEvent", 11 ) )
+        Event::jsonExecCreate( arg, this, resultArrayEncoder );
+      else if ( cmd.stringIs( "createEventHandler", 18 ) )
+        EventHandler::jsonExecCreate( arg, this, resultArrayEncoder );
       else throw Exception( "unknown command" );
     }
 
-    void Context::jsonDescDG( Util::JSONGenerator &resultJG ) const
+    void Context::jsonDescDG( JSON::Encoder &resultEncoder ) const
     {
-      Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
+      JSON::ObjectEncoder resultObjectEncoder = resultEncoder.makeObject();
       for ( NamedObjectMap::const_iterator it=m_namedObjectRegistry.begin(); it!=m_namedObjectRegistry.end(); ++it )
       {
         std::string const &namedObjectName = it->first;
         RC::Handle<NamedObject> const &namedObject = it->second;
         {
-          Util::JSONGenerator memberJG = resultJGObject.makeMember( namedObjectName );
-          namedObject->jsonDesc( memberJG );
+          JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( namedObjectName );
+          namedObject->jsonDesc( memberEncoder );
         }
       }
     }
@@ -693,6 +687,71 @@ namespace Fabric
       throw Exception( length, data );
     }
 
+    RC::ConstHandle<Context> GetAndValidateCurrentContext()
+    {
+      RC::ConstHandle<Context> context = ExecutionEngine::GetCurrentContext();
+      if( !context )
+        throw Exception( "Unexpected: undefined context" );
+      return context;
+    }
+
+    void FileHandleCreateFromPath( void *stringData, char const *filePathCString, bool folder, bool readOnly )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      std::string handle = context->getIOManager()->getFileHandleManager()->createHandle( filePathCString, folder, readOnly );
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      stringDesc->setValue( handle.data(), handle.length(), stringData );
+    }
+
+    void FileGetPath( void const *stringData, void *pathStringData )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      std::string path = context->getIOManager()->getFileHandleManager()->getPath( handle );
+      stringDesc->setValue( path.data(), path.length(), pathStringData );
+    }
+
+    bool FileHandleIsValid( void const *stringData )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return context->getIOManager()->getFileHandleManager()->isValid( handle );
+    }
+
+    bool FileHandleIsReadOnly( void const *stringData )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return context->getIOManager()->getFileHandleManager()->isReadOnly( handle );
+    }
+
+    bool FileHandleIsFolder( void const *stringData )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return context->getIOManager()->getFileHandleManager()->isFolder( handle );
+    }
+
+    bool FileHandleTargetExists( void const *stringData )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      return context->getIOManager()->getFileHandleManager()->targetExists( handle );
+    }
+
+    void FileHandleEnsureTargetExists( void const *stringData )
+    {
+      RC::ConstHandle<Context> context = GetAndValidateCurrentContext();
+      RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      std::string handle( stringDesc->getValueData( stringData ), stringDesc->getValueLength( stringData ) );
+      context->getIOManager()->getFileHandleManager()->ensureTargetExists( handle );
+    }
+
     EDK::Callbacks Context::GetCallbackStruct()
     {
       Fabric::EDK::Callbacks callbacks;
@@ -700,11 +759,14 @@ namespace Fabric
       callbacks.m_realloc = realloc;
       callbacks.m_free = free;
       callbacks.m_throwException = throwException;
-      callbacks.m_fabricFileHandleCopy = FabricFileHandleCopy;
-      callbacks.m_fabricFileHandleDelete = FabricFileHandleDelete;
-      callbacks.m_fabricFileHandleSetFromPath = FabricFileHandleSetFromPath;
-      callbacks.m_fabricFileHandleGetFullPath = FabricFileHandleGetFullPath;
-      callbacks.m_fabricFileHandleHasReadWriteAccess = FabricFileHandleHasReadWriteAccess;
+      callbacks.m_fileHandleCreateFromPath = FileHandleCreateFromPath;
+      callbacks.m_fileGetPath = FileGetPath;
+      callbacks.m_fileHandleIsValid = FileHandleIsValid;
+      callbacks.m_fileHandleIsReadOnly = FileHandleIsReadOnly;
+      callbacks.m_fileHandleIsFolder = FileHandleIsFolder;
+      callbacks.m_fileHandleTargetExists = FileHandleTargetExists;
+      callbacks.m_fileHandleEnsureTargetExists = FileHandleEnsureTargetExists;
+
       return callbacks;
     }
   };

@@ -12,6 +12,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Base/Util/SimpleString.h>
+#include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
@@ -30,10 +31,10 @@ namespace Fabric
     {
     }
     
-    void ConstBoolean::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void ConstBoolean::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "value" ).makeBoolean( m_value );
+      Expr::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      jsonObjectEncoder.makeMember( "value" ).makeBoolean( m_value );
     }
     
     void ConstBoolean::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
