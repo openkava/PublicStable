@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricCIMG;
+use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricEXR, FabricCIMG;
 use Vec2, Vec3, OGLShaderProgram;
 
 function OGLTexture2D.configure(
@@ -14,7 +14,7 @@ function OGLTexture2D.configure(
 ) {
   if(nbPixels > 0){
     if(this.bufferID == 0){
-      var Size buffers[];
+      var Integer buffers[];
       buffers.resize(1);
       glGenTextures(1, buffers);
       this.bufferID = buffers[0];
@@ -152,8 +152,8 @@ function OGLTexture2D.genTexture(
   var Data NULL;
   /////////////////////////////////////////////////////
   // Color Texture
-  Size bufferIDs[];
-  bufferIDs.push(Size(0));
+  Integer bufferIDs[];
+  bufferIDs.push(0);
   glGenTextures(1, bufferIDs);
   this.bufferID = bufferIDs[0];
   
@@ -186,29 +186,50 @@ function Boolean decodeRGBAImageData(
   io Size imageHeight,
   io RGBA bitmap[]
 ) {
-  if(resource.data.size() == 0)
+  if(resource.data.size() == 0 && !resource.dataExternalLocation)
     return false;
   String ext = resource.extension ? resource.extension : resource.mimeType;
   
   switch (ext) {
     case 'jpg':
+    case 'JPG':
     case 'jpeg':
+    case 'JPEG':
     case 'image/jpg':
     case 'tif':
+    case 'TIF':
     case 'tiff':
+    case 'TIFF':
     case 'image/tif':
-      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), ext, imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricCIMGOpenFileHandle(resource.dataExternalLocation, ext, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case 'png':
+    case 'PNG':
     case 'image/png':
-      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricPNGOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case 'tga':
+    case 'TGA':
     case 'image/tga':
-      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricTGAOpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     default:
       report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
@@ -229,14 +250,26 @@ function Boolean decodeColorImageData(
   String ext = resource.extension ? resource.extension : resource.mimeType;
   switch (ext) {
     case'hdr':
+    case'HDR':
     case'image/hdr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricHDROpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     case'exr':
+    case'EXR':
     case'image/exr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
-      resource.data.resize(0);
+      if(resource.data.size() > 0) {
+        FabricEXRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
+        resource.data.resize(0);
+      } else if(resource.dataExternalLocation) {
+        FabricEXROpenFileHandle(resource.dataExternalLocation, imageWidth, imageHeight, bitmap);
+        resource.dataExternalLocation = "";
+      }
       break;
     default:
       report "ERROR: unsupported file type(" + ext + ") :"+resource.url;
@@ -316,30 +349,30 @@ function drawScreenQuad(
 
   var Data NULL;
 
-  var Size bufferIDArray[];
+  var Integer bufferIDArray[];
   bufferIDArray.resize(1);
 
   glGenBuffers(1, bufferIDArray);
-  var Size bufferID0 = bufferIDArray[0];
+  var Integer bufferID0 = bufferIDArray[0];
   glGenBuffers(1, bufferIDArray);
-  var Size bufferID1 = bufferIDArray[0];
+  var Integer bufferID1 = bufferIDArray[0];
   glGenBuffers(1, bufferIDArray);
-  var Size bufferID2 = bufferIDArray[0];
+  var Integer bufferID2 = bufferIDArray[0];
   
   glBindBuffer(GL_ARRAY_BUFFER, bufferID0);
-  glBufferData(GL_ARRAY_BUFFER, p.dataSize(), p.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, Integer(p.dataSize()), p.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(posLocation);
   glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
   if(texLocation != -1) {
     glBindBuffer(GL_ARRAY_BUFFER, bufferID1);
-    glBufferData(GL_ARRAY_BUFFER, t.dataSize(), t.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, Integer(t.dataSize()), t.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(texLocation);
     glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
   }
 
   glBindBuffer(GL_ARRAY_BUFFER, bufferID2);
-  glBufferData(GL_ARRAY_BUFFER, idx.dataSize(), idx.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, Integer(idx.dataSize()), idx.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 

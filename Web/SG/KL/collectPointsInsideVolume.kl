@@ -24,6 +24,7 @@ operator collectPointsInsideBrush(
   io Vec3 positions<>,
   io Vec3 normals<>
 ) {
+  // report("collectPointsInsideBrush");
   select = true;
   Mat44 modelMatrix = globalXfo.toMat44();
   Mat44 modelViewProjectionMatrix = projectionMatrix * cameraMatrix * modelMatrix;

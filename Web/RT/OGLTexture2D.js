@@ -67,10 +67,10 @@ FABRIC.RT.oglDepthBuffer2D = function(){
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('OGLTexture2D', {
     members: {
-     glInternalFormat: 'Size',
-     glFormat: 'Size',
-     glType: 'Size',
-     bufferID: 'Size',
+     glInternalFormat: 'Integer',
+     glFormat: 'Integer',
+     glType: 'Integer',
+     bufferID: 'Integer',
      nbPixels: 'Size',
      textureMinFilter: 'Integer',
      textureMaxFilter: 'Integer',

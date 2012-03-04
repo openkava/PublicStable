@@ -103,7 +103,7 @@ FABRIC.SceneGraph.registerNodeType('Pistons', {
     dgnode.addMember('phaseOffset', 'Scalar');
     dgnode.addMember('axialShift', 'Scalar');
     
-    dgnode.setCount(options.pistonCount);
+    dgnode.resize(options.pistonCount);
     dgnode.setBulkData({
       cylinderAngle:options.cylinderAngle,
       phaseOffset:options.phaseOffset,

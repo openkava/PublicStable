@@ -387,8 +387,8 @@ $(document).ready(function() {
   ///////////////////////////////////////////////////////////
   // Opacity Mapping
   var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
-  var opacityKeyAnimationTrack = scene.constructNode('LinearKeyAnimationTrack');
-  opacityKeyAnimationTrack.addTrack(new FABRIC.RT.LinearKeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+  var opacityKeyTrackAnimationContainer = scene.constructNode('LinearTrackAnimationContainer');
+  opacityKeyTrackAnimationContainer.addTrack(new FABRIC.RT.LinearKeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(.1, 0),
       linearkey(.2, 0.75),
       linearkey(.4, 0.05),
@@ -396,7 +396,7 @@ $(document).ready(function() {
     ]));
   
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
-      animationTrackNode: opacityKeyAnimationTrack,
+      trackAnimationContainerNode: opacityKeyTrackAnimationContainer,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
@@ -404,7 +404,7 @@ $(document).ready(function() {
   ///////////////////////////////////////////////////////////
   // Color Mapping
   var colorkey = function(time, value){ return new FABRIC.RT.ColorKeyframe(time, value); };
-  var gradientKeyTrack = scene.constructNode('ColorKeyAnimationTrack');
+  var gradientKeyTrack = scene.constructNode('ColorTrackAnimationContainer');
   gradientKeyTrack.addTrack(new FABRIC.RT.ColorKeyframeTrack('GradientKeyTrack', FABRIC.RT.rgb(0, 1, 0), [
       colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
       colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
@@ -415,7 +415,7 @@ $(document).ready(function() {
     ]));
   
   var gradientDisplayNode = scene.constructNode('TrackDisplay', {
-      animationTrackNode: gradientKeyTrack,
+      trackAnimationContainerNode: gradientKeyTrack,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
@@ -647,13 +647,14 @@ $(document).ready(function() {
 
   $( "#tabs" ).tabs();
 
-  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationTrack, {
+  var curveEditor = constructCurveEditor('opacityMapping', scene, opacityKeyTrackAnimationContainer, {
     timeStripe: false,
     draggable: false,
     zoomable: false,
     valueRange: new FABRIC.RT.Vec2(0, 1),
     timeRange: new FABRIC.RT.Vec2(0, 1),
     fitEditorToKeyRanges: false,
+    constrainKeysWithinRect: true,
     displayTrackNames: false,
     volumerenderdemohack: true
   });
@@ -681,7 +682,7 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////
   // Preset Saving and Loading
-  var currPresetName = 'Default';
+  var currPresetName = 'Chest';
   var presetsFound = false;
   var rebuildPresetNamesList = function(){
     $('#resourceSelector').empty();
@@ -698,7 +699,7 @@ $(document).ready(function() {
   var savePreset = function(){
     var presetSaver = scene.constructManager('SceneSerializer');
     presetSaver.addNode(camera);
-    presetSaver.addNode(opacityKeyAnimationTrack);
+    presetSaver.addNode(opacityKeyTrackAnimationContainer);
     presetSaver.addNode(gradientKeyTrack);
     presetSaver.addNode(volumeNode);
     presetSaver.addNode(opacityTexture);
@@ -712,6 +713,7 @@ $(document).ready(function() {
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
+  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
   var loadPreset = function(){
 
     savedCropMin = undefined;
@@ -723,12 +725,6 @@ $(document).ready(function() {
       displayProgressBar();
     }
     
-    var loadPresetTask;
-    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
-    
-    loadPresetTask( true );
-
-    var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('MedicalImagingPresetsVer1.'+currPresetName);
     presetLoader.load(storage, function(nodeMap){
       
@@ -740,8 +736,6 @@ $(document).ready(function() {
       localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   
       viewport.redraw();
-  
-      
     });
 
   }
@@ -797,9 +791,10 @@ $(document).ready(function() {
       if(!presetsFound){
         localStorage.setItem('MedicalImagingPresetsVer1.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
         localStorage.setItem('MedicalImagingPresetsVer1.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
-        currPresetName = 'Chest';
-        loadPreset();
         rebuildPresetNamesList();
+        currPresetName = 'Chest';
+        $("#resourceSelector").val(currPresetName);
+        loadPreset();
       }else{
         currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
         $("#resourceSelector").val(currPresetName);
@@ -838,8 +833,10 @@ $(document).ready(function() {
             <div class="content">
               <h2>PRESETS</h2>
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
+                <!--
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
               <button id="savePreset" style="margin-top:10px;">Save</button>
+              -->
               <button id="aboutButton" style="margin-top:10px;">About</button>
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">

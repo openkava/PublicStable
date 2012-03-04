@@ -15,7 +15,11 @@ operator videoLoadResource(
   io VideoHandle handle
 ) {
   if(!handle.pointer){
-    FabricVIDEOOpenResource(resource.data.data(), resource.data.dataSize(), handle);
+    if(resource.data.size() > 0)
+      FabricVIDEOOpenResource(resource.data.data(), resource.data.dataSize(), handle);
+    else if(resource.dataExternalLocation) {
+      FabricVIDEOOpenFileHandle(resource.dataExternalLocation, handle);
+    }
   }
 }
 
@@ -62,12 +66,12 @@ operator videoSeekTime(
 operator videoLoadToGPU(
   io VideoHandle handle,
   io RGB pixels[],
-  io Size bufferID,
+  io Integer bufferID,
   io Integer textureUnit
 ) {
   if (pixels.size() > 0) {
     if (bufferID == 0) {
-      var Size buffers[];
+      var Integer buffers[];
       buffers.resize(1);
       glGenTextures(1, buffers);
       bufferID = buffers[0];

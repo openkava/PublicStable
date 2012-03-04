@@ -103,22 +103,12 @@ FABRIC.SceneGraph.registerNodeType('TrianglesIONode', {
       newUniformsdgnode.setDependency(attributesdgnode,'savedAttributes');
       newUniformsdgnode.setDependency(uniformsdgnode,'savedUniforms');
       newAttributesdgnode.bindings.append(scene.constructOperator({
-        operatorName: 'resizeTrianglesFromStream',
-        srcFile: 'KL/fileStream.kl',
-        parameterLayout: [
-          "uniforms.path",
-          "uniforms.stream",
-          "uniforms.objectName",
-          "self.newCount"
-        ],
-        entryFunctionName: 'resizeTrianglesFromStream',
-        mainThreadOnly: true,
-        async: false
-      }));
-      newAttributesdgnode.bindings.append(scene.constructOperator({
         operatorName: 'loadTrianglesFromStream',
         srcFile: 'KL/fileStream.kl',
         parameterLayout: [
+          "self",
+          "uniforms.path",
+          "uniforms.objectName",
           "uniforms.stream",
           "self.positions<>",
           "self.normals<>",
@@ -167,7 +157,7 @@ $(document).ready(function() {
   });
 
   var fsNode = scene.constructNode('TrianglesIONode', {
-    filepath: '/tmp/meshes.bin'
+    filepath: '/tmp/meshes.bin' //'C:\Temp\meshes.bin' on Windows... but ideally we should get the TMP env var since it might not be there...
   });
 
   scene.importAssetFile('Models/cow.obj', {}, function(assetNodes){

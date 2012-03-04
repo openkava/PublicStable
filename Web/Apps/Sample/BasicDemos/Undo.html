@@ -22,7 +22,8 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
 		"SG/Kinematics",
                 "SG/Materials",
-                "SG/Manipulation"], function() {
+                "SG/Manipulation",
+                "SG/Undo"], function() {
  
 $(document).ready(function() {
   ///////////////////////////////////////////////////////////////
@@ -53,7 +54,7 @@ $(document).ready(function() {
   var cube = scene.constructNode('Cuboid', { length: 10, width: 10, height: 15 });
 
   // Translation
-  var cube2Draw = scene.constructNode('Instance', {
+  var cubeInstance = scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
         globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
@@ -66,7 +67,7 @@ $(document).ready(function() {
     });
   
   // provide the undoManager to Manipulators makes them undoable
-  scene.constructNode('3AxisTranslationManipulator', { targetNode: cube2Draw, undoManager: undoManager });
+  scene.constructNode('XfoManipulator', { targetNode: cubeInstance });
   
   // ===============================================
   // UI LOGIC
@@ -82,29 +83,35 @@ $(document).ready(function() {
   function setupSlider(index) {
     return function() {
       var prevValue = 0;
-      $('#slider'+index).slider({
+      var $slider = $('#slider'+index).slider({
         min: 0.0,
         max: 1.0,
         step: 0.01,
         value: prevValue
-      }).bind('slidechange',
-        function(event, ui) {
-          // the undo manager blocks the creation of
-          // tasks while it is undoing or redoing a task.
-          // that way recursion is avoided here.
-          undoManager.addTask({
-            name: "Slider "+index,
-            
-            // undo and (re)do callbacks
+      }).bind( "slidestart", function(event, ui) {
+          // An undo transaction is opened, and actions can be added
+          // to the transaction. A transaction groups a collection
+          // of changes together as a single undo item. This is useful
+          // when manipulations caused multiple data values to change.
+          undoManager.openUndoTransaction();
+          var newVal, prevVal = ui.value;
+          undoManager.addAction({
+            onClose: function() {
+              // When the undo transaction is closed, we record the new value.
+              newVal = $slider.slider('value');
+            },
             onUndo: function() {
-              $('#slider'+index).slider('value', prevValue);
+              $slider.slider('value', prevVal);
             },
-            onDo: function() {
-              $('#slider'+index).slider('value', ui.value);
-            },
+            onRedo: function() {
+              $slider.slider('value', newVal);
+            }
           });
-        }
-      );
+        })
+       .bind('slidestop',
+        function(event, ui) {
+          undoManager.closeUndoTransaction();
+        });
     };
   }
   
