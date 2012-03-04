@@ -1,0 +1,154 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use Vec3;
+use Xfo;
+use FabricALEMBIC;
+
+operator alembicLoad(
+  io String url,
+  io FabricResource resource,
+  io AlembicHandle handle
+) {
+  if(resource.data.dataSize() > 0) {
+    handle.loadResource(resource);
+  }
+}
+
+operator alembicSetTime(
+  io Scalar time,
+  io Scalar controllerTime
+) {
+  time = controllerTime;
+}
+
+operator alembicGetIdentifiers(
+  io AlembicHandle handle,
+  io String identifiers[]
+) {
+  handle.getIdentifiers(identifiers);
+}
+
+operator alembicParseXform(
+  io AlembicHandle handle,
+  io String identifier,
+  io Scalar time,
+  io Xfo transform
+) {
+  handle.parseXform(identifier,time,transform);
+}
+
+operator alembicParseCamera(
+  io AlembicHandle handle,
+  io String identifier,
+  io Scalar time,
+  io Scalar near,
+  io Scalar far,
+  io Scalar fovY
+) {
+  handle.parseCamera(identifier,time,near,far,fovY);
+}
+
+operator alembicParsePolyMeshCount(
+  io AlembicHandle handle,
+  io String identifier,
+  io Size count
+) {
+  if(count <= 1){
+    handle.parsePolyMeshCount(identifier,count);
+  }
+}
+
+operator alembicParsePolyMeshUniforms(
+  io AlembicHandle handle,
+  io String identifier,
+  io Integer indices[]
+) {
+  if(indices.size() == 0){
+    handle.parsePolyMeshUniforms(identifier,indices);
+  }
+}
+
+operator alembicParsePolyMeshAttributes(
+  io AlembicHandle handle,
+  io String identifier,
+  io Scalar time,
+  io Vec3 vertices<>,
+  io Vec3 normals<>,
+  io Boolean uvsLoaded,
+  io Vec2 uvs<>
+) {
+  if(vertices.size() > 0){
+    handle.parsePolyMeshAttributes(identifier,time,vertices,normals,uvsLoaded,uvs);
+  }
+}
+
+operator alembicParsePointsCount(
+  io AlembicHandle handle,
+  io String identifier,
+  io Scalar time,
+  io Size count
+) {
+  handle.parsePointsCount(identifier,time,count);
+}
+
+operator alembicParsePointsAttributes(
+  io AlembicHandle handle,
+  io String identifier,
+  io Scalar time,
+  io Vec3 vertices<>,
+  io Scalar sizes<>,
+  io Color colors<>
+) {
+  if(vertices.size() > 0){
+    handle.parsePointsAttributes(identifier,time,vertices,sizes,colors);
+  }
+}
+
+operator alembicParseCurvesCount(
+  io AlembicHandle handle,
+  io String identifier,
+  io Size count
+) {
+  if(count <= 1){
+    handle.parseCurvesCount(identifier,count);
+  }
+}
+
+operator alembicParseCurvesUniforms(
+  io AlembicHandle handle,
+  io String identifier,
+  io Integer indices[]
+) {
+  if(indices.size() == 0){
+    handle.parseCurvesUniforms(identifier,indices);
+  }
+}
+
+operator alembicParseCurvesAttributes(
+  io AlembicHandle handle,
+  io String identifier,
+  io Scalar time,
+  io Vec3 vertices<>,
+  io Scalar sizes<>,
+  io Boolean uvsLoaded,
+  io Vec2 uvs<>,
+  io Color colors<>
+) {
+  if(vertices.size() > 0){
+    handle.parseCurvesAttributes(identifier,time,vertices,sizes,uvsLoaded,uvs,colors);
+  }
+}
+
+operator alembicCurvesComputeTangents(
+  io Integer indices[],
+  io Vec3 vertices<>,
+  io Vec3 tangents<>
+) {
+  for(Size i=0;i<indices.size();i+=2)
+  {
+    tangents[indices[i]] = (vertices[indices[i]] - vertices[indices[i+1]]).unit();
+    tangents[indices[i+1]] = tangents[indices[i]];
+  }
+}

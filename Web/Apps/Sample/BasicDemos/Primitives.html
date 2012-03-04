@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">  
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+    <title>FABRIC - Primitives</title> 
+        
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+
+    <script type="text/javascript">
+    
+$(document).ready(function() {
+  
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    enableRaycasting: false,
+    windowElement: document.getElementById('FabricContainer')
+  });
+
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+    url: 'Resources/fabric-demo-gradient.png'
+  }));
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+    position: new FABRIC.RT.Vec3(40, 70, 100),
+    target: new FABRIC.RT.Vec3(0, 0, 0)
+  });
+
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+
+  viewport.setCameraNode(camera);
+
+  var light = scene.constructNode('PointLight', {
+    position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0)
+  });
+
+  var redFlatMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(0.8, 0, 0)
+  });
+  var blueFlatMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(0, 0.8, 0)
+  });
+  var greenFlatMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(0, 0, 0.8)
+  });
+  var babyBlueMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(0.0, 1.0, 1.0)
+  });
+  var yellowMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(1.0, 1.0, 0.0)
+  });
+
+  var redPhongMaterial = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(0.8, 0, 0),
+    lightNode: light
+  });
+  var greenPhongMaterial = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(0, 0.8, 0),
+    lightNode: light
+  });
+  var bluePhongMaterial = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(0, 0, 0.8),
+    lightNode: light
+  });
+  /*
+  var wireframeMaterial = scene.constructNode('WireframeMaterial', {
+    color: FABRIC.RT.rgb(0.3, 0.3, 0.3, 0.5)
+  });
+  var normalMaterial = scene.constructNode('NormalMaterial', {
+    color: FABRIC.RT.rgb(0.2, 0.2, 0.2, 1)
+  });
+  */
+  // Cross
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-30, 0, 20) })
+    }),
+    geometryNode: scene.constructNode('Cross', {
+      size: 7.0
+    }),
+    materialNode: redFlatMaterial
+  });
+
+  // Circle
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 20) })
+    }),
+    geometryNode: scene.constructNode('Circle', {
+      radius: 7
+    }),
+    materialNode: greenFlatMaterial
+  });
+
+  // Rectangle
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(10, 0, 20) })
+    }),
+    geometryNode: scene.constructNode('Rectangle', {
+      length: 7,
+      width: 3
+    }),
+    materialNode: yellowMaterial
+  });
+
+  // Axes
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(30, 0, 20) })
+    }),
+    geometryNode: scene.constructNode('Axes', {
+      size: 7.0
+    }),
+    materialNode: yellowMaterial
+  });
+
+  // Grid
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(50, 0, 20) })
+    }),
+    geometryNode: scene.constructNode('Grid', {
+      size_x: 15.0,
+      size_z: 15.0,
+      sections_x: 5,
+      sections_y: 1,
+      sections_z: 5
+    }),
+    materialNode: babyBlueMaterial
+  });
+
+  // BoundingBox
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(70, 0, 20) })
+    }),
+    geometryNode: scene.constructNode('BoundingBox', {
+      length: 7,
+      width: 3
+    }),
+    materialNode: yellowMaterial
+  });
+
+  // Phong Plane
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-70, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Plane', {
+      length: 15,
+      width: 15,
+      lengthSections: 3,
+      widthSections: 3
+    }),
+    materialNode: greenPhongMaterial
+  })
+ // .addMaterialNode( wireframeMaterial );
+
+  // Phong Cuboid
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-50, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Cuboid', {
+      length: 15,
+      width: 15,
+      height: 15
+    }),
+    materialNode: redPhongMaterial
+  })
+ // .addMaterialNode( wireframeMaterial );
+
+  // Phong Cone
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-30, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Cone', {
+      radius: 4.0,
+      height: 16.0,
+      detail: 10
+    }),
+    materialNode: greenPhongMaterial
+  })
+ // .addMaterialNode( wireframeMaterial );
+
+  // Phong Sphere
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Sphere', {
+      radius: 10,
+      detail: 10
+    }),
+    materialNode: bluePhongMaterial
+  })
+ // .addMaterialNode( wireframeMaterial );
+
+  // Phong Torus
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(10, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Torus', {
+      inner_radius: 3.0,
+      outer_radius: 6.0,
+      detail: 10
+    }),
+    materialNode: greenPhongMaterial
+  })
+//  .addMaterialNode( wireframeMaterial );
+
+  // Phong Cylinder
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(30, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Cylinder', {
+      radius: 4.0,
+      height: 16.0,
+      sides: 24,
+      loops: 2,
+      caps: true
+    }),
+    materialNode: redPhongMaterial 
+  })
+//  .addMaterialNode( wireframeMaterial );
+
+  // Phong Teapot
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(50, 0, 0) })
+    }),
+    geometryNode: scene.constructNode('Teapot', {
+      size: 7,
+      detail: 10
+    }),
+    materialNode: bluePhongMaterial
+  })
+//  .addMaterialNode( wireframeMaterial );
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      viewport.redraw();
+      return true;
+    }
+  });
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
+          <div class="box">
+            <h2>INFO</h2>
+              <div class="content">
+              Primitives.<br>
+              This sample shows the creation of several primitives using FABRIC's JavaScript based SceneGraph.
+            </div><!--content-->
+          </div><!--box-->
+          
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>

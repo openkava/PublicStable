@@ -1,0 +1,836 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+  <head> 
+    <title>FABRIC - PreProcessing</title> 
+    
+    <meta charset="iso-8859-1"/>
+  
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTextureCube.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
+    
+    
+    
+    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
+    
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+
+<style>
+  #animationTracksList .ui-selecting { background: #757a9f; }
+  #animationTracksList .ui-selected { background: #4e516a; color: white; }
+  #animationTracksList { list-style-type: none; margin: 0; padding: 0; }
+  #animationTracksList li { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 10px; }
+</style>
+
+
+<script type="text/javascript">
+
+FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+
+$(document).ready(function() {
+  
+  var $globalTimeSlider = $('#globalTime').slider({
+      min: 0.0,
+      max: 0.8333333333333334,
+      step: 0.01
+    });
+
+  $('#processTracks').button();
+  $('#curveEditor').button();
+  
+  $( "#animationTracksList" ).selectable();
+
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    enableRaycasting: true,
+    windowElement: document.getElementById('FabricContainer')
+  });
+  
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+    url: '../../Sample/BasicDemos/Resources/fabric-demo-gradient.png'
+  }));
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      position: new FABRIC.RT.Vec3(6, 4.2, 6),
+      target: new FABRIC.RT.Vec3(0, -1, 0),
+      roll: 0,
+      nearDistance: 0.1,
+      farDistance: 500
+    });
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+  
+  // create the scene grid
+  scene.constructNode('Instance', {
+    geometryNode: scene.constructNode('Grid', {
+        size_x: 14.0,
+        size_z: 14.0,
+        sections_x: 20,
+        sections_z: 20 }),
+    materialNode: scene.constructNode('FlatMaterial')
+  });
+  
+  //////////////////////////////////////////////
+  // 
+  var sampleFrequency = 1/30;
+  var scaleFactor = 0.1;
+  var footMovementThreshold = 0.03;
+  var libraryFKAnimations, animationController;
+  
+  var libraryIKAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
+    name: 'LibraryIKAnimations'
+  });
+  
+  libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
+    name: 'LibraryLocomotionAnimations'
+  });
+  var trackCount = 0;
+  var loadAnimationFile = function(file, fkrigNode){
+    
+    var animationAssetNodes = scene.importAssetFile(file, {
+      scaleFactor: scaleFactor,
+      constructScene: false,
+      loadAnimationUsingRig: true,
+      rigNode: fkrigNode,
+      animationLibrary: libraryFKAnimations,
+      animationController: animationController
+    });
+    if(!libraryFKAnimations){
+      libraryFKAnimations = animationAssetNodes.LinearKeyAnimationLibrary;
+      animationController = animationAssetNodes.AnimationController;
+    }
+    
+    $("#animationTracksList").children().each(function(){
+      $(this).removeClass('ui-selected');
+    });
+    $("#animationTracksList").append('<li class="ui-widget-content ui-selected" id="'+trackCount+'">'+file+'</li>');
+    trackCount++;
+  }
+  
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var sphere = scene.constructNode('Sphere', { radius: 2, detail: 10, needUVs: true, tangentsFromUV: 0 });
+  
+    // Transparency Shader
+    /*
+  var cubeTextureMap = scene.constructNode('CubeMap', {
+    urls: [
+      'Textures/Teide/posx.png',
+      'Textures/Teide/negx.png',
+      'Textures/Teide/posy.png',
+      'Textures/Teide/negy.png',
+      'Textures/Teide/posz.png',
+      'Textures/Teide/negz.png'
+    ]
+  });
+  
+  var reflectionMaterial = scene.constructNode('GlassMaterial', {
+    diffuseColor: FABRIC.RT.rgba(0.0, 0.75, 1, 0.25),
+    cubeMapTextureNode: cubeTextureMap,
+    lightNode: light
+  });
+
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
+    }),
+    geometryNode: sphere,
+    materialNode: reflectionMaterial
+  });
+*/
+
+  //////////////////////////////////////////////
+  //
+  var rigName = 'USWolf';
+  
+  var assetNodes, bindPoseRig, fkrigNode, rigInstances = {}, skeletonNode, materialNode;
+  switch(rigName){
+  case 'Spiedel':
+    scaleFactor = 0.05;
+    footMovementThreshold = 0.08;
+    assetNodes = scene.importAssetFile('Assets/Spiedel.DAE', { scaleFactor: scaleFactor });
+  
+    fkrigNode = assetNodes.SpiedelCharacterRig;
+    rigInstances.rig = assetNodes.SpiedelMeshCharacterInstance;
+
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', { hubs: [{ bone:['SpiedelBody'] }] } );
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['SpiedelFrontRLegCollarbone', 'SpiedelFrontLLegCollarbone', 'SpiedelRearRLegCollarbone', 'SpiedelRearLLegCollarbone',
+               'SpiedelLArmCollarbone', 'SpiedelLArm1', 'SpiedelLArm2', 'SpiedelLArmPalm',
+               'SpiedelRArmCollarbone', 'SpiedelRArm1', 'SpiedelRArm2', 'SpiedelRArmPalm' ]
+      }
+    });
+    ikrigNode.addSolver('Limbs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['SpiedelFrontRLeg1', 'SpiedelFrontRLeg2', 'SpiedelFrontRLeg3'], ankle:'SpiedelFrontRLegAnkle' },
+               { bones:['SpiedelFrontLLeg1', 'SpiedelFrontLLeg2', 'SpiedelFrontLLeg3'], ankle:'SpiedelFrontLLegAnkle' },
+               { bones:['SpiedelRearRLeg1', 'SpiedelRearRLeg2', 'SpiedelRearRLeg3'], ankle:'SpiedelRearRLegAnkle' },
+               { bones:['SpiedelRearLLeg1', 'SpiedelRearLLeg2', 'SpiedelRearLLeg3'], ankle:'SpiedelRearLLegAnkle' } ]
+    });
+    
+  //  ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+  //    bones: {
+  //      bones:['SpiedelFrontRLegAnkle', 'SpiedelFrontLLegAnkle', 'SpiedelRearLLegAnkle', 'SpiedelRearRLegAnkle' ]
+  //    }
+  //  });
+  
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'SpiedelCOM'
+    });
+    
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
+    loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
+
+  
+    
+    rigInstances.rig.addMaterialNode(
+      scene.constructNode('SpiedelShader', {
+        lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+        diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)/*,
+        cubeMapTextureNode: cubeTextureMap */
+      }));
+    
+    break;
+  /*
+  case 'walker':
+    assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
+  
+    fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
+    rigInstances.rig = assetNodes.Walker_ncl1_1CharacterInstance;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', { hubs: [{ bone:['WalkerBody'] }] } );
+    ikrigNode.addSolver('Limbs', 'InsectLegSolver', {
+      limbs: [ { bones:['WalkerLFLeg1', 'WalkerLFLeg2', 'WalkerLFLeg3'] },
+               { bones:['WalkerRFLeg1', 'WalkerRFLeg2', 'WalkerRFLeg3'] },
+               { bones:['WalkerLRLeg1', 'WalkerLRLeg2', 'WalkerLRLeg3'] },
+               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ]
+    });
+    
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
+  
+    break;
+  */
+  case 'centipede':
+    assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
+  
+    fkrigNode = assetNodes.CentipedeHub010CharacterRig;
+    rigInstances.rig = assetNodes.CentipedeHub010CharacterInstance;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', {
+      hubs: [
+        { bone:'CentipedeHub1', inSpineBones:[] },
+        { bone:'CentipedeHub2', inSpineBones:['CentipedeHub1Spine'] },
+        { bone:'CentipedeHub3', inSpineBones:['CentipedeHub2Spine'] },
+        { bone:'CentipedeHub4', inSpineBones:['CentipedeHub3Spine'] },
+        { bone:'CentipedeHub5', inSpineBones:['CentipedeHub4Spine'] },
+        { bone:'CentipedeHub6', inSpineBones:['CentipedeHub5Spine'] },
+        { bone:'CentipedeHub7', inSpineBones:['CentipedeHub6Spine'] },
+        { bone:'CentipedeHub8', inSpineBones:['CentipedeHub7Spine'] },
+        { bone:'CentipedeHub9', inSpineBones:['CentipedeHub8Spine'] }
+      ]
+    });
+    
+    ikrigNode.addSolver('Limbs', 'InsectLegSolver', {
+      limbs: [
+        { bones:['CentipedeHub1RLeg1', 'CentipedeHub1RLeg2', 'CentipedeHub1RLeg3', 'CentipedeHub1RLeg4'] },
+        { bones:['CentipedeHub1LLeg1', 'CentipedeHub1LLeg2', 'CentipedeHub1LLeg3', 'CentipedeHub1LLeg4'] },
+        { bones:['CentipedeHub2RLeg1', 'CentipedeHub2RLeg2', 'CentipedeHub2RLeg3', 'CentipedeHub2RLeg4'] },
+        { bones:['CentipedeHub2LLeg1', 'CentipedeHub2LLeg2', 'CentipedeHub2LLeg3', 'CentipedeHub2LLeg4'] },
+        { bones:['CentipedeHub3RLeg1', 'CentipedeHub3RLeg2', 'CentipedeHub3RLeg3', 'CentipedeHub3RLeg4'] },
+        { bones:['CentipedeHub3LLeg1', 'CentipedeHub3LLeg2', 'CentipedeHub3LLeg3', 'CentipedeHub3LLeg4'] },
+        { bones:['CentipedeHub4RLeg1', 'CentipedeHub4RLeg2', 'CentipedeHub4RLeg3', 'CentipedeHub4RLeg4'] },
+        { bones:['CentipedeHub4LLeg1', 'CentipedeHub4LLeg2', 'CentipedeHub4LLeg3', 'CentipedeHub4LLeg4'] },
+        { bones:['CentipedeHub5RLeg1', 'CentipedeHub5RLeg2', 'CentipedeHub5RLeg3', 'CentipedeHub5RLeg4'] },
+        { bones:['CentipedeHub5LLeg1', 'CentipedeHub5LLeg2', 'CentipedeHub5LLeg3', 'CentipedeHub5LLeg4'] },
+        { bones:['CentipedeHub6RLeg1', 'CentipedeHub6RLeg2', 'CentipedeHub6RLeg3', 'CentipedeHub6RLeg4'] },
+        { bones:['CentipedeHub6LLeg1', 'CentipedeHub6LLeg2', 'CentipedeHub6LLeg3', 'CentipedeHub6LLeg4'] },
+        { bones:['CentipedeHub7RLeg1', 'CentipedeHub7RLeg2', 'CentipedeHub7RLeg3', 'CentipedeHub7RLeg4'] },
+        { bones:['CentipedeHub7LLeg1', 'CentipedeHub7LLeg2', 'CentipedeHub7LLeg3', 'CentipedeHub7LLeg4'] },
+        { bones:['CentipedeHub8RLeg1', 'CentipedeHub8RLeg2', 'CentipedeHub8RLeg3', 'CentipedeHub8RLeg4'] },
+        { bones:['CentipedeHub8LLeg1', 'CentipedeHub8LLeg2', 'CentipedeHub8LLeg3', 'CentipedeHub8LLeg4'] },
+        { bones:['CentipedeHub9RLeg1', 'CentipedeHub9RLeg2', 'CentipedeHub9RLeg3', 'CentipedeHub9RLeg4'] },
+        { bones:['CentipedeHub9LLeg1', 'CentipedeHub9LLeg2', 'CentipedeHub9LLeg3', 'CentipedeHub9LLeg4'] }
+      ],
+      hubIds: [
+        0, 0,
+        1, 1,
+        2, 2,
+        3, 3,
+        4, 4,
+        5, 5,
+        6, 6,
+        7, 7,
+        8, 8
+      ]
+    });
+    
+    ikrigNode.addSolver('antennae', 'FKHierarchySolver', {
+      bones: {
+        bones:['CentipedeLAntennae1', 'CentipedeLAntennae2', 'CentipedeLAntennae3', 'CentipedeLAntennae4', 'CentipedeLAntennae5',
+               'CentipedeRAntennae1', 'CentipedeRAntennae2', 'CentipedeRAntennae3', 'CentipedeRAntennae4', 'CentipedeRAntennae5' ]
+      }
+    });
+    
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
+    
+    break;
+  /*
+  case 'marama':
+    assetNodes = scene.importAssetFile('Assets/Marama3.DAE', { scaleFactor: scaleFactor } );
+  
+    fkrigNode = assetNodes.MaramaMeshCharacterRig;
+    rigInstances.rig = assetNodes.MaramaMeshCharacterInstance;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['MaramaPelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['MaramaLThigh', 'MaramaLCalf'], ankle:'MaramaLAnkle' },
+               { bones:['MaramaRThigh', 'MaramaRCalf'], ankle:'MaramaRAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:['MaramaLToe', 'MaramaRToe' ]
+      }
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['MaramaSpine1', 'MaramaSpine2', 'MaramaSpine3', 'MaramaRibcage', 'MaramaNeck', 'MaramaHead',
+               'MaramaLCollarbone', 'MaramaLUpperArm', 'MaramaLForeArm2', 'MaramaLForeArm2_ncl1_1',
+               'MaramaRCollarbone', 'MaramaRUpperArm', 'MaramaRForeArm2', 'MaramaRForeArm2_ncl1_1',
+               'MaramaLPalm', 'MaramaLThumb1', 'MaramaLThumb2' , 'MaramaLIndex1', 'MaramaLIndex2', 'MaramaLFingers1' , 'MaramaLFingers2',
+               'MaramaRPalm', 'MaramaRThumb1', 'MaramaRThumb2' , 'MaramaRIndex1', 'MaramaRIndex2', 'MaramaRFingers1' , 'MaramaRFingers2' ]
+      }
+    });
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'MaramaCOM'
+    });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama3_Run.DAE', fkrigNode);
+    
+    loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
+
+    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
+   
+    loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
+    
+    break;
+  */
+  case 'CMan0005':
+    scaleFactor = 0.05;
+    assetNodes = scene.importAssetFile('Assets/CMan0005.DAE', { scaleFactor: scaleFactor } );
+  
+    fkrigNode = assetNodes.CMan0005_M3_CS_MeshCharacterRig;
+    
+    rigInstances = {
+      Cloths: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Cloths_StuffCharacterInstance,
+      Eyes: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Eyes_MouthCharacterInstance,
+      Hair: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HairCharacterInstance,
+      Head: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HeadCharacterInstance,
+      Skin: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_SkinCharacterInstance
+    };
+    
+    rigInstances.Cloths.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Eyes.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Hair.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Hair-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Head.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Head-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Skin.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['CMan0005Pelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['CMan0005LThigh', 'CMan0005LCalf'], ankle:'CMan0005LAnkle' },
+               { bones:['CMan0005RThigh', 'CMan0005RCalf'], ankle:'CMan0005RAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:['CMan0005LToe', 'CMan0005RToe' ]
+      }
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['CMan0005Spine1', 'CMan0005Spine2', 'CMan0005Spine3', 'CMan0005Ribcage', 'CMan0005Neck', 'CMan0005Head',
+               'CMan0005LCollarbone', 'CMan0005LUpperArm', 'CMan0005LForeArm2', 'CMan0005LForeArm2_ncl1_1',
+               'CMan0005RCollarbone', 'CMan0005RUpperArm', 'CMan0005RForeArm2', 'CMan0005RForeArm2_ncl1_1',
+               'CMan0005LPalm', 'CMan0005LThumb1', 'CMan0005LThumb2' , 'CMan0005LIndex1', 'CMan0005LIndex2', 'CMan0005LFingers1' , 'CMan0005LFingers2',
+               'CMan0005RPalm', 'CMan0005RThumb1', 'CMan0005RThumb2' , 'CMan0005RIndex1', 'CMan0005RIndex2', 'CMan0005RFingers1' , 'CMan0005RFingers2' ]
+      }
+    });
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'CMan0005PelvisBone001'
+    });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.Cloths.setRigNode(ikrigNode);
+    rigInstances.Eyes.setRigNode(ikrigNode);
+    rigInstances.Hair.setRigNode(ikrigNode);
+    rigInstances.Head.setRigNode(ikrigNode);
+    rigInstances.Skin.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/CMan0005_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Run.DAE', fkrigNode);
+
+    break;
+  case 'USWolf':
+    scaleFactor = 0.02;
+    assetNodes = scene.importAssetFile('Assets/USWolf.DAE', { scaleFactor: scaleFactor } );
+  
+    fkrigNode = assetNodes.Object01CharacterRig;
+    
+    rigInstances.rig = assetNodes.Object01Mesh_06___DefaultCharacterInstance;
+    
+    rigInstances.rig.addMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_desert_D.png' }),
+        specularTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_S.png' }),
+        normalTextureNode: scene.constructNode('Image2D', { url: 'Textures/wolf_B.png' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['USWolfPelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['USWolfLThigh', 'USWolfLCalf'], ankle:'USWolfLAnkle' },
+               { bones:['USWolfRThigh', 'USWolfRCalf'], ankle:'USWolfRAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'DigitSolver', {
+      digits:[
+	{ bones:['USWolfLToe'], projectToGround:true, tipBoneLength: 0.3 },
+	{ bones:['USWolfRToe'], projectToGround:true, tipBoneLength: 0.3 }
+      ]
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['USWolfSpine1', 'USWolfSpine2', 'USWolfSpine3', 'USWolfRibcage', 'USWolfNeck', 'USWolfHead',
+               'USWolfLCollarbone', 'USWolfLUpperArm', 'USWolfLForeArm',
+               'USWolfRCollarbone', 'USWolfRUpperArm', 'USWolfRForeArm',
+               'USWolfLPalm', 'USWolfLThumb1', 'USWolfLThumb2' , 'USWolfLIndex1', 'USWolfLIndex2', 'USWolfLFingers1' , 'USWolfLFingers2',
+               'USWolfRPalm', 'USWolfRThumb1', 'USWolfRThumb2' , 'USWolfRIndex1', 'USWolfRIndex2', 'USWolfRFingers1' , 'USWolfRFingers2' ]
+      }
+    });
+    
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'USWolfPelvisBone001'
+    });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.rig.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/USWolf_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/USWolf_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/USWolf_Run.DAE', fkrigNode);
+
+    break;
+  }
+  
+  ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
+  
+  
+  var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:fkrigNode,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(1.0, 1.0, 0.0, 1.0)
+  });
+  
+  var riggedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:ikrigNode,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
+  });
+  
+  
+  /*
+  var timeRange = libraryFKAnimations.getTimeRange(0);
+  var $globalTimeSlider = $('#globalTime').slider({
+      min: timeRange.x,
+      max: timeRange.y,
+      step: 0.01
+    });
+  */
+  
+  $globalTimeSlider.slider('value', 0.0);
+  $globalTimeSlider.bind('slide',
+    function(event, ui) {
+      $("#timeValue").val( ui.value.toFixed(2) );
+      scene.animation.setTime(ui.value);
+      viewport.redraw();
+    });
+  $( "#timeValue" )
+    .val( $globalTimeSlider.slider( "value" ) )
+    .change(function() {
+      $globalTimeSlider.slider('value', $(this).val()  );
+      scene.animation.setTime(parseFloat($(this).val()));
+      viewport.redraw();
+    });
+    
+  $( "#animationTracksList" ).selectable({
+    stop: function(event, ui) {
+      var selectedChildren = $("#animationTracksList").children('.ui-selected');
+      var id = parseInt($(selectedChildren[0]).attr('id'));
+      // Set the animation that the FK rig is using.
+      fkRigVariablesNode.setBoundTrack(id);
+        
+      var timeRange = libraryFKAnimations.getTimeRange(id);
+      $('#globalTime').slider({
+          min: timeRange.x,
+          max: timeRange.y,
+          step: 0.01
+        });
+      viewport.redraw();
+    }
+  });
+  
+  var plottedAnimations = 0, bound = false;
+  $('#processTracks').button()
+    .click(function() {
+      
+      for(var i=plottedAnimations; i<libraryFKAnimations.getTrackSetCount(); i++){
+        // Set the animation that the FK rig is using.
+        fkRigVariablesNode.setBoundTrack(i);
+        
+        // Bind the IK Animation to the variables. This generates a new TrackSet and bindings.
+        // NOTE: currently the ikrigNode is actually the locomotion rig, because the locomotion rig
+        // simply adds 2 solvers to the rig. We should disolve the Locomotion rig and simply add the
+        // solvers to the IK rig, clarifying the situation
+        var trackSetId = ikrigNode.generateAnimationTracks(libraryIKAnimations, libraryFKAnimations.getTrackSetName(i), false);
+        
+        
+        var bindings = libraryIKAnimations.bindToRig(ikrigNode, trackSetId);
+        
+        var timeRange = libraryFKAnimations.getTimeRange(i);
+        libraryIKAnimations.plotKeyframes(i, timeRange, sampleFrequency);
+      }
+      plottedAnimations = libraryFKAnimations.getTrackSetCount();
+      
+      
+      if(!bound){
+        libraryLocomotionAnimations.bindToSourceAnimationLibrary(
+          libraryIKAnimations,
+          bindings,
+          ikrigNode,
+          sampleFrequency,
+          footMovementThreshold
+        );
+        bound = true;
+      }
+      
+      libraryLocomotionAnimations.preProcessTracks();
+      viewport.redraw();
+    });
+  
+  $('#writeRigData').button()
+    .click(function() {
+      ikRigVariablesNode.setName('CharacterVariables');
+      var rigSaver = scene.constructManager('SceneSerializer');
+      rigSaver.filterNode(libraryLocomotionAnimations);
+      rigSaver.addNode(ikrigNode);
+      for(var i in rigInstances){
+        rigSaver.addNode(rigInstances[i]);
+      }
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Rig Data", rigName);
+      rigSaver.save(storage);
+    });
+
+  $('#writeAnimationData').button()
+    .click(function() {
+      var animationSaver = scene.constructManager('SceneSerializer');
+      animationSaver.addNode(libraryLocomotionAnimations);
+    
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Animation Data", rigName + "Animation");
+      animationSaver.save(storage);
+    });
+
+
+  var keyframeTrackNode = assetNodes.polymshAnimationTrack;
+  $('#curveEditor').button()
+    .click(function() {
+      libraryLocomotionAnimations.openCurveEditor( 0, false );
+    });
+    
+
+  $("#displayAnimatedSkeleton").attr('checked', true);
+  $("#displayRiggedSkeleton").attr('checked', true);
+  
+  $("#displayAnimatedSkeleton").change(function() {
+    animatedSkeleton.getInstanceNode().setDrawToggle($("#displayAnimatedSkeleton").is(":checked"));
+    viewport.redraw();
+  });
+  $("#displayRiggedSkeleton").change(function() {
+    riggedSkeleton.getInstanceNode().setDrawToggle($("#displayRiggedSkeleton").is(":checked"));
+    viewport.redraw();
+  });
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      viewport.redraw();
+      
+      
+      
+      return true;
+    }
+  });
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc" style="margin-bottom: 10px"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+            </div><!--content-->
+          </div><!--box-->
+
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <div>Sample Index:</div>
+              <input type="checkbox" id="displayAnimatedSkeleton" style="margin-top:10px;"/><label for="displayAnimatedSkeleton">Display Animated Skeleton:</label>
+              </br>
+              <input type="checkbox" id="displayRiggedSkeleton" style="margin-top:10px;"/><label for="displayRiggedSkeleton">Display Rigged Skeleton:</label>
+              </br>
+              
+              <label for="timeValue" >Time:</label>
+              <input type="text" id="timeValue" style="border:0; font-weight:bold;" />
+              <div id='globalTime' style="margin-bottom:10px;"></div>
+              
+              
+              <button id="writeRigData" style="margin-top:3px;">Write Character Definition</button>
+                
+              <!--
+              <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
+              -->
+            </div><!--content-->
+          </div><!--box-->
+
+          <div class="box">
+            <h2>ANIMATIONS</h2>
+            <div class="content">
+              <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
+              <button id="writeAnimationData" style="margin-top:3px;">Write Animation Library</button>
+              <ol id="animationTracksList">
+              </ol>
+            </div>
+          </div><!--box-->
+          
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>

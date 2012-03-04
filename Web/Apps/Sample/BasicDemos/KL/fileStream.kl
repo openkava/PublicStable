@@ -1,0 +1,117 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use FabricFILESYSTEM;
+use FabricFileHandle;
+use FabricFILESTREAM;
+use FabricFileStream;
+
+operator initFileStreamFromString
+(
+  io String path,
+  io FabricFileStream stream,
+  io String names[],
+  io Size seekOffsets[]
+)
+{
+  if(!stream.isWritable()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"w");
+  }
+  if(stream.isWritable() && names.size() > 0) {
+    seekOffsets.resize(names.size());
+    stream.writeStringArray(names);
+    for(Size i=0;i<names.size();i++)
+    {
+      // store the seek offsets of these
+      // size values, so that we can seek later
+      seekOffsets[i] = stream.getSeek();
+      stream.writeSize(0);
+    }
+  }
+}
+
+operator saveTrianglesToStream
+(
+  io String path,
+  io FabricFileStream stream,
+  io String names[],
+  io Size seekOffsets[],
+  io String name,
+  io Vec3 positions<>,
+  io Vec3 normals<>,
+  io Integer indices[]
+)
+{
+  if(!stream.isWritable()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"a");
+  }
+  if(stream.isWritable()) {
+    stream.setSeekEnd();
+    Size seekOffset = stream.getSeek();
+    stream.writeSize(positions.size());
+    stream.writeData(positions.data(),positions.dataSize());
+    stream.writeData(normals.data(),normals.dataSize());
+    stream.writeSize(indices.size());
+    stream.writeData(indices.data(),indices.dataSize());
+    for(Size i=0;i<names.size();i++) {
+      if(name == names[i]) {
+        stream.setSeek(seekOffsets[i]);
+        stream.writeSize(seekOffset);
+      }
+    }
+    stream.close();
+  }
+}
+
+operator resizeTrianglesFromStream
+(
+  io String path,
+  io FabricFileStream stream,
+  io String name,
+  io Size newCount
+)
+{
+  if(!stream.isValid()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"r");
+  }
+  if(stream.isValid()) {
+    String names[];
+    stream.readStringArray(names);
+    Size offset = 0;
+    for(Size i=0;i<names.size();i++) {
+      Size storedOffset = 0;
+      stream.readSize(storedOffset);
+      if(names[i] == name)
+        offset = storedOffset;
+    }
+    stream.setSeek(offset);
+    stream.readSize(newCount);
+  } else {
+    report("Cannot open file: "+path);
+  }
+}
+
+operator loadTrianglesFromStream
+(
+  io FabricFileStream stream,
+  io Vec3 positions<>,
+  io Vec3 normals<>,
+  io Integer indices[]
+)
+{
+  if(stream.isValid()) {
+    stream.readData(positions.data(),positions.dataSize());
+    stream.readData(normals.data(),normals.dataSize());
+    Size nbIndices = 0;
+    stream.readSize(nbIndices);
+    indices.resize(nbIndices);
+    stream.readData(indices.data(),indices.dataSize());
+  }
+}

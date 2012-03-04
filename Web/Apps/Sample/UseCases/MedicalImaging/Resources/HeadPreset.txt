@@ -1,0 +1,29 @@
+{
+"metadata": {},
+"sceneGraphNodes":[
+  {
+    "name":"AimTransform",
+    "type":"AimTransform",
+    "options":{"hierarchical":false,"name":"AimTransform"},
+    "data":{"globalXfo":{"ori":{"v":{"x":-0.2484738826751709,"y":-0.2784693837165833,"z":-0.07482483983039856},"w":0.9247252941131592},"tr":{"x":-1.317153930664063,"y":0.7898656725883484,"z":2.083352088928223},"sc":{"x":1,"y":1,"z":1}}}
+  },
+  {
+    "name":"TargetCamera",
+    "type":"TargetCamera",
+    "options":{"name":"TargetCamera"},
+    "data":{"transformNodeMember":"globalXfo","transformNode":"AimTransform","nearDistance":0.25,"farDistance":1000,"fovY":1.047197580337524,"focalDistance":2.580777645111084}
+  },
+  {
+    "name":"VolumeOpacityInstance",
+    "type":"VolumeOpacityInstance",
+    "options":{"name":"VolumeOpacityInstance","drawable":true,"createBoundingBoxNode":true},
+    "data":{"transparency":0.699999988079071,"specularFactor":0.6,"brightnessFactor":0.5,"invertColor":0,"minOpacity":0,"maxOpacity":1,"cropMin":{"x":-1,"y":-0.2000000029802322,"z":-1},"cropMax":{"x":1,"y":1,"z":1}}
+  },
+  {
+    "name":"Image3DWithHistogram",
+    "type":"Image3DWithHistogram",
+    "options":{"name":"Image3DWithHistogram","createDgNode":true,"createResourceLoadNode":true,"createLoadTextureEventHandler":true},
+    "data":{"url":"Resources/HeadHigh.nrrd"}
+  }
+]
+}
