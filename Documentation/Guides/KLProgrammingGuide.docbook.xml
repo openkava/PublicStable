@@ -2455,7 +2455,7 @@ require Math, RegType;
       <title>Operators</title>
       
       <para>
-        KL supports the same basic set of operators as JavaScript and C.  This operations are broadly categorized as <link linkend="arithmetic-ops">arithmetic operators</link>, <link linkend="logical-ops">logical operators</link> and <link linkend="bitwise-ops">bitwise operators</link>.
+        KL supports the same basic set of operators as JavaScript and C.  This operations are broadly categorized as <link linkend="arithmetic-ops">arithmetic operators</link>, <link linkend="logical-ops">logical operators</link>, <link linkend="bitwise-ops">bitwise operators</link> and <link linkend="ass-ops">assignment operators</link>.
       </para>
       
       <section xml:id="arithmetic-ops">
