@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_IO_MANAGER_H
@@ -29,13 +29,13 @@ namespace Fabric
   {
     class ResourceManager;
     class FileHandleManager;
-    class FileHandleResourceProvider;
     typedef void (*ScheduleAsyncCallbackFunc)( void* scheduleUserData, void (*callbackFunc)(void *), void *callbackFuncUserData );
 
     class Manager : public RC::Object
     {
 
     public:
+      REPORT_RC_LEAKS
     
       RC::Handle<ResourceManager> getResourceManager() const;
       RC::Handle<FileHandleManager> getFileHandleManager() const;
@@ -44,7 +44,7 @@ namespace Fabric
       virtual void jsonExec( JSON::Entity const &cmd, JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder );
 
     protected:
-      Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData );
+      Manager( RC::Handle<FileHandleManager> fileHandleManager, ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData );
 
       virtual std::string queryUserFilePath(
         bool existingFile,
@@ -54,7 +54,7 @@ namespace Fabric
         ) const = 0;
 
     private:
-      void jsonQueryUserFile( JSON::Entity const &arg, bool *existingFile, const char *defaultExtension, std::string& fullPath, bool& writeAccess ) const;
+      void jsonQueryUserFile( JSON::Entity const &arg, bool *existingFile, const char *defaultExtension, std::string& fullPath, bool& writeAccess, bool queryFolder ) const;
 
       void jsonExecGetFileInfo( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
       void jsonExecQueryUserFileAndFolder( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder ) const;
@@ -66,7 +66,6 @@ namespace Fabric
 
       RC::Handle<ResourceManager> m_resourceManager;
       RC::Handle<FileHandleManager> m_fileHandleManager;
-      RC::Handle<FileHandleResourceProvider> m_fileHandleResourceProvider;
     };
   };
 };

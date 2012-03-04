@@ -2,12 +2,16 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Web/
-websocket-server/
+# SCons stuff
+.sconscache/
+.sconsign.dblite
+
+# Build products
 build/
-.DS_Store
-public-*
-private-*
-third-party-builds-*
-third-party-source-packages-*
-*.pyc
+dist/
+
+# Per-user workspace for Sublime Text 2 editor
+Fabric.sublime-workspace
+
+# JSSceneGraph
+Web/

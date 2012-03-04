@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #include <Fabric/Core/DG/ResourceLoadNode.h>
@@ -41,6 +41,7 @@ namespace Fabric
       , m_asFile( false )
       , m_inProgress( false )
       , m_streamGeneration( 0 )
+      , m_resourceManagerWeak( context->getIOManager()->getResourceManager() )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       RC::ConstHandle<RT::BooleanDesc> booleanDesc = context->getRTManager()->getBooleanDesc();
@@ -49,6 +50,18 @@ namespace Fabric
       addMember( "resource", m_fabricResourceStreamData.getDesc(), m_fabricResourceStreamData.getDesc()->getDefaultData() );
       addMember( "keepMemoryCache", booleanDesc, booleanDesc->getDefaultData() );
       addMember( "storeDataAsFile", booleanDesc, booleanDesc->getDefaultData() );
+    }
+
+    ResourceLoadNode::~ResourceLoadNode()
+    {
+      releaseFile();
+    }
+
+    void ResourceLoadNode::releaseFile()
+    {
+      if( m_resourceManagerWeak && !m_file.empty() )
+        m_resourceManagerWeak.makeStrong()->releaseFile( m_file.c_str() );
+      m_file.clear();
     }
 
     void ResourceLoadNode::jsonExecCreate(
@@ -113,6 +126,8 @@ namespace Fabric
         m_inProgress = true;
         getContext()->getIOManager()->getResourceManager()->get( url.c_str(), this, m_asFile, (void*)m_streamGeneration );
       }
+      else
+        releaseFile();
     }
 
     void ResourceLoadNode::onData( size_t offset, size_t size, void const *data, void *userData )
@@ -138,6 +153,9 @@ namespace Fabric
       FABRIC_ASSERT( m_asFile );
       std::string handle = getContext()->getIOManager()->getFileHandleManager()->createHandle( fileName, false, true );
       m_fabricResourceStreamData.setDataExternalLocation( handle );
+
+      releaseFile();
+      m_file = fileName;
     }
 
     void ResourceLoadNode::onFailure( char const *errorDesc, void *userData )
@@ -187,16 +205,6 @@ namespace Fabric
         m_inProgress = false;//[JeromeCG 20111221] Important: set m_inProgress to false since setResourceData's notifications can trigger an evaluation
         setResourceData( NULL, true );
       }
-    }
-
-    void ResourceLoadNode::retain() const
-    {
-      Node::retain();
-    }
-
-    void ResourceLoadNode::release() const
-    {
-      Node::release();
     }
 
     void ResourceLoadNode::setResourceData(

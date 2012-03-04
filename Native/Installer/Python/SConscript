@@ -3,11 +3,11 @@
 #
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'distDir', 'FABRIC_VERSION', 'fabricPythonModule', 'fabricPythonLib', 'pythonLibraryName', 'installerExtFiles' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'FABRIC_VERSION', 'fabricPythonModule', 'fabricPythonLib', 'pythonLibraryName', 'browserExtFiles', 'fileSystemExtFiles' )
 
 pythonPackageName = "FabricEngine-PythonModule-"+buildOS+"-"+buildArch+"-"+FABRIC_VERSION
 
-pythonPackageDir = distDir.Dir(pythonPackageName)
+pythonPackageDir = archDistDir.Dir(pythonPackageName)
 pythonModuleDir = pythonPackageDir.Dir('python_modules').Dir('fabric')
 
 installerFiles = []
@@ -38,14 +38,14 @@ installerFiles.append( baseEnv.Command(
 
 installerFiles.append( Install(
   pythonPackageDir.Dir('Exts'),
-  installerExtFiles
+  [browserExtFiles, fileSystemExtFiles]
 ) )
 
 pythonInstaller = baseEnv.Command(
-  distDir.File(pythonPackageName+".tar.bz2"),
+  archDistDir.File(pythonPackageName+".tar.bz2"),
   installerFiles,
   [
-    [ "tar", "-C", distDir, "-jcf", "$TARGET", pythonPackageName ]
+    [ "tar", "-C", archDistDir, "-jcf", "$TARGET", pythonPackageName ]
   ]
 )
 Alias( 'pythonInstaller', pythonInstaller )
