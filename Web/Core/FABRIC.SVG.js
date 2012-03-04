@@ -3,10 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-/**
- * SVG defines the dom graphic utility.
- */
-FABRIC.SVG = FABRIC.SVG ? FABRIC.SVG : {};
+FABRIC.SVG = {};
 
 /**
  * Constructor to create the root element for the
@@ -2308,3 +2305,4 @@ function clone_obj(obj, deepclone) {
   document.getElementById(domRootID).appendChild(svgRoot.elem);
   return svgRoot;
 };
+

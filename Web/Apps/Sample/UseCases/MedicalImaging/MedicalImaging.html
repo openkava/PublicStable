@@ -14,73 +14,18 @@
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
     <link href="../../../../ThirdParty/jQuery/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
     
-
     <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.VolumeRendering.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../Core/Vec2.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../Core/Color.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../Core/FABRIC.SVG.js"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SG/CurveEditor/CurveEditor.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SG/ColorGradient/ColorGradient.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SG/Histogram/Histogram.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
-    
-    <link href="../../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
+    <link href="../../../../SG/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
 
-<script type="text/javascript">
-
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
-
+    <script type="text/javascript" src="../../ga.js" charset="utf-8"></script>
 
 <style type="text/css">
     
@@ -115,6 +60,17 @@ s.parentNode.insertBefore(ga, s);
     
     <script type="text/javascript">
 
+
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/VolumeRendering",
+                "SG/Animation",
+                "SG/Persistence",
+                "RT/LinearKeyframe",
+                "RT/ColorKeyframe"], function() {
+  
 FABRIC.SceneGraph.registerNodeType('Image3DWithHistogram', {
   briefDesc: '',
   detailedDesc: '',
@@ -497,10 +453,11 @@ $(document).ready(function() {
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: '', glRepeat: false, histogramResolution: 1024 });
 
   var addOnLoadCallback = function (){
-   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function(){
+   opacityTexture.getResourceLoadNode().addEventListener('loadSuccess', function(){
      histogram.setData(opacityTexture.getHistogram(), 0.4);
      viewport.show();
      viewport.redraw();
+     return 'remove';//Avoid stacking up...
   })};
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
@@ -761,6 +718,7 @@ $(document).ready(function() {
     savedCropMax = undefined;
 
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
+      volumeNode.setResolutionFactor(1.0);//Else there's a rendertarget error (to investigate)
       viewport.hide();
       displayProgressBar();
     }
@@ -851,6 +809,7 @@ $(document).ready(function() {
     }
   });
   
+});
 });
 
 </script>

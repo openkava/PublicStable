@@ -275,6 +275,7 @@ ul#tools li a#btn-select{
   right:0;
   top:0;
   bottom:0;
+  overflow-y: scroll;
 }
 
 #sidebar p {
@@ -317,12 +318,17 @@ ul#tools li a#btn-select{
 
 #timeControls
 {
-  position:fixed;
+  position:absolute;
   bottom:0;
   left:0;
   right:250px;
-  height:125px;
+  height:115px;
 }
+
+#timeControls .ui-slider { margin-left: 5em; margin-right: 5em; }
+#timeControls .ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
+#timeControls .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
+
 #timeControls .box{
   margin:10px;
   padding:0;
@@ -331,7 +337,7 @@ ul#tools li a#btn-select{
   padding: 5px 10px 1px;
 }
 #timeControls .box .content{
-  padding: 10px;
+  padding: 15px;
 }
 
 /* TOOLBAR

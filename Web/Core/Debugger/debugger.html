@@ -302,7 +302,7 @@ $(document).ready(function() {
         color: color
       }).getButton().addOnClickCallback(function(){
         window.open(
-            FABRIC.processURL('FABRIC_ROOT/Core/OperatorEditor/operatorEditor.html')
+            '../OperatorEditor/operatorEditor.html'
             + '?id=' + contextID
             + '?operator=' + operator.getName(),
             'Fabric Operator Editor: ' + operator.getName(),
@@ -313,7 +313,7 @@ $(document).ready(function() {
     var addNodeInspectorCallback = function(svgnode, corenode){
       svgnode.getButton().addOnClickCallback(function(){
           window.open(
-              FABRIC.processURL('FABRIC_ROOT/Core/Debugger/nodeInspector.html')
+              './nodeInspector.html'
               + '?id=' + contextID
               + '?node=' + corenode.getName(),
               'Fabric Node Inspector: ' + corenode.getName(),

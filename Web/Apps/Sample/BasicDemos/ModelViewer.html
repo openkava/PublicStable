@@ -14,74 +14,23 @@
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
-
-<script type="text/javascript">
-
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
+    <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
 
     <script type="text/javascript">
-$(document).ready(function() {
-
-  $('#importModel').button().change(function(e) {
-      // TODO: Enable file importing
-        console.log($(this).val());
-      var assets = scene.importAssetFile($(this).val());
-      for (i in assets) {
-        assets[i].addMaterialNode(redMaterial);
-        drawNode.setGeometryNode(assets[i]);
-      }
-
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
-    });
+   
+   
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Parsers/parseOBJ"], function() {
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer')
   });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -99,61 +48,64 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  var modelName = 'cow';
-  var resourceLoadNode = scene.importAssetFile('Models/' + modelName + '.obj', {
-   splitMaterials: true
-  });
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    /*
-      // Load the mtl file, which will generate an array of materials.
-      // Note: We parse the mtl file after the obj,
-      // and construct materials that are used in the obj. currently,
-      // all materials in the mtl be will be constructed.
-      var loadedMaterials = scene.importAssetFile(mtlpath, {
-        materialType: 'FlatTextureMaterial',
-        materialMaps: {
-          map_Kd: 'texture',
-        },
-        materialNames: evt.materialNames
-       });
-     */
-     for(var i=0; i< evt.objectNames.length; i++){
-       var objectName = evt.objectNames[i];
-       var materialName = evt.materialNames[i];
-       var material = scene.constructNode('PhongMaterial', {
-         diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-         lightNode: light
-       });
-       var instance = scene.constructNode('Instance', {
-         geometryNode: evt.loadedGeometries[objectName],
-         materialNode: material,
-         transformNode: scene.constructNode('Transform', {
-             hierarchical: false,
-             globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
-           }),
-       });
-      }
-   });
-  
+  var importObj = function(url) {
+    if(!url)
+      return;
+    $('#importModel').button('disable');
+    $('#importCow').button('disable');
 
-  $('#loadingDialog').dialog({
-    modal: true
-  });
-  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-    $('#loadingProgressBar').progressbar({
-      value: (1.0-(doneWeight/totalWeight))*100
-    });
-    if (nbRemaining===0) {
-      $('#loadingDialog').dialog('close');
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
+    scene.importAssetFile(url,{
+        splitMaterials: true
+      },
+      function(assetNodes){
+        for(var i in assetNodes){
+          var objectName = i;
+          var material = scene.constructNode('PhongMaterial', {
+            diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+            lightNode: light
+          });
+          var instance = scene.constructNode('Instance', {
+            geometryNode: assetNodes[objectName],
+            materialNode: material,
+            transformNode: scene.constructNode('Transform', {
+                hierarchical: false,
+                globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+              }),
+          });
+        }
+        viewport.redraw();
       }
-      viewport.redraw();
-      return true;
-    }
+    );
+  }
+
+  $('#importModel').button().click(function() {
+    importObj(FABRIC.IO.queryUserFileHandle(FABRIC.IO.forOpen,"Choose local OBJ file", "obj", "model.obj"));
   });
+
+  $('#importCow').button().click(function() {
+    importObj('Models/cow.obj');
+  });
+
   
+  $(document).ready(function() {
+    $('#loadingDialog').dialog({
+      modal: true
+    });
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      $('#loadingProgressBar').progressbar({
+        value: (1.0-(doneWeight/totalWeight))*100
+      });
+      if (nbRemaining===0) {
+        $('#loadingDialog').dialog('close');
+        var errors = scene.getErrors();
+        if (errors.length > 0) {
+          throw (errors.toString());
+        }
+        viewport.redraw();
+        return true;
+      }
+    });
+  });
 });
 
 // jQuert UI Styling classes
@@ -178,7 +130,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
@@ -189,15 +140,13 @@ $(document).ready(function() {
             </div><!--content-->
           </div><!--box-->
 
-<!--
-// TODO: Figure out how to load files from HTML
           <div class="box">
-                    <h2>MODEL</h2>
-                    <div class="content">
-                      <input type="file" id="importModel">
-                    </div><!--content- ->
-                </div><!--box- ->
--->
+            <h2>MODEL</h2>
+            <div class="content">
+      	      <button id="importModel" style="margin-top:10px;">Import local OBJ File</button><br>
+      	      <button id="importCow" style="margin-top:10px;">Import Standard Cow</button>
+            </div>
+          </div>
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->

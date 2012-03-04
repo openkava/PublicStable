@@ -9,68 +9,19 @@
     
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
-    
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
-
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
-    
-<script type="text/javascript">
-
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
+    <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
 
     <script type="text/javascript">
 
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Parsers/parseCollada"], function() {
+ 
 FABRIC.SceneGraph.registerNodeType('Hair', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
@@ -184,7 +135,7 @@ FABRIC.SceneGraph.registerNodeType('Hair', {
     hairUniformsDGNode.addMember('skinningXfos', 'Xfo[]');
     hairUniformsDGNode.bindings.append(scene.constructOperator({
         operatorName: 'calcSkinningXfos',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcSkinningXfos.kl',
+        srcFile: 'FABRIC_ROOT/SG/KL/calcSkinningXfos.kl',
         entryFunctionName: 'calcSkinningXfos',
         parameterLayout: ['rig.pose', 'skeleton.bones', 'self.skinningXfos']
       }));
@@ -255,7 +206,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -283,35 +234,40 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   });
 
   // T - character
-  var assetNodes = scene.importAssetFile('../BasicDemos/Models/envelope.dae', { bindToGlobalTime: true });
+  scene.importAssetFile('../BasicDemos/Models/envelope.dae', {
+      bindToGlobalTime: true
+    },
+    function(assetNodes){
+     
+      var rigNode = assetNodes.polymshCharacterRig;
+      var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
+      var characterMesh = assetNodes.geometries_0Scene_Material;
+    
+      var materialNode = scene.constructNode('PhongSkinningMaterial', {
+          lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+          diffuseColor: FABRIC.RT.rgba(0.3, 0.45, 1.0, 1.0),
+          numBones: rigNode.getSkeletonNode().getNumBones()
+        });
+      rigInstanceNode.addMaterialNode(materialNode);
+    
+      assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 5));
+
+      var hairGeometry = scene.constructNode('Hair', {
+          characterMeshNode: characterMesh,
+          characterRigNode: rigNode,
+          segments: 5,
+          length: new FABRIC.RT.Vec2(0.5,1),
+          stiffness: new FABRIC.RT.Vec2(0.75,1.5),
+          gravity: new FABRIC.RT.Vec2(0.4,0.6),
+          count: 25000
+        });
+    
+      var hairLines = scene.constructNode('Instance', {
+          geometryNode: hairGeometry,
+          materialNode: hairMaterial
+        });
+    });
   
-  var rigNode = assetNodes.polymshCharacterRig;
-  var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
-  var characterMesh = assetNodes.geometries_0Scene_Material;
-
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
-      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(0.3, 0.45, 1.0, 1.0),
-      numBones: rigNode.getSkeletonNode().getNumBones()
-    });
-  rigInstanceNode.addMaterialNode(materialNode);
-
-  assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 5));
-
-  var hairGeometry = scene.constructNode('Hair', {
-      characterMeshNode: characterMesh,
-      characterRigNode: rigNode,
-      segments: 5,
-      length: new FABRIC.RT.Vec2(0.5,1),
-      stiffness: new FABRIC.RT.Vec2(0.75,1.5),
-      gravity: new FABRIC.RT.Vec2(0.4,0.6),
-      count: 25000
-    });
-
-  var hairLines = scene.constructNode('Instance', {
-      geometryNode: hairGeometry,
-      materialNode: hairMaterial
-    });
   
 
   $('#loadingDialog').dialog({
@@ -362,6 +318,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     }
   });
 });
+});
 
 // jQuert UI Styling classes
 $(document).ready(function() {
@@ -384,7 +341,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
               <div class="content">

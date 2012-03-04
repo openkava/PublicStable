@@ -68,7 +68,7 @@ out vec2 v_texcoord;
 
 ]]>
     </source>
-    <include file="FABRIC_ROOT/SceneGraph/Shaders/matrices.txt"/>
+    <include file="FABRIC_ROOT/SG/Shaders/matrices.txt"/>
     <source>
 <![CDATA[
 void main(){
