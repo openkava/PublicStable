@@ -32,7 +32,7 @@ struct AlembicHandle {
   Vec2 timeRange;
 };
 
-function FabricALEMBICDecode( Data objData, Size objDataSize, io AlembicHandle handle );
+function FabricALEMBICOpenFileHandle( String fileHandle, io AlembicHandle handle );
 function FabricALEMBICFreeAlembicHandle( io AlembicHandle handle );
 function FabricALEMBICGetIdentifiers( io AlembicHandle handle, io String identifiers[] );
 function FabricALEMBICParseXform( io AlembicHandle handle, io String identifier, io Scalar time, io Xfo transform );
@@ -41,7 +41,7 @@ function FabricALEMBICParsePolyMeshCount( io AlembicHandle handle, io String ide
 function FabricALEMBICParsePolyMeshUniforms( io AlembicHandle handle, io String identifier, io Integer indices[] );
 function FabricALEMBICParsePolyMeshAttributes( io AlembicHandle handle, io String identifier, io Scalar time, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<> );
 function FabricALEMBICParsePointsCount( io AlembicHandle handle, io String identifier, io Scalar time, io Size count );
-function FabricALEMBICParsePointsAttributes( io AlembicHandle handle, io String identifier, io Scalar time, io Vec3 vertices<>, io Scalar sizes<>, io Color colors<>);
+function FabricALEMBICParsePointsAttributes( io AlembicHandle handle, io String identifier, io Scalar time, io Vec3 positions<>, io Quat orientations<>, io Scalar sizes<>, io Vec3 scales<>, io Color colors<>);
 function FabricALEMBICParseCurvesCount( io AlembicHandle handle, io String identifier, io Size count );
 function FabricALEMBICParseCurvesUniforms( io AlembicHandle handle, io String identifier, io Integer indices[] );
 function FabricALEMBICParseCurvesAttributes( io AlembicHandle handle, io String identifier, io Scalar time, io Vec3 vertices<>, io Scalar sizes<>, io Boolean uvsLoaded, io Vec2 uvs<>, io Color colors<>);
@@ -51,9 +51,15 @@ function ~AlembicHandle() = "FabricALEMBICFreeAlembicHandle";
 function AlembicHandle.loadResource(io FabricResource resource) {
   if(this.pointer)
     return;
-  if(resource.data.dataSize() == 0)
+  if(resource.dataExternalLocation == "")
     return;
-  FabricALEMBICDecode(resource.data.data(), resource.data.dataSize(), this);
+  FabricALEMBICOpenFileHandle(resource.dataExternalLocation, this);
+}
+
+function AlembicHandle.loadFileHandle(String fileHandle) {
+  if(this.pointer)
+    return;
+  FabricALEMBICOpenFileHandle(fileHandle, this);
 }
 
 function AlembicHandle.getIdentifiers(io String identifiers[]) {
@@ -88,8 +94,8 @@ function AlembicHandle.parsePointsCount(io String identifier, io Scalar time, io
   FabricALEMBICParsePointsCount(this,identifier,time,count);
 }
 
-function AlembicHandle.parsePointsAttributes(io String identifier, io Scalar time, io Vec3 vertices<>, io Scalar sizes<>, io Color colors<>) {
-  FabricALEMBICParsePointsAttributes(this,identifier,time,vertices,sizes,colors);
+function AlembicHandle.parsePointsAttributes(io String identifier, io Scalar time, io Vec3 positions<>, io Quat orientations<>, io Scalar sizes<>, io Vec3 scales<>, io Color colors<>) {
+  FabricALEMBICParsePointsAttributes(this,identifier,time,positions,orientations,sizes,scales,colors);
 }
 
 function AlembicHandle.parseCurvesCount(io String identifier, io Size count) {

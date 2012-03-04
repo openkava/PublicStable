@@ -32,10 +32,10 @@ namespace Fabric
     {
     }
     
-    void ConstDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
+    void ConstDeclStatement::appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const
     {
-      Node::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ), includeLocation );
+      Node::appendJSONMembers( jsonObjectEncoder, includeLocation );
+      m_constDecl->appendJSON( jsonObjectEncoder.makeMember( "constDecl" ), includeLocation );
     }
     
     void ConstDeclStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

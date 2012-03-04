@@ -5,9 +5,7 @@
 #include "ArrayDesc.h"
 
 #include <Fabric/Core/RT/ArrayImpl.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -35,20 +33,20 @@ namespace Fabric
       return m_arrayImpl->getNumMembers( data );
     }
     
-    void const *ArrayDesc::getMemberData( void const *data, size_t index ) const
+    void const *ArrayDesc::getImmutableMemberData( void const *data, size_t index ) const
     {
-      return m_arrayImpl->getMemberData( data, index );
+      return m_arrayImpl->getImmutableMemberData( data, index );
     }
     
-    void *ArrayDesc::getMemberData( void *data, size_t index ) const
+    void *ArrayDesc::getMutableMemberData( void *data, size_t index ) const
     {
-      return m_arrayImpl->getMemberData( data, index );
+      return m_arrayImpl->getMutableMemberData( data, index );
     }
     
-    void ArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void ArrayDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      Desc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
+      Desc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
   };
 };

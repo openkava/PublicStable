@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/MR/ConstValue.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/JSON/Encoder.h>
 
 namespace Fabric
 {
@@ -13,22 +13,22 @@ namespace Fabric
     RC::Handle<ConstValue> ConstValue::Create(
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &valueDesc,
-      RC::ConstHandle<JSON::Value> const &jsonValue
+      JSON::Entity const &entity
       )
     {
-      return new ConstValue( rtManager, valueDesc, jsonValue );
+      return new ConstValue( rtManager, valueDesc, entity );
     }
     
     ConstValue::ConstValue(
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &valueDesc,
-      RC::ConstHandle<JSON::Value> const &jsonValue
+      JSON::Entity const &entity
       )
       : ValueProducer()
       , m_valueDesc( valueDesc )
     {
       m_data.resize( m_valueDesc->getAllocSize(), 0 );
-      m_valueDesc->setDataFromJSONValue( jsonValue, &m_data[0] );
+      m_valueDesc->decodeJSON( entity, &m_data[0] );
     }
     
     RC::Handle<ConstValue> ConstValue::Create(
@@ -96,9 +96,9 @@ namespace Fabric
       return m_constValue->m_valueDesc->setData( &m_constValue->m_data[0], data );
     }
     
-    void ConstValue::ComputeState::produceJSON( Util::JSONGenerator &jg ) const
+    void ConstValue::ComputeState::produceJSON( JSON::Encoder &jg ) const
     {
-      return m_constValue->m_valueDesc->generateJSON( &m_constValue->m_data[0], jg );
+      return m_constValue->m_valueDesc->encodeJSON( &m_constValue->m_data[0], jg );
     }
   }
 }

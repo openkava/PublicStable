@@ -15,7 +15,7 @@
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/OCL/OCL.h>
-#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Base/Util/Log.h>
 #include <Fabric/EDK/Common.h>
 
 #include <v8.h>

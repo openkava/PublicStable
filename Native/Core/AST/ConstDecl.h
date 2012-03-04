@@ -46,7 +46,7 @@ namespace Fabric
         std::string const &value
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const;
 
     private:
     

@@ -31,7 +31,7 @@ namespace Fabric
       
       std::string descData( void const *data, size_t limit = SIZE_MAX ) const;
       
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
       
     protected:
     

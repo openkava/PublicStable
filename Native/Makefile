@@ -2,12 +2,13 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-.PHONY: default build test
+.PHONY: default xcode test
 
-default: build
+default:
+	scons -k
 
-build:
-	PYTHONUNBUFFERED=1 scons -k -j4
+xcode:
+	PYTHONUNBUFFERED=1 scons
 
 test: build
 	$(MAKE) -C Test

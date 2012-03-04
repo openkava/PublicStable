@@ -5,11 +5,8 @@
 #include "FixedArrayDesc.h"
 
 #include <Fabric/Core/RT/FixedArrayImpl.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -28,11 +25,11 @@ namespace Fabric
       return m_fixedArrayImpl->getNumMembers();
     }
     
-    void FixedArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void FixedArrayDesc::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      ArrayDesc::jsonDesc( resultJOG );
-      resultJOG.makeMember( "internalType" ).makeString( "fixedArray" );
-      resultJOG.makeMember( "numMembers" ).makeInteger( getNumMembers() );
+      ArrayDesc::jsonDesc( resultObjectEncoder );
+      resultObjectEncoder.makeMember( "internalType" ).makeString( "fixedArray" );
+      resultObjectEncoder.makeMember( "numMembers" ).makeInteger( getNumMembers() );
     }
   };
 };

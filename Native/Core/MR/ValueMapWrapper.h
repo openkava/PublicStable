@@ -41,7 +41,7 @@ namespace Fabric
         );
     
       virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
+      virtual void toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const;
     
     private:
     

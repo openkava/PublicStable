@@ -27,10 +27,10 @@ namespace Fabric
       RC::ConstHandle<Desc> getMemberDesc() const;
 
       size_t getNumMembers( void const *data ) const;     
-      void const *getMemberData( void const *data, size_t index ) const;
-      void *getMemberData( void *data, size_t index ) const;
+      void const *getImmutableMemberData( void const *data, size_t index ) const;
+      void *getMutableMemberData( void *data, size_t index ) const;
       
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const;
             
     protected:
     

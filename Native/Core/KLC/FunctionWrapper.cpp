@@ -31,31 +31,30 @@ namespace Fabric
       return m_astFunction;
     }
     
-    void FunctionWrapper::toJSON( Util::JSONGenerator &jg ) const
+    void FunctionWrapper::toJSON( JSON::Encoder &encoder ) const
     {
       if ( !m_astFunction || !m_functionPtr )
         throw Exception("function is unresolved");
     
-      Util::JSONObjectGenerator jog = jg.makeObject();
+      JSON::ObjectEncoder objectEncoder = encoder.makeObject();
       
       {
-        Util::JSONGenerator jg = jog.makeMember( "kind" );
-        jg.makeString( getKind() );
+        objectEncoder.makeMember( "kind" ).makeString( getKind() );
       }
       
-      toJSONImpl( jog );
+      toJSONImpl( objectEncoder );
     }
     
-    void FunctionWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void FunctionWrapper::toJSONImpl( JSON::ObjectEncoder &objectEncoder ) const
     {
       {
-        Util::JSONGenerator jg = jog.makeMember( "entryName" );
-        jg.makeString( m_astFunction->getEntryName( m_executable->getCGManager() ) );
+        JSON::Encoder entryNameEncoder = objectEncoder.makeMember( "entryName" );
+        entryNameEncoder.makeString( m_astFunction->getEntryName( m_executable->getCGManager() ) );
       }
       
       {
-        Util::JSONGenerator jg = jog.makeMember( "ast" );
-        getAST()->generateJSON( false, jg );
+        JSON::Encoder astEncoder = objectEncoder.makeMember( "ast" );
+        getAST()->encodeJSON( false, astEncoder );
       }
     }
     
@@ -70,33 +69,33 @@ namespace Fabric
     }
         
     void FunctionWrapper::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "getDiagnostics" )
-        jsonExecGetDiagnostics( arg, resultJAG );
-      else if ( cmd == "toJSON" )
-        jsonExecToJSON( arg, resultJAG );
-      else GC::Object::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "getDiagnostics", 14 ) )
+        jsonExecGetDiagnostics( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "toJSON", 6 ) )
+        jsonExecToJSON( arg, resultArrayEncoder );
+      else GC::Object::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
     void FunctionWrapper::jsonExecGetDiagnostics(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
-      getDiagnostics().generateJSON( jg );
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
+      getDiagnostics().encodeJSON( jg );
     }
     
     void FunctionWrapper::jsonExecToJSON(
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Util::JSONGenerator jg = resultJAG.makeElement();
+      JSON::Encoder jg = resultArrayEncoder.makeElement();
       toJSON( jg );
     }
   }

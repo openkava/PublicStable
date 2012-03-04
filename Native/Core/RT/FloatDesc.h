@@ -7,8 +7,6 @@
 
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/FloatImpl.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
 {
@@ -47,11 +45,11 @@ namespace Fabric
         m_floatImpl->setValue( t, data );
       }
           
-      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+      virtual void jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
       {
-        Desc::jsonDesc( resultJOG );
+        Desc::jsonDesc( resultObjectEncoder );
         std::string internalType = "fp" + _(m_floatImpl->getAllocSize() * 8);
-        resultJOG.makeMember( "internalType" ).makeString( internalType );
+        resultObjectEncoder.makeMember( "internalType" ).makeString( internalType );
       }
       
     protected:

@@ -47,6 +47,7 @@ namespace Fabric
     
     inline void throwException( size_t length, char const *data )
     {
+      printf("Fabric::EDK::Exception: %s\n",data);
       s_callbacks.m_throwException( length, data );
     }
     
@@ -182,8 +183,8 @@ namespace Fabric
               newBits->refCount.setValue( 1 );
               newBits->allocSize = newAllocSize;
               if ( m_bits )
-                memcpy( newBits->cStr, m_bits->cStr, newBits->length = m_bits->length );
-              else newBits->length = 0;
+                memcpy( newBits->cStr, m_bits->cStr, m_bits->length );
+              newBits->length = capacity;
             }
             else newBits = 0;
           
@@ -205,7 +206,6 @@ namespace Fabric
           reserve( length );
           if ( m_bits )
           {
-            m_bits->length = length;
             memcpy( m_bits->cStr, data, length );
             m_bits->cStr[length] = '\0';
           }
@@ -219,7 +219,6 @@ namespace Fabric
           reserve( newLength );
           if ( m_bits )
           {
-            m_bits->length = newLength;
             m_bits->cStr[newLength] = '\0';
             return &m_bits->cStr[oldLength];
           }
@@ -260,54 +259,84 @@ namespace Fabric
         typedef StringBase const &IN;
         typedef StringBase &IO;
       });
-    
-      FABRIC_EXT_KL_CLASS( FabricFileHandle, {
+
+      FABRIC_EXT_KL_CLASS( FileHandleWrapper, {
 
       public:
-        FabricFileHandle() : m_data(NULL) {}
-
-        ~FabricFileHandle()
+        FileHandleWrapper(){}
+        FileHandleWrapper( String const &handleString )
         {
-          ( *s_callbacks.m_fabricFileHandleDelete)( &m_data );
+          wrap( handleString );
         }
 
-        typedef FabricFileHandle const &IN;
-        typedef FabricFileHandle &IO;
-
-        FabricFileHandle(const FabricFileHandle& other) : m_data(NULL)
+        void wrap( String const &handleString )
         {
-          *this = other;
+          m_handle = handleString;
         }
 
-        FabricFileHandle& operator=(const FabricFileHandle& other)
+        void createFromFile( char const *filePathCString, bool readOnly )
         {
-          ( *s_callbacks.m_fabricFileHandleCopy)( &m_data, other.m_data );
-          return *this;
+          ( *s_callbacks.m_fileHandleCreateFromPath)( &m_handle, filePathCString, false, readOnly );
         }
 
-        bool setFromPath( char const *pathData, size_t pathLength, bool readWriteAccess )
+        void createFromFolder( char const *folderCString, bool readOnly )
         {
-          return ( *s_callbacks.m_fabricFileHandleSetFromPath )( &m_data, pathData, pathLength, readWriteAccess );
+          ( *s_callbacks.m_fileHandleCreateFromPath)( &m_handle, folderCString, true, readOnly );
         }
 
-        bool setFromPath( char const *cString, bool readWriteAccess )
+        String get() const
         {
-          return setFromPath( cString, strlen(cString), readWriteAccess );
+          return m_handle;
         }
 
-        char const *getFullPath() const
+        operator String() const
         {
-          return ( *s_callbacks.m_fabricFileHandleGetFullPath )( m_data );
+          return m_handle;
         }
 
-        bool hasReadWriteAccess() const
+        String getPath() const
         {
-          return ( *s_callbacks.m_fabricFileHandleHasReadWriteAccess )( m_data );
+          String path;
+          ( *s_callbacks.m_fileGetPath )( &m_handle, &path );
+          return path;
+        }
+
+        bool isValid() const
+        {
+          return ( *s_callbacks.m_fileHandleIsValid )( &m_handle );
+        }
+
+        bool isReadOnly() const
+        {
+          return ( *s_callbacks.m_fileHandleIsReadOnly )( &m_handle );
+        }
+
+        bool isFolder() const //else: file
+        {
+          return ( *s_callbacks.m_fileHandleIsFolder )( &m_handle );
+        }
+
+        bool targetExists() const
+        {
+          return ( *s_callbacks.m_fileHandleTargetExists )( &m_handle );
+        }
+
+        void ensureTargetExists() const
+        {
+          ( *s_callbacks.m_fileHandleEnsureTargetExists )( &m_handle );
+        }
+
+        void ensureIsValidFile() const
+        {
+          if( !isValid() )
+            throwException( "FileHandle '%s' is not a valid fileHandle.", m_handle.data() );
+          if( isFolder() )
+            throwException( "FileHandle '%s' is a folder.", m_handle.data() );
         }
 
       private:
 
-        void *m_data;
+        String m_handle;
       } );
 
       FABRIC_EXT_KL_STRUCT( RGBA, {
@@ -387,7 +416,7 @@ namespace Fabric
         
         void init( size_t size )
         {
-          m_allocSize = AllocSizeForSize( size );
+          m_allocSize = size;
           m_size = size;
           m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( m_allocSize * sizeof(Member) ) );
           memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
@@ -409,7 +438,7 @@ namespace Fabric
         {
           if ( m_memberDatas )
             ( *s_callbacks.m_free )( m_memberDatas );
-          m_allocSize = AllocSizeForSize( that.m_size );
+          m_allocSize = that.m_size;
           m_size = that.m_size;
           m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( m_allocSize * sizeof(Member) ) );
           memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
@@ -485,7 +514,7 @@ namespace Fabric
             {
               if ( newSize > oldAllocSize )
               {
-                size_t newAllocSize = AllocSizeForSize( newSize );
+                size_t newAllocSize = ComputeAllocatedSize( oldAllocSize, newSize );
                 size_t size = sizeof(Member) * newAllocSize;
                 if ( oldSize )
                 {
@@ -506,9 +535,28 @@ namespace Fabric
       
       protected:
     
-        static size_t AllocSizeForSize( size_t size )
+        static size_t ComputeAllocatedSize( size_t prevNbAllocated, size_t nbRequested )
         {
-          return std::max( size_t(31), Util::nextPowerOfTwoMinusOne( size ) );
+          if( nbRequested > prevNbAllocated )
+          {
+            size_t inflatedNbAllocated;
+            if( prevNbAllocated < 16 ) 
+              inflatedNbAllocated = (prevNbAllocated>>1) + 1 + prevNbAllocated;
+            else
+              inflatedNbAllocated = (prevNbAllocated>>3) + 4 + prevNbAllocated;
+            return std::max( nbRequested, inflatedNbAllocated );
+          }
+          else if( nbRequested < prevNbAllocated )
+          {
+            if( nbRequested == 0 )
+              return 0;
+            if( prevNbAllocated < 16 )
+              return prevNbAllocated;
+            size_t deflateThreshold = prevNbAllocated - (prevNbAllocated>>2);
+            return nbRequested <= deflateThreshold ? nbRequested : prevNbAllocated;
+          }
+          else
+            return nbRequested;
         }
       
       private:

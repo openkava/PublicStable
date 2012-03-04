@@ -25,13 +25,12 @@ namespace Fabric
       virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
       virtual bool equalsData( void const *lhs, void const *rhs ) const;
       
-      virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
-      virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
-      virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
-      virtual void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
+      virtual void encodeJSON( void const *data, JSON::Encoder &encoder ) const;
+      virtual void decodeJSON( JSON::Entity const &entity, void *data ) const;
       
       virtual bool isShallow() const;
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const;
+      virtual bool isExportable() const;
     
     protected:
 

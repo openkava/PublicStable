@@ -1,21 +1,19 @@
 /*
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
- 
+
 #include <Fabric/Core/DG/ResourceLoadNode.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/FileHandleManager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Base/JSON/Value.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Integer.h>
+#include <Fabric/Base/Util/Assert.h>
 
 namespace Fabric
 {
@@ -27,7 +25,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         resourceLoadNode->jsonDesc( jg );
       }
       resourceLoadNode->jsonNotifyDelta( json );
@@ -37,12 +35,12 @@ namespace Fabric
     
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
-      , m_context( context.ptr() )
-      , m_streamGeneration( 0 )
       , m_fabricResourceStreamData( context->getRTManager() )
-      , m_nbStreamed( 0 )
-      , m_keepMemoryCache( false )
       , m_firstEvalAfterLoad( false )
+      , m_keepMemoryCache( false )
+      , m_asFile( false )
+      , m_inProgress( false )
+      , m_streamGeneration( 0 )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
       RC::ConstHandle<RT::BooleanDesc> booleanDesc = context->getRTManager()->getBooleanDesc();
@@ -50,23 +48,25 @@ namespace Fabric
       addMember( "url", stringDesc, stringDesc->getDefaultData() );
       addMember( "resource", m_fabricResourceStreamData.getDesc(), m_fabricResourceStreamData.getDesc()->getDefaultData() );
       addMember( "keepMemoryCache", booleanDesc, booleanDesc->getDefaultData() );
+      addMember( "storeDataAsFile", booleanDesc, booleanDesc->getDefaultData() );
     }
 
     void ResourceLoadNode::jsonExecCreate(
-      RC::ConstHandle<JSON::Value> const &arg,
+      JSON::Entity const &arg,
       RC::Handle<Context> const &context,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      Create( arg->toString()->value(), context );
+      arg.requireString();
+      Create( arg.stringToStdString(), context );
     }
 
     void ResourceLoadNode::evaluateLocal( void *userdata )
     {
       if( isDirty() )
       {
-        // [JeromeCG 20110727]Important: Url streaming task must be run in main thread only since it might use some thread-sensitive APIs such as NPAPI's stream interface
-        MT::executeParallel( m_context->getLogCollector(), 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
+        // [JeromeCG 20110727] Important: Url streaming task must be run in main thread only since it might use some thread-sensitive APIs such as NPAPI's stream interface
+        MT::executeParallel( getContext()->getLogCollector(), 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
       }
       Node::evaluateLocal( userdata );
     }
@@ -79,113 +79,128 @@ namespace Fabric
       bool isFirstEvalAfterLoad = m_firstEvalAfterLoad;
       m_firstEvalAfterLoad = false;
 
-      bool loadingFinished = !m_stream;
-      if( sameURL && !loadingFinished )
+      if( sameURL && m_inProgress )
         return;
 
       if( sameURL && isFirstEvalAfterLoad )
         return;//[JeromeCG 20111221] The data was already set asynchronously, during setResourceData, so the work is already done.
 
-      if( sameURL && m_keepMemoryCache )
+      if( sameURL && (m_keepMemoryCache || m_asFile) )
       {
-        setResourceData( 0, false );
+        //Set from m_fabricResourceStreamData
+        //[JeromeCG 20110727] Note: if m_asFile, the handle was created as "readOnly", so in theory the data is still valid.
+        setResourceData( NULL, false );
         return;
       }
 
-      // [JeromeCG 20110727] Note: we use a generation because if there was a previous stream created for a previous URL we cannot destroy it; 
+      // [JeromeCG 20110727] Note: we use a generation because if there was a previous uncompleted request we might receive more callbacks; 
       // we create a new one in parallel instead of waiting its completion.
-      ++m_streamGeneration;
+      m_streamGeneration++;
       m_fabricResourceStreamData.setURL( urlMemberData );
       m_fabricResourceStreamData.setMIMEType( "" );
+      //[JeromeCG 20120119] setDataExternalLocation: Should we care about deleting the cache file? The browser created it... can it reuse the same temp file? Maybe the user still uses it?
+      m_fabricResourceStreamData.setDataExternalLocation( "" );
       m_fabricResourceStreamData.resizeData( 0 );
       m_keepMemoryCache = false;
-
-      setResourceData( 0, false );
+      setResourceData( NULL, false );
 
       m_keepMemoryCache = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "keepMemoryCache", 0 ) );
+      m_asFile = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "storeDataAsFile", 0 ) );
 
       std::string url = m_fabricResourceStreamData.getURL();
       if( !url.empty() )
       {
-        m_nbStreamed = 0;
-        m_progressNotifTimer.reset();
-
-        m_stream = getContext()->getIOManager()->createStream(
-          url,
-          &ResourceLoadNode::StreamData,
-          &ResourceLoadNode::StreamEnd,
-          &ResourceLoadNode::StreamFailure,
-          this,
-          (void*)m_streamGeneration
-          );
+        m_inProgress = true;
+        getContext()->getIOManager()->getResourceManager()->get( url.c_str(), this, m_asFile, (void*)m_streamGeneration );
       }
     }
 
-    void ResourceLoadNode::streamData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, void *userData )
+    void ResourceLoadNode::onData( size_t offset, size_t size, void const *data, void *userData )
     {
       if( (size_t)userData != m_streamGeneration )
         return;
 
+      FABRIC_ASSERT( !m_asFile );
       if( size )
       {
         size_t prevSize = m_fabricResourceStreamData.getDataSize();
         if ( offset + size > prevSize )
           m_fabricResourceStreamData.resizeData( offset + size );
         m_fabricResourceStreamData.setData( offset, size, data );
-
-        m_nbStreamed += size;
-        int deltaMS = (int)m_progressNotifTimer.getElapsedMS(false);
-
-        const int progressNotifMinMS = 200;
-
-        if( deltaMS > progressNotifMinMS )
-        {
-          m_progressNotifTimer.reset();
-
-          std::vector<std::string> src;
-          src.push_back( "DG" );
-          src.push_back( getName() );
-
-          Util::SimpleString json;
-          {
-            Util::JSONGenerator jg( &json );
-            Util::JSONObjectGenerator jog = jg.makeObject();
-            {
-              Util::JSONGenerator memberJG = jog.makeMember( "received", 8 );
-              memberJG.makeInteger( m_nbStreamed );
-            }
-            {
-              Util::JSONGenerator memberJG = jog.makeMember( "total", 5 );
-              memberJG.makeInteger( totalsize );
-            }
-          }
-          getContext()->jsonNotify( src, "resourceLoadProgress", 20, &json );
-        }
       }
     }
 
-    void ResourceLoadNode::streamEnd( std::string const &url, std::string const &mimeType, void *userData )
+    void ResourceLoadNode::onFile( char const *fileName, void *userData )
     {
       if( (size_t)userData != m_streamGeneration )
         return;
 
-      m_fabricResourceStreamData.setMIMEType( mimeType );
-      m_stream = NULL;//[JeromeCG 20111221] Important: set stream to NULL (loadingFinished status) since setResourceData's notifications can trigger an evaluation
-      setResourceData( 0, true );
+      FABRIC_ASSERT( m_asFile );
+      std::string handle = getContext()->getIOManager()->getFileHandleManager()->createHandle( fileName, false, true );
+      m_fabricResourceStreamData.setDataExternalLocation( handle );
     }
 
-    void ResourceLoadNode::streamFailure( std::string const &url, std::string const &errorDesc, void *userData )
+    void ResourceLoadNode::onFailure( char const *errorDesc, void *userData )
     {
       if( (size_t)userData != m_streamGeneration )
         return;
 
       m_fabricResourceStreamData.resizeData( 0 );
-      m_stream = NULL;
-      setResourceData( &errorDesc, true );
+      m_fabricResourceStreamData.setDataExternalLocation( "" );
+      m_inProgress = false;
+      setResourceData( errorDesc, true );
+    }
+
+    void ResourceLoadNode::onProgress( char const *mimeType, size_t done, size_t total, void *userData )
+    {
+      if( (size_t)userData != m_streamGeneration )
+        return;
+
+      size_t prevSize = m_fabricResourceStreamData.getDataSize();
+      if ( total < prevSize )
+        m_fabricResourceStreamData.resizeData( total );
+
+      if( done < total )
+      {
+        std::vector<std::string> src;
+        src.push_back( "DG" );
+        src.push_back( getName() );
+
+        Util::SimpleString json;
+        {
+            JSON::Encoder jsonEncoder( &json );
+            JSON::ObjectEncoder jsonObjectEncoder = jsonEncoder.makeObject();
+          {
+              JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "received", 8 );
+              memberEncoder.makeInteger( done );
+          }
+          {
+              JSON::Encoder memberEncoder = jsonObjectEncoder.makeMember( "total", 5 );
+              memberEncoder.makeInteger( total );
+          }
+        }
+        getContext()->jsonNotify( src, "resourceLoadProgress", 20, &json );
+      }
+      else
+      {
+        m_fabricResourceStreamData.setMIMEType( mimeType );
+        m_inProgress = false;//[JeromeCG 20111221] Important: set m_inProgress to false since setResourceData's notifications can trigger an evaluation
+        setResourceData( NULL, true );
+      }
+    }
+
+    void ResourceLoadNode::retain() const
+    {
+      Node::retain();
+    }
+
+    void ResourceLoadNode::release() const
+    {
+      Node::release();
     }
 
     void ResourceLoadNode::setResourceData(
-      std::string const *errorDesc,
+      char const *errorDesc,
       bool notify
       )
     {
@@ -204,7 +219,8 @@ namespace Fabric
       }
       m_fabricResourceStreamData.setExtension( extension );
 
-      if( !m_fabricResourceStreamData.isEqualTo( getConstData( "resource", 0 ) ) )
+      void const *prevResourceData = getConstData( "resource", 0 );
+      if( !m_fabricResourceStreamData.isDataEqualTo( prevResourceData ) || !m_fabricResourceStreamData.isDataExternalLocationEqualTo( prevResourceData ) )
       {
         void *resourceDataMember = getMutableData( "resource", 0 );
         m_fabricResourceStreamData.getDesc()->setData( m_fabricResourceStreamData.get(), resourceDataMember );
@@ -216,20 +232,20 @@ namespace Fabric
         {
           if ( getContext()->getLogCollector() )
           {
-            getContext()->getLogCollector()->add( ( "ResourceLoadNode " + getName() + ": error loading " + url + ": " + *errorDesc ).c_str() );
+            getContext()->getLogCollector()->add( ( "ResourceLoadNode " + getName() + ": error loading " + url + ": " + std::string( errorDesc ) ).c_str() );
           }
         }
-        if( notify )
-        {
-          std::vector<std::string> src;
-          src.push_back( "DG" );
-          src.push_back( getName() );
+      }
+      if( notify )
+      {
+        std::vector<std::string> src;
+        src.push_back( "DG" );
+        src.push_back( getName() );
 
-          if( errorDesc )
-            getContext()->jsonNotify( src, "resourceLoadFailure", 19 );
-          else
-            getContext()->jsonNotify( src, "resourceLoadSuccess", 19 );
-        }
+        if( errorDesc )
+          getContext()->jsonNotify( src, "resourceLoadFailure", 19 );
+        else
+          getContext()->jsonNotify( src, "resourceLoadSuccess", 19 );
       }
     }
   };

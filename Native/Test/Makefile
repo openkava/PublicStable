@@ -2,4 +2,6 @@
 
 test :
 	cd KL && $(MAKE) test
+	cd JSON && $(MAKE) test
+	cd RT && $(MAKE) test
 	cd Fabric && $(MAKE) test
