@@ -13,43 +13,22 @@
   <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
 
   <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
-
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.WebSocket.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Selection.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Rendering.js" charset="utf-8"></script>
-  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Undo.js" charset="utf-8"></script>
-
-  <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../../ga.js" charset="utf-8"></script>
 
   <script type="text/javascript">
 
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Bullet",
+                "SG/Undo",
+                "SG/Selection",
+                "SG/Persistence",
+                "SG/WebSocket",
+                "SG/DeferredRendering",
+                "SG/Parsers/parseOBJ"], function() {
+    
   function getUrlVars() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
@@ -102,9 +81,9 @@
     }});
 
   // load out custom shaders
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPreShadowCastingToonShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPreGroundPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostToonShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreShadowCastingToonShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPreGroundPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostToonShader.xml');
 
 // register our custom renderer
 FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
@@ -742,8 +721,8 @@ $(document).ready(function() {
       }
 
       if(evt.altKey) {
-        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
-        scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
+        var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
+        FABRIC.IO.putTextFile(JSON.stringify(bodiesToSave), path);
       } else {
         $('#localStorageDescr').html('Save Preset');
         $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
@@ -779,8 +758,8 @@ $(document).ready(function() {
       if(isPlaying)
         return;
       if(evt.altKey) {
-        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
-        var jsonData = JSON.parse(scene.IO.getTextFile(path));
+        var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
+        var jsonData = JSON.parse(FABRIC.IO.getTextFile(path));
         var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
         selectionManager.clearSelection();
         var selection = [];
@@ -994,6 +973,7 @@ $(document).ready(function() {
       }
     });
   });
+});
 
   // jQuert UI Styling classes
   $(document).ready(function() {
@@ -1101,21 +1081,5 @@ $(document).ready(function() {
     </section>
 
   </div>
-  <script type="text/javascript">
-
-   var _gaq = _gaq || [];
-   _gaq.push(['_setAccount', 'UA-25833362-1']);
-   _gaq.push(['_trackPageview']);
-
-   (function() {
-     var ga = document.createElement('script'); ga.type =
-  'text/javascript'; ga.async = true;
-     ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-  'http://www') + '.google-analytics.com/ga.js';
-     var s = document.getElementsByTagName('script')[0];
-  s.parentNode.insertBefore(ga, s);
-   })();
-
-  </script>
 </body>
 </html>

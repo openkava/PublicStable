@@ -9,89 +9,26 @@
         
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
-
     <link type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
-
     <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseMTL.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
-
-<script type="text/javascript">
-
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
+    <script type="text/javascript" src="../../ga.js" charset="utf-8"></script>
 
 
     <style type="text/css">
     
+
 #sidebar {
   width:240px;
 }  
 #viewer {
   right:240px;
-  bottom:105px;
+  bottom:115px;
 }
 #timeControls {
   right:240px;
-  height:105px;
 }
 
-#timeControls .ui-slider { margin-left: 5em; margin-right: 5em; }
-#timeControls .ui-slider .ui-slider-handle { width: 10.0em; height: 1.8em; margin-left: -5em; margin-top: -0.4em;}
-#timeControls .ui-slider .ui-slider-handle .ui-icon { margin: -8px auto 0; position: relative; top: 50%; }
 
 
   #feedback { font-size: 1.4em; }
@@ -104,6 +41,17 @@ s.parentNode.insertBefore(ga, s);
 
     <script type="text/javascript">
     
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Characters",
+                "SG/CharacterLocomotion",
+                "SG/Bullet",
+                "SG/Persistence",,
+                "SG/Parsers/parseCollada",
+                "RT/LinearKeyframe",
+                "RT/BezierKeyframe"], function() {
     
 FABRIC.SceneGraph.defineEffectFromFile('MonsterMaterial', 'Shaders/MonsterShader.xml');
     
@@ -173,7 +121,7 @@ $(document).ready(function() {
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(0.6, 0.1, 0.1, 1.0)
-  });
+  });  
     
   var rigNode, rigInstances = {}, bezierKeyAnimationLibrary, controllerNode, localStorage, presetSaver;
   var skeletonGeometryNode;
@@ -333,11 +281,11 @@ $(document).ready(function() {
 	
 	{ bone:'_LThighAnterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	{ bone:'_LThighPosterior', baseAttachment:'_LLeg1', tipAttachment:'_LLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
-	{ bone:'_LCalf', baseAttachment:'_LLeg2', tipAttachment:'_LLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
+	{ bone:'_LCalf', baseAttachment:'_LLeg2', tipAttachment:'_LLegAnkle', baseOffset:3, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	
 	{ bone:'_RThighAnterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
 	{ bone:'_RThighPosterior', baseAttachment:'_RLeg1', tipAttachment:'_RLeg2', baseOffset:2, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 },
-	{ bone:'_RCalf', baseAttachment:'_RLeg2', tipAttachment:'_RLegAnkle', baseOffset:1, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 }
+	{ bone:'_RCalf', baseAttachment:'_RLeg2', tipAttachment:'_RLegAnkle', baseOffset:3, tipOffset:4, simulationWeight:0.7, springStrength:40, dampening:0.1, softLimitBounds: 1.3 }
       ]
     });
     
@@ -546,6 +494,7 @@ $(document).ready(function() {
     bodyMaterial.setWireOpacity(checked ? 1.0 : 0.0);
     viewport.redraw();
   });
+  
   var tesslationSlider = $('#tesslation').slider({
       min: 1,
       max: 12.0,
@@ -667,6 +616,11 @@ $(document).ready(function() {
       }
       viewport.redraw();
       
+      if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
+        alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
+        throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
+      }
+      
       setInterval(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
         }, 600);
@@ -674,6 +628,7 @@ $(document).ready(function() {
     }
   });
   
+});
 });
 
 // jQuert UI Styling classes
@@ -742,9 +697,9 @@ $(document).ready(function() {
         <div id="timeControls">
           <div class="box">
             <div class="content">
-                <button id="stop">Stop</button>
-                <button id="play">Play</button>
-                <div id='timeSlider' style="margin-top:15px;"></div>
+              <button id="stop">Stop</button>
+              <button id="play">Play</button>
+              <div id='timeSlider' style="margin-top:15px;"></div>
             </div><!--content-->
           </div><!--box-->
         </div><!--timeControls-->
