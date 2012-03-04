@@ -124,7 +124,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
         gradientWidget.fireEvent('gradientchanged');
       }
     }
-  });
+  }, false);
   
   displayGradient();
   

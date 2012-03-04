@@ -5,19 +5,8 @@
 use Math;
 use Vec3;
 
-operator setTorusVertexCount(
-  io Scalar outer_radius,
-  io Scalar inner_radius,
-  io Integer detail,
-  io Size newCount
-) {
-  var Integer slices = (detail >= 0) ? (detail + 3) : 3;
-  var Integer loops = (detail >= 0) ? ((detail * 2) + 3) : 3;
-
-  newCount = slices * loops;
-}
-
 operator generateTorus(
+  io Container container,
   io Scalar outer_radius,
   io Scalar inner_radius,
   io Integer detail,
@@ -28,6 +17,8 @@ operator generateTorus(
 ) {
   var Integer slices = (detail >= 0) ? (detail + 3) : 3;
   var Integer loops = (detail >= 0) ? ((detail * 2) + 3) : 3;
+
+  container.resize(Size(slices * loops));
 
   var Integer nb_vtx = slices * loops;
   var Integer nb_tri = 2 * slices * loops;

@@ -5,6 +5,7 @@
 use Xfo, RGBA, Color;
 
 operator generateVolumeSlices(
+  io Container container,
   io Vec3 cropMin,
   io Vec3 cropMax,
   io Vec3 halfPixelCrop,
@@ -18,7 +19,7 @@ operator generateVolumeSlices(
   io Vec3 positions<>,
   io Vec3 normals<>
 ){
-
+  container.resize( Size(nbSlices*6) );//First approximation (upper bound)
   Size i, j, k;
   indices.resize(0);
 
@@ -323,6 +324,7 @@ operator generateVolumeSlices(
     currDepth -= step;
     ++currSlice;
   }
+  container.resize( Size(currPosIndex) );//Clamp to final count
 }
 
 operator setNbSlicesFrom3DImage(
@@ -631,12 +633,14 @@ operator reduceOpacityTexture(
 
 
 operator updateTransferFunctionImage(
+  io Container container,
   io Scalar minOpacity,
   io Scalar maxOpacity,
   io Scalar opacityFactors[],
   io Color opacityColors[],
   io Color pixels<>
 ){
+  container.resize(opacityColors.size());
   for(Size i = 0; i < pixels.size(); ++i) {
     pixels[i].r = opacityColors[i].r;
     pixels[i].g = opacityColors[i].g;

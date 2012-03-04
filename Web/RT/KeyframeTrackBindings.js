@@ -36,7 +36,7 @@ FABRIC.RT.KeyframeTrackBindings.prototype = {
   addXfoBinding: function(varId, trackIds, rotationOrder){
     this.xfoBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackIds, rotationOrder));
   },
-  setValue: function(trackSetId, time, value, index, animationLibraryNode){
+  setValue: function(trackSetId, time, value, index, characterAnimationContainerNode){
     var type = (typeof value == 'number') ? 'Number' : value.getType();
     var findBinding = function(bindingsList){
       for(var i=0; i<bindingsList.length; i++){
@@ -79,7 +79,7 @@ FABRIC.RT.KeyframeTrackBindings.prototype = {
     default:
       throw 'Unhandled type:' + val;
     }
-    animationLibraryNode.pub.setValues(trackSetId, time, binding.trackIds, values);
+    characterAnimationContainerNode.pub.setValues(trackSetId, time, binding.trackIds, values);
   }
 };
 

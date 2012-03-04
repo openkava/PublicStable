@@ -114,10 +114,10 @@ operator paintPixels(
           Scalar ratio = Scalar(paintColor.a) / 255.0;
           if(paintErase) {
             ratio = 1.0 - ratio;
-            pixels[index].r = Integer(Scalar(pixels[index].r * ratio));
-            pixels[index].g = Integer(Scalar(pixels[index].g * ratio));
-            pixels[index].b = Integer(Scalar(pixels[index].b * ratio));
-            pixels[index].a = Integer(Scalar(pixels[index].a * ratio));
+            pixels[index].r = Integer(Scalar(pixels[index].r) * ratio);
+            pixels[index].g = Integer(Scalar(pixels[index].g) * ratio);
+            pixels[index].b = Integer(Scalar(pixels[index].b) * ratio);
+            pixels[index].a = Integer(Scalar(pixels[index].a) * ratio);
           } else {
             pixels[index].r = Integer(ratio * Scalar(paintColor.r) + (1.0 - ratio) * Scalar(pixels[index].r));
             pixels[index].g = Integer(ratio * Scalar(paintColor.g) + (1.0 - ratio) * Scalar(pixels[index].g));

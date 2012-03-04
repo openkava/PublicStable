@@ -32,7 +32,7 @@ FABRIC.SceneGraph.registerNodeType('Square', {
     var uniforms = squareNode.getUniformsDGNode();
     var attributes = squareNode.getAttributesDGNode();
     
-    attributes.setCount(4);
+    attributes.resize(4);
     var attributesData = attributes.getBulkData();
     attributesData.positions[0] = new FABRIC.RT.Vec3(-1,0,-1);
     attributesData.positions[1] = new FABRIC.RT.Vec3(1,0,-1);
