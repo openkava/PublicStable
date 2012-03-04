@@ -44,3 +44,4 @@ fabricPythonModule = pythonEnv.Command(
   ])
 Export('fabricPythonModule')
 
+Alias('python', [fabricPythonLib, fabricPythonModule])

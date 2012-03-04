@@ -1,0 +1,40 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+  "settings":
+  {
+      "tab_size": 2
+  },
+  "build_systems":
+  [
+    {
+        "name": "Fabric - Debug - cli",
+        "cmd": ["$project_path/Util/fabric-build-debug.sh", "cli"],
+        "file_regex": "^(.+):([0-9]+):() (.*)$"
+    },
+    {
+        "name": "Fabric - Debug - all",
+        "cmd": ["$project_path/Util/fabric-build-debug.sh", "all"],
+        "file_regex": "^(.+):([0-9]+):() (.*)$"
+    },
+    {
+        "name": "Fabric - Release - cli",
+        "cmd": ["$project_path/Util/fabric-build-release.sh", "cli"],
+        "file_regex": "^(.+):([0-9]+):() (.*)$"
+    },
+    {
+        "name": "Fabric - Release - all",
+        "cmd": ["$project_path/Util/fabric-build-release.sh", "all"],
+        "file_regex": "^(.+):([0-9]+):() (.*)$"
+    },
+    {
+        "name": "Fabric - Guides",
+        "cmd": ["$project_path/Util/fabric-build.sh", "guides"],
+        "file_regex": "^(.+):([0-9]+):([0-9]+): (.*)$"
+    }
+  ]
+}

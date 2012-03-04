@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #include <Fabric/Core/MR/ArrayOutputOperator.h>
 #include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
@@ -116,6 +116,8 @@ namespace Fabric
         
     RC::ConstHandle<RT::Desc> ArrayOutputOperator::getValueDesc() const
     {
+      if ( !m_valueDesc )
+        throw Exception( "error in operator" );
       return m_valueDesc;
     }
     

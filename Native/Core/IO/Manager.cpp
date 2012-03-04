@@ -1,12 +1,11 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
 
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/JSON/Encoder.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/FileHandleManager.h>
-#include <Fabric/Core/IO/FileHandleResourceProvider.h>
 #include <Fabric/Core/IO/ResourceManager.h>
 #include <Fabric/Core/IO/Helpers.h>
 
@@ -16,12 +15,10 @@ namespace Fabric
 {
   namespace IO
   {
-    Manager::Manager( ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
+    Manager::Manager( RC::Handle<FileHandleManager> fileHandleManager, ScheduleAsyncCallbackFunc scheduleFunc, void *scheduleFuncUserData )
       : m_resourceManager( ResourceManager::Create( scheduleFunc, scheduleFuncUserData ) )
-      , m_fileHandleManager( FileHandleManager::Create() )
+      , m_fileHandleManager( fileHandleManager )
     {
-      m_fileHandleResourceProvider = FileHandleResourceProvider::Create( m_fileHandleManager );
-      m_resourceManager->registerProvider( RC::Handle<IO::ResourceProvider>::StaticCast( m_fileHandleResourceProvider ) );
     }
 
     RC::Handle<ResourceManager> Manager::getResourceManager() const
@@ -76,7 +73,8 @@ namespace Fabric
       bool *existingFile,
       const char *defaultExtension,
       std::string& fullPath,
-      bool& writeAccess
+      bool& writeAccess,
+      bool queryFolder
       ) const
     {
       std::string defaultFilename;
@@ -177,12 +175,27 @@ namespace Fabric
         if( existing )
         {
           if( writeAccess )
-            title = "Open File with read & write access to folder: " + title;
+          {
+            if( queryFolder )
+              title = "Open File with read & write access to folder: " + title;
+            else
+              title = "Open File with write access: " + title;
+          }
           else
-            title = "Open File: " + title;
+          {
+            if( queryFolder )
+              title = "Open File with read access to folder: " + title;
+            else
+              title = "Open File: " + title;
+          }
         }
         else
-          title = "Save File: " + title;
+        {
+          if( queryFolder )
+              title = "Save File with access to folder: " + title;
+          else
+            title = "Save File: " + title;
+        }
       }
 
       if( !defaultFilename.empty() && !extension.empty() )
@@ -252,7 +265,7 @@ namespace Fabric
     {
       std::string fullPath;
       bool writeAccess;
-      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess );
+      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess, true );
 
       std::string dir, filename;
       IO::SplitPath( fullPath, dir, filename );
@@ -279,7 +292,7 @@ namespace Fabric
       std::string fullPath;
       bool writeAccess;
 
-      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess );
+      jsonQueryUserFile( arg, NULL, NULL, fullPath, writeAccess, false );
 
       std::string handle = m_fileHandleManager->createHandle( fullPath, false, !writeAccess );
 

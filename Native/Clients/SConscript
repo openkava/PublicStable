@@ -4,16 +4,12 @@
 
 Import( 'buildOS' )
 
-aliases = []
-
 SConscript( dirs=['NPAPI'] )
-aliases += ['npapi']
 
 if buildOS != 'Windows':
-  SConscript( dirs=['CLI'] )
-  aliases += ['cli']
+  SConscript( dirs=['Node'] )
 
 SConscript( dirs=['Python'] )
-aliases += ['python']
 
-Alias( 'clients', aliases )
+Alias('cliClients', ['node', 'python'])
+Alias('clients', ['npapi', 'cliClients'])

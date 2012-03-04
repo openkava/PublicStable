@@ -1,5 +1,13 @@
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
+
 operator entry()
 {
+  // Unary ops
+  report +Byte(42);
+  report -Byte(42);
+
   // Binary ops
   report Byte(1) + Byte(2);
   report Byte(3) - Byte(4);

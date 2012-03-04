@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #include "ByteAdapter.h"
 #include "BooleanAdapter.h"
 #include "IntegerAdapter.h"
@@ -56,7 +56,7 @@ namespace Fabric
       integerAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
       sizeAdapter->llvmCompileToModule( moduleBuilder );
-      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
+      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFloat32Adapter();
       scalarAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       stringAdapter->llvmCompileToModule( moduleBuilder );
@@ -145,6 +145,18 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           basicBlockBuilder->CreateRet( rValue );
+        }
+      }
+      
+      {
+        UniOpBuilder functionBuilder( moduleBuilder, this, UNI_OP_NEG, this, USAGE_RVALUE );
+        if ( buildFunctions )
+        {
+          llvm::Value *rValue = functionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *negRValue = basicBlockBuilder->CreateNeg( rValue );
+          basicBlockBuilder->CreateRet( negRValue );
         }
       }
       

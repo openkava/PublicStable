@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
  */
- 
+
 #include <Fabric/Core/MR/ArrayGenerator.h>
 #include <Fabric/Core/MR/ArrayOutputOperator.h>
 #include <Fabric/Core/RT/Desc.h>
@@ -59,7 +59,16 @@ namespace Fabric
     
     RC::ConstHandle<RT::Desc> ArrayGenerator::getElementDesc() const
     {
-      return m_operator->getValueDesc();
+      RC::ConstHandle<RT::Desc> result;
+      try
+      {
+        result = m_operator->getValueDesc();
+      }
+      catch ( Exception e )
+      {
+        throw "ArrayGenerator: " + e;
+      }
+      return result;
     }
       
     const RC::Handle<ArrayProducer::ComputeState> ArrayGenerator::createComputeState() const
@@ -103,6 +112,9 @@ namespace Fabric
     
     void ArrayGenerator::ComputeState::produce( size_t index, void *data ) const
     {
+      if ( index >= getCount() )
+        throw Exception( "produce index out of range" );
+
       RC::ConstHandle<ArrayOutputOperator> operator_ = m_arrayGenerator->m_operator;
       if ( operator_->takesIndex() )
       {
