@@ -1,8 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "RT/OGLTexture2D",
@@ -106,8 +104,8 @@ FABRIC.SceneGraph.registerNodeType('Image2D', {
     // create the base node
     var imageNode = scene.constructNode('Image', options);
     if(options.createDgNodes){
-      var uniformsdgnode = imageNode.constructDGNode('UniformsDGNode')
-      var pixelsdgnode = imageNode.constructDGNode('PixelsDGNode')
+      var uniformsdgnode = imageNode.constructDGNode('UniformsDGNode');
+      var pixelsdgnode = imageNode.constructDGNode('PixelsDGNode');
       uniformsdgnode.addMember('width', 'Size', options.createResourceLoadNode ? undefined : options.width);
       uniformsdgnode.addMember('height', 'Size', options.createResourceLoadNode ? undefined : options.height);
       uniformsdgnode.addMember('pixels', options.format+'[]');
@@ -213,10 +211,16 @@ FABRIC.SceneGraph.registerNodeType('Image2D', {
       }
     }
     
-    imageNode.pub.getURL = function() {
+
+    imageNode.pub.getUrl = function() {
       return resourceLoadNode ? resourceLoadNode.pub.getUrl() : '';
     };
-    
+
+    imageNode.pub.setUrl = function(url) {
+      if(resourceLoadNode) {
+        resourceLoadNode.pub.setUrl(url);
+      }
+    };
     //////////////////////////////////////////
     // Persistence
     var parentWriteData = imageNode.writeData;
@@ -226,7 +230,7 @@ FABRIC.SceneGraph.registerNodeType('Image2D', {
       for (var i in options) {
         constructionOptions[i] = options[i];
       }
-      constructionOptions.url = imageNode.pub.getURL();
+      constructionOptions.url = imageNode.pub.getUrl();
     };
     imageNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
@@ -511,7 +515,6 @@ FABRIC.SceneGraph.registerNodeType('Video', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         url: '',
-        loop: false,
         nbCachedFrames: 0,
         animationControllerNode: undefined
       });
@@ -547,45 +550,33 @@ FABRIC.SceneGraph.registerNodeType('Video', {
       ]
     }));
 
-    // make it dependent on the scene time
-    var timeBinding = 'globals.time';
-    if(options.loop || options.animationControllerNode)
-    {
-      // use the options animation controller
-      var animationController = undefined;
-      if(options.animationControllerNode)
-      {
-        animationController = scene.getPrivateInterface(options.animationControllerNode);
+    var animationController = undefined;
+    var timeBinding;
+    videoNode.addReferenceInterface('AnimationController', 'AnimationController',
+      function(nodePrivate){
+        animationController = nodePrivate;
         var animationControllerDGNode = animationController.getDGNode();
         dgnode.setDependency(animationControllerDGNode, 'controller');
-      }
-      else
-      {
-        animationController = scene.constructNode('AnimationController');
-        var animationControllerDGNode = animationController.getDGNode();
-        dgnode.setDependency(animationControllerDGNode, 'controller');
-        dgnode.bindings.append(scene.constructOperator({
-          operatorName: 'videoSetTimeRange',
-          srcFile: 'FABRIC_ROOT/SG/KL/loadVideo.kl',
-          entryFunctionName: 'videoSetTimeRange',
-          parameterLayout: [
-            'self.handle',
-            'controller.timeRange',
-          ]
-        }));
-      }
-      videoNode.pub.getAnimationController = function(){
-        return animationController.pub;
-      };
-      timeBinding = 'controller.localTime';
-    }
-    else
-      dgnode.setDependency(scene.getGlobalsNode(), 'globals');
-
+        
+      });
+    
     // use a dict for storing the already parsed frames
-    dgnode.addMember('pixelCache','RGB[][]')
-    dgnode.addMember('pixelCacheIndex','Integer[]')
-    dgnode.addMember('pixelCacheLimit','Integer',options.nbCachedFrames)
+    dgnode.addMember('pixelCache','RGB[][]');
+    dgnode.addMember('pixelCacheIndex','Integer[]');
+    dgnode.addMember('pixelCacheLimit','Integer',options.nbCachedFrames);
+    
+    // Here the timerange of the controller is set using the video time range.
+    // Note: this is not strictly legal in our dependency graph model
+    // as we should not be modifying our dependencies data.
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'videoSetTimeRange',
+      srcFile: 'FABRIC_ROOT/SG/KL/loadVideo.kl',
+      entryFunctionName: 'videoSetTimeRange',
+      parameterLayout: [
+        'self.handle',
+        'controller.timeRange',
+      ]
+    }));
     
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoSeekTimeCached',
@@ -593,7 +584,7 @@ FABRIC.SceneGraph.registerNodeType('Video', {
       entryFunctionName: 'videoSeekTime',
       parameterLayout: [
         'self.handle',
-        timeBinding,
+        'controller.localTime',
         'self.pixels',
         'self.pixelCache',
         'self.pixelCacheIndex',
@@ -617,15 +608,12 @@ FABRIC.SceneGraph.registerNodeType('Video', {
     }));
     
     // extend public interface
-    videoNode.pub.forceEvaluate = function(){
-      dgnode.evaluate();
-    };
-    videoNode.pub.getDuration = function(){
-      return dgnode.getData("duration");
-    };
-    videoNode.pub.getFps = function(){
-      return dgnode.getData("fps");
-    };
+    if(options.animationControllerNode){
+      videoNode.pub.setAnimationControllerNode(options.animationControllerNode);
+    }
+    else{
+      videoNode.pub.setAnimationControllerNode(scene.constructNode('AnimationController').pub);
+    }
 
     return videoNode;
   }});
@@ -676,24 +664,34 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
     //We should include a way to 'mute' and 'unmute' it. The problem
     //is how to know when it is filled with content; an event should be sent. Can
     //we do this without modifying the core?
-    var screenGrabNode = scene.constructNode('SceneGraphNode', options),
-    screenGrabEventHandler;
-
-    screenGrabEventHandler = screenGrabNode.constructEventHandlerNode('ScreenGrab');
+    var screenGrabNode = scene.constructNode('SceneGraphNode', options);
+    var screenGrabEvent = screenGrabNode.constructEventNode('ScreenGrabEvent');
+    var screenGrabEventHandler = screenGrabNode.constructEventHandlerNode('ScreenGrab');
+    
+    screenGrabEvent.appendEventHandler(screenGrabEventHandler);
     screenGrabEventHandler.addMember('width', 'Size');
     screenGrabEventHandler.addMember('height', 'Size');
     screenGrabEventHandler.addMember('pixels', 'RGBA[]');
     screenGrabEventHandler.addMember('resource', 'FabricResource');
-
+    
+    var viewportNode;
+    screenGrabNode.addReferenceInterface('Viewport', 'Viewport',
+      function(nodePrivate){
+        viewportNode = nodePrivate;
+        screenGrabEventHandler.setScope('window', viewportNode.getFabricWindowObject().windowNode);
+    });
+    
     screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
       operatorName: 'grabViewport',
       srcFile: 'FABRIC_ROOT/SG/KL/grabViewport.kl',
       entryFunctionName: 'grabViewport',
       parameterLayout: [
-            'self.width',
-            'self.height',
-            'self.pixels'
-          ]
+        'self.width',
+        'self.height',
+        'self.pixels',
+        'window.fboId'
+      ],
+      async: false
     }));
 
     screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
@@ -701,23 +699,47 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
       srcFile: 'FABRIC_ROOT/SG/KL/encodeImage.kl',
       entryFunctionName: 'encodeImageLDR',
       parameterLayout: [
-            'self.width',
-            'self.height',
-            'self.pixels',
-            'self.resource'
-          ]
+        'self.width',
+        'self.height',
+        'self.pixels',
+        'self.resource'
+      ],
+      async: false
     }));
 
-    scene.getScenePostRedrawEventHandler().appendChildEventHandler(screenGrabEventHandler);
-
     screenGrabNode.pub.saveAs = function() {
+      screenGrabEvent.fire();
       try {
-          var userFileHandle = scene.pub.IO.queryUserFileHandle(scene.pub.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
-          screenGrabEventHandler.putResourceToFile(userFileHandle,'resource');
+        var userFileHandle = FABRIC.IO.queryUserFileHandle(FABRIC.IO.forSave, 'Save Screen Grab Image As...', 'png', 'fabricScreenGrab');
+        screenGrabEventHandler.putResourceToFile(userFileHandle,'resource');
       }
       catch (e) { }
     };
 
+    var writeFileOperatorAttached = false;
+    screenGrabNode.pub.writeImageFile = function(path) {
+      if(!writeFileOperatorAttached){
+        screenGrabEventHandler.addMember('path', 'String', path);
+        screenGrabEventHandler.postDescendBindings.append(scene.constructOperator({
+          operatorName: 'writeFile',
+          srcFile: 'FABRIC_ROOT/SG/KL/writeFile.kl',
+          entryFunctionName: 'writeFile',
+          parameterLayout: [
+            'self.resource',
+            'self.path'
+          ],
+          async: false
+        }));
+        writeFileOperatorAttached = true;
+      }else{
+        screenGrabEventHandler.setData('path', 0, path);
+      }
+      screenGrabEvent.fire();
+    };
+    if(options.viewport){
+      screenGrabNode.pub.setViewportNode(options.viewport);
+    }
+    
     return screenGrabNode;
   }
 });

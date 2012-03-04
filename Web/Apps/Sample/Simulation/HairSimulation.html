@@ -22,6 +22,9 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/Manipulation",
                 "SG/Parsers/parseCollada"], function() {
  
+ 
+FABRIC.SceneGraph.defineEffectFromFile('HairMaterial', 'Shaders/HairShader.xml');
+ 
 FABRIC.SceneGraph.registerNodeType('Hair', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {

@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph"], function() {
 
@@ -114,8 +113,8 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
         buffer: function(data) {
           bufferedData[actionName] = data;
         },
-        read: function() {
-          return bufferedData[actionName];
+        read: function(callback) {
+          callback(bufferedData[actionName]);
         },
         write: function(data) {
           manager.pub.sendMessage(actionName,data);

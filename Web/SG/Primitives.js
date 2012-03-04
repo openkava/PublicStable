@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "SG/Geometry"], function() {
@@ -57,7 +56,7 @@ FABRIC.SceneGraph.registerNodeType('Cross', {
     });
 
     var crossNode = scene.constructNode('Lines', options);
-    crossNode.pub.addUniformValue('crosssize', 'Scalar', options.size);
+    crossNode.pub.addUniformValue('size', 'Scalar', options.size, true);
     crossNode.getAttributesDGNode().resize(6);
     crossNode.setGeneratorOps([
       scene.constructOperator({
@@ -67,11 +66,43 @@ FABRIC.SceneGraph.registerNodeType('Cross', {
         parameterLayout: [
           'self.positions<>',
           'uniforms.indices',
-          'uniforms.crosssize'
+          'uniforms.size'
         ]
       })
     ]);
     return crossNode;
+  }});
+
+
+FABRIC.SceneGraph.registerNodeType('Axes', {
+  briefDesc: 'The Axis primitive draws a labled coordinate system axis.',
+  detailedDesc: 'The Axis primitive draws a labled coordinate system axis.' +
+                'The axes are labeled \'X\', \'Y\', and \'Z\'',
+  parentNodeDesc: 'Lines',
+  optionsDesc: {
+    size: 'The size of the draw coordinate system axes.'
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        size: 1.0
+      });
+
+    var axesNode = scene.constructNode('Lines', options);
+    axesNode.pub.addUniformValue('size', 'Scalar', options.size, true);
+    axesNode.setGeneratorOps([
+      scene.constructOperator({
+        operatorName: 'generateAxes',
+        srcFile: 'FABRIC_ROOT/SG/KL/generateAxes.kl',
+        entryFunctionName: 'generateAxes',
+        parameterLayout: [
+          'self',
+          'self.positions<>',
+          'uniforms.indices',
+          'uniforms.size'
+        ]
+      })
+    ]);
+    return axesNode;
   }});
 
 
@@ -90,8 +121,9 @@ FABRIC.SceneGraph.registerNodeType('Rectangle', {
     });
 
     var rectangleNode = scene.constructNode('Lines', options);
-    rectangleNode.pub.addUniformValue('length', 'Scalar', options.length);
-    rectangleNode.pub.addUniformValue('width', 'Scalar', options.width);
+    rectangleNode.pub.addUniformValue('length', 'Scalar', options.length, true);
+    rectangleNode.pub.addUniformValue('width', 'Scalar', options.width, true);
+    
     rectangleNode.getAttributesDGNode().resize(8);
     rectangleNode.setGeneratorOps([
       scene.constructOperator({
@@ -127,8 +159,8 @@ FABRIC.SceneGraph.registerNodeType('BoundingBox', {
     });
 
     var boundingBoxNode = scene.constructNode('Lines', options);
-    boundingBoxNode.pub.addUniformValue('bboxmin', 'Vec3', options.bboxmin);
-    boundingBoxNode.pub.addUniformValue('bboxmax', 'Vec3', options.bboxmax);
+    boundingBoxNode.pub.addUniformValue('boundingBoxMin', 'Vec3', options.bboxmin, true);
+    boundingBoxNode.pub.addUniformValue('boundingBoxMax', 'Vec3', options.bboxmax, true);
     boundingBoxNode.getAttributesDGNode().resize(8);
     boundingBoxNode.setGeneratorOps([
       scene.constructOperator({
@@ -138,8 +170,8 @@ FABRIC.SceneGraph.registerNodeType('BoundingBox', {
         parameterLayout: [
           'self.positions<>',
           'uniforms.indices',
-          'uniforms.bboxmin',
-          'uniforms.bboxmax'
+          'uniforms.boundingBoxMin',
+          'uniforms.boundingBoxMax'
         ]
       })
     ]);
@@ -200,37 +232,6 @@ FABRIC.SceneGraph.registerNodeType('Grid', {
   }});
 
 
-FABRIC.SceneGraph.registerNodeType('Axes', {
-  briefDesc: 'The Axis primitive draws a labled coordinate system axis.',
-  detailedDesc: 'The Axis primitive draws a labled coordinate system axis.' +
-                'The axes are labeled \'X\', \'Y\', and \'Z\'',
-  parentNodeDesc: 'Lines',
-  optionsDesc: {
-    size: 'The size of the draw coordinate system axes.'
-  },
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-        size: 1.0
-      });
-
-    var axesNode = scene.constructNode('Lines', options);
-    axesNode.pub.addUniformValue('size', 'Scalar', options.size);
-    axesNode.setGeneratorOps([
-      scene.constructOperator({
-        operatorName: 'generateAxes',
-        srcFile: 'FABRIC_ROOT/SG/KL/generateAxes.kl',
-        entryFunctionName: 'generateAxes',
-        parameterLayout: [
-          'self',
-          'self.positions<>',
-          'uniforms.indices',
-          'uniforms.size'
-        ]
-      })
-    ]);
-    return axesNode;
-  }});
-
 FABRIC.SceneGraph.registerNodeType('CameraPrimitive', {
   briefDesc: 'The camera primitive draws a box with a cone up front.',
   detailedDesc: 'The camera primitive draws a box with a cone up front. This can be used to visualize cameras when working with ' +
@@ -279,15 +280,9 @@ FABRIC.SceneGraph.registerNodeType('Circle', {
       });
 
     var circleNode = scene.constructNode('Lines', options);
-    circleNode.pub.addUniformValue('radius', 'Scalar', options.radius);
-    circleNode.pub.addUniformValue('arcAngle', 'Scalar', options.arcAngle);
-    circleNode.pub.addUniformValue('numSegments', 'Integer', options.numSegments);
-
-    // getters and setters
-    var uniforms = circleNode.getUniformsDGNode();
-    circleNode.addMemberInterface(uniforms, 'radius', true);
-    circleNode.addMemberInterface(uniforms, 'arcAngle', true);
-    circleNode.addMemberInterface(uniforms, 'numSegments', true);
+    circleNode.pub.addUniformValue('radius', 'Scalar', options.radius, true);
+    circleNode.pub.addUniformValue('arcAngle', 'Scalar', options.arcAngle, true);
+    circleNode.pub.addUniformValue('numSegments', 'Integer', options.numSegments, true);
 
     circleNode.setGeneratorOps([
       scene.constructOperator({
@@ -316,8 +311,7 @@ FABRIC.SceneGraph.registerNodeType('Plane', {
     length: 'The length of the plane in the X axis',
     width: 'The width of the plane in the Z axis',
     lengthSections: 'The number of length sections to use when building the plane.',
-    widthSections: 'The number of width sections to use when building the plane.',
-    doubleSided: 'If set to true, triangles are constructed with normals facing in both directions'
+    widthSections: 'The number of width sections to use when building the plane.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
@@ -330,17 +324,10 @@ FABRIC.SceneGraph.registerNodeType('Plane', {
     options.uvSets = 1;
 
     var planeNode = scene.constructNode('Triangles', options);
-    planeNode.pub.addUniformValue('length', 'Scalar', options.length);
-    planeNode.pub.addUniformValue('width', 'Scalar', options.width);
-    planeNode.pub.addUniformValue('lengthSections', 'Integer', options.lengthSections);
-    planeNode.pub.addUniformValue('widthSections', 'Integer', options.widthSections);
-
-    // getters and setters
-    var uniforms = planeNode.getUniformsDGNode();
-    planeNode.addMemberInterface(uniforms, 'length', true);
-    planeNode.addMemberInterface(uniforms, 'width', true);
-    planeNode.addMemberInterface(uniforms, 'lengthSections', true);
-    planeNode.addMemberInterface(uniforms, 'widthSections', true);
+    planeNode.pub.addUniformValue('length', 'Scalar', options.length, true);
+    planeNode.pub.addUniformValue('width', 'Scalar', options.width, true);
+    planeNode.pub.addUniformValue('lengthSections', 'Integer', options.lengthSections, true);
+    planeNode.pub.addUniformValue('widthSections', 'Integer', options.widthSections, true);
 
     planeNode.setGeneratorOps([
       scene.constructOperator({
@@ -389,18 +376,11 @@ FABRIC.SceneGraph.registerNodeType('Cuboid', {
     }
     options.uvSets = 1;
 
-
     var cubeNode = scene.constructNode('Triangles', options);
-    cubeNode.pub.addUniformValue('length', 'Scalar', options.length);
-    cubeNode.pub.addUniformValue('width', 'Scalar', options.width);
-    cubeNode.pub.addUniformValue('height', 'Scalar', options.height);
+    cubeNode.pub.addUniformValue('length', 'Scalar', options.length, true);
+    cubeNode.pub.addUniformValue('width', 'Scalar', options.width, true);
+    cubeNode.pub.addUniformValue('height', 'Scalar', options.height, true);
     cubeNode.getAttributesDGNode().resize(24);
-
-    // getters and setters
-    var uniforms = cubeNode.getUniformsDGNode();
-    cubeNode.addMemberInterface(uniforms, 'length', true);
-    cubeNode.addMemberInterface(uniforms, 'width', true);
-    cubeNode.addMemberInterface(uniforms, 'height', true);
 
     cubeNode.setGeneratorOps([
       scene.constructOperator({
@@ -439,14 +419,9 @@ FABRIC.SceneGraph.registerNodeType('Sphere', {
     options.uvSets = 1;
 
     var sphereNode = scene.constructNode('Triangles', options);
-    sphereNode.pub.addUniformValue('radius', 'Scalar', options.radius);
-    sphereNode.pub.addUniformValue('detail', 'Integer', options.detail);
-
-    // getters and setters
-    var uniforms = sphereNode.getUniformsDGNode();
-    sphereNode.addMemberInterface(uniforms, 'radius', true);
-    sphereNode.addMemberInterface(uniforms, 'detail', true);
-
+    sphereNode.pub.addUniformValue('radius', 'Scalar', options.radius, true);
+    sphereNode.pub.addUniformValue('detail', 'Integer', options.detail, true);
+    
     sphereNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateSphere',
@@ -473,27 +448,21 @@ FABRIC.SceneGraph.registerNodeType('Torus', {
   detailedDesc: 'The Torus primitive draws a torus using triangles.',
   parentNodeDesc: 'Triangles',
   optionsDesc: {
-    inner_radius: 'The inner radius of the torus. The inner radius is the size of the hole in the middle of the torus.',
-    outer_radius: 'The outer radius of the torus.',
+    innerRadius: 'The inner radius of the torus. The inner radius is the size of the hole in the middle of the torus.',
+    outerRadius: 'The outer radius of the torus.',
     detail: 'The detail parameter controls the number of triangles used to construct the torus.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        inner_radius: 2.0,
-        outer_radius: 5.0,
+        innerRadius: 2.0,
+        outerRadius: 5.0,
         detail: 5
       });
 
     var torusNode = scene.constructNode('Triangles', options);
-    torusNode.pub.addUniformValue('outer_radius', 'Scalar', options.inner_radius);
-    torusNode.pub.addUniformValue('inner_radius', 'Scalar', options.outer_radius);
-    torusNode.pub.addUniformValue('detail', 'Integer', options.detail);
-
-    // getters and setters
-    var uniforms = torusNode.getUniformsDGNode();
-    torusNode.addMemberInterface(uniforms, 'outer_radius', true);
-    torusNode.addMemberInterface(uniforms, 'inner_radius', true);
-    torusNode.addMemberInterface(uniforms, 'detail', true);
+    torusNode.pub.addUniformValue('outerRadius', 'Scalar', options.outerRadius, true);
+    torusNode.pub.addUniformValue('innerRadius', 'Scalar', options.innerRadius, true);
+    torusNode.pub.addUniformValue('detail', 'Integer', options.detail, true);
 
     torusNode.setGeneratorOps([
       scene.constructOperator({
@@ -502,8 +471,8 @@ FABRIC.SceneGraph.registerNodeType('Torus', {
         entryFunctionName: 'generateTorus',
         parameterLayout: [
           'self',
-          'uniforms.inner_radius',
-          'uniforms.outer_radius',
+          'uniforms.outerRadius',
+          'uniforms.innerRadius',
           'uniforms.detail',
 
           'uniforms.indices',
@@ -535,17 +504,10 @@ FABRIC.SceneGraph.registerNodeType('Cone', {
       });
 
     var coneNode = scene.constructNode('Triangles', options);
-    coneNode.pub.addUniformValue('radius', 'Scalar', options.radius);
-    coneNode.pub.addUniformValue('height', 'Scalar', options.height);
-    coneNode.pub.addUniformValue('cap', 'Boolean', options.cap);
-    coneNode.pub.addUniformValue('detail', 'Integer', options.detail);
-
-    // getters and setters
-    var uniforms = coneNode.getUniformsDGNode();
-    coneNode.addMemberInterface(uniforms, 'radius', true);
-    coneNode.addMemberInterface(uniforms, 'height', true);
-    coneNode.addMemberInterface(uniforms, 'cap', true);
-    coneNode.addMemberInterface(uniforms, 'detail', true);
+    coneNode.pub.addUniformValue('radius', 'Scalar', options.radius, true);
+    coneNode.pub.addUniformValue('height', 'Scalar', options.height, true);
+    coneNode.pub.addUniformValue('cap', 'Boolean', options.cap, true);
+    coneNode.pub.addUniformValue('detail', 'Integer', options.detail, true);
 
     coneNode.setGeneratorOps([
       scene.constructOperator({
@@ -590,19 +552,11 @@ FABRIC.SceneGraph.registerNodeType('Cylinder', {
 
     options.uvSets = 1;
     var cylinderNode = scene.constructNode('Triangles', options);
-    cylinderNode.pub.addUniformValue('radius', 'Scalar', options.radius);
-    cylinderNode.pub.addUniformValue('height', 'Scalar', options.height);
-    cylinderNode.pub.addUniformValue('caps', 'Boolean', options.caps);
-    cylinderNode.pub.addUniformValue('sides', 'Integer', options.sides);
-    cylinderNode.pub.addUniformValue('loops', 'Integer', options.loops);
-
-    // getters and setters
-    var uniforms = cylinderNode.getUniformsDGNode();
-    cylinderNode.addMemberInterface(uniforms, 'radius', true);
-    cylinderNode.addMemberInterface(uniforms, 'height', true);
-    cylinderNode.addMemberInterface(uniforms, 'cap', true);
-    cylinderNode.addMemberInterface(uniforms, 'sides', true);
-    cylinderNode.addMemberInterface(uniforms, 'loops', true);
+    cylinderNode.pub.addUniformValue('radius', 'Scalar', options.radius, true);
+    cylinderNode.pub.addUniformValue('height', 'Scalar', options.height, true);
+    cylinderNode.pub.addUniformValue('caps', 'Boolean', options.caps, true);
+    cylinderNode.pub.addUniformValue('sides', 'Integer', options.sides, true);
+    cylinderNode.pub.addUniformValue('loops', 'Integer', options.loops, true);
 
     cylinderNode.setGeneratorOps([
       scene.constructOperator({

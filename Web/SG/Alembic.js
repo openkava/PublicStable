@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "SG/Geometry",
@@ -355,7 +354,7 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
       if(timeRange.x < timeRange.y) {
         // create an animation controller for the sample
         var animationController = scene.constructNode('AnimationController');
-        resourceLoadNode.pub.getAnimationController = function() {
+        resourceLoadNode.pub.getAnimationControllerNode = function() {
           return animationController.pub;
         };
 

@@ -1,8 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/Geometry",
                "SG/Materials",
@@ -176,49 +174,50 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     return materialParam;
   }
   
-  var parseEffectTechniquePhong = function(node){
-    var phong = { };
+  var parseLightingModel = function(node){
+    var lightingmodel = { };
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
         case 'emission':
-          phong.emission = parseColor(child.firstElementChild);
+          lightingmodel.emission = parseColor(child.firstElementChild);
           break;
         case 'ambient':
-          phong.ambient = parseColor(child.firstElementChild);
+          lightingmodel.ambient = parseColor(child.firstElementChild);
           break;
         case 'diffuse':
-          phong.diffuse = parseMaterialParam(child);
+          lightingmodel.diffuse = parseMaterialParam(child);
           break;
         case 'specular':
-          phong.specular = parseMaterialParam(child);
+          lightingmodel.specular = parseMaterialParam(child);
           break;
         case 'shininess':
-          phong.shininess = parseScalar(child);
+          lightingmodel.shininess = parseScalar(child);
           break;
         case 'reflective':
-          phong.reflective = parseColor(child.firstElementChild);
+          lightingmodel.reflective = parseColor(child.firstElementChild);
           break;
         case 'reflectivity':
-          phong.reflectivity = parseScalar(child);
+          lightingmodel.reflectivity = parseScalar(child);
           break;
         case 'transparent':
-          phong.transparent = parseColor(child.firstElementChild);
+          lightingmodel.transparent = parseColor(child.firstElementChild);
           break;
         case 'transparency':
-          phong.transparency = parseScalar(child);
+          lightingmodel.transparency = parseScalar(child);
           break;
         default:
-          warn("Warning in parseEffectTechniquePhong: Unhandled node '" +child.nodeName + "'");
+          warn("Warning in parseLightingModel: Unhandled node '" +child.nodeName + "'");
       }
       child = child.nextElementSibling;
     }
-    return phong;
+    return lightingmodel;
   }
   
   var parseEffectTechnique = function(node){
     var technique = {
       'name': node.getAttribute('name'),
+      'sid': node.getAttribute('sid'),
       'lightingmodel': undefined
     };
     var child = node.firstElementChild;
@@ -226,7 +225,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       switch (child.nodeName) {
         case 'phong':
           technique.lightingmodelname = 'phong';
-          technique.lightingmodel = parseEffectTechniquePhong(child);
+          technique.lightingmodel = parseLightingModel(child);
+          break;
+        case 'lambert':
+          technique.lightingmodelname = 'lambert';
+          technique.lightingmodel = parseLightingModel(child);
           break;
         default:
           warn("Warning in parseEffectTechnique: Unhandled node '" +child.nodeName + "'");
@@ -437,12 +440,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   }
   
   var parseSampler = function(node) {
-    var inputs = {};
+    var inputs = [];
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
         case 'input':
-          inputs[child.getAttribute('semantic')] = parseInput(child);
+          inputs.push(parseInput(child));
           break;
         default:
           warn("Warning in parseLibaryGeometries: Unhandled node '" +child.nodeName + "'");
@@ -517,14 +520,14 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     var polygons = {
       material: node.getAttribute('material'),
       count: parseInt(node.getAttribute('count')),
-      inputs: {},
+      inputs: [],
       indices: []
     };
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
         case 'input':
-          polygons.inputs[child.getAttribute('semantic')] = parseInput(child);
+          polygons.inputs.push(parseInput(child));
           break;
         case 'p':
           var text_array = child.textContent.split(new RegExp("\\s+"));
@@ -610,7 +613,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   var parseVertexWeights = function(node) {
     var vertexWeights = {
       count: parseInt(node.getAttribute('count')),
-      inputs: {},
+      inputs: [],
       vcounts: [],
       indices: []
     };
@@ -618,7 +621,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     while(child){
       switch (child.nodeName) {
         case 'input':
-          vertexWeights.inputs[child.getAttribute('semantic')] = parseInput(child);
+          vertexWeights.inputs.push(parseInput(child));
           break;
         case 'vcount':
           var text_array = child.textContent.split(new RegExp("\\s+"));
@@ -645,12 +648,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   }
   
   var parseJoints = function(node) {
-    var joints = {};
+    var joints = [];
     var child = node.firstElementChild;
     while(child){
       switch (child.nodeName) {
         case 'input':
-          joints[child.getAttribute('semantic')] = parseInput(child);
+          joints.push(parseInput(child));
           break;
         default:
           warn("Warning in parseJoints: Unhandled node '" +child.nodeName + "'");
@@ -928,9 +931,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       for(var j in options.pathRemapping){
         if(path.substring(0, j.length) === j){
           path = options.pathRemapping[j] + path.substring(j.length);
-          return path;
         }
       }
+      // Now convert back slashes to URL forward slashes.
+      path = path.replace(/\\/g, "/");
     }
     return path;
   }
@@ -951,31 +955,30 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
       if(options.materialConstructorCallback){
         materialNode = options.materialConstructorCallback(lightingmodel, colladaData.libraryImages);
       }else{
-        
-      var materialOptions = { name: effectData.name };
-      var i;
-      for (i in options.materialOptions) {
-        materialOptions[i] = options.materialOptions[i];
-      }
-      for(i in options.materialProperties){
-        if(lightingmodel[i].color || typeof lightingmodel[i] == 'Number'){
-          materialOptions[options.materialProperties[i]] = lightingmodel[i];
+        var materialOptions = { name: effectData.name };
+        var i;
+        for (i in options.materialOptions) {
+          materialOptions[i] = options.materialOptions[i];
         }
-      }
-      for (i in options.materialMaps) {
-        if(lightingmodel[i].texture){
-          var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
-          var imageUrl = remapPath(textureData.path);
-          if(!imageLibrary[imageUrl]){
-            imageLibrary[imageUrl] = scene.constructNode('Image2D', {
-              url: imageUrl,
-              blockRedrawingTillResourceIsLoaded: options.blockRedrawingTillResourceIsLoaded
-            });
+        for(i in options.materialProperties){
+          if(lightingmodel[i].color || typeof lightingmodel[i] == 'Number'){
+            materialOptions[options.materialProperties[i]] = lightingmodel[i];
           }
-          materialOptions[options.materialMaps[i]] = imageLibrary[imageUrl];
         }
-      }
-      materialNode = scene.constructNode(options.materialType, materialOptions);
+        for (i in options.materialMaps) {
+          if(lightingmodel[i].texture){
+            var textureData = colladaData.libraryImages[lightingmodel[i].texture.texture];
+            var imageUrl = remapPath(textureData.path);
+            if(!imageLibrary[imageUrl]){
+              imageLibrary[imageUrl] = scene.constructNode('Image2D', {
+                url: imageUrl,
+                blockRedrawingTillResourceIsLoaded: options.blockRedrawingTillResourceIsLoaded
+              });
+            }
+            materialOptions[options.materialMaps[i]] = imageLibrary[imageUrl];
+          }
+        }
+        materialNode = scene.constructNode(options.materialType, materialOptions);
       }
       assetNodes[materialNode.getName()] = materialNode;
     }else{
@@ -990,7 +993,18 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
   var getSourceData = function(source, id){
     var accessor = source.technique.accessor;
     var elemid = id * accessor.stride;
+    if(elemid >= source.data.length){
+      throw "Error in source data indexing.";
+    }
     return source.data.slice( elemid, elemid + accessor.stride );
+  }
+  
+  var lookupInput = function(inputs, semantic){
+    for( var i=0; i<inputs.length; i++){
+      if(inputs[i].semantic == semantic){
+        return inputs[i];
+      }
+    }
   }
     
   var processGeometryData = function(meshData, trianglesData){
@@ -1021,21 +1035,23 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     var constructColor = function(args){
       return new FABRIC.RT.Color(args[0],args[1],args[2],args[3]);
     }
-    for(var semantic in trianglesData.inputs){
-      var input = trianglesData.inputs[semantic];
+    for(var i in trianglesData.inputs){
+      var input = trianglesData.inputs[i];
       var sourceName = input.source.slice(1);
-      switch(semantic){
+      switch(input.semantic){
         case 'VERTEX':
           meshTriangleSourceData.positions = {
             source: meshData.sources[meshData.vertices.source.slice(1)],
-            constructorFn: constructScaledVec3
+            constructorFn: constructScaledVec3,
+            defaultValue: new FABRIC.RT.Vec3()
           };
           processedData.geometryData.positions = [];
           break;
         case 'NORMAL':
           meshTriangleSourceData.normals = {
             source: meshData.sources[sourceName],
-            constructorFn: constructVec3
+            constructorFn: constructVec3,
+            defaultValue: new FABRIC.RT.Vec3(0,1,0)
           };
           processedData.geometryData.normals = [];
           break;
@@ -1043,17 +1059,21 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
           var uvset = 'uvs' + numUVsets;
           meshTriangleSourceData[uvset] = {
             source: meshData.sources[sourceName],
-            constructorFn: constructUVs
+            constructorFn: constructUVs,
+            defaultValue: new FABRIC.RT.Vec2()
           };
           processedData.geometryData[uvset] = [];
-          processedData.constructionOptions.tangentsFromUV = numUVsets;
-          numUVsets++;
-          processedData.constructionOptions.uvSets = numUVsets;
+          processedData.constructionOptions.tangentsFromUV = 0;
+          if(numUVsets==0){
+            numUVsets++;
+            processedData.constructionOptions.uvSets = numUVsets;
+          }
           break;
         case 'COLOR':
           meshTriangleSourceData.vertexColors = {
             source: meshData.sources[sourceName],
-            constructorFn: constructColor
+            constructorFn: constructColor,
+            defaultValue: new FABRIC.RT.Color()
           };
           processedData.geometryData.vertexColors = [];
           break;
@@ -1079,9 +1099,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
           var vattrid = 0; // vertex attribute id
           for(var inputid in meshTriangleSourceData){
             var elementid = attributeDataIndices[vattrid];
-            var sourceData = getSourceData(meshTriangleSourceData[inputid].source, elementid);
-            var constructorFn = meshTriangleSourceData[inputid].constructorFn;
-            processedData.geometryData[inputid].push(constructorFn(sourceData));
+            // if the element index is -1, we push the default value instead.
+            if(elementid < 0){
+              processedData.geometryData[inputid].push(meshTriangleSourceData[inputid].defaultValue);
+            }
+            else{
+              var sourceData = getSourceData(meshTriangleSourceData[inputid].source, elementid);
+              var constructorFn = meshTriangleSourceData[inputid].constructorFn;
+              processedData.geometryData[inputid].push(constructorFn(sourceData));
+            }
             vattrid++;
           }
           processedData.geometryData.indices.push(vcount);
@@ -1099,7 +1125,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     }
     return processedData;
   }
-  
   var constructGeometries = function(geometryData){
     var geometryNodes = [];
     var materialNodes = [];
@@ -1180,15 +1205,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
         for (var channelName in channels) {
           var animation = channels[channelName];
           var sampler = animation.sampler;
-          
-          if (!sampler.INPUT || !sampler.OUTPUT || !sampler.INTERPOLATION)
+          var samplerInput = lookupInput(sampler, 'INPUT');
+          var samplerOutput = lookupInput(sampler, 'OUTPUT');
+          var samplerInterpollation = lookupInput(sampler, 'INTERPOLATION');
+          if (!samplerInput || !samplerOutput || !samplerInterpollation)
             throw "Animation Channel must provide 'INPUT', 'OUTPUT', and 'INTERPOLATION' sources";
           
           // allright - now we need to create the data
           // let's check the first element of the INTERPOLATION semantic
-          var inputSource = animation.sources[sampler.INPUT.source.slice(1)];
-          var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
-          var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
+          var inputSource = animation.sources[samplerInput.source.slice(1)];
+          var outputSource = animation.sources[samplerOutput.source.slice(1)];
+          var interpolationSource = animation.sources[samplerInterpollation.source.slice(1)];
           
           var generateKeyframeTrack = function(channelName, keytimes, keyvalues, scaleFactor){
             var color;
@@ -1448,7 +1475,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     
     ////////////////////////////////////////////////////////////////////////////
     // Construct the Rig
-    var jointDataSource = controllerData.sources[controllerData.vertex_weights.inputs.JOINT.source.slice(1)];
+    var jointInput = lookupInput(controllerData.vertex_weights.inputs, 'JOINT');
+    var jointDataSource = controllerData.sources[jointInput.source.slice(1)];
     
     // Look up through the hierarchy and find the actual root.
     var joint =  sceneData.nodeLibrary[jointDataSource.data[0]];
@@ -1461,7 +1489,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     var skeletonData = constructRigFromHierarchy(sceneData, joint.name, name);
     
     
-    var bindPoseDataSource = controllerData.sources[controllerData.joints.INV_BIND_MATRIX.source.slice(1)];
+    var invBindMatrixInput = lookupInput(controllerData.joints, 'INV_BIND_MATRIX');
+    var bindPoseDataSource = controllerData.sources[invBindMatrixInput.source.slice(1)];
     var invmatrices = [];
     for (var j = 0; j < jointDataSource.data.length; j++) {
       var bindPoseValues = getSourceData(bindPoseDataSource, j);
@@ -1477,7 +1506,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options, call
     // per vertex, and this is primarily so we can use the GPU for enveloping.
     // Here must convert the source data, which can have any number of bone influences
     // per vertex, down to 4. 
-    var vertexWeightsSource = controllerData.sources[controllerData.vertex_weights.inputs.WEIGHT.source.slice(1)];
+    var vertexWeightsInput = lookupInput(controllerData.vertex_weights.inputs, 'WEIGHT');
+    var vertexWeightsSource = controllerData.sources[vertexWeightsInput.source.slice(1)];
     var bones = skeletonData.skeletonNode.getBones();
     var boneIds = [];
     var boneWeights = [];

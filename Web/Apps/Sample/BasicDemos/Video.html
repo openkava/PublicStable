@@ -39,7 +39,7 @@ FABRIC.require(["SG/SceneGraph",
   FABRIC.SceneGraph.defineEffectFromFile('VideoDemoMaterial', 'Shaders/VideoDemoShader.xml');
 
   // create a scene with 25 fps  
-  var scene = FABRIC.SceneGraph.createScene({timeStep: 1.0/25.0});
+  scene = FABRIC.SceneGraph.createScene({timeStep: 1.0/25.0});
 
   // create the viewport  
   var viewport = scene.constructNode('Viewport', {
@@ -129,7 +129,7 @@ $(document).ready(function() {
   
   scene.addEventListener('timechanged', function(evt){
     if(evt.playing){
-      $('#globalTime').slider('value', videoNode.getAnimationController().getLocalTime());
+      $('#globalTime').slider('value', videoNode.getAnimationControllerNode().getLocalTime());
     }
   });
   
@@ -196,6 +196,7 @@ $(document).ready(function() {
       }
       
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });

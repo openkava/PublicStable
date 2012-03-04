@@ -1,6 +1,6 @@
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+  /*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 use RGBA;
 use FabricOGL;
@@ -8,8 +8,17 @@ use FabricOGL;
 operator grabViewport(
   io Size width,
   io Size height,
-  io RGBA pixels[]
+  io RGBA pixels[],
+  io Integer viewportFbo
 ) {
+  Integer prevFbos[];
+  prevFbos.resize(1);
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, prevFbos);
+  Integer prevFbo = prevFbos[0];
+  
+  if(viewportFbo >= 0 && prevFbo != viewportFbo){
+    glBindFramebuffer(GL_FRAMEBUFFER, viewportFbo);
+  }
   Integer viewportParams[];
   viewportParams.resize(4);
   glGetIntegerv(GL_VIEWPORT, viewportParams);
@@ -25,7 +34,7 @@ operator grabViewport(
     glReadBuffer( GL_FRONT );
     glReadPixels( viewportParams[0], viewportParams[1], viewportParams[2], viewportParams[3], GL_RGBA, GL_UNSIGNED_BYTE, pixels.data );
     glPopAttrib();
-
+    
     //For some reason openGL image is flipped vertically; flip it back to normal
     for( Size row = 0; row < height/2; ++row )
     {
@@ -39,5 +48,9 @@ operator grabViewport(
         pixels[ offset2 + col ] = pixIdx1;
       }
     }
+  }
+  
+  if(viewportFbo >= 0 && prevFbo != viewportFbo){
+    glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
   }
 }

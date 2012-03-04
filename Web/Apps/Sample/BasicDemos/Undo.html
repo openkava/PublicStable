@@ -28,7 +28,7 @@ FABRIC.require(["SG/SceneGraph",
 $(document).ready(function() {
   ///////////////////////////////////////////////////////////////
   // Create the scene.
-  var scene = FABRIC.SceneGraph.createScene();
+  scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
     enableRaycasting: true,
@@ -95,7 +95,7 @@ $(document).ready(function() {
           // when manipulations caused multiple data values to change.
           undoManager.openUndoTransaction();
           var newVal, prevVal = ui.value;
-          undoManager.addAction({
+          undoManager.addTransaction({
             onClose: function() {
               // When the undo transaction is closed, we record the new value.
               newVal = $slider.slider('value');
@@ -134,6 +134,7 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      fabricDemoSceneLoaded = true;
       return true;
     }
   });

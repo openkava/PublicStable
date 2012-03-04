@@ -1,8 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
-
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["RT/Math",
                "RT/OGLShaderProgram",
@@ -48,7 +46,7 @@ FABRIC.RT.OGLRenderTarget = function(width, height, textures, options) {
   this.numColorBuffers = 0;
   this.clearDepth = true;
   this.clearColorFlag = true;
-  this.clearColor = (options && options.clearColor) ? options.clearColor : FABRIC.RT.rgba();
+  this.clearColor = (options && options.clearColor) ? options.clearColor : FABRIC.RT.rgba(0,0,0,0);
   // Here we define some constants that are used to define the type
   // of buffer. We need a way of defining constants in KL.
   this.DEPTH_BUFFER = 1;
@@ -111,11 +109,18 @@ FABRIC.RT.oglDepthRenderTarget = function(size){
 
 
 
-FABRIC.RT.oglPostProcessingRenderTarget = function(){
+FABRIC.RT.oglPostProcessingRenderTarget = function(options){
   return new FABRIC.RT.OGLRenderTarget(
     0,
     0,
     [
+      new FABRIC.RT.OGLRenderTargetTextureDesc(
+        1, // DEPTH_BUFFER
+        new FABRIC.RT.OGLTexture2D(
+          FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+          FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+          FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+      ),
       new FABRIC.RT.OGLRenderTargetTextureDesc(
         2, // COLOR_BUFFER
         new FABRIC.RT.OGLTexture2D(
@@ -123,7 +128,8 @@ FABRIC.RT.oglPostProcessingRenderTarget = function(){
           FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
           FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE)
       )
-    ]
+    ],
+    options
   )
 }
 

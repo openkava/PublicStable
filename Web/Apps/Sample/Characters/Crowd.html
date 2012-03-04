@@ -15,6 +15,28 @@
     
 <script type="text/javascript">
 
+$(document).ready(function() {
+
+  $('#openDebugger').button();
+  $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+  $('#step').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-step'
+    }
+  });
+  $("#displayControllerDebugging").attr('checked', true);
+  $("#displayFootMotionDebugging").attr('checked', true);
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
 FABRIC.require(["SG/SceneGraph",
                 "SG/Geometry",
                 "SG/Materials",
@@ -33,25 +55,6 @@ FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.x
 FABRIC.SceneGraph.defineEffectFromFile('PhongTexturedSkinnedInstancesMaterial', 'FABRIC_ROOT/SG/Shaders/PhongTexturedSkinnedInstancesShader.xml');
 
 
-$(document).ready(function() {
-
-
-  $('#play').button({
-      text: true,
-      icons: {
-        primary: 'ui-icon-play'
-      }
-    });
-  $('#step').button({
-    text: true,
-    icons: {
-      primary: 'ui-icon-step'
-    }
-  });
-  $("#displayControllerDebugging").attr('checked', true);
-  $("#displayFootMotionDebugging").attr('checked', true);
-  
-  
   $('#openDebugger').button();
   
   try{
@@ -130,19 +133,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  
-  
-  /*
-    // create the scene grid
-  scene.constructNode('Instance', {
-    geometryNode: scene.constructNode('Grid', {
-        size_x: gridSize,
-        size_z: gridSize,
-        sections_x: 20,
-        sections_z: 20 }),
-    materialNode: scene.constructNode('FlatMaterial')
-  });
-  */
   
   // create a simulation world
   var bulletWorldNode;
@@ -288,24 +278,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         instanceCount: agentCount
       }));
     }
-    /*
-    var characterInstance = scene.constructNode("CharacterInstance", {
-      rigNode:ikrig,
-      geometryNode: characterMesh,
-      materialNode: materialNode
-    });
-    */
   });
   
-  
-
-  /*
-  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
-    characterRigNode:ikrig,
-    boneradius: 0.2,
-    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
-  });
-  */
   
   $("#selectCharacter").val(rigName);
   $("#selectCharacter").change(function() {
@@ -337,9 +311,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     localStorage.setItem("crowdParams", JSON.stringify(crowdParams));
   }
   
-  $('#loadingDialog').dialog({
-    modal: true
-  });
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
       value: (1.0-(doneWeight/totalWeight))*100
@@ -421,7 +392,7 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              A crowd of walkers, all solved using the multi-threaded graph, and drawn at once using a single draw call.
+              A crowd of character, all solved using the multi-threaded graph, and drawn at once using a single draw call using instanced rendering.
             </div><!--content-->
           </div><!--box-->
     

@@ -1,6 +1,6 @@
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 use Xfo, Mat33, Mat44;
 use OGLShaderProgram;
@@ -39,11 +39,11 @@ operator loadProjectionMatrices(
 }
 
 
-function loadModelProjectionMatricesFn(
+operator loadModelProjectionMatrices(
   io OGLShaderProgram shaderProgram,
-  Xfo modelXfo,
-  Mat44 cameraMatrix,
-  Mat44 projectionMatrix
+  io Xfo modelXfo,
+  io Mat44 cameraMatrix,
+  io Mat44 projectionMatrix
 ) {
 //  report("loadModelProjectionMatrices");
   Integer location;
@@ -74,33 +74,3 @@ function loadModelProjectionMatricesFn(
   }
 }
 
-operator loadModelProjectionMatrices(
-  io OGLShaderProgram shaderProgram,
-  io Xfo modelXfo,
-  io Mat44 cameraMatrix,
-  io Mat44 projectionMatrix
-) {
-  loadModelProjectionMatricesFn(
-    shaderProgram,
-    modelXfo,
-    cameraMatrix,
-    projectionMatrix
-  );
-}
-
-operator loadIndexedModelProjectionMatrices(
-  io OGLShaderProgram shaderProgram,
-  io Xfo modelXfos<>,
-  io Size modelXfoIndex,
-  io Mat44 cameraMatrix,
-  io Mat44 projectionMatrix
-) {
-if(modelXfoIndex==10)
-  report modelXfos[10];
-  loadModelProjectionMatricesFn(
-    shaderProgram,
-    modelXfos[modelXfoIndex],
-    cameraMatrix,
-    projectionMatrix
-  );
-}

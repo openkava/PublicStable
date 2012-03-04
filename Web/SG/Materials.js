@@ -1,7 +1,6 @@
-
-//
-// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
-//
+/*
+ *  Copyright 2010-2012 Fabric Engine Inc. All rights reserved.
+ */
 
 FABRIC.define(["SG/SceneGraph",
                "SG/Geometry",
@@ -663,7 +662,7 @@ FABRIC.SceneGraph.registerNodeType('PostProcessEffect', {
         parentEventHandler: false,
         separateShaderNode: false,
         assignUniformsOnPostDescend:true,
-        renderTarget: FABRIC.RT.oglPostProcessingRenderTarget(0)
+        renderTarget: FABRIC.RT.oglPostProcessingRenderTarget()
       });
 
     if (options.fragmentShader === undefined) {
@@ -1106,16 +1105,16 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
     }});
 };
 
-FABRIC.SceneGraph.defineEffectFromFile('EmptyMaterial', 'FABRIC_ROOT/SG/Shaders/EmptyShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('FlatMaterial', 'FABRIC_ROOT/SG/Shaders/FlatShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('FlatPerInstanceMaterial', 'FABRIC_ROOT/SG/Shaders/FlatPerInstanceShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('FlatScreenSpaceMaterial', 'FABRIC_ROOT/SG/Shaders/FlatScreenSpaceShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongMaterial', 'FABRIC_ROOT/SG/Shaders/PhongShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('ShadowMaterial', 'FABRIC_ROOT/SG/Shaders/ShadowMapShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('WireframeMaterial', 'FABRIC_ROOT/SG/Shaders/WireframeShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('NormalMaterial', 'FABRIC_ROOT/SG/Shaders/NormalShader.xml');
 
 FABRIC.SceneGraph.defineEffectFromFile('FlatTextureMaterial', 'FABRIC_ROOT/SG/Shaders/FlatTextureShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('FlatUVMaterial', 'FABRIC_ROOT/SG/Shaders/FlatUVShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('FlatBlendTextureMaterial', 'FABRIC_ROOT/SG/Shaders/FlatBlendTextureShader.xml');
+
 FABRIC.SceneGraph.defineEffectFromFile('PhongInstancingMaterial', 'FABRIC_ROOT/SG/Shaders/PhongInstancingShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/PhongInstancingExtShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongTextureMaterial', 'FABRIC_ROOT/SG/Shaders/PhongTextureShader.xml');
@@ -1129,27 +1128,23 @@ FABRIC.SceneGraph.defineEffectFromFile('PhongBumpReflectSkinningMaterial', 'FABR
 
 FABRIC.SceneGraph.defineEffectFromFile('VertexColorMaterial', 'FABRIC_ROOT/SG/Shaders/VertexColorShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongVertexColorMaterial', 'FABRIC_ROOT/SG/Shaders/PhongVertexColorShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('NormalMaterial', 'FABRIC_ROOT/SG/Shaders/NormalShader.xml');
-
-FABRIC.SceneGraph.defineEffectFromFile('PhongTesselationMaterial', 'FABRIC_ROOT/SG/Shaders/PhongTesselationShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('HairMaterial', 'FABRIC_ROOT/SG/Shaders/HairShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('HairTextureMaterial', 'FABRIC_ROOT/SG/Shaders/HairTextureShader.xml');
 
 FABRIC.SceneGraph.defineEffectFromFile('PhongReflectMaterial', 'FABRIC_ROOT/SG/Shaders/PhongReflectShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('GlassMaterial', 'FABRIC_ROOT/SG/Shaders/GlassShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('WireframeMaterial', 'FABRIC_ROOT/SG/Shaders/WireframeShader.xml');
 
 FABRIC.SceneGraph.defineEffectFromFile('OutlineShader', 'FABRIC_ROOT/SG/Shaders/OutlineShader.xml');
-
 FABRIC.SceneGraph.defineEffectFromFile('PointFlatMaterial', 'FABRIC_ROOT/SG/Shaders/PointFlatShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('FlatGradientMaterial', 'FABRIC_ROOT/SG/Shaders/FlatGradientShader.xml');
 
 FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect', {
   briefDesc: 'The BloomPostProcessEffect node draws a bloom effect after the viewport has been drawn.',
   detailedDesc: 'The BloomPostProcessEffect node draws a bloom effect after the viewport has been drawn.',
   parentNodeDesc: 'PostProcessEffect',
   factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        clearColor : FABRIC.RT.rgba(0.1,0.1,0.1,1)
+    });
     options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SG/Shaders/BloomPixelShader.glsl');
+    options.renderTarget = FABRIC.RT.oglPostProcessingRenderTarget( { clearColor : options.clearColor } )
 
     var bloomPostProcessEffect = scene.constructNode('PostProcessEffect', options);
     return bloomPostProcessEffect;
@@ -1178,7 +1173,7 @@ FABRIC.SceneGraph.registerNodeType('EdgeDetectionPostProcessEffect', {
     options.shaderUniforms = {
       width: { name: 'u_width', owner: 'window', type:'Integer' },
       height: { name: 'u_height', owner: 'window', type:'Integer' },
-      colorMix: { name: 'u_colorMix', type:'Scalar' }
+      colorMix: { name: 'u_colorMix', type:'Scalar', defaultValue: options.colorMix,  }
     };
 
     var edgeDetectionEffect = scene.constructNode('PostProcessEffect', options);

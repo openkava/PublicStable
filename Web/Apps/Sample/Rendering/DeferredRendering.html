@@ -23,6 +23,11 @@ FABRIC.require(["SG/SceneGraph",
                 "SG/DeferredRendering",
                 "SG/Parsers/parseOBJ"], function() {
 
+FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePassPhongMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePassPhongInstancingMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPrePhongInstancingExtShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostPhongSpotLightInstancingExtShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FlatInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/FlatInstancingExtShader.xml');
+
 FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
   briefDesc: '',
   detailedDesc: '',
@@ -71,8 +76,6 @@ FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
   return moveCarsNode;
 }});
 
-FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/DeferredPostPhongSpotLightInstancingExtShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('FlatInstancingExtMaterial', 'FABRIC_ROOT/SG/Shaders/FlatInstancingExtShader.xml');
     
 $(document).ready(function() {
   
@@ -158,9 +161,10 @@ $(document).ready(function() {
         doubleSided: false,
         tangentsFromUV: 0
       }),
-      materialNode: deferredRenderer.addPrePassPhongMaterial({
+      materialNode: scene.constructNode('DeferredPrePassPhongMaterial', {
         diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3),
-        specularFactor: 0.1
+        specularFactor: 0.1,
+        rendererNode: deferredRenderer
       })
     });
 
@@ -188,13 +192,14 @@ $(document).ready(function() {
         length: streetLength,
         width: streetWidth
       }),
-    materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
+    materialNode: scene.constructNode('DeferredPrePassPhongInstancingMaterial',{
       diffuseColor: FABRIC.RT.rgb(0.6, 0.6, 0.6),
       transformTextureNode: scene.constructNode('TransformTexture', {
         transformNode: streetSlicedTransform,
         dynamic: false
       }),
-      specularFactor: 0.1
+      specularFactor: 0.1,
+      rendererNode: deferredRenderer
     }),
     transformNode: streetSlicedTransform
   });
@@ -291,13 +296,14 @@ $(document).ready(function() {
   scene.importAssetFile('Models/carmod2.obj', {}, function(assetNodes){
     scene.constructNode('Instance', {
       geometryNode: assetNodes['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
-      materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
+      materialNode: scene.constructNode('DeferredPrePassPhongInstancingMaterial', {
         diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
         transformTextureNode: scene.constructNode('TransformTexture', {
           transformNode: carSlicedTransform,
           dynamic: true
         }),
-        specularFactor: 1.0
+        specularFactor: 1.0,
+        rendererNode: deferredRenderer
       }),
       transformNode: carSlicedTransform
     });
@@ -326,7 +332,7 @@ $(document).ready(function() {
 
   scene.constructNode('Instance', {
     geometryNode: carLightConeBox,
-    materialNode: deferredRenderer.addPostPassMaterial('DeferredPostPhongSpotLightInstancingExtMaterial', {
+    materialNode: scene.constructNode('DeferredPostPhongSpotLightInstancingExtMaterial', {
       lightColor: FABRIC.RT.rgb255(140,140,255),
       lightCosCutoff: carLightCosCutoff,
       lightIntensity: 3.5,
@@ -336,7 +342,8 @@ $(document).ready(function() {
       transformTextureNode: scene.constructNode('TransformTexture', {
         transformNode: carLightSlicedTransform,
         dynamic: true
-      })
+      }),
+      rendererNode: deferredRenderer
     }),
     transformNode: carLightSlicedTransform
   });
@@ -469,7 +476,7 @@ $(document).ready(function() {
 
   scene.constructNode('Instance', {
     geometryNode: streetLightConeBox,
-    materialNode: deferredRenderer.addPostPassMaterial('DeferredPostPhongSpotLightInstancingExtMaterial', {
+    materialNode: scene.constructNode('DeferredPostPhongSpotLightInstancingExtMaterial', {
       lightColor: FABRIC.RT.rgb255(255,150,90),
       lightCosCutoff: streetLightCosCutoff,
       lightIntensity: 1,
@@ -479,7 +486,8 @@ $(document).ready(function() {
       transformTextureNode: scene.constructNode('TransformTexture', {
         transformNode: streetLightSlicedTransform,
         dynamic: false
-      })
+      }),
+      rendererNode: deferredRenderer
     }),
     transformNode: streetLightSlicedTransform
   });
