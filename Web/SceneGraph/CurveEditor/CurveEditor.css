@@ -1,0 +1,40 @@
+path.CurvePath {
+  fill: none;
+  stroke-opacity:1.0;
+  stroke-width:1.5;
+}
+
+path.TimeStripePath {
+  fill: none;
+  stroke:black;
+  stroke-opacity:1.0;
+  stroke-width:1;
+}
+
+path.KeyframeHandle {
+  fill: none;
+  stroke:black;
+  stroke-opacity:1.0;
+  stroke-width:1.0;
+}
+
+rect.EventCatcher {
+  fill-opacity:0.0;
+  stroke-opacity:0.0;
+}
+
+
+rect.Selected {
+  stroke:white;
+}
+
+#curveContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: solid 1px #CCC;
+  box-shadow: inset 0 1px 3px #bebebe;
+/*  background: #E1DDDC url(images/bg-page.jpg) repeat left top;*/
+}

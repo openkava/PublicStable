@@ -1,0 +1,29 @@
+{
+"metadata": {},
+"sceneGraphNodes":[
+  {
+    "name":"AimTransform",
+    "type":"AimTransform",
+    "options":{"hierarchical":false,"name":"AimTransform"},
+    "data":{"globalXfo":{"ori":{"v":{"x":-0.1598750948905945,"y":0.2795872986316681,"z":0.04727381095290184},"w":0.945534884929657},"tr":{"x":2.040706872940064,"y":1.035033464431763,"z":2.725669145584106},"sc":{"x":1,"y":1,"z":1}}}
+  },
+  {
+    "name":"TargetCamera",
+    "type":"TargetCamera",
+    "options":{"name":"TargetCamera"},
+    "data":{"transformNodeMember":"globalXfo","transformNode":"AimTransform","nearDistance":0.25,"farDistance":1000,"fovY":1.047197580337524,"focalDistance":3.594705820083618}
+  },
+  {
+    "name":"VolumeOpacityInstance",
+    "type":"VolumeOpacityInstance",
+    "options":{"name":"VolumeOpacityInstance","drawable":true,"createBoundingBoxNode":true},
+    "data":{"transparency":0.699999988079071,"specularFactor":0.6,"brightnessFactor":0.5,"invertColor":0,"minOpacity":0,"maxOpacity":1,"cropMin":{"x":-1,"y":-0.2000000029802322,"z":-1},"cropMax":{"x":1,"y":0.5,"z":1}}
+  },
+  {
+    "name":"Image3DWithHistogram",
+    "type":"Image3DWithHistogram",
+    "options":{"name":"Image3DWithHistogram","createDgNode":true,"createResourceLoadNode":true,"createLoadTextureEventHandler":true},
+    "data":{"url":"Resources/ChestMid.nrrd"}
+  }
+]
+}

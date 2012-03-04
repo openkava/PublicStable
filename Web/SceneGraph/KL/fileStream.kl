@@ -1,0 +1,53 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use FabricFILESYSTEM;
+use FabricFileHandle;
+use FabricFILESTREAM;
+use FabricFileStream;
+
+operator openFileStreamForWriting(
+  io String path,
+  io FabricFileStream stream,
+  io String names[],
+  io Size seekOffsets[]
+){
+  report "openFileStream";
+  if(!stream.isWritable()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"w");
+  }
+  if(stream.isWritable() && names.size() > 0) {
+    seekOffsets.resize(names.size());
+    stream.writeStringArray(names);
+    for(Size i=0;i<names.size();i++)
+    {
+      // store the seek offsets of these
+      // size values, so that we can seek later
+      seekOffsets[i] = stream.getSeek();
+      stream.writeSize(0);
+    }
+  }
+}
+
+operator openFileStreamForReading(
+  io String path,
+  io FabricFileStream stream
+){
+  report "openFileStream";
+  if(!stream.isReadable()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"r");
+  }
+}
+
+
+operator closeFileStream(
+  io FabricFileStream stream
+){
+  report "closeFileStream";
+  stream.close();
+}
