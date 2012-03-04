@@ -7,5 +7,5 @@
 'equal2': [ 0 ]
 'equal3': [ 0 ]
 'almostEqual': [ 1 ]
-'toMat33': [ 0, -1, 0, 0, 0, 1, -1, 0, 0 ]
-'matMultVector': [ 0, 0, -1 ]
+'toMat33': [ 0, 0, 1, 1, 0, 0, 0, 1, 0 ]
+'matMultVector': [ 0, 1, 0 ]

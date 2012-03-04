@@ -7,9 +7,13 @@ zip -qr js-scene-graph-resources-$DATE.zip \
   Apps/Sample/BasicDemos/Resources \
   Apps/Sample/BasicDemos/Resources/cubemap_opensea \
   Apps/Sample/Characters/Assets \
-  Apps/Sample/Rendering/Resources \
+  Apps/Sample/Characters/Textures \
+  Apps/Sample/Rendering/Models \
   Apps/Sample/Tutorials/Resources \
   Apps/Sample/Alembic/Models \
   Apps/Sample/Lidar/Models \
   Apps/Sample/UseCases/V8Engine/Models \
-  Apps/Sample/UseCases/BulletPlayGround/Resources
+  Apps/Sample/UseCases/BulletPlayGround/Resources \
+  Apps/Sample/UseCases/MedicalImaging/Resources \
+  Apps/Sample/UseCases/CharacterAnimationTool/Resources\
+  Apps/Sample/UseCases/CharacterAnimationTool/Textures

@@ -1,15 +1,10 @@
 
+FABRIC = require('Fabric').createClient();
+require( "./include/unitTestUtils.js" );
+require( "../../../Web/SceneGraph/RT/Math.js" );
+Math.verboseLogFunction = console.log;
 
-
-
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
-
-load( "unitTestUtils.js.inc" );
-load( "../../../Web/SceneGraph/RT/Math.js" );
-Math.verboseLogFunction = print;
-
-var testCode = loadTestFile( 'Vec' );
+var testCode = FABRIC.UnitTestUtils.loadTestFile( 'Vec' );
 
 var dimSpecificCodePrefix = [];
 dimSpecificCodePrefix[2] =
@@ -33,13 +28,12 @@ dimSpecificCodeTests[4] = '';
 
 for( var dim = 2; dim <= 4; ++dim ) {
   var type = 'Vec' + dim;
-  print( '****** ' + type + ' Tests ******' );
-  appendKLOpAdaptors(type, [ '+', '+=', '-', '-=', '*', '*=', ['*','Scalar'], ['*=','Scalar'], '/', '/=', ['/','Scalar'], ['/=','Scalar'] ] );
-  loadType( type );
-  defineInPlaceOpAdaptors(type, [ '+=', '-=', '*=', [ '*=', 'Scalar' ], '/=', [ '/=', 'Scalar' ] ] );
+  console.log( '****** ' + type + ' Tests ******' );
+  FABRIC.UnitTestUtils.appendKLOpAdaptors(type, [ '+', '+=', '-', '-=', '*', '*=', ['*','Scalar'], ['*=','Scalar'], '/', '/=', ['/','Scalar'], ['/=','Scalar'] ] );
+  FABRIC.UnitTestUtils.loadType( type );
+  FABRIC.UnitTestUtils.defineInPlaceOpAdaptors(type, [ '+=', '-=', '*=', [ '*=', 'Scalar' ], '/=', [ '/=', 'Scalar' ] ] );
 
-  runTests( type, [[type,'v1'], [type,'v2'], [type,'res'], ['Scalar','s1']], dimSpecificCodePrefix[dim] + testCode + dimSpecificCodeTests[dim] );
+  FABRIC.UnitTestUtils.runTests( type, [[type,'v1'], [type,'v2'], [type,'res'], ['Scalar','s1']], dimSpecificCodePrefix[dim] + testCode + dimSpecificCodeTests[dim] );
 }
 
-F.flush();
-FC.dispose();
+FABRIC.close();

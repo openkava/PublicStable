@@ -39,19 +39,18 @@ namespace Fabric
       virtual void const *getDefaultData() const;
       virtual size_t getIndirectMemoryUsage( void const *data ) const;
       
-      virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
-      virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
-      virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
-      virtual void decodeJSON( Util::JSONEntityInfo const &entityInfo, void *data ) const;
+      virtual void encodeJSON( void const *data, JSON::Encoder &encoder ) const;
+      virtual void decodeJSON( JSON::Entity const &entity, void *data ) const;
      
       virtual bool isShallow() const;
       virtual bool isEquivalentTo( RC::ConstHandle< RT::Impl > const &desc ) const;
+      virtual bool isExportable() const;
 
       // ArrayImpl
       
       virtual size_t getNumMembers( void const *data ) const;
-      virtual void const *getMemberData( void const *data, size_t index ) const;
-      virtual void *getMemberData( void *data, size_t index ) const;
+      virtual void const *getImmutableMemberData( void const *data, size_t index ) const;
+      virtual void *getMutableMemberData( void *data, size_t index ) const;
       
       // VariableArrayImpl
       
@@ -67,10 +66,7 @@ namespace Fabric
     
       VariableArrayImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &memberImpl );
       
-      static size_t AllocNumMembersForNumMembers( size_t numMembers )
-      {
-        return std::max( size_t(15), Util::nextPowerOfTwoMinusOne( numMembers ) );
-      }
+      static size_t ComputeAllocatedSize( size_t prevNbAllocated, size_t nbRequested );
             
       void const *getImmutableMemberData_NoCheck( void const *data, size_t index ) const
       { 

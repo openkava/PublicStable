@@ -16,12 +16,6 @@
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/Null.h>
-#include <Fabric/Base/JSON/Integer.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Object.h>
-#include <Fabric/Base/JSON/Array.h>
-#include <Fabric/Base/JSON/Boolean.h>
 
 namespace Fabric
 {
@@ -33,7 +27,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         operator_->jsonDesc( jg );
       }
       operator_->jsonNotifyDelta( json );
@@ -136,7 +130,7 @@ namespace Fabric
       
       Util::SimpleString json;
       {
-        Util::JSONGenerator jg( &json );
+        JSON::Encoder jg( &json );
         jsonDescDiagnostics( jg );
       }
       jsonNotifyMemberDelta( "diagnostics", 11, json );
@@ -202,7 +196,7 @@ namespace Fabric
         
         Util::SimpleString json;
         {
-          Util::JSONGenerator jg( &json );
+          JSON::Encoder jg( &json );
           jsonDescEntryFunctionName( jg );
         }
         jsonNotifyMemberDelta( "entryFunctionName", 17, json );
@@ -246,7 +240,7 @@ namespace Fabric
         {
           Util::SimpleString json;
           {
-            Util::JSONGenerator jg( &json );
+            JSON::Encoder jg( &json );
             jsonDescFilename( jg );
           }
           jsonNotifyMemberDelta( "filename", 8, json );
@@ -255,7 +249,7 @@ namespace Fabric
         {
           Util::SimpleString json;
           {
-            Util::JSONGenerator jg( &json );
+            JSON::Encoder jg( &json );
             jsonDescSourceCode( jg );
           }
           jsonNotifyMemberDelta( "sourceCode", 10, json );
@@ -303,126 +297,138 @@ namespace Fabric
         throw Exception( "missing operator " + _(m_entryFunctionName) );
     }
       
-    void Operator::jsonDesc( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDesc( JSON::Encoder &resultEncoder ) const
     {
-      NamedObject::jsonDesc( resultJG );
+      NamedObject::jsonDesc( resultEncoder );
     }
       
-    void Operator::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    void Operator::jsonDesc( JSON::ObjectEncoder &resultObjectEncoder ) const
     {
-      NamedObject::jsonDesc( resultJOG );
+      NamedObject::jsonDesc( resultObjectEncoder );
       
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "filename", 8 );
-        jsonDescFilename( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "filename", 8 );
+        jsonDescFilename( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "sourceCode", 10 );
-        jsonDescSourceCode( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "sourceCode", 10 );
+        jsonDescSourceCode( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "entryFunctionName", 17 );
-        jsonDescEntryFunctionName( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "entryFunctionName", 17 );
+        jsonDescEntryFunctionName( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "diagnostics", 11 );
-        jsonDescDiagnostics( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "diagnostics", 11 );
+        jsonDescDiagnostics( memberEncoder );
       }
       {
-        Util::JSONGenerator memberJG = resultJOG.makeMember( "mainThreadOnly", 14 );
-        jsonDescMainThreadOnly( memberJG );
+        JSON::Encoder memberEncoder = resultObjectEncoder.makeMember( "mainThreadOnly", 14 );
+        jsonDescMainThreadOnly( memberEncoder );
       }
     }
 
     void Operator::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
+      JSON::Entity const &cmd,
+      JSON::Entity const &arg,
+      JSON::ArrayEncoder &resultArrayEncoder
       )
     {
-      if ( cmd == "setEntryFunctionName" )
-        jsonExecSetEntryFunctionName( arg, resultJAG );
-      else if ( cmd == "setSourceCode" )
-        jsonExecSetSourceCode( arg, resultJAG );
-      else if ( cmd == "setMainThreadOnly" )
-        jsonExecSetMainThreadOnly( arg, resultJAG );
-      else NamedObject::jsonExec( cmd, arg, resultJAG );
+      if ( cmd.stringIs( "setEntryFunctionName", 20 ) )
+        jsonExecSetEntryFunctionName( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "setSourceCode", 13 ) )
+        jsonExecSetSourceCode( arg, resultArrayEncoder );
+      else if ( cmd.stringIs( "setMainThreadOnly", 17 ) )
+        jsonExecSetMainThreadOnly( arg, resultArrayEncoder );
+      else NamedObject::jsonExec( cmd, arg, resultArrayEncoder );
     }
     
-    void Operator::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
+    void Operator::jsonExecCreate( JSON::Entity const &arg, RC::Handle<Context> const &context, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      Create( arg->toString()->value(), context );
+      arg.requireString();
+      Create( arg.stringToStdString(), context );
     }
       
-    void Operator::jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Operator::jsonExecSetSourceCode( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
-      
       std::string filename;
-      try
+      std::string sourceCode;
+
+      arg.requireObject();
+      JSON::ObjectDecoder argObjectDecoder( arg );
+      JSON::Entity keyString, valueEntity;
+      while ( argObjectDecoder.getNext( keyString, valueEntity ) )
       {
-        filename = argObject->get("filename")->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "filename: " + e;
+        try
+        {
+          if ( keyString.stringIs( "filename", 8 ) )
+          {
+            valueEntity.requireString();
+            filename = valueEntity.stringToStdString();
+          }
+          else if ( keyString.stringIs( "sourceCode", 10 ) )
+          {
+            valueEntity.requireString();
+            sourceCode = valueEntity.stringToStdString();
+          }
+        }
+        catch ( Exception e )
+        {
+          argObjectDecoder.rethrow( e );
+        }
       }
       
-      std::string sourceCode;
-      try
-      {
-        sourceCode = argObject->get("sourceCode")->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "sourceCode: " + e;
-      }
+      if ( filename.empty() )
+        throw Exception( "missing 'filename'" );
+      if ( sourceCode.empty() )
+        throw Exception( "missing 'sourceCode'" );
         
       setFilenameAndSourceCode( filename, sourceCode );
     }
       
-    void Operator::jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Operator::jsonExecSetEntryFunctionName( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      setEntryFunctionName( arg->toString()->value() );
+      arg.requireString();
+      setEntryFunctionName( arg.stringToStdString() );
     }
     
-    void Operator::jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    void Operator::jsonExecSetMainThreadOnly( JSON::Entity const &arg, JSON::ArrayEncoder &resultArrayEncoder )
     {
-      setMainThreadOnly( arg->toBoolean()->value() );
+      arg.requireBoolean();
+      setMainThreadOnly( arg.booleanValue() );
     }
     
-    void Operator::jsonDescType( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDescType( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeString( "Operator", 8 );
+      resultEncoder.makeString( "Operator", 8 );
     }
     
-    void Operator::jsonDescFilename( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDescFilename( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeString( m_filename );
+      resultEncoder.makeString( m_filename );
     }
     
-    void Operator::jsonDescSourceCode( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDescSourceCode( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeString( m_sourceCode );
+      resultEncoder.makeString( m_sourceCode );
     }
     
-    void Operator::jsonDescEntryFunctionName( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDescEntryFunctionName( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeString( m_entryFunctionName );
+      resultEncoder.makeString( m_entryFunctionName );
     }
     
-    void Operator::jsonDescDiagnostics( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDescDiagnostics( JSON::Encoder &resultEncoder ) const
     {
       if ( m_code )
-        m_code->getDiagnostics().generateJSON( resultJG );
+        m_code->getDiagnostics().encodeJSON( resultEncoder );
       else
-        resultJG.makeArray();
+        resultEncoder.makeArray();
     }
     
-    void Operator::jsonDescMainThreadOnly( Util::JSONGenerator &resultJG ) const
+    void Operator::jsonDescMainThreadOnly( JSON::Encoder &resultEncoder ) const
     {
-      resultJG.makeBoolean( m_mainThreadOnly );
+      resultEncoder.makeBoolean( m_mainThreadOnly );
     }
-  };
-};
-
+  }
+}

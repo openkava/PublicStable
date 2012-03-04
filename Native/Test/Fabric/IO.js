@@ -1,91 +1,94 @@
 FABRIC = require('Fabric').createClient();
 
-node = FABRIC.DependencyGraph.createNode("node");
-node.addMember("resource", "FabricResource");
-node.addMember("resource2", "FabricResource");
-
-var path = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpenWithWriteAccess, "dummy title", "txt", "testfile");
-console.log(path.fileName);
-
-var path2 = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpen, "dummy title", "txt", "testfile");
-
 try
 {
-  FABRIC.IO.putTextFile("dummy", "pathShouldNotBeString");
+  FABRIC.IO.putTextFileContent("dummy", "badHandle");
 }
 catch(e)
 {
-  console.log(e);
+  console.log('Bad handle error: ' + e);
 }
+
+var readOnlyFileAndFolderHandles = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpen, "dummy title", "txt", "testfile");
 
 try {
-  FABRIC.IO.putTextFile("dummy", path2);
+  FABRIC.IO.putTextFileContent(readOnlyFileAndFolderHandles.file, "dummy");
 }
 catch (e) {
-  console.log("ErrorCantWriteIfOpenMode");//Can't console.log 'e' since it contains random bytes
+  console.log('No write access error: ' + e);
 }
 
-var path3 = {
-  folderHandle: "badHandle",
-  fileName: "dummy.txt"
-  };
+var fileAndFolderHandles = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpenWithWriteAccess, "dummy title", "txt", "testfile");
+console.log('User file name: ' + FABRIC.IO.getFileHandleInfo(fileAndFolderHandles.file).fileName);
+
+var relativeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(fileAndFolderHandles.folder + '/SubDir/testfile2.txt');
 
 try {
-  var badPath = FABRIC.IO.getTextFile(path3);
+  var dummy = FABRIC.IO.getTextFileContent(relativeFileHandle);
 }
 catch (e) {
-  console.log(e);
-}
+  console.log('File not found error');//'e' has random handle name; don't display it
+  }
 
-var path4 = {
-  folderHandle: path.folderHandle,
-  subFolders: ["SubDir"],
-  fileName: "testfile2.txt"
-  };
+FABRIC.IO.putTextFileContent(relativeFileHandle,"FileBody");
+var body = FABRIC.IO.getTextFileContent(relativeFileHandle);
+console.log('File content: ' + body);
 
-try {
-  var badPath = FABRIC.IO.getTextFile(path4);
-}
-catch (e) {
-  console.log("DirNotFound");//Can't console.log 'e' since it contains random bytes
-}
+FABRIC.IO.putTextFileContent(relativeFileHandle," with appended text",true);
+body = FABRIC.IO.getTextFileContent(relativeFileHandle);
+console.log('File content with appended text: ' + body);
 
-FABRIC.IO.putTextFile("FileBody", path4);
-var body = FABRIC.IO.getTextFile(path4);
-console.log(body);
+var fileInfo = FABRIC.IO.getFileHandleInfo(relativeFileHandle);
+console.log('File info: ' + JSON.stringify(fileInfo));
 
-FABRIC.IO.putUserTextFile("FileBody2", "dummyTitle", "txt", "default");
-var body2 = FABRIC.IO.getUserTextFile("dummyTitle.txt", "*"); //Extension::IOManager hardcoded to get file "default.txt"
-console.log(body2);
+node = FABRIC.DependencyGraph.createResourceLoadNode("node");
 
-node.getResourceFromUserFile("resource", "", "txt"); //Extension::IOManager hardcoded to get file "default.txt"
-console.log(JSON.stringify(node.getData("resource")));
-node.putResourceToUserFile("resource", "", "txt", "testfile3");
-var path5 = {
-  folderHandle: path.folderHandle,
-  fileName: "testfile3.txt"
-  };
+var callbackStep = 0;
 
-var body3 = FABRIC.IO.getTextFile(path5);
-console.log(body3);
+node.addOnLoadFailureCallback( function() {
+  if( callbackStep == 0 ){
+    console.log( 'bad url load failure' );
+    node.setData('url',0,relativeFileHandle);
+    callbackStep = 1;
+    node.evaluate();
+  }
+  else
+  {
+    console.log('Unexpected');
+    FABRIC.close();
+  }
+});
 
-var path6 = {
-  folderHandle: path.folderHandle,
-  subFolders: ["SubDir"],
-  fileName: "testfile4.txt"
-  };
+node.addOnLoadSuccessCallback( function() {
+  console.log( 'url file load succeeded' );
+  if( callbackStep == 1 ){
+    var resourceResultFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(fileAndFolderHandles.folder + '/SubDir/testfile3.txt');
+    node.putResourceToFile(resourceResultFileHandle,'resource');
+    var body = FABRIC.IO.getTextFileContent(resourceResultFileHandle);
+    console.log('Resource data saved to file: ' + body);
 
-FABRIC.IO.putTextFile("FileBody3", path6);
-node.getResourceFromFile("resource", path6);
-console.log(JSON.stringify(node.getData("resource")));
+    var sourceFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(fileAndFolderHandles.folder + '/SubDir/testfile4.txt');
+    FABRIC.IO.putTextFileContent(sourceFileHandle,"Resource source data from direct file");
 
-var path7 = {
-  folderHandle: path.folderHandle,
-  subFolders: ["SubDir"],
-  fileName: "testfile5.txt"
-  };
-node.putResourceToFile("resource", path7);
-var body4 = FABRIC.IO.getTextFile(path7);
-console.log(body4);
+    //Load from explicit file location, to a file handle
+    callbackStep = 2;
+    node.setData('storeDataAsFile',0,true);
+    node.setData('url',0,'testfile://TMP/SubDir/testfile4.txt');
+    node.evaluate();
+  }
+  else if( callbackStep == 2 ){
+    var resourceResult = node.getData('resource',0);
+    var resourceFileContent = FABRIC.IO.getTextFileContent(resourceResult.dataExternalLocation);
+    console.log('Resource file content: ' + resourceFileContent);
 
-FABRIC.close();
+    FABRIC.close();
+  }
+  else
+  {
+    console.log('Unexpected');
+    FABRIC.close();
+  }
+});
+
+node.setData('url',0,'badURL');
+node.evaluate();

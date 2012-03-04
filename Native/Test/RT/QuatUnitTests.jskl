@@ -179,3 +179,46 @@ q1.linearInterpolate(q2, 0.25).rotateVector(v1).appendResult(tests, results, 'le
 q1.linearInterpolate(q2, 0.5).rotateVector(v1).appendResult(tests, results, 'lerp 0.5');
 q1.linearInterpolate(q2, 0.75).rotateVector(v1).appendResult(tests, results, 'lerp 0.75');
 q2.rotateVector(v1).appendResult(tests, results, 'lerp 1');
+
+//to/from Euler deeper testing
+v1.set(1.0, 0.0, 0.0);
+v2.set(0.6, -0.5, 0.4);
+v2.setUnit();
+q1.setFrom2Vectors(v1, v2, true);
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_originalQuat');
+
+ro1.setXYZ();
+res.setFromEuler(q1.toEuler(ro1));
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerXYZ->Q');
+res.setFromMat33(q1.toEuler(ro1).toMat33());
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerXYZ->M33->Q');
+
+ro1.setXZY();
+res.setFromEuler(q1.toEuler(ro1));
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerXZY->Q');
+res.setFromMat33(q1.toEuler(ro1).toMat33());
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerXZY->M33->Q');
+
+ro1.setYXZ();
+res.setFromEuler(q1.toEuler(ro1));
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerYXZ->Q');
+res.setFromMat33(q1.toEuler(ro1).toMat33());
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerYXZ->M33->Q');
+
+ro1.setYZX();
+res.setFromEuler(q1.toEuler(ro1));
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerYZX->Q');
+res.setFromMat33(q1.toEuler(ro1).toMat33());
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerYZX->M33->Q');
+
+ro1.setZXY();
+res.setFromEuler(q1.toEuler(ro1));
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerZXY->Q');
+res.setFromMat33(q1.toEuler(ro1).toMat33());
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerZXY->M33->Q');
+
+ro1.setZYX();
+res.setFromEuler(q1.toEuler(ro1));
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerZYX->Q');
+res.setFromMat33(q1.toEuler(ro1).toMat33());
+q1.rotateVector(v1).appendResult(tests, results, 'convertTests_Q->EulerZYX->M33->Q');

@@ -17,8 +17,7 @@ namespace Fabric
   
   namespace JSON
   {
-    class Value;
-    class Object;
+    class ObjectDecoder;
   };
   
   namespace CG
@@ -36,7 +35,7 @@ namespace Fabric
       Node( CG::Location const &location );
 
       virtual char const *nodeTypeName() const = 0;
-      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
+      virtual void appendJSON( JSON::Encoder const &encoder, bool includeLocation ) const;
       
       CG::Location const &getLocation() const
       {
@@ -48,7 +47,7 @@ namespace Fabric
 
     protected:
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const = 0;
+      virtual void appendJSONMembers( JSON::ObjectEncoder const &jsonObjectEncoder, bool includeLocation ) const = 0;
 
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       
