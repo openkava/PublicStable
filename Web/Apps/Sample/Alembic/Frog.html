@@ -14,51 +14,17 @@
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
 
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Alembic.js" charset="utf-8"></script>
-
-<script type="text/javascript">
-
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
+    <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
 
     <script type="text/javascript">
+    
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Alembic"], function() {
+ 
 $(document).ready(function() {
 
   $('#play').button({
@@ -74,50 +40,37 @@ $(document).ready(function() {
     }
   });  
 
-  $('#importModel').button().change(function(e) {
-      // TODO: Enable file importing
-        console.log($(this).val());
-      var assets = scene.importAssetFile($(this).val());
-      for (i in assets) {
-        assets[i].addMaterialNode(redMaterial);
-        drawNode.setGeometryNode(assets[i]);
-      }
-
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
-      }
-    });
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
   scene.constructNode('Instance', {
-          geometryNode: scene.constructNode('Grid', {
-              size_x: 120.0,
-              size_z: 120.0,
-              sections_x: 32,
-              sections_z: 32 }),
-          materialNode: scene.constructNode('FlatMaterial')
-      });
+    geometryNode: scene.constructNode('Grid', {
+        size_x: 120.0,
+        size_z: 120.0,
+        sections_x: 32,
+        sections_z: 32 }),
+    materialNode: scene.constructNode('FlatMaterial')
+  });
   
   $('#loadingDialog').dialog({
     modal: true
   });
 
   // create the alembic content, and fire the load once it is loaded
-  var assets = scene.importAssetFile('Models/frog.abc', {
+  var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+    url: 'Models/frog.abc',
     dependentNode: viewport
   });
 
-  assets['frog'].addOnLoadSuccessCallback(function(){
+  alembicLoadNode.addEventListener('loadSuccess', function(){
     // create the camera
-    var nodes = assets.frog.getParsedNodes();
-    viewport.setCameraNode(assets.frog.getParsedNodes()['/CameraXfo/Camera']);
+    var nodes = alembicLoadNode.getParsedNodes();
+    viewport.setCameraNode(nodes['/CameraXfo/Camera']);
 
     var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
       diffuseTextureNode: scene.constructNode('Image2D', { url: 'Models/frog_diffuse.png' }),
@@ -128,13 +81,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
 
     scene.constructNode('Instance', {
-      transformNode: assets.frog.getParsedNodes()['/lowXfo'],
-      geometryNode: assets.frog.getParsedNodes()['/lowXfo/low'],
+      transformNode: nodes['/lowXfo'],
+      geometryNode: nodes['/lowXfo/low'],
       materialNode: materialNode
     });
       
     $('#loadingDialog').dialog('close');
     viewport.redraw();
+    return 'remove';
   });
   
   $('#play').button()
@@ -177,6 +131,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   });
   
 });
+});
 
 // jQuert UI Styling classes
 $(document).ready(function() {
@@ -199,7 +154,6 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">

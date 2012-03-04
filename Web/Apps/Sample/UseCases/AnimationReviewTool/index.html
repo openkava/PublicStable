@@ -17,35 +17,6 @@
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
 
     <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Alembic.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Rendering.js" charset="utf-8"></script>
 
     <style type="text/css">
     
@@ -54,7 +25,7 @@
 }  
 #viewer {
   right:400px;
-  bottom:125px;
+  bottom:115px;
 }
 #timeControls {
   right:390px;
@@ -65,6 +36,16 @@
   </style>
     
     <script type="text/javascript">
+    
+    
+    
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Alembic",
+                "SG/Rendering"], function() {
+    
 FABRIC.SceneGraph.registerNodeType('UVViewport', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
@@ -85,7 +66,7 @@ FABRIC.SceneGraph.registerNodeType('UVViewport', {
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'getRGBAPixelsFromRenderTarget',
       entryFunctionName: 'getRGBAPixelsFromRenderTarget',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/renderTarget.kl',
       parameterLayout: [
         'self.queryToggle',
         'self.renderTarget',
@@ -102,7 +83,7 @@ FABRIC.SceneGraph.registerNodeType('UVViewport', {
     redrawEventHandler.postDescendBindings.insert(scene.constructOperator({
       operatorName: 'getAllRGBAPixelsFromRenderTarget',
       entryFunctionName: 'getAllRGBAPixelsFromRenderTarget',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/renderTarget.kl',
       parameterLayout: [
         'data.renderTarget',
         'data.allPixels',
@@ -168,7 +149,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
       paintRadius: 1,
       planeDistance: 10.0,
       encodeEventNode: undefined,
-      path: undefined
+      resourceFileHandle: undefined
     });
 
     // check all of our required nodes
@@ -253,7 +234,8 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     // create a texture to paint onto
     var textureNode = scene.constructNode('Image2D', {
       createDgNodes: true,
-      createResourceLoadNode: false,
+      createResourceLoadNode: options.resourceFileHandle !== undefined,
+      url: options.resourceFileHandle,
       width: widthPixels,
       height: heightPixels,
       forceRefresh: true
@@ -261,25 +243,8 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     var textureuniformsdgnode = textureNode.getUniformsDGNode();
     var texturepixelsdgnode = textureNode.getPixelsDGNode();
     
-    // now check if we eventually need to load an existing resource
-    if(options.path) {
-      textureuniformsdgnode.addMember('resource','FabricResource');
-      textureuniformsdgnode.getResourceFromFile('resource', options.path);
-      
-      // add a decoder for this image
-      texturepixelsdgnode.bindings.append(scene.constructOperator({
-        operatorName: 'loadImageRGBA',
-        entryFunctionName: 'loadImageRGBA',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
-        parameterLayout: [
-          'uniforms.resource',
-          'uniforms.width',
-          'uniforms.height',
-          'uniforms.pixels',
-          'self.newCount'
-        ]
-      }));
+    // check if we need to initialize from a loaded resource
+    if(options.resourceFileHandle) {
       texturepixelsdgnode.bindings.append(scene.constructOperator({
         operatorName: 'sliceImageRGBA',
         parameterLayout: [
@@ -289,7 +254,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         ],
         preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         entryFunctionName: 'sliceImageRGBA',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
+        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
       }));
       texturepixelsdgnode.bindings.append(scene.constructOperator({
         operatorName: 'clearImageRGBA',
@@ -298,7 +263,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         ],
         preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         entryFunctionName: 'clearImageRGBA',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
+        srcFile: 'FABRIC_ROOT/SG/KL/loadTexture.kl'
       }));
     }
     
@@ -392,7 +357,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     // create an operator to load the uniform to the GPU    
     instanceNode.getRedrawEventHandler().preDescendBindings.append(scene.constructOperator({
       operatorName: 'loadColorBlend',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
+      srcFile: 'FABRIC_ROOT/SG/KL/loadUniforms.kl',
       preProcessorDefinitions: {
         ATTRIBUTE_NAME: 'u_colorBlend',
         ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('colorBlend'),
@@ -489,23 +454,22 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
 
     eventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'encodeImage',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/encodeImage.kl',
-      entryFunctionName: 'encodeImageLDR',
+      srcFile: 'FABRIC_ROOT/SG/KL/encodeImage.kl',
+      entryFunctionName: 'encodeImageLDRSliced',
       parameterLayout: [
             'uniforms.width',
             'uniforms.height',
-            'texture.pixels',
+            'texture.pixels<>',
             'self.resource'
           ]
     }));
     
-    instanceNode.pub.savePNG = function(path,fileName) {
-      path.fileName = fileName;
-      eventHandler.putResourceToFile('resource',path);
+    instanceNode.pub.savePNG = function(relativeHandle) {
+      eventHandler.putResourceToFile(relativeHandle,'resource');
     };
     
-    instanceNode.pub.loadPNG = function(path,fileName) {
-      path.fileName = fileName;
+    instanceNode.pub.loadPNG = function(relativeHandle) {
+      resourceFileHandle = relativeHandle;
     }
 
     return instanceNode;    
@@ -516,6 +480,7 @@ $(document).ready(function() {
   $('#loadingDialog').dialog({
     modal: true
   });
+  
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
@@ -571,7 +536,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     });
 
   // hook for the alembic content
-  var resourceLoadNode = undefined;
+  var alembicLoadNode = undefined;
   var parsedCameras = {};
   var parsedInstances = {};
 
@@ -589,8 +554,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         parsedCameras[name].setDrawToggle(true);
       }
     } else {
-      viewport.setCameraNode(resourceLoadNode.getParsedNodes()[cameraName]);
-      uvViewport.setCameraNode(resourceLoadNode.getParsedNodes()[cameraName]);
+      viewport.setCameraNode(alembicLoadNode.getParsedNodes()[cameraName]);
+      uvViewport.setCameraNode(alembicLoadNode.getParsedNodes()[cameraName]);
       for(var name in parsedCameras) {
         parsedCameras[name].setDrawToggle(false);
       }
@@ -601,37 +566,36 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   // load the alembic content based on user interaction
   var timeRange = undefined;
   var loadAlembicAsset = function(url) {
-    var assets = scene.importAssetFile(url, {
+    
+    alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+      url: url,
       dependentNode: viewport
     });
-    assets['frog'].addOnLoadSuccessCallback(function(){
-      // get the first asset name
-      var assetName = undefined;
-      for(var name in assets) {
-        assetName = name;
-        break;
-      }
-        
-      resourceLoadNode = assets[assetName];
-      var parsedNodes = resourceLoadNode.getParsedNodes();
+  
+    alembicLoadNode.addEventListener('loadSuccess', function(){
+      var parsedNodes = alembicLoadNode.getParsedNodes();
 
       // setup html for the object and camera list        
       var cameraListHtml = "<option value='userCamera'>Free Camera</option>";
         
       // setup the animation time
-      timeRange = resourceLoadNode.getAnimationController().getTimeRange();
+      timeRange = alembicLoadNode.getAnimationController().getTimeRange();
       $('#localtime').slider({
           min: timeRange.x,
           max: timeRange.y,
           step: 0.01
-      });
+      })// append icon to the slider handle
+       .find( ".ui-slider-handle" )
+       .append( "<span class='ui-icon ui-icon-grip-dotted-vertical'></span>" )
+       .wrap( "<div class='ui-handle-helper-parent'></div>" ).parent();
+  
         
       // loop over all assets and create an instance
       for(var name in parsedNodes) {
         var parsedNode = parsedNodes[name];
         if(parsedNode.isTypeOf('Triangles')) {
           parsedInstances[name] = scene.constructNode('Instance', {
-            transformNode: resourceLoadNode.getCorrespondingTransform(name),
+            transformNode: alembicLoadNode.getCorrespondingTransform(name),
             geometryNode: parsedNode,
             materialNode: materialNode
           });
@@ -664,6 +628,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
       //$('#loadingDialog').dialog('close');
       viewport.redraw();
+      return 'remove';
     });
   };
   
@@ -732,7 +697,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     }
 
     // create a key to identify the plane
-    var timeKey = resourceLoadNode.getAnimationController().getLocalTime();
+    var timeKey = alembicLoadNode.getAnimationController().getLocalTime();
     timeKey = ''+parseInt(timeKey * 30 + 0.5);
     if(currentKey == timeKey)
       return;
@@ -743,20 +708,20 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         viewportNode: viewport,
         uvViewportNode: uvViewport,
         planeNode: planeGeometry,
-        animationControllerNode: resourceLoadNode.getAnimationController(),
-        planeTime: resourceLoadNode.getAnimationController().getLocalTime(),
+        animationControllerNode: alembicLoadNode.getAnimationController(),
+        planeTime: alembicLoadNode.getAnimationController().getLocalTime(),
         planeBlend: options.blend ? options.blend : 5.0 / 30.0,
         resolutionFactor: 0.2,
         paintColor: brushColor,
         paintRadius: brushRadius,
         encodeEventNode: encodeEvent,
-        path: options.path,
+        resourceFileHandle: options.resourceFileHandle,
         transform: options.transform
       });
       planes[timeKey] = {
         camera: usedCamera,
         instance: newPlane,
-        time: resourceLoadNode.getAnimationController().getLocalTime()
+        time: alembicLoadNode.getAnimationController().getLocalTime()
       };
   
       // re-create the list html
@@ -806,7 +771,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       });
       var localTime = $('#localtime').slider();
       scene.animation.play( function() {
-        localTime.slider('value', resourceLoadNode.getAnimationController().getLocalTime());
+        localTime.slider('value', alembicLoadNode.getAnimationController().getLocalTime());
       });
     } else if(evt.keyCode == 40) { // down arrow
       $('#play').button('option', {
@@ -901,7 +866,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       text: true
     })
     .click(function() {
-      if(!resourceLoadNode)
+      if(!alembicLoadNode)
         return;
       
       if($(this).text() == 'Save') {
@@ -926,14 +891,15 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         jsonData.currentColor = brushColor;
 
         // get a path handle
-        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Animation Review Data", "json", "review");
-        var jsonFileName = path.fileName;
-        var basename = path.fileName.split('.')[0];
+        var handles = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forSave, "Animation Review Data", "json", "review");
+        var jsonFileInfo = FABRIC.IO.getFileHandleInfo( handles.file );
+        var basename = jsonFileInfo.fileName;
         
         // store all planes
         jsonData.planes = {};
         for(var name in planes) {
-          planes[name].instance.savePNG(path,basename+'.'+name+'.png');
+          var planeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(handles.folder+'/'+basename+'.'+name+'.png');
+          planes[name].instance.savePNG(planeFileHandle);
           jsonData.planes[name] = {};
           jsonData.planes[name].camera = planes[name].camera;
           jsonData.planes[name].filename = basename+'.'+name+'.png';
@@ -943,23 +909,22 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         }
         
         // save the json file
-        path.fileName = jsonFileName;
-        scene.IO.putTextFile(JSON.stringify(jsonData), path);
+        FABRIC.IO.putTextFileContent(handles.file, JSON.stringify(jsonData));
         
       } else {
         
         // get a path handle
-        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Animation Review Data", "json", "review");
-        var jsonData = JSON.parse(scene.IO.getTextFile(path));
+        var handles = FABRIC.IO.queryUserFileAndFolderHandle(FABRIC.IO.forOpenWithWriteAccess, "Animation Review Data", "json", "review");
+        var jsonData = JSON.parse(FABRIC.IO.getTextFileContent(handles.file));
         
         // first create all planes
         for(var key in jsonData.planes) {
           switchCamera(jsonData.planes[key].camera);
           scene.animation.setTime(parseFloat(jsonData.planes[key].time));
-          resourceLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
-          path.fileName = jsonData.planes[key].filename;
+          alembicLoadNode.getAnimationController().setLocalTime(jsonData.planes[key].time);
+          var planeFileHandle = FABRIC.IO.buildFileHandleFromRelativePath(handles.folder+'/'+jsonData.planes[key].filename);
           $('#planeblend').slider("option", "value", jsonData.planes[key].blend);
-          paintPlane({path: path, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
+          paintPlane({resourceFileHandle: planeFileHandle, transform: jsonData.planes[key].transform, key: key, blend: jsonData.planes[key].blend});
         }
         
         brushColor = jsonData.currentColor;
@@ -973,7 +938,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         switchCamera(jsonData.currentCamera);
 
         scene.animation.setTime(parseFloat(jsonData.currentTime));
-        resourceLoadNode.getAnimationController().setLocalTime(jsonData.currentTime);
+        alembicLoadNode.getAnimationController().setLocalTime(jsonData.currentTime);
         $('#localtime').slider('value', parseFloat(jsonData.currentTime));
 
         viewport.redraw();
@@ -1064,6 +1029,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   });
   
 });
+});
 
 // jQuert UI Styling classes
 $(document).ready(function() {
@@ -1080,16 +1046,13 @@ $(document).ready(function() {
       <h4 id="loadingDesc">Downloading Alembic File.<br>This may take some time.</h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
-    <div id="instructionsDialog" title="Instructions">
-      Hold down 'shift' to paint.
-    </div>
     <div id="wrapper">
       <div id="editor">
         <div id="viewer">
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <div class="box">
+          <div class="box ui-widget">
             <h2>Scene</h2>
             <div class="content">
                 <label for="lightDirection" >Light Direction:</label>
@@ -1099,6 +1062,8 @@ $(document).ready(function() {
                 </select>
                 <button id="saveload">Open</button>
             </div><!--content-->
+          </div><!--box-->
+          <div class="box ui-widget">
             <h2>Planes</h2>
             <div class="content">
                 <p>Hold down 'shift' to paint</p>
@@ -1118,10 +1083,9 @@ $(document).ready(function() {
         
         <div id="timeControls">
           <div class="box">
-            <h2>Playback</h2>
             <div class="content">
                 <button id="play">Play</button>
-                <div id='localtime'></div>
+                <div id='localtime' style="margin-top:15px;"></div>
             </div><!--content-->
           </div><!--box-->
         </div><!--timeControls-->

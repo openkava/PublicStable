@@ -8,76 +8,28 @@
     <meta charset="iso-8859-1"/>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
-
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
-    
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
-    
-    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../ga.js" charset="utf-8"></script>
     
 <script type="text/javascript">
 
- var _gaq = _gaq || [];
- _gaq.push(['_setAccount', 'UA-25833362-1']);
- _gaq.push(['_trackPageview']);
-
- (function() {
-   var ga = document.createElement('script'); ga.type =
-'text/javascript'; ga.async = true;
-   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-'http://www') + '.google-analytics.com/ga.js';
-   var s = document.getElementsByTagName('script')[0];
-s.parentNode.insertBefore(ga, s);
- })();
-
-</script>
-<script type="text/javascript">
-
+FABRIC.require(["SG/SceneGraph",
+                "SG/Geometry",
+                "SG/Materials",
+                "SG/Manipulation",
+                "SG/Characters",
+                "SG/CharacterLocomotion",
+                "SG/Bullet",
+                "SG/Persistence",
+                "SG/Alembic",
+                "SG/Parsers/parseCollada",
+                "RT/LinearKeyframe",
+                "RT/BezierKeyframe"], function() {
 
 FABRIC.SceneGraph.defineEffectFromFile('SpiedelShader', 'Shaders/SpiedelShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('SkinningShadowmapMaterial', 'FABRIC_ROOT/SG/Shaders/SkinningShadowmapShader.xml');
 
 $(document).ready(function() {
 
@@ -121,16 +73,33 @@ $(document).ready(function() {
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var phongMaterial = scene.constructNode('PhongMaterial', {
+//  var lightNode = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var lightNode = scene.constructNode('DirectionalLight', {
+    position: new FABRIC.RT.Vec3(10, 20, 5),
+    target: new FABRIC.RT.Vec3(0, 0, 0),
+    direction: (new FABRIC.RT.Vec3(0, 0, 0)).subtract(new FABRIC.RT.Vec3(10, 20, 5)).unit(),
+    farDistance: 60,
+    resolution: 2048,
+    castShadows: true,
+    display: true,
+    size: 80
+  });
+  var shadowMapMaterial = scene.constructNode('SkinningShadowmapMaterial');
+  
+  
+//  var greenPhongMaterial = scene.constructNode('ShadowReceivingPhongMaterial', {
+//    diffuseColor: FABRIC.RT.rgb(0.3, 0.9, 0.3),
+ //   lightNode: lightNode
+//  });
+  var phongMaterial = scene.constructNode('ShadowReceivingPhongMaterial', {
       diffuseColor: FABRIC.RT.rgb(0.4, 0.45, 0.4, 1),
-      lightNode: light
+      lightNode: lightNode
     });
 
   var constructBulletScene = true;
   
-  var rigName = 'Spiedel';
-  
+  var rigName = 'USWolf';
+  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -144,7 +113,7 @@ $(document).ready(function() {
   }else if(rigName =='walker' || rigName =='walker'){
     rigName = 'CMan0005';
   }
-  
+  */
   if(constructBulletScene){
     
     // create a simulation world
@@ -281,23 +250,42 @@ $(document).ready(function() {
       });
     }
     else{
+      /*
       var scaleFactor = 0.1;
-      var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
-      var floorInstance = assetNodes.Plane001;
-      var floorMesh = assetNodes.Plane001Mesh;
+      scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor }, function(assetNodes){
+        var floorInstance = assetNodes.Plane001;
+        var floorMesh = assetNodes.Plane001Mesh;
+        
+        floorInstance.addMaterialNode(phongMaterial);
+  
+        bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
+        
+        var body = new FABRIC.RT.BulletRigidBody();
+        bulletWorldNode.addRigidBody('Floor', body, 'Floor');
+      });
+      */
       
-      floorInstance.addMaterialNode(phongMaterial);
-
-      bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
-      
-      floorInstance.setTransformNode(scene.constructNode('BulletRigidBodyTransform', {
-        bulletWorldNode: bulletWorldNode,
-        shapeName: 'Floor',
-        rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: floorInstance.getTransformNode().getGlobalXfo(),
-          mass: 0.0
-        })
-      }));
+      var alembicLoadNode = scene.constructNode('AlembicLoadNode', {
+        url: '../BasicDemos/Models/sand.abc',
+        dependentNode: viewport
+      });
+    
+      alembicLoadNode.addEventListener('loadSuccess', function(){
+        var nodes = alembicLoadNode.getParsedNodes();
+        var gridTriangles = nodes['/gridXfo/grid'];
+        scene.constructNode('Instance', {
+          geometryNode: gridTriangles,
+          materialNode: scene.constructNode('FlatTextureMaterial', {
+            textureNode: scene.constructNode('Image2D', {url: '../BasicDemos/Resources/sand.png'})
+          })
+        });
+        
+        bulletWorldNode.addShape('sand',FABRIC.RT.BulletShape.createTriangleMesh(gridTriangles));
+        
+        var body = new FABRIC.RT.BulletRigidBody();
+        bulletWorldNode.addRigidBody('sand', body, 'sand');
+        return 'remove';
+      });
     }
   }
 
@@ -309,9 +297,9 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 20,
-        maxLinearAcceleration: 15,
-        maxAngularVelocity: 1.6,
-        maxAngularAcceleration: 1.6,
+        maxLinearAcceleration: 40,
+        maxAngularVelocity: 2.6,
+        maxAngularAcceleration: 3.6,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: 0,
@@ -348,37 +336,21 @@ $(document).ready(function() {
   case 'USWolf':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 8,
-        maxLinearAcceleration: 16,
-        maxAngularVelocity:  2.5,
-        maxAngularAcceleration: 2.5,
+        maxLinearVelocity: 15,
+        maxLinearAcceleration: 30,
+        maxAngularVelocity:  3,
+        maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -40,
-        comHeight: 2.0,
-        circleSize: 0.6
+        gravity: -60,
+        comHeight: 2.1,
+        circleSize: 0.6,
+        translationControls: new FABRIC.RT.Vec2(0,0)
       });
     rigFile = 'Assets/USWolf.json';
     animationLibraryFile = 'Assets/USWolfAnimation.json';
     minFrequency = 0.75;
     break;
-  /*
-  case 'walker':
-    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
-        cameraNode: camera,
-        maxLinearVelocity: 15,
-        maxLinearAcceleration: 30,
-        maxAngularVelocity: 2,
-        maxAngularAcceleration: 2,
-        bulletWorldNode: bulletWorldNode,
-        numTrailSegments: 0,
-        gravity: 0,
-        comHeight: 1.8,
-        circleSize: 1.6
-      });
-    diffuseColor = FABRIC.RT.rgba(0.6, 0.0, 0.3, 1.0);
-    break;
-  */
   case 'centipede':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -394,48 +366,38 @@ $(document).ready(function() {
     minFrequency = 0.0;
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
-  /*
-  case 'marama':
-    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
-        cameraNode: camera,
-        maxLinearVelocity: 8,
-        maxLinearAcceleration: 16,
-        maxAngularVelocity:  2.5,
-        maxAngularAcceleration: 2.5,
-        bulletWorldNode: bulletWorldNode,
-        numTrailSegments: 0,
-        gravity: -98,
-        comHeight: 1.8,
-        circleSize: 0.6
-      });
-    rigFile = 'Assets/marama.json';
-    animationLibraryFile = 'Assets/marama.json';
-    minFrequency = 0.5;
-    diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
-    break;
-  */
   }
-  var locomotionVariables;
+  var rig, locomotionVariables;
   var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.XHRReader(rigFile);
   rigLoader.load(storage, function(nodeMap){
-    var ikrig = nodeMap.IKRig;
+    rig = nodeMap.IKRig;
+    
+    rig.addSolver('Head', 'HeadLookAtSolver', { bones:{ bone:['USWolfHead'], neckBones:['USWolfNeck'] } } );
+    
+    $("#displayRigDebugging").attr('checked', rig.getDebuggingEnabled());
+    
   //  var characterMesh =  nodeMap.characterMesh;
+    for(var i in nodeMap){
+      if(nodeMap[i].isTypeOf('Instance')){
+        nodeMap[i].addMaterialNode(shadowMapMaterial);
+      }
+    }
   
     var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
     var storage = new FABRIC.SceneGraph.XHRReader(animationLibraryFile);
     animationLoader.load(storage, function(animationLoaderNodeMap){
       var libraryAnimations = animationLoaderNodeMap.LibraryLocomotionAnimations;
       
-      ikrig.setControllerNode(locomotionControllerNode);
+      rig.setControllerNode(locomotionControllerNode);
       
       locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-        characterRigNode: ikrig,
+        characterRigNode: rig,
         bulletWorldNode: bulletWorldNode,
         minFrequency: minFrequency
       });
       locomotionVariables.setAnimationLibraryNode(libraryAnimations);
-      ikrig.setVariablesNode(locomotionVariables);
+      rig.setVariablesNode(locomotionVariables);
     });
   });
   
@@ -458,6 +420,11 @@ $(document).ready(function() {
   
   $("#displayControllerDebugging").change(function() {
     locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  
+  $("#displayRigDebugging").change(function() {
+    rig.setDebuggingEnabled($("#displayRigDebugging").is(":checked"));
     viewport.redraw();
   });
   $("#displayFootMotionDebugging").change(function() {
@@ -491,7 +458,6 @@ $(document).ready(function() {
   }
   
 //  locomotionControllerNode.setTranslationControls(new FABRIC.RT.Vec2(0, 1.0));
-  
   var translationControls = new FABRIC.RT.Vec2();
   var downKeys = [];
   var arrowKeys = {
@@ -599,6 +565,7 @@ $(document).ready(function() {
   });
   
 });
+});
 
 // jQuert UI Styling classes
 $(document).ready(function() {
@@ -632,22 +599,23 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="Spiedel">Quadruped
-              <!--
                 <option value="centipede">Centipede
-            -->
                 <option value="CMan0005">Human
                 <option value="USWolf">SpaceMan
-                
               </select>
+            -->
               </br>
-              <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
+              <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Debug Controller</label>
               </br>
-              <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
+              <input type="checkbox" id="displayRigDebugging" style="margin-top:10px;"/><label for="displayRigDebugging">Debug Rig</label>
               </br>
-              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Display Foot Raycasting Debugging:</label>
+              <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Debug Foot Motion</label>
+              </br>
+              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Debug Foot Raycasting</label>
               </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
