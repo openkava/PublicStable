@@ -39,14 +39,7 @@ foClassPath = os.pathsep.join(foClassJars)
 
 w3cEntities = docbookEnv.File('w3centities-f.ent')
 
-def Docbook(env, inputDocbookXML):
-	inputBasename = re.sub('\.docbook\.xml$', '', inputDocbookXML)
-	templatedInputDocbookXML = env.SubstBuildVars(
-		inputBasename + ".temp.docbook.xml",
-		inputDocbookXML
-		)
-	env.Depends(templatedInputDocbookXML, w3cEntities)
-
+def Docbook(env, inputDocbookXMLs):
 	validateAction = [[
 		'java',
 		'-jar',
@@ -72,57 +65,73 @@ def Docbook(env, inputDocbookXML):
 		]]
 
 	outputs = []
+	for inputDocbookXML in inputDocbookXMLs:
+		inputBasename = re.sub('\.docbook\.xml$', '', str(inputDocbookXML))
+		templatedInputDocbookXML = env.SubstBuildVars(
+			inputBasename + ".temp.docbook.xml",
+			inputDocbookXML
+			)
+		env.Depends(templatedInputDocbookXML, w3cEntities)
 
-	pdfXSL = env.Dir('xsl').File('pdf.xsl')
-	pdfFO = env.Command(
-		inputBasename + ".pdf.fo",
-		[templatedInputDocbookXML, pdfXSL],
-		xsltAction
-		)
-	env.AddPreAction(pdfFO, validateAction)
-	foXML = env.Dir('xsl').File('fo.xml')
-	notePNG = env.Dir('images').File('note.png')
-	warningPNG = env.Dir('images').File('warning.png')
-	outputs.append(env.Command(
-		inputBasename + ".pdf",
-		[pdfFO, foXML, notePNG, warningPNG],
-		[[
-			'java', '-Xmx512m', '-Xss1024K',
-			'-cp', foClassPath,
-			'org.apache.fop.cli.Main',
-			'-fo', '$SOURCE',
-			'-pdf', '$TARGET'
-			]]
-		))
+		pdfXSL = env.Dir('xsl').File('pdf.xsl')
+		pdfFO = env.Command(
+			inputBasename + ".pdf.fo",
+			[templatedInputDocbookXML, pdfXSL],
+			xsltAction
+			)
+		env.AddPreAction(pdfFO, validateAction)
+		foXML = env.Dir('xsl').File('fo.xml')
+		notePNG = env.Dir('images').File('note.png')
+		warningPNG = env.Dir('images').File('warning.png')
+		outputs.append(env.Command(
+			inputBasename + ".pdf",
+			[pdfFO, foXML, notePNG, warningPNG],
+			[[
+				'java', '-Xmx512m', '-Xss1024K',
+				'-cp', foClassPath,
+				'org.apache.fop.cli.Main',
+				'-fo', '$SOURCE',
+				'-pdf', '$TARGET'
+				]]
+			))
 
-	htmlBaseTemplateXML = env.Dir('xsl').File('html_base.template.xml')
-	htmlBaseXML = env.Command(
-		env.Dir('xsl').File('html_base.xml'),
-		htmlBaseTemplateXML,
-		[['sed', 's,{{SHORT_ATTENTION_SPAN_DOCBOOK_URI}},'+SHORT_ATTENTION_SPAN_DOCBOOK_URI+',', '<$SOURCE', '>$TARGET']]
-		)
-	htmlXSL = env.Dir('xsl').File('html.xsl')
-	env.Depends(htmlXSL, htmlBaseXML)
-	html = env.Command(
-		inputBasename + ".html",
-		[templatedInputDocbookXML, htmlXSL],
-		xsltAction
-		)
-	env.AddPreAction(html, validateAction)
-	outputs.append(html)
+		htmlBaseTemplateXML = env.Dir('xsl').File('html_base.template.xml')
+		htmlBaseXML = env.Command(
+			env.Dir('xsl').File('html_base.xml'),
+			htmlBaseTemplateXML,
+			[['sed', 's,{{SHORT_ATTENTION_SPAN_DOCBOOK_URI}},'+SHORT_ATTENTION_SPAN_DOCBOOK_URI+',', '<$SOURCE', '>$TARGET']]
+			)
+		htmlXSL = env.Dir('xsl').File('html.xsl')
+		env.Depends(htmlXSL, htmlBaseXML)
+		html = env.Command(
+			inputBasename + ".html",
+			[templatedInputDocbookXML, htmlXSL],
+			xsltAction
+			)
+		env.AddPreAction(html, validateAction)
+		outputs.append(html)
 
-	css = env.Command(
-		env.File('style.css'),
-		env.Dir('xsl').File('html.css'),
-		Copy('$TARGET', '$SOURCE')
-		)
-	outputs.append(css)
-
+		css = env.Command(
+			env.File('style.css'),
+			env.Dir('xsl').File('html.css'),
+			Copy('$TARGET', '$SOURCE')
+			)
+		outputs.append(css)
 	return outputs
 AddMethod(docbookEnv, Docbook)
 
-klpg = Alias('klpg', docbookEnv.Docbook('FabricEngine-KLProgrammingGuide.docbook.xml'))
-iopg = Alias('iopg', docbookEnv.Docbook('FabricEngine-IOProgrammingGuide.docbook.xml'))
-jssg = Alias('jssg', docbookEnv.Docbook('FabricEngine-JSSceneGraphProgrammingGuide.docbook.xml'))
-exts = Alias('exts', docbookEnv.Docbook('FabricEngine-ExtensionsReference.docbook.xml'))
-Alias('guides', [klpg, iopg, jssg, exts])
+guides = docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml'))
+Alias('guides', guides)
+
+if 'uploadDocs' in COMMAND_LINE_TARGETS:
+	remoteHost = 'dist.fabric-engine.com'
+	remoteDir = '/fabric-distribution/' + docbookEnv['FABRIC_VERSION'] + '/docs'
+	uploadDocs = docbookEnv.AlwaysBuild(docbookEnv.Command(
+		'uploadDocs',
+		guides,
+		[
+			['ssh', remoteHost, 'mkdir', '-p', remoteDir],
+			['rsync', '-e', 'ssh', '--progress', '$SOURCES', remoteHost+':'+remoteDir+'/']
+			]
+		))
+	Alias('uploadDocs', uploadDocs)

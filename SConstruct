@@ -98,7 +98,8 @@ for nativeTarget in nativeTargets:
 docsTargets = [
   ['klpgPDF', 'KLPG in PDF form'],
   ['iopgPDF', 'IOPG in PDF form'],
-  ['guides', 'All guides']
+  ['guides', 'All guides'],
+  ['uploadDocs', 'Upload built documentation to dist.fabric-engine.com']
   ]
 for docsTarget in docsTargets:
   if docsTarget[0] in COMMAND_LINE_TARGETS:
