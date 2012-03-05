@@ -8,6 +8,7 @@ try:
 except:
 	print "Missing environment variable SHORT_ATTENTION_SPAN_DOCBOOK_PATH"
 	sys.exit(1)
+SHORT_ATTENTION_SPAN_DOCBOOK_URI = '/'.join(docbookRoot.split(os.pathsep))
 
 docbookSchema = os.path.join(docbookRoot, 'xsl', 'docbookxi.rng')
 
@@ -44,42 +45,45 @@ def Docbook(env, inputDocbookXML):
 		inputBasename + ".temp.docbook.xml",
 		inputDocbookXML
 		)
-	outputPDFs = []
 	env.Depends(templatedInputDocbookXML, w3cEntities)
+
+	validateAction = [[
+		'java',
+		'-jar',
+		'-Xmx512m',
+		'-Xss1024K',
+		'-Dorg.apache.xerces.xni.parser.XMLParserConfiguration=org.apache.xerces.parsers.XIncludeParserConfiguration',
+		docbookRoot + '/jars/jing.jar',
+		docbookSchema,
+		"$SOURCE"
+		]]
+
+	xsltAction = [[
+		'java', '-Xss1024K', '-Xmx512m',
+		'-cp', saxonClassPath,
+ 		'-Djavax.xml.parsers.DocumentBuilderFactory=org.apache.xerces.jaxp.DocumentBuilderFactoryImpl',
+    '-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl',
+    '-Dorg.apache.xerces.xni.parser.XMLParserConfiguration=org.apache.xerces.parsers.XIncludeParserConfiguration',
+    '-Dxslthl.config=' + highlighterConfigPath,
+		'com.icl.saxon.StyleSheet',
+		'-o', '$TARGET',
+		'$SOURCES',
+		'use.extensions=1'
+		]]
+
+	outputs = []
+
 	pdfXSL = env.Dir('xsl').File('pdf.xsl')
 	pdfFO = env.Command(
 		inputBasename + ".pdf.fo",
 		[templatedInputDocbookXML, pdfXSL],
-		[[
-			'java', '-Xss1024K', '-Xmx512m',
-			'-cp', saxonClassPath,
-	 		'-Djavax.xml.parsers.DocumentBuilderFactory=org.apache.xerces.jaxp.DocumentBuilderFactoryImpl',
-	    '-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl',
-	    '-Dorg.apache.xerces.xni.parser.XMLParserConfiguration=org.apache.xerces.parsers.XIncludeParserConfiguration',
-	    '-Dxslthl.config=' + highlighterConfigPath,
-			'com.icl.saxon.StyleSheet',
-			'-o', '$TARGET',
-			'$SOURCES',
-			'use.extensions=1'
-			]]
+		xsltAction
 		)
-	env.AddPreAction(
-		pdfFO,
-		[[
-			'java',
-			'-jar',
-			'-Xmx512m',
-			'-Xss1024K',
-			'-Dorg.apache.xerces.xni.parser.XMLParserConfiguration=org.apache.xerces.parsers.XIncludeParserConfiguration',
-			docbookRoot + '/jars/jing.jar',
-			docbookSchema,
-			"$SOURCE"
-			]]
-		)
+	env.AddPreAction(pdfFO, validateAction)
 	foXML = env.Dir('xsl').File('fo.xml')
 	notePNG = env.Dir('images').File('note.png')
 	warningPNG = env.Dir('images').File('warning.png')
-	outputPDFs.append(env.Command(
+	outputs.append(env.Command(
 		inputBasename + ".pdf",
 		[pdfFO, foXML, notePNG, warningPNG],
 		[[
@@ -90,11 +94,35 @@ def Docbook(env, inputDocbookXML):
 			'-pdf', '$TARGET'
 			]]
 		))
-	return outputPDFs
+
+	htmlBaseTemplateXML = env.Dir('xsl').File('html_base.template.xml')
+	htmlBaseXML = env.Command(
+		env.Dir('xsl').File('html_base.xml'),
+		htmlBaseTemplateXML,
+		[['sed', 's,{{SHORT_ATTENTION_SPAN_DOCBOOK_URI}},'+SHORT_ATTENTION_SPAN_DOCBOOK_URI+',', '<$SOURCE', '>$TARGET']]
+		)
+	htmlXSL = env.Dir('xsl').File('html.xsl')
+	env.Depends(htmlXSL, htmlBaseXML)
+	html = env.Command(
+		inputBasename + ".html",
+		[templatedInputDocbookXML, htmlXSL],
+		xsltAction
+		)
+	env.AddPreAction(html, validateAction)
+	outputs.append(html)
+
+	css = env.Command(
+		env.File('style.css'),
+		env.Dir('xsl').File('html.css'),
+		Copy('$TARGET', '$SOURCE')
+		)
+	outputs.append(css)
+
+	return outputs
 AddMethod(docbookEnv, Docbook)
 
-klpgPDF = Alias('klpgPDF', docbookEnv.Docbook('FabricEngine-KLProgrammingGuide.docbook.xml'))
-iopgPDF = Alias('iopgPDF', docbookEnv.Docbook('FabricEngine-IOProgrammingGuide.docbook.xml'))
-jssgPDF = Alias('jssgPDF', docbookEnv.Docbook('FabricEngine-JSSceneGraphProgrammingGuide.docbook.xml'))
-extsPDF = Alias('extsPDF', docbookEnv.Docbook('FabricEngine-ExtensionsReference.docbook.xml'))
-Alias('guides', [klpgPDF, iopgPDF, jssgPDF, extsPDF])
+klpg = Alias('klpg', docbookEnv.Docbook('FabricEngine-KLProgrammingGuide.docbook.xml'))
+iopg = Alias('iopg', docbookEnv.Docbook('FabricEngine-IOProgrammingGuide.docbook.xml'))
+jssg = Alias('jssg', docbookEnv.Docbook('FabricEngine-JSSceneGraphProgrammingGuide.docbook.xml'))
+exts = Alias('exts', docbookEnv.Docbook('FabricEngine-ExtensionsReference.docbook.xml'))
+Alias('guides', [klpg, iopg, jssg, exts])
