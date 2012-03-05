@@ -44,6 +44,9 @@ template = Builder( action = "\
 " )
 nativeEnv.Append( BUILDERS = { 'Template': template } )
 
+FABRIC_VERSION = nativeEnv['FABRIC_VERSION']
+Export('FABRIC_VERSION')
+
 if buildOS == 'Windows':
   env['ENV']['TMP'] = os.environ['TMP']
 
