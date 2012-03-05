@@ -275,6 +275,10 @@ operator entry()
           <listitem><para>
             <xref linkend="ops-exprs" /> describes the set of operators supported by KL and the different kinds of expressions that can be formed using these operators.  It also discusses the rules that govern scoping for variables and other symbols.
           </para></listitem>
+
+          <listitem><para>
+            <xref linkend="statements" /> describes the different statements that available for function bodies in KL.
+          </para></listitem>
         </itemizedlist>
       </para>
     </section>
@@ -2183,12 +2187,12 @@ struct MyType {
 // Empty constructor
 function MyType() {
   this.s = "foo";
-  report "Creating MyType: this.s = " + this.s;
+  report("Creating MyType: this.s = " + this.s);
 }
 
 // Destructor
 function ~MyType() {
-  report "Destroying MyType: this.s = " + this.s;
+  report("Destroying MyType: this.s = " + this.s);
 }
 
 operator entry() {
@@ -2264,8 +2268,8 @@ operator entry() {
   t.a = 1;
   t.b = 3.14;
   // Both report 'a:1; b:3.14'
-  report t.desc();
-  report t.desc;
+  report(t.desc());
+  report(t.desc);
 }
         ]]></programlisting>
       </example>
@@ -2307,9 +2311,9 @@ function Type +(Type lhs, Type rhs) {
 }
 
 operator entry() {
-  Type t1; t1.a = 42; t1.b = 3.14; report t1;
-  Type t2; t2.a = 7; t2.b = 2.72; report t2;
-  Type t3 = t1 + t2; report t3;
+  Type t1; t1.a = 42; t1.b = 3.14; report(t1);
+  Type t2; t2.a = 7; t2.b = 2.72; report(t2);
+  Type t3 = t1 + t2; report(t3);
 }
             ]]></programlisting>
           </example>
@@ -2359,9 +2363,9 @@ function Type.+=(Type that) {
 }
 
 operator entry() {
-  Type t1; t1.a = 42; t1.b = 3.14; report "t1 is " + t1;
-  Type t2; t2.a = 7; t2.b = 2.72; report "t2 is " + t2;
-  t1 += t2; report "t1 is now " + t1;
+  Type t1; t1.a = 42; t1.b = 3.14; report("t1 is " + t1);
+  Type t2; t2.a = 7; t2.b = 2.72; report("t2 is " + t2);
+  t1 += t2; report("t1 is now " + t1);
 }
             ]]></programlisting>
           </example>
@@ -2488,9 +2492,9 @@ require Math, RegType;
             When <code>+</code> or <code>-</code> appears in front of an integer or floating-point expression without an expression to the left they are referred to as the <glossterm>unary plus</glossterm> and <glossterm>unary minus</glossterm> operators.  The unary plus operator doesn't do anything to the value it operates on, but the unary minus operator returns the value that, when added to the original, produces zero (for unsigned integer expressions); for signed integer and floating-point expressions, this is value of the expression with its sign reversed.
           </para>
           
-          <note><para>
+          <para>
             It is currently not possible to overload the unary plus and minus operators; this will be fixed in a future version of Fabric.
-          </para></note>
+          </para>
         </section>
 
         <section xml:id="inc-dec-ops">
@@ -2550,17 +2554,15 @@ require Math, RegType;
             When <code>&amp;&amp;</code> appears between two expressions it is referred to as the <glossterm>logical AND</glossterm> binary operator.  Logical AND operates as follows: the left operand is cast to a <code>Boolean</code> (ie. a <code>Boolean</code> value is constructed from the left hand operand).  If the result is <code>true</code>, the result is the right operand, otherwise the result is the left operand.
           </para>
 
-          <note>
+          <warning>
             <para>
-              This behaviour of logical AND is the same as in JavaScript but different than C.
+              The behaviour of logical AND is the same as in JavaScript but different than C.  In C, the result value of a logical AND is always an integer (bool in C++).
             </para>
-          </note>
-
-          <note>
-            <para>
-              Logical AND cannot be overloaded.
-            </para>
-          </note>
+          </warning>
+          
+          <para>
+            It is not possible to overload the logical OR operator.  However, you can <quote>enable</quote> it for custom types (structures) by creating a <code>Boolean</code> constructor with a single parameter whose type is the type of the left operand.
+          </para>
         </section>
      
         <section xml:id="log-or-op">
@@ -2570,17 +2572,15 @@ require Math, RegType;
             When <code>||</code> appears between two expressions it is referred to as the <glossterm>logical OR</glossterm> binary operator.  Logical OR operates as follows: the left operand is cast to a <code>Boolean</code> (ie. a <code>Boolean</code> value is constructed from the left hand operand).  If the result is <code>true</code>, the result is the left operand, otherwise the result is the right operand.
           </para>
 
-          <note>
+          <warning>
             <para>
-              This behaviour of logical OR is the same as in JavaScript but different than C.
+              The behaviour of logical OR is the same as in JavaScript but different than C.  In C, the result value of a logical AND is always an integer (bool in C++).
             </para>
-          </note>
+          </warning>
 
-          <note>
-            <para>
-              Logical OR cannot be overloaded.
-            </para>
-          </note>
+          <para>
+            It is not possible to overload the logical AND operator.  However, you can <quote>enable</quote> it for custom types (structures) by creating a <code>Boolean</code> constructor with a single parameter whose type is the type of the left operand.
+          </para>
         </section>
       
         <section xml:id="logical-not">
@@ -2590,9 +2590,9 @@ require Math, RegType;
             When <code>!</code> (exclamation mark) appears in front of an expression it is referred to as the <glossterm>logical NOT</glossterm> unary operator.  Logical NOT inverts the logical value of expression; more specifically, it constructs a new <code>Boolean</code> value from the expression and then inverts its logical value.  Therefore, logical not can be applied to any expression that has a <code>Boolean</code> constructor that takes a single parameter whose types is the type of the expression.
           </para>
           
-          <note><para>
-            It is not possible to overload the logical not operator.  However, you can <quote>enable</quote> it for custom types (structures) by creating a <code>Boolean</code> constructor with a single parameter whose type is the structure.
-          </para></note>
+          <para>
+            It is not possible to overload the logical NOT operator.  However, you can <quote>enable</quote> it for custom types (structures) by creating a <code>Boolean</code> constructor with a single parameter whose type is the structure.
+          </para>
         </section>
       
         <section xml:id="cond-op">
@@ -2615,46 +2615,48 @@ require Math, RegType;
           <title>Bitwise AND, OR and XOR</title>
           
           <para>
-            When <code>&amp;</code>, <code>|</code> or <code>^</code> appear between two expressions they are referred to as <glossterm>bitwise AND</glossterm>, <glossterm>bitwise OR</glossterm> or <glossterm>bitwise XOR</glossterm>, respectively.
+            When <code>&amp;</code>, <code>|</code> or <code>^</code> appear between two expressions they are referred to as <glossterm>bitwise AND</glossterm>, <glossterm>bitwise OR</glossterm> or <glossterm>bitwise XOR</glossterm> binary operators, respectively.
           </para>
           
           <para>
-            Bitwise AND, OR and XOR are predefined for all integer types as well as <code>Boolean</code>.  They can also be overloaded for user-defined structures or combinations of different types.
+            Bitwise AND, OR and XOR are predefined for all integer types; they perform the usual bitwise operation on the two values.  They are also predefined for the <code>Boolean</code> type, which is treated as if it was a single bit with value 1 (if true) or 0 (if false).
           </para>
 
-          <note>
-            <para>
-              Bitwise AND, OR and XOR are not predefined for floating-point types.
-            </para>
-          </note>
+          <para>
+            Bitwise AND, OR and XOR can be overloaded for user-defined structures or combinations of different types.
+          </para>
         </section>
     
         <section xml:id="bitwise-not">
           <title>Bitwise NOT</title>
           
           <para>
-            When <code>~</code> (tilde) appears in front of an expression of integer type, the result is the integer value with its bits inverted.  It can also be applied to an expression of type <code>Boolean</code>, in which case the logical value is inverted.
+            When <code>~</code> (tilde) appears in front of an expression it is referred to as the <glossterm>bitwise NOT</glossterm> unary operator.
           </para>
-          
-          <note><para>
-            The bitwise NOT operator is not predefined for floating-point types.
-          </para></note>
+
+          <para>
+            Bitwise NOT is predefined for all integer types; it inverts the state of the bits of the value.  It is also predefined for the <code>Boolean</code> type, which is treated as if it was a single bit with value 1 (if true) or 0 (if false).
+          </para>
+
+          <para>
+            It is not currently possible to overload the bitwise NOT operator; this will change in a future version of Fabric.
+          </para>
         </section>
  
         <section xml:id="shift-ops">
           <title>Left and Right Shift</title>
           
           <para>
-            When <code>&lt;&lt;</code> or <code>&gt;&gt;</code> appear between two expressions they are referred to as the <glossterm>left shift</glossterm> or <glossterm>right shift</glossterm> binary operators, respectively.  These operators are pre-defined for all integer types, where they perform a left or right bit shift of the left operand by the number of bits given in the right operand.  It is possible to overload the shift operators for user-defined types, and even provide non-integer types as right-hand operands.
+            When <code>&lt;&lt;</code> or <code>&gt;&gt;</code> appear between two expressions they are referred to as the <glossterm>left shift</glossterm> or <glossterm>right shift</glossterm> binary operators, respectively.  These operators are pre-defined for all integer types, where they perform a left or right bit shift of the left operand by the number of bits given in the right operand.
           </para>
 
-          <note><para>
+          <para>
             A right-shift of a signed integer value will fill the left most bits with the sign bit, not with zeros.  Right shifts of unsigned integer values and left shifts of any integer values always fill with zeros.
-          </para></note>
+          </para>
 
-          <note><para>
-            The left and right shift operators are not defined for floating-point types.
-          </para></note>
+          <para>
+            It is possible to overload the shift operators for user-defined types, and even provide non-integer types as right-hand operands.
+          </para>
         </section>
       </section>
       
@@ -2680,6 +2682,18 @@ require Math, RegType;
             A compound assignment operator is predefined for a given type if and only if the corresponding binary operator is predefined for the type.  It is also possible to overload the compound assignment operator for any type, and it is even possible to have different types for the left and right operands. See <xref linkend="overloading-compound-ass-ops" />.
           </para>
         </section>
+      </section>
+
+      <section xml:id="ops-and-polymorphism">
+        <title>Operators and Polymorphism</title>
+
+        <para>
+          Operator invocations are subject to the same rules as function calls with respect to polymorphism.  If an exact match for an operator with the parameter types equal to the operand types is not found, KL will find the best-match among the existing implementations of the operator.  This makes it possible, for instance, to add an integer and a string; the result is that the integer is cast to a string and then the strings are concatenated.
+        </para>
+
+        <para>
+          For more information on polymorphism and best-match rules, see <xref linkend="polymorphism" />.
+        </para>
       </section>
     </section>
 
@@ -3065,8 +3079,424 @@ destroying T; s = entryT
   <chapter xml:id="statements">
     <title>Statements</title>
     
-    <para>TBD</para>
+    <para>
+      The bodies of functions, operators, and so on are composed of <glossterm>statements</glossterm>.  Statements are the parts of KL programs that actually do something.  Statements cause expressions to be evaluated, can conditionally execute other statements, or can iterate over another set of statements until a condition is met.
+    </para>
+
+    <para>
+      The remainer of the chapter describes the different statements that can be used inside KL function defintions.  Statements are divided into two categories: simple statments and complex statements.
+    </para>
+
+    <section xml:id="simple-statements">
+      <title>Simple Statements</title>
+
+      <para>
+        A simple statement is a statement that does not check conditions or create a nested scope.  Simple statements always end with a <code>;</code> (semicolon) character.
+
+        <warning><para>
+          It is a common syntax error in KL and other C-like languages to forget to finish a simple statement with a semicolon.
+        </para></warning>
+      </para>
+
+      <section xml:id="expr-statements">
+        <title>Expression Statements</title>
+
+        <para>
+          Any expression, followed by a <code>;</code> (semicolon), is a statement.  The statement operates by evaluating the expression and then discarding the resulting value (if any).
+        </para>
+
+        <example>
+          <title>Expression statements</title>
+          <programlisting language="KL">
+            <![CDATA[
+operator entry() {
+  // A very useless expression statement:
+  // evaluates 2 + 2 then discards the
+  // result
+  2 + 2;
+
+  // A more useful expression statement:
+  // evaluates the report function, which
+  // causes text to appear
+  report("Hello!"); 
+}
+            ]]>
+          </programlisting>
+        </example>
+      </section>
+
+      <section xml:id="empty-statement">
+        <title>The Empty Statement</title>
+
+        <para>
+          A <code>;</code> (semicolon) alone is a statement that does nothing.  This can be used in cases where a statement is required but there is nothing to do.
+        </para>
+
+        <example>
+          <title>The empty statement</title>
+          <programlisting language="KL">
+            <![CDATA[
+function foo(io MyType myType) {
+  for (; returnsFalseWhenDone(myType); )
+    ; // Do nothing
+}
+            ]]>
+          </programlisting>
+        </example>
+      </section>
+
+      <section xml:id="var-decl-statements">
+        <title>Variable Declaration Statements</title>
+
+        <para>
+          A <glossterm>variable declaration statement</glossterm> introduces one or more new variables into the innermost scope.  These variables remain visible for the rest of the scope and are destroyed, executing destructors when appropriate, when execution exists this scope.
+        </para>
+
+        <para>
+          Variable declarations require a type.  Multiple variables can be declared in the same statement by separating them with commas.
+        </para>
+
+        <para>
+          The variable names can be followed by array and dictionary specifications.  See <xref linkend="arrays" /> and <xref linkend="dicts" /> for more information on array and dictionary specifications.
+        </para>
+
+        <para>
+          Variables can be constructed or assigned to when declared to set their initial values; see <xref linkend="constructors" />.
+        </para>
+
+        <example>
+          <title>Variable declaration statements</title>
+          <programlisting language="KL">
+          <![CDATA[
+operator entry() {
+  Scalar a;
+  report(a);
+  Integer b[], c[2][2], d;
+  report(b);
+  report(c);
+  report(d);
+}
+            ]]>
+          </programlisting>
+        </example>
+
+        <informalfigure>
+          <simpara>Output:</simpara>
+          <screen>
+            <![CDATA[
+0
+[]
+[[0,0],[0,0]]
+0
+          ]]>
+          </screen>
+        </informalfigure>
+
+        <note><para>
+          As of this writing, it is not yet possible to initialize arrays in KL in the statement where the variable is declared.
+        </para></note>
+      </section>
+    </section>
+
+    <section xml:id="complex-statements">
+      <title>Complex Statements</title>
+
+      <para>
+        A <glossterm>complex statement</glossterm> is statement that groups together and/or conditionaly executes other statements.  Complex statements are built from simple statements, other complex statements, and expressions.
+      </para>
+
+      <section xml:id="compound-statements">
+        <title>Compound Statements</title>
+
+        <para>
+          At any point when a single statement can be inserted in KL source code, it is possible to insert multiple statements surrounded by <code>{</code> (left brace) and <code>}</code> (right brace).  This has the following effects:
+
+          <itemizedlist>
+            <listitem><para>
+              The statements are executed, in order, as if they were together a single statement; and
+            </para></listitem>
+
+            <listitem><para>
+              A new, nested scope is introduced; see <xref linkend="scope" />.
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+
+      <section xml:id="cond-statements">
+        <title>Conditional Statements</title>
+
+        <section xml:id="if-statement">
+          <title>The <code>if</code> Statement</title>
+
+          <para>
+            The <code>if</code> keyword begins a conditional statement, which can optionally include an <code>else</code> clause.  As in JavaScript and C, <code>if</code> and <code>else</code> statements can chain.
+          </para>
+
+          <example>
+            <title>The <code>if</code> statement</title>
+            <programlisting language="KL">
+              <![CDATA[
+function String desc(Integer n) {
+  if (n == 0)
+    return "zero";
+  else if (n == 1)
+    return "one";
+  else
+    return "lots";
+}
+              ]]>
+            </programlisting>
+          </example>
+        </section>
+
+        <section xml:id="switch-statement">
+          <title>The <code>switch</code> Statement</title>
+
+          <para>
+            The <code>switch</code>...<code>case</code> construct is a more compact form for a sequence of <code>if</code>...<code>else</code> statements, just as in JavaScript and C.
+          </para>
+
+          <example>
+            <title>The <code>switch</code> statement</title>
+            <programlisting language="KL">
+              <![CDATA[
+function String descNumber(Integer i) {
+  switch (i) {
+    case 0:
+      return "zero";
+    case 1:
+      return "one";
+    case 2:
+    case 3;
+    case 4:
+      return "a few";
+    default:
+      return "many";
+  }
+}
+              ]]>
+            </programlisting>
+          </example>
+        </section>
+      </section>
+
+      <section xml:id="return-statement">
+        <title>The <code>return</code> Statement</title>
+
+        <para>
+          The <code>return</code> statement takes two forms:
+
+          <itemizedlist>
+            <listitem><para>
+              For a function which returns a value, the <code>return</code> statement immediately returns the given value to the calling function.  There is an implicit cast to the type of the return value as specified in the function definition.
+            </para></listitem>
+
+            <listitem><para>
+              For a function which does not return a value, the <code>return</code> statement does not take a value and simply returns immediately to the calling function.
+            </para></listitem>
+          </itemizedlist>
+        </para>
+
+        <example>
+          <title>The <code>return</code> statement</title>
+          <programlisting language="KL">
+            <![CDATA[
+// Function that returns a value
+function String markupName(String name) {
+  return "My name is '" + name + "'";
+}
+
+// Function that does not return a value
+function suffixIndexDesc(io String strings[], Size index) {
+  if (index >= strings.size)
+    return;
+  strings[index] += " (was at index " + index + ")";
+}
+            ]]>
+          </programlisting>
+        </example>
+      </section>
+
+      <section xml:id="loop-statements">
+        <title>Loop Statements</title>
+
+        <section xml:id="c-style-loop">
+          <title><quote>C-Style</quote> Loops</title>
+
+          <para>
+            A <glossterm>C-style loop</glossterm> takes the form <code>for (<replaceable>start</replaceable>; <replaceable>check</replaceable>; <replaceable>next</replaceable>) <replaceable>body</replaceable></code>, where <code><replaceable>start</replaceable></code> is a statement (possibly empty), <code><replaceable>check</replaceable></code> and <code><replaceable>next</replaceable></code> are optional expressions, and <code><replaceable>body</replaceable></code> is a statement.  The loop operates as follows:
+
+            <itemizedlist>
+              <listitem><para>
+                A new, nested scope is created.  This scope is destroyed when the loop finishes.
+              </para></listitem>
+              <listitem><para>
+                The <code><replaceable>start</replaceable></code> statement is executed.
+              </para></listitem>
+              <listitem><para>
+                The <code><replaceable>check</replaceable></code> expression, if present, is evaluated, and the resulting value is converted to a <code>Boolean</code>.  If the result is false, the loop finishes.
+              </para></listitem>
+              <listitem><para>
+                The <code><replaceable>body</replaceable></code> statement is executed.
+              </para></listitem>
+              <listitem><para>
+                The <code><replaceable>next</replaceable></code> expression, if present, is evaluated, and the resulting value is discarded.  Execution is transferred back to the step that evaluates the <code><replaceable>check</replaceable></code> expression.
+              </para></listitem>
+            </itemizedlist>
+
+            Note that since <code><replaceable>start</replaceable></code> is a statement, it is possible to declare a new variable there.  This variable will go out-of-scope when the loop finishes.  It is common practice to declare loop-bound index variables in the <code><replaceable>start</replaceable></code> statement.
+          </para>
+
+          <example>
+            <title><quote>C-Style</quote> loop</title>
+            <programlisting language="KL">
+              <![CDATA[
+operator entry() {
+  for (Index i=0; i<10; ++i)
+    report("i is now " + i);
+}
+              ]]>
+            </programlisting>
+          </example>
+        </section>
+
+        <section xml:id="while-loops">
+          <title><code>while</code> Loops</title>
+
+          <para>
+            A <glossterm>while loop</glossterm> takes the form <code>while (<replaceable>check</replaceable>) <replaceable>body</replaceable></code>, where <code><replaceable>check</replaceable></code> is a expression and <code><replaceable>body</replaceable></code> is a statement.  The loop operates as follows:
+
+            <itemizedlist>
+              <listitem><para>
+                The <code><replaceable>check</replaceable></code> expression is evaluated, and the resulting value is converted to a <code>Boolean</code>.  If the result is false, the loop finishes.
+              </para></listitem>
+              <listitem><para>
+                The <code><replaceable>body</replaceable></code> statement is executed.
+              </para></listitem>
+              <listitem><para>
+                Execution is transferred back to the step that evaluates the <code><replaceable>check</replaceable></code> expression.
+              </para></listitem>
+            </itemizedlist>
+          </para>
+
+          <example>
+            <title><code>while</code> loop</title>
+            <programlisting language="KL">
+              <![CDATA[
+operator entry() {
+  Integer i = 0;
+  while (i < 10) {
+    report("i is now " + i);
+    ++i;
+  }
+}
+              ]]>
+            </programlisting>
+          </example>
+        </section>
+
+        <section xml:id="do-while-loops">
+          <title><code>do</code>...<code>while</code> Loops</title>
+
+          <para>
+            A <glossterm>do-while loop</glossterm> takes the form <code>do <replaceable>body</replaceable> while (<replaceable>check</replaceable>);</code>, where <code><replaceable>check</replaceable></code> is a expression and <code><replaceable>body</replaceable></code> is a statement.  The loop operates as follows:
+
+            <itemizedlist>
+              <listitem><para>
+                The <code><replaceable>body</replaceable></code> statement is executed.
+              </para></listitem>
+              <listitem><para>
+                The <code><replaceable>check</replaceable></code> expression is evaluated, and the resulting value is converted to a <code>Boolean</code>.  If the result is false, the loop finishes.
+              </para></listitem>
+              <listitem><para>
+                Execution is transferred back to the step that executes the <code><replaceable>body</replaceable></code> statement.
+              </para></listitem>
+            </itemizedlist>
+          </para>
+
+          <example>
+            <title><code>do</code>...<code>while</code> loop</title>
+            <programlisting language="KL">
+              <![CDATA[
+operator entry() {
+  Integer i=0;
+  do {
+    report("i is now " + i);
+    ++i;
+  } while (i<10);
+}
+              ]]>
+            </programlisting>
+          </example>
+        </section>
+
+        <section xml:id="dict-loops">
+          <title>Dictionary Loops</title>
+
+          <para>
+            A dictionary loop iterates over all the keys and values, or just the values, in a dictionary.  For more information on dictionary loops, see <xref linkend="dicts" />.
+          </para>
+        </section>
+
+        <section xml:id="loop-control-statements">
+          <title>Loop Control Statements</title>
+
+          <para>
+            Within the body of a loop, the <code>break</code> and <code>continue</code> statements can be used prematuely end the current iteration of the loop as described below.
+          </para>
+
+          <section xml:id="break-statement">
+            <title>The <code>break</code> Statement</title>
+
+            <para>
+              The <code>break;</code> statement immediately exits the innermost loop.  It is an error to use the <code>break</code> statement outside of a loop.
+            </para>
+
+            <example>
+              <title>The <code>break</code> statement</title>
+              <programlisting language="KL">
+                <![CDATA[
+operator entry() {
+  // Only loops 5 times
+  for (Integer i=0; ; ++i) {
+    if (i == 5)
+      break;
+  }
+}
+                ]]>
+              </programlisting>
+            </example>
+          </section>
+
+          <section xml:id="continue-statement">
+            <title>The <code>continue</code> Statement</title>
+
+            <para>
+              The <code>continue;</code> statement immediately jumps to the next iteration of the innermost loop.  It is an error to use the <code>continue</code> statement outside of a loop.
+            </para>
+
+            <example>
+              <title>The <code>continue</code> statement</title>
+              <programlisting language="KL">
+                <![CDATA[
+operator entry() {
+  // Only prints 7
+  for (Integer i=0; i<10; ++i) {
+    if (i != 7)
+      continue;
+    report(i);
+  }
+}
+                ]]>
+              </programlisting>
+            </example>
+          </section>
+        </section>
+      </section>
+    </section>
   </chapter>
+
   <chapter xml:id="map-reduce">
     <title>Map-Reduce</title>
     
