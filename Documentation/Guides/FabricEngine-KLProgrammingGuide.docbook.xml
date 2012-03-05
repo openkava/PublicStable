@@ -3502,7 +3502,37 @@ operator entry() {
     <title>Map-Reduce</title>
     
     <para>
-      TBD
+      Fabric Engine provides a generic map-reduce framework that can be used to create recursively-parallel operations on large data sets.
     </para>
+
+    <para>
+      This chapter does not attempt to explain the concepts behind and usage of the Fabric Engine map-reduce framework; it serves purely to enumerate the types and functions that are provided in KL to support the framework.  For more information on concepts and usage of the map-reduce framework, refer to the <quote>Map-Reduce Programming Guide</quote>, available at <link xlink:href="http://documentation.fabric-engine.com/latest/"><uri>http://documentation.fabric-engine.com/latest/</uri></link>.
+    </para>
+
+    <section xml:id="mr-types">
+      <title>Map-Reduce Types</title>
+
+      <para>
+        In order to support map-reduce, KL introduces two new derived types: <code>ValueProducer&lt;<replaceable>...</replaceable>&gt;</code> and <code>ArrayProducer&lt;<replaceable>...</replaceable>&gt;</code>.
+      </para>
+
+      <section xml:id="value-producer">
+        <title>The <code>ValueProducer&lt;<replaceable>...</replaceable>&gt;</code> Type</title>
+
+        <para>
+          Given an existing type <code><replaceable>ValueType</replaceable></code>, the type <code>ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;</code> is a map-reduce value producer that produces values of type <code><replaceable>ValueType</replaceable></code>.  Values of type <code>ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;</code> have the following properties:
+
+          <itemizedlist>
+            <listitem><para>
+              They can be assigned to variables of the same type; however, there must be an exact match for <code><replaceable>ValueType</replaceable></code>; in otherwords, <code>ValueProducer&lt;<replaceable>ValueType1</replaceable>&gt;</code> and <code>ValueProducer&lt;<replaceable>ValueType2</replaceable>&gt;</code> are the same time if and only if <code><replaceable>ValueType1</replaceable></code> and <code><replaceable>ValueType2</replaceable></code> are the same type.
+            </para></listitem>
+
+            <listitem><para>
+              They support a single method <code>produce()</code> that returns a value of type <code><replaceable>ValueType</replaceable></code>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+    </section>
   </chapter>
 </book>
