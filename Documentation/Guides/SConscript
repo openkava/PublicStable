@@ -1,5 +1,5 @@
 import os, re
-Import('env')
+Import('env', 'distDir')
 
 docbookEnv = env.Clone()
 
@@ -64,11 +64,11 @@ def Docbook(env, inputDocbookXMLs):
 		'use.extensions=1'
 		]]
 
-	outputs = []
+	outputs = [htmlCSS]
 	for inputDocbookXML in inputDocbookXMLs:
 		inputBasename = re.sub('\.docbook\.xml$', '', str(inputDocbookXML))
 		templatedInputDocbookXML = env.SubstBuildVars(
-			inputBasename + ".temp.docbook.xml",
+			inputBasename + ".docbook.xml.temp",
 			inputDocbookXML
 			)
 		env.Depends(templatedInputDocbookXML, w3cEntities)
@@ -81,8 +81,6 @@ def Docbook(env, inputDocbookXMLs):
 			)
 		env.AddPreAction(pdfFO, validateAction)
 		foXML = env.Dir('xsl').File('fo.xml')
-		notePNG = env.Dir('images').File('note.png')
-		warningPNG = env.Dir('images').File('warning.png')
 		outputs.append(env.Command(
 			inputBasename + ".pdf",
 			[pdfFO, foXML, notePNG, warningPNG],
@@ -111,27 +109,44 @@ def Docbook(env, inputDocbookXMLs):
 		env.AddPreAction(html, validateAction)
 		outputs.append(html)
 
-		css = env.Command(
-			env.File('style.css'),
-			env.Dir('xsl').File('html.css'),
-			Copy('$TARGET', '$SOURCE')
-			)
-		outputs.append(css)
 	return outputs
 AddMethod(docbookEnv, Docbook)
 
-guides = docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml'))
+notePNG = env.Dir('images').File('note.png')
+warningPNG = env.Dir('images').File('warning.png')
+images = [notePNG, warningPNG]
+
+htmlCSS = env.Command(
+	env.File('style.css'),
+	env.Dir('xsl').File('html.css'),
+	Copy('$TARGET', '$SOURCE')
+	)
+
+docsDistDir = distDir.Dir('docs')
+guides = [
+	docbookEnv.Install(
+		docsDistDir,
+		[
+			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml')),
+			htmlCSS
+			]
+		),
+	docbookEnv.Install(
+		docsDistDir.Dir('images'),
+		images
+		)
+	]
 Alias('guides', guides)
 
 if 'uploadDocs' in COMMAND_LINE_TARGETS:
 	remoteHost = 'dist.fabric-engine.com'
-	remoteDir = '/fabric-distribution/' + docbookEnv['FABRIC_VERSION'] + '/docs'
+	remoteDir = '/fabric-distribution/' + docbookEnv['FABRIC_VERSION']
 	uploadDocs = docbookEnv.AlwaysBuild(docbookEnv.Command(
 		'uploadDocs',
 		guides,
 		[
 			['ssh', remoteHost, 'mkdir', '-p', remoteDir],
-			['rsync', '-e', 'ssh', '--progress', '$SOURCES', remoteHost+':'+remoteDir+'/']
+			['rsync', '-e', 'ssh', '--progress', '--recursive', str(docsDistDir), remoteHost+':'+remoteDir+'/']
 			]
 		))
 	Alias('uploadDocs', uploadDocs)
