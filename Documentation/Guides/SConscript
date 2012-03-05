@@ -40,12 +40,16 @@ w3cEntities = docbookEnv.File('w3centities-f.ent')
 
 def Docbook(env, inputDocbookXML):
 	inputBasename = re.sub('\.docbook\.xml$', '', inputDocbookXML)
+	templatedInputDocbookXML = env.SubstBuildVars(
+		inputBasename + ".temp.docbook.xml",
+		inputDocbookXML
+		)
 	outputPDFs = []
-	env.Depends(inputDocbookXML, w3cEntities)
+	env.Depends(templatedInputDocbookXML, w3cEntities)
 	pdfXSL = env.Dir('xsl').File('pdf.xsl')
 	pdfFO = env.Command(
 		inputBasename + ".pdf.fo",
-		[inputDocbookXML, pdfXSL],
+		[templatedInputDocbookXML, pdfXSL],
 		[[
 			'java', '-Xss1024K', '-Xmx512m',
 			'-cp', saxonClassPath,
@@ -92,5 +96,5 @@ AddMethod(docbookEnv, Docbook)
 klpgPDF = Alias('klpgPDF', docbookEnv.Docbook('FabricEngine-KLProgrammingGuide.docbook.xml'))
 iopgPDF = Alias('iopgPDF', docbookEnv.Docbook('FabricEngine-IOProgrammingGuide.docbook.xml'))
 jssgPDF = Alias('jssgPDF', docbookEnv.Docbook('FabricEngine-JSSceneGraphProgrammingGuide.docbook.xml'))
-extsPDF = Alias('extsPDF', docbookEnv.Docbook('FabricEngine-ExtensionReference.docbook.xml'))
+extsPDF = Alias('extsPDF', docbookEnv.Docbook('FabricEngine-ExtensionsReference.docbook.xml'))
 Alias('guides', [klpgPDF, iopgPDF, jssgPDF, extsPDF])
