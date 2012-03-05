@@ -106,7 +106,7 @@ set       toc,title
 <xsl:param name="region.after.extent">0.35in</xsl:param>
 <xsl:param name="page.margin.bottom">0.50in</xsl:param>
 <xsl:param name="body.margin.bottom">0.65in</xsl:param>
-<xsl:param name="double.sided">0</xsl:param>
+<xsl:param name="double.sided">1</xsl:param>
 <xsl:param name="body.start.indent">1pc</xsl:param>
 <xsl:param name="body.end.indent">1pc</xsl:param>
 
@@ -221,10 +221,10 @@ set       toc,title
   <xsl:param name="gentext-key" select="''"/>
   <fo:block>
     <xsl:choose>
-      <xsl:when test="$position = 'right'">
+      <xsl:when test="$sequence = 'odd' and $position = 'right'">
         <xsl:apply-templates select="." mode="object.title.markup"/>
       </xsl:when>
-      <xsl:when test="$position = 'left'">
+      <xsl:when test="$sequence = 'even' and $position = 'left'">
         <xsl:value-of select="ancestor-or-self::d:book/d:info/d:title"/>
       </xsl:when>
     </xsl:choose>
@@ -242,10 +242,10 @@ set       toc,title
   <xsl:param name="gentext-key" select="''"/>
   <fo:block>
     <xsl:choose>
-      <xsl:when test="$position = 'right'">
+      <xsl:when test="($sequence = 'even' and $position = 'left') or ($sequence = 'odd' and $position = 'right')">
         <fo:page-number/>  
       </xsl:when>
-      <xsl:when test="$position = 'left'">
+      <xsl:when test="($sequence = 'odd' and $position = 'left') or ($sequence = 'even' and $position = 'right')">
         <xsl:text>Copyright </xsl:text>
         <!-- use xpath to grab the year - remember to prefix each node with d: -->
         <xsl:value-of select="ancestor-or-self::d:book/d:info/d:copyright/d:year"/>
