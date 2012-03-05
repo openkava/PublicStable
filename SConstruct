@@ -29,6 +29,7 @@ nativeTargets = [
   ['cliClients', 'All command-line clients'],
   ['cli', 'All command-line clients and tools'],
   ['npapi', 'The NPAPI plugin browser client'],
+  ['exts', 'All the extensions'],
   ['all', 'All clients and tools (command-line and browser)'],
   ['dist', 'Build packages for distribution'],
   ['upload', 'Upload distribution packages to dist.fabric-engine.com']
