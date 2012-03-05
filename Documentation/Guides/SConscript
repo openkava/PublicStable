@@ -94,6 +94,8 @@ def Docbook(env, inputDocbookXML):
 	return outputPDFs
 AddMethod(docbookEnv, Docbook)
 
-klpgPDF = Alias('klpgPDF', docbookEnv.Docbook('KLProgrammingGuide.docbook.xml'))
-iopgPDF = Alias('iopgPDF', docbookEnv.Docbook('IOProgrammingGuide.docbook.xml'))
-Alias('guides', [klpgPDF, iopgPDF])
+klpgPDF = Alias('klpgPDF', docbookEnv.Docbook('FabricEngine-KLProgrammingGuide.docbook.xml'))
+iopgPDF = Alias('iopgPDF', docbookEnv.Docbook('FabricEngine-IOProgrammingGuide.docbook.xml'))
+jssgPDF = Alias('jssgPDF', docbookEnv.Docbook('FabricEngine-JSSceneGraphProgrammingGuide.docbook.xml'))
+extsPDF = Alias('extsPDF', docbookEnv.Docbook('FabricEngine-ExtensionReference.docbook.xml'))
+Alias('guides', [klpgPDF, iopgPDF, jssgPDF, extsPDF])
