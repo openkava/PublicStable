@@ -3530,6 +3530,10 @@ operator entry() {
             <listitem><para>
               They support a method <programlisting>function <replaceable>ValueType</replaceable> ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;.produce();</programlisting> that produces the value producer's value.
             </para></listitem>
+
+            <listitem><para>
+              They support a method <programlisting>function ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;.flush();</programlisting> that recursively flushes any caches connected to the value producer.
+            </para></listitem>
           </itemizedlist>
         </para>
       </section>
@@ -3552,8 +3556,116 @@ operator entry() {
             <listitem><para>
               They support a method <programlisting>function <replaceable>ElementType</replaceable> ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;.produce(Index <replaceable>i</replaceable>);</programlisting> that produces the array producer's element at index <code><replaceable>i</replaceable></code>.
             </para></listitem>
+
+            <listitem><para>
+              They support a method <programlisting>function ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;.flush();</programlisting> that recursively flushes any caches connected to the array producer.
+            </para></listitem>
           </itemizedlist>
         </para>
+      </section>
+    </section>
+
+    <section xml:id="mr-functions">
+      <title>Map-Reduce Functions</title>
+
+      <para>
+        KL supports several functions to support the creation of new value and array producers from existing producers as well as KL functions and values.
+      </para>
+
+      <section>
+        <title>Value Producer Creation Functions</title>
+
+        <section>
+          <title><code>createConstValue</code></title>
+
+          <programlisting>ValueProducer&lt;<replaceable>ValueType</replaceable>&gt; createConstValue(<replaceable>expr</replaceable>)</programlisting>
+
+          <para>
+            Creates a value producer with value type <replaceable>ValueType</replaceable> that returns a constant value.  <replaceable>expr</replaceable> must be an expression that evaluates to a value.
+          </para>
+        </section>
+
+        <section>
+          <title><code>createValueGenerator</code></title>
+
+          <programlisting>ValueProducer&lt;<replaceable>ValueType</replaceable>&gt; createValueGenerator(<replaceable>operatorName</replaceable>[, ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt;])</programlisting>
+
+          <para>
+            Creates a value producer with value type <replaceable>ValueType</replaceable> that calls the operator named <code><replaceable>operatorName</replaceable></code> to generate the value.
+
+            <itemizedlist>
+              <listitem>
+                <para>
+                  If <code>ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt;</code> is provided, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype <programlisting>operator operatorName(io <replaceable>ValueType</replaceable> value, <replaceable>SharedValueType</replaceable> sharedValue);</programlisting>
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  Otherwise, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype <programlisting>operator operatorName(io <replaceable>ValueType</replaceable> value);</programlisting>
+                </para>
+              </listitem>
+            </itemizedlist>
+          </para>
+        </section>
+
+        <section>
+          <title><code>createValueTransform</code></title>
+
+          <programlisting>ValueProducer&lt;<replaceable>ValueType</replaceable>&gt; createValueTransform(ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;, <replaceable>operatorName</replaceable>[, ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt;])</programlisting>
+
+          <para>
+            Creates a value producer with value type <replaceable>ValueType</replaceable> that calls the operator named <code><replaceable>operatorName</replaceable></code> to transform the result of another value producer of the same type.
+
+            <itemizedlist>
+              <listitem>
+                <para>
+                  If <code>ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt;</code> is provided, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype <programlisting>operator operatorName(io <replaceable>ValueType</replaceable> value, <replaceable>SharedValueType</replaceable> sharedValue);</programlisting>
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  Otherwise, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype <programlisting>operator operatorName(io <replaceable>ValueType</replaceable> value);</programlisting>
+                </para>
+              </listitem>
+            </itemizedlist>
+          </para>
+        </section>
+
+        <section>
+          <title><code>createValueMap</code></title>
+
+          <programlisting>ValueProducer&lt;<replaceable>OutputValueType</replaceable>&gt; createValueMap(ValueProducer&lt;<replaceable>InputValueType</replaceable>&gt;, <replaceable>operatorName</replaceable>[, ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt;])</programlisting>
+
+          <para>
+            Creates a value producer with value type <replaceable>OutputValueType</replaceable> that calls the operator named <code><replaceable>operatorName</replaceable></code> to map the result of another value producer of type <code>ValueProducer&lt;<replaceable>InputValueType</replaceable>&gt;</code>.
+
+            <itemizedlist>
+              <listitem>
+                <para>
+                  If <code>ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt;</code> is provided, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype <programlisting>operator operatorName(<replaceable>InputValueType</replaceable> inputValue, io <replaceable>OutputValueType</replaceable> outputValue, <replaceable>SharedValueType</replaceable> sharedValue);</programlisting>
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  Otherwise, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype <programlisting>operatorName(<replaceable>InputValueType</replaceable> inputValue, io <replaceable>OutputValueType</replaceable> outputValue);</programlisting>
+                </para>
+              </listitem>
+            </itemizedlist>
+          </para>
+        </section>
+
+        <section>
+          <title><code>createValueCache</code></title>
+
+          <programlisting>ValueProducer&lt;<replaceable>ValueType</replaceable>&gt; createValueCache(ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;)</programlisting>
+
+          <para>
+            Creates a value producer with value type <replaceable>ValueType</replaceable> that caches the result of another value producer of the same type.  For more information on producer caches, see the Fabric Engine Map-Reduce Programming Guide.
+          </para>
+        </section>
       </section>
     </section>
   </chapter>
