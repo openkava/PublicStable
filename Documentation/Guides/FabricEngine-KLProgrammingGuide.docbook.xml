@@ -3524,11 +3524,33 @@ operator entry() {
 
           <itemizedlist>
             <listitem><para>
-              They can be assigned to variables of the same type; however, there must be an exact match for <code><replaceable>ValueType</replaceable></code>; in otherwords, <code>ValueProducer&lt;<replaceable>ValueType1</replaceable>&gt;</code> and <code>ValueProducer&lt;<replaceable>ValueType2</replaceable>&gt;</code> are the same time if and only if <code><replaceable>ValueType1</replaceable></code> and <code><replaceable>ValueType2</replaceable></code> are the same type.
+              They can be assigned to variables of the same type; however, there must be an exact match for <code><replaceable>ValueType</replaceable></code>.  In other words, <code>ValueProducer&lt;<replaceable>ValueType1</replaceable>&gt;</code> and <code>ValueProducer&lt;<replaceable>ValueType2</replaceable>&gt;</code> are the same time if and only if <code><replaceable>ValueType1</replaceable></code> and <code><replaceable>ValueType2</replaceable></code> are the same type.
             </para></listitem>
 
             <listitem><para>
-              They support a single method <code>produce()</code> that returns a value of type <code><replaceable>ValueType</replaceable></code>
+              They support a method <programlisting>function <replaceable>ValueType</replaceable> ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;.produce();</programlisting> that produces the value producer's value.
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+
+      <section xml:id="array-producer">
+        <title>The <code>ArrayProducer&lt;<replaceable>...</replaceable>&gt;</code> Type</title>
+
+        <para>
+          Given an existing type <code><replaceable>ElementType</replaceable></code>, the type <code>ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;</code> is a map-reduce array producer that produces values of type <code><replaceable>ElementType</replaceable></code>.  Values of type <code>ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;</code> have the following properties:
+
+          <itemizedlist>
+            <listitem><para>
+              They can be assigned to variables of the same type; however, there must be an exact match for <code><replaceable>ElementType</replaceable></code>.  In other words, <code>ArrayProducer&lt;<replaceable>ElementType1</replaceable>&gt;</code> and <code>ArrayProducer&lt;<replaceable>ElementType2</replaceable>&gt;</code> are the same time if and only if <code><replaceable>ElementType1</replaceable></code> and <code><replaceable>ElementType2</replaceable></code> are the same type.
+            </para></listitem>
+
+            <listitem><para>
+              They support a method <programlisting>function Size ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;.getCount();</programlisting> that returns the number of elements in the array producer.  Calling <code>produce(<replaceable>i</replaceable>)</code> (below) with <code><replaceable>i</replaceable></code> not less than the result of <code>getCount()</code> will cause an exception to be thrown.
+            </para></listitem>
+
+            <listitem><para>
+              They support a method <programlisting>function <replaceable>ElementType</replaceable> ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;.produce(Index <replaceable>i</replaceable>);</programlisting> that produces the array producer's element at index <code><replaceable>i</replaceable></code>.
             </para></listitem>
           </itemizedlist>
         </para>
