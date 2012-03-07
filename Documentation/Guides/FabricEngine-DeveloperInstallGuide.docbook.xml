@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!DOCTYPE book [
+<!ENTITY % allent SYSTEM "w3centities-f.ent">
+%allent;
+]>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+  <info>
+    <title>Fabric Engine Developer Install Guide</title>
+    <copyright>
+      <year>{{FABRIC_COPYRIGHT_YEARS}}</year>
+      <holder>{{FABRIC_COMPANY_NAME}}</holder>
+    </copyright>
+    <releaseinfo>{{FABRIC_NAME}} Version {{FABRIC_VERSION}}</releaseinfo>
+  </info>
+  
+  <chapter xml:id="introduction">
+    <title>Introduction</title>
+
+    <para>
+      This document will outline how to set up your development environment in order to build Fabric under Mac OS X, Linux, and Windows. The builds under all three systems are generally done from the command prompt, using Mingw32 under Windows for more UNIX-like functionality.
+    </para>
+
+    <para>
+      Fabric supports the following platforms:
+
+      <itemizedlist>
+        <listitem><para>
+          <emphasis>Windows</emphasis>: Vista or Windows 7.
+        </para></listitem>
+        
+        <listitem><para>
+          <emphasis>Mac OS X</emphasis>: 10.6 (Snow Leopard) or above
+        </para></listitem>
+
+        <listitem><para>
+          <emphasis>Linux</emphasis>: Tested on Ubuntu 10.04 (32-bit or 64-bit). Should work with any modern distro.
+        </para></listitem>
+      </itemizedlist>
+    </para>
+  </chapter>
+
+  <chapter xml:id="setup">
+    <title>Setup</title>
+
+    <section xml:id="setup.prerequisites">
+      <title>Prerequisites</title>
+      <para>
+        Before getting started you will need several packages installed in order to be able to retrieve and compile the Fabric source code. Packages vary depending on build operating system.
+      </para>
+    
+      <section xml:id="setup.prerequisites.windows">
+        <title>Windows</title>
+        <para>
+          <orderedlist>
+            <listitem><para>
+              Install Git for Windows and (optionally) set up your github ssh key by following the instructions found here: <link xlink:href="http://help.github.com/win-set-up-git/"><uri>Set Up Git</uri></link>
+            </para></listitem>
+            <listitem><para>
+              If you want git to remember your passphrase, you can follow the instructions found here: <link xlink:href="http://stackoverflow.com/questions/370030/why-git-cant-remember-my-passphrase-under-windows"><uri>Why git can't remember my passphrase under Windows</uri></link>
+            </para></listitem>
+          </orderedlist>
+        </para>
+      </section>
+    </section>
+
+    <section xml:id="setup.build-folder">
+      <title>Build Folder</title>
+      <para>
+        You first need to choose a directory where the Fabric source code will live. Assuming that <prompt>myuser</prompt> is your local username, the recommended paths are:
+
+        <itemizedlist>
+          <listitem><para>
+            Windows: <prompt>c:\Users\myuser\Fabric</prompt>
+          </para></listitem>
+          
+          <listitem><para>
+            Mac OS X: <prompt>/Users/myuser/Fabric</prompt>
+          </para></listitem>
+
+          <listitem><para>
+            Linux: <prompt>/home/myuser/Fabric</prompt>
+          </para></listitem>
+        </itemizedlist>
+      </para>
+
+      <para>
+        You will then need to set an environment variable called <prompt>FABRIC_CORE_PATH</prompt> that points to this newly-created directory. Under Mac OS X and Linux, this can be done by running:
+      </para>
+
+      <para>
+        <prompt>export FABRIC_CORE_PATH=~/Fabric</prompt>
+      </para>
+
+      <para>
+        You may also want to add this to your <prompt>.bash_profile</prompt> or <prompt>.bashrc</prompt> file.
+      </para>
+
+      <para>
+        Under Windows you'll want to set it as a permanent environment variable by going to Control Panel -> System -> Advanced System Settings -> Advanced -> Environment Variables. You can create a new variable named <prompt>FABRIC_CORE_PATH</prompt> and set it to <prompt>c:\Users\myuser\Fabric</prompt> (or whatever directory you chose).
+      </para>
+
+    </section>
+
+    <section xml:id="setup.clone-repo">
+      <title>Clone the PublicDev Repository</title>
+      <para>
+        If read-only access is enough, you can clone the PublicDev repository from the command line without setting up an ssh key by doing:
+      </para>
+      <para>
+        <prompt>git clone https://github.com/fabric-engine/PublicDev.git</prompt>
+      </para>
+
+      <para>
+        If you will require read-write access then you will 
+        <itemizedlist>
+          <listitem><para>
+            Ensure that you have uploaded your public SSH key to your github.com account.
+          </para></listitem>
+          <listitem><para>
+            If you require it, ensure that you have been given access to the NativeCore fabric repository.
+          </para></listitem>
+          <listitem><para>
+            Ensure that you have uploaded your public SSH key to your github.com account.
+          </para></listitem>
+        </itemizedlist>
+        
+      </para>
+    </section>
+
+  </chapter>
+</book>
