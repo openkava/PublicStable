@@ -80,7 +80,13 @@ def Docbook(env, inputDocbookXMLs):
 			xsltAction
 			)
 		env.AddPreAction(pdfFO, validateAction)
-		foXML = env.Dir('xsl').File('fo.xml')
+		foTemplateXML = env.Dir('xsl').File('fo.template.xml')
+		foXML = env.Command(
+			env.Dir('xsl').File('fo.xml'),
+			foTemplateXML,
+			[['sed', 's,{{SHORT_ATTENTION_SPAN_DOCBOOK_URI}},'+SHORT_ATTENTION_SPAN_DOCBOOK_URI+',', '<$SOURCE', '>$TARGET']]
+			)
+		env.Depends(pdfFO, foXML)
 		outputs.append(env.Command(
 			inputBasename + ".pdf",
 			[pdfFO, foXML, notePNG, warningPNG],
