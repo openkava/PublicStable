@@ -25,6 +25,10 @@
       The rest of this document outlines instructions on how to install each module, a tutorial for each language to get you up-and-running, and links to reference documentation. The last section also outlines how to install and use the Fabric Extensions with the bindings for your chosen language.
     </para>
 
+    <para>
+      This document focuses only on installing and configuring the specific language bindings, for a detailed reference on Fabric itself and the KL language please see the other relevant documentation.
+    </para>
+
   </chapter>
 
   <chapter xml:id="nodejs">
@@ -37,8 +41,8 @@
         The Fabric Engine module for Node.js currently runs on:
 
         <itemizedlist>
-          <listitem><para>Mac OS X running on Intel processors, version 10.6 ("Snow Leopard") or later.</para></listitem>
-          <listitem><para>32-bit and 64-bit Linux. We do our development on Ubuntu 10.04 and above but it shoud work with any modern distribution.</para></listitem>
+          <listitem><para>Mac OS X running on Intel processors, version 10.6 ("Snow Leopard") or later</para></listitem>
+          <listitem><para>32-bit and 64-bit Linux. We do our development on Ubuntu 10.04 and above but it should work with any modern distribution</para></listitem>
         </itemizedlist>
       </para>
 
@@ -91,7 +95,7 @@
         </para>
 
         <para>
-          Create the directory <filename>~/node_modules</filename>. Next move the folder above that you just unpacked into <filename>~/node_modules</filename> and rename it to <filename>Fabric</filename>. You can also create a symlink if it makes more sense for your setup.
+          Create the directory <filename>~/node_modules</filename>. Next, inside the module that you just unpacked there should be a subfolder called <filename>node_modules</filename> with a subfolder of its own called <filename>Fabric</filename>. Move this <filename>Fabric</filename> folder to <filename>~/node_modules</filename>. You can also create a symlink if it makes more sense for your setup.
         </para>
       </section>
 
@@ -111,7 +115,7 @@ user@host~$ node
             ]]></screen>
           </informalfigure>
 
-          This confirms that the Fabric Engine Node.js module is installed and working. You can press Ctrl-C or run <code>process.exit();</code> to exit.
+          This confirms that the Fabric Engine Node.js module is installed and working. You can press <command>Ctrl-C</command> or run <code>process.exit();</code> to exit.
         </para>
       </section>
 
@@ -123,10 +127,180 @@ user@host~$ node
 
   </chapter>
 
+  <chapter xml:id="python">
+    <title>Python Module</title>
+    
+    <section xml:id="python.platforms">
+      <title>Supported Platforms</title>
+
+      <para>
+        The Fabric Engine module for Python currently runs on:
+
+        <itemizedlist>
+          <listitem><para>Windows Vista or Windows 7</para></listitem>
+          <listitem><para>Mac OS X running on Intel processors, version 10.6 ("Snow Leopard") or later</para></listitem>
+          <listitem><para>32-bit and 64-bit Linux. We do our development on Ubuntu 10.04 and above but it should work with any modern distribution</para></listitem>
+        </itemizedlist>
+
+        We target Python version 2.6.x or later, but may work with older versions of Python as well.
+      </para>
+
+    </section>
+
+    <section xml:id="python.installation">
+      <title>Installation</title>
+
+      <section xml:id="python.installation.download">
+        <title>Step One: Download</title>
+          <para>
+            From the <link xlink:href="http://dist.fabric-engine.com/latest/"><uri>Fabric distributions page</uri></link>, download the version of the Node.js module that applies for your operating system.
+          </para>
+
+          <para>
+            For Linux, choose the file based on whether you are running a 32-bit or 64-bit operating system. If you're not sure which version to download, run <command>uname -m</command> which will report either <prompt>i686</prompt> or <prompt>x86_64</prompt>.
+
+            <itemizedlist>
+              <listitem><para>
+                <filename>FabricEngine-PythonModule-Linux-i686-VERSION.tar.bz2</filename>
+              </para></listitem>
+              <listitem><para>
+                <filename>FabricEngine-PythonModule-Linux-x86_64-VERSION.tar.bz2</filename>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+
+          <para>
+            For Mac OS X choose:
+            <itemizedlist>
+              <listitem><para>
+                <filename>FabricEngine-PythonModule-Darwin-universal-VERSION.tar.bz2</filename>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+
+          <para>
+            For Windows choose:
+            <itemizedlist>
+              <listitem><para>
+                <filename>FabricEngine-PythonModule-Windows-x86-VERSION.zip</filename>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+      </section>
+
+      <section xml:id="python.installation.install">
+        <title>Step Two: Install</title>
+
+        <para>
+          On Mac OS X and Linux, unpack the module by running <command>tar jxf FabricEngine-PythonModule-XXX.tar.bz2</command> from a command line. On Windows, simply double-click the .zip file to unpack it.
+        </para>
+
+        <para>
+          The module can be installed anywhere you would normally install Python modules on your system. If you do not already have a location where you normally install Python modules you can create one. Assuming that your local user is called <filename>myuser</filename>, the recommended paths to create are as follows:
+        </para>
+
+        <para>
+          <itemizedlist>
+            <listitem><para>Windows: <filename>c:\Users\myuser\python_modules</filename></para></listitem>
+            <listitem><para>Mac OS X: <filename>/Users/myuser/python_modules</filename></para></listitem>
+            <listitem><para>Linux: <filename>/home/myuser/python_modules</filename></para></listitem>
+          </itemizedlist>
+        </para>
+
+        <para>
+          Next, inside the module that you just unpacked there should be a subfolder called <filename>python_modules</filename> with a subfolder of its own called <filename>fabric</filename>. Move this <filename>fabric</filename> folder to the folder you created above. In Mac OS X or Linux you can also create a symlink if it makes more sense for your setup.
+        </para>
+
+        <para>
+          If you created a new folder above you will also need to set an environment variable to tell Python where to look. On Mac OS X or Linux this can be done by running <command>export PYTHONPATH=~/python_modules</command>. You may want to add this to your <filename>~/.bashrc</filename> or <filename>~/.bash_profile</filename> as well.
+        </para>
+
+        <para>
+          Under Windows you'll want to set it as a permanent environment variable by going to Control Panel -> System -> Advanced System Settings -> Advanced -> Environment Variables. Create a new variable called <prompt>PYTHONPATH</prompt> and set it to <filename>c:\Users\myuser\python_modules</filename>.
+        </para>
+      </section>
+
+      <section xml:id="python.installation.test">
+        <title>Step Three: Test</title>
+
+        <para>
+          Now we will test that the installation works. Run <command>python</command> from a command line and try this:
+
+          <informalfigure xml:id="python.installation.test.output">
+            <screen><![CDATA[
+user@host~$ python
+Python 2.7.2+ (default, Jan 21 2012, 23:31:34) 
+[GCC 4.6.2] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import fabric
+[FABRIC] Fabric Engine version 1.0.22-release
+>>> fabric.createClient().build.getName()
+[FABRIC] Searching extension directory '/home/andrew/.fabric/Exts'
+[FABRIC] Warning: unable to open extension directory '/home/andrew/.fabric/Exts'
+[FABRIC] Searching extension directory '/usr/lib/fabric/Exts'
+[FABRIC] Warning: unable to open extension directory '/usr/lib/fabric/Exts'
+u'Fabric Engine'
+>>> 
+            ]]></screen>
+          </informalfigure>
+
+          This confirms that the Fabric Engine Python module is installed and working. You can press <command>Ctrl-D</command> and then <command>Ctrl-C</command> to exit.
+        </para>
+      </section>
+
+      <section xml:id="python.installation.exts">
+        <title>(Optional) Step Four: Install Extensions</title>
+        <para>To install the optional Fabric extensions, see <xref linkend="extensions"/>.</para>
+      </section>
+    </section>
+
+  </chapter>
+
   <chapter xml:id="extensions">
     <title>Fabric Extensions</title>
     <para>
-      Extensions
+      Each module should also contain the Fabric Extensions. These are optional but expose additional functionality within Fabric and KL. To install the Extensions, look for a subfolder called <filename>Exts</filename> under the archive for your module that you downloaded and unpacked. The contents of this folder should be copied to a specific location depending on your operating system:
+
+      <itemizedlist>
+        <listitem><para>Windows: <filename>c:\Users\myuser\AppData\Roaming\Fabric\Exts</filename></para></listitem>
+        <listitem><para>Mac OS X: <filename>/Users/myuser/Library/Fabric/Exts</filename></para></listitem>
+        <listitem><para>Linux: <filename>/home/myuser/.fabric/Exts</filename></para></listitem>
+      </itemizedlist>
+
+      This folder may not exist and will need to be created (including any missing parent folders) if not.
+    </para>
+
+    <para>
+      After copying the files into the folder specified you can verify that they are seen by Fabric by running the command as specified in the Test section for your module. After the <code>createClient()</code> call, you should now see output that looks something like this:
+
+      <informalfigure xml:id="extensions.output">
+        <screen><![CDATA[
+>>> fabric.createClient()
+[FABRIC] Searching extension directory '/home/user/.fabric/Exts'
+[FABRIC] [FabricTEEM] Extension registered
+[FABRIC] [FabricOGL] Extension registered
+[FABRIC] [FabricMath] Extension registered
+[FABRIC] [FabricFILESTREAM] Extension registered
+[FABRIC] [FabricLIDAR] Extension registered
+[FABRIC] [FabricOBJ] Extension registered
+[FABRIC] [TimeSample] Extension registered
+[FABRIC] [FabricHDR] Extension registered
+[FABRIC] [FabricPNG] Extension registered
+[FABRIC] [FabricVIDEO] Extension registered
+[FABRIC] [FabricBULLET] Extension registered
+[FABRIC] [ExceptSample] Extension registered
+[FABRIC] [FabricFILESYSTEM] Extension registered
+[FABRIC] [FabricALEMBIC] Extension registered
+[FABRIC] [FabricCIMG] Extension registered
+[FABRIC] [FabricTGA] Extension registered
+[FABRIC] [FabricEXR] Extension registered
+[FABRIC] Searching extension directory '/usr/lib/fabric/Exts'
+[FABRIC] Warning: unable to open extension directory '/usr/lib/fabric/Exts'
+>>> 
+        ]]></screen>
+      </informalfigure>
+
+      If your output is similar to that then the extensions have been successfully installed.
     </para>
   </chapter>
     
