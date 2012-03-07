@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!DOCTYPE book [
+<!ENTITY % allent SYSTEM "w3centities-f.ent">
+%allent;
+]>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+  <info>
+    <title>Fabric Engine Language Bindings Reference</title>
+    <copyright>
+      <year>{{FABRIC_COPYRIGHT_YEARS}}</year>
+      <holder>{{FABRIC_COMPANY_NAME}}</holder>
+    </copyright>
+    <releaseinfo>{{FABRIC_NAME}} Version {{FABRIC_VERSION}}</releaseinfo>
+  </info>
+  
+  <chapter xml:id="introduction">
+    <title>Introduction</title>
+
+    <para>
+      This document outlines the installation and use of the language bindings that Fabric supports. Currently bindings exist for Javascript using Node.js on Mac OS X and Linux, and for Python on Windows, Mac OS X, and Linux. Both Node.js and Python bindings are implemented as modules.
+    </para>
+
+    <para>
+      The rest of this document outlines instructions on how to install each module, a tutorial for each language to get you up-and-running, and links to reference documentation. The last section also outlines how to install and use the Fabric Extensions with the bindings for your chosen language.
+    </para>
+
+  </chapter>
+
+  <chapter xml:id="nodejs">
+    <title>Node.js Module</title>
+    
+    <section xml:id="nodejs.platforms">
+      <title>Supported Platforms</title>
+
+      <para>
+        The Fabric Engine module for Node.js currently runs on:
+
+        <itemizedlist>
+          <listitem><para>Mac OS X running on Intel processors, version 10.6 ("Snow Leopard") or later.</para></listitem>
+          <listitem><para>32-bit and 64-bit Linux. We do our development on Ubuntu 10.04 and above but it shoud work with any modern distribution.</para></listitem>
+        </itemizedlist>
+      </para>
+
+    </section>
+
+    <section xml:id="nodejs.installation">
+      <title>Installation</title>
+
+      <section xml:id="nodejs.installation.getnode">
+        <title>Step Zero: Get Node.js</title>
+          <para>
+            The first thing you'll need to do is install Node.js if you haven't already. We currently support the 0.6.x series of Node, although the module may work with later versions as well. Node.js may be available through your package manager but you'll need to make sure that it's at least version 0.6.x. Otherwise it can be installed from here: <link xlink:href="http://nodejs.org/"><uri>Node.js</uri></link>
+          </para>
+      </section>
+
+      <section xml:id="nodejs.installation.download">
+        <title>Step One: Download</title>
+          <para>
+            From the <link xlink:href="http://dist.fabric-engine.com/latest/"><uri>Fabric distributions page</uri></link>, download the version of the Node.js module that applies for your operating system.
+          </para>
+
+          <para>
+            For Linux, choose the file based on whether you are running a 32-bit or 64-bit operating system. If you're not sure which version to download, run <command>uname -m</command> which will report either <prompt>i686</prompt> or <prompt>x86_64</prompt>.
+
+            <itemizedlist>
+              <listitem><para>
+                <filename>FabricEngine-NodeModule-Linux-i686-VERSION.tar.bz2</filename>
+              </para></listitem>
+              <listitem><para>
+                <filename>FabricEngine-NodeModule-Linux-x86_64-VERSION.tar.bz2</filename>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+
+          <para>
+            For Mac OS X choose:
+            <itemizedlist>
+              <listitem><para>
+                <filename>FabricEngine-NodeModule-Darwin-universal-VERSION.tar.bz2</filename>
+              </para></listitem>
+            </itemizedlist>
+          </para>
+      </section>
+
+      <section xml:id="nodejs.installation.install">
+        <title>Step Two: Install</title>
+
+        <para>
+          Unpack the module by running <command>tar jxf FabricEngine-NodeModule-XXX.tar.bz2</command> from a command line.
+        </para>
+
+        <para>
+          Create the directory <filename>~/node_modules</filename>. Next move the folder above that you just unpacked into <filename>~/node_modules</filename> and rename it to <filename>Fabric</filename>. You can also create a symlink if it makes more sense for your setup.
+        </para>
+      </section>
+
+      <section xml:id="nodejs.installation.test">
+        <title>Step Three: Test</title>
+
+        <para>
+          Now we will test that the installation works. Run <command>node</command> from a command line and execute the command <code>require('Fabric').createClient().build.getName();</code>. You should see something like this:
+
+          <informalfigure xml:id="nodejs.installation.test.output">
+            <screen><![CDATA[
+user@host~$ node
+> require('Fabric').createClient().build.getName();
+[FABRIC] Fabric Engine version 1.0.22-release
+'Fabric Engine'
+> 
+            ]]></screen>
+          </informalfigure>
+
+          This confirms that the Fabric Engine Node.js module is installed and working. You can press Ctrl-C or run <code>process.exit();</code> to exit.
+        </para>
+      </section>
+
+      <section xml:id="nodejs.installation.exts">
+        <title>(Optional) Step Four: Install Extensions</title>
+        <para>To install the optional Fabric extensions, see <xref linkend="extensions"/>.</para>
+      </section>
+    </section>
+
+  </chapter>
+
+  <chapter xml:id="extensions">
+    <title>Fabric Extensions</title>
+    <para>
+      Extensions
+    </para>
+  </chapter>
+    
+</book>
