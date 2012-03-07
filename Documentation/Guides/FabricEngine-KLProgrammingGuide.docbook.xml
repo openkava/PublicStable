@@ -3921,7 +3921,7 @@ function ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt; createArray
             <programlisting>
 operator <replaceable>operatorName</replaceable>(
   io <replaceable>ElementType</replaceable> elementValue,
-  Index index,
+  Size index,
   Size count,
   <replaceable>SharedValueType</replaceable> sharedValue
   );
@@ -3932,13 +3932,13 @@ operator <replaceable>operatorName</replaceable>(
             <programlisting>
 operator <replaceable>operatorName</replaceable>(
   io <replaceable>ElementType</replaceable> elementValue,
-  Index index,
+  Size index,
   Size count
   );
 
 operator <replaceable>operatorName</replaceable>(
   io <replaceable>ElementType</replaceable> elementValue,
-  Index index
+  Size index
   );
 
 operator <replaceable>operatorName</replaceable>(
@@ -4031,7 +4031,7 @@ function ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt; createArray
             <programlisting>
 operator <replaceable>operatorName</replaceable>(
   io <replaceable>ElementType</replaceable> elementValue,
-  Index index,
+  Size index,
   Size count,
   <replaceable>SharedValueType</replaceable> sharedValue
   );
@@ -4042,13 +4042,13 @@ operator <replaceable>operatorName</replaceable>(
             <programlisting>
 operator <replaceable>operatorName</replaceable>(
   io <replaceable>ElementType</replaceable> elementValue,
-  Index index,
+  Size index,
   Size count
   );
 
 operator <replaceable>operatorName</replaceable>(
   io <replaceable>ElementType</replaceable> elementValue,
-  Index index
+  Size index
   );
 
 operator <replaceable>operatorName</replaceable>(
@@ -4130,7 +4130,7 @@ function ArrayProducer&lt;<replaceable>OutputElementType</replaceable>&gt; creat
 operator <replaceable>operatorName</replaceable>(
   <replaceable>InputElementType</replaceable> inputElementValue,
   io <replaceable>OutputElementType</replaceable> outputElementValue,
-  Index index,
+  Size index,
   Size count,
   <replaceable>SharedValueType</replaceable> sharedValue
   );
@@ -4142,14 +4142,14 @@ operator <replaceable>operatorName</replaceable>(
 operator <replaceable>operatorName</replaceable>(
   <replaceable>InputElementType</replaceable> inputElementValue,
   io <replaceable>OutputElementType</replaceable> outputElementValue,
-  Index index,
+  Size index,
   Size count
   );
 
 operator <replaceable>operatorName</replaceable>(
   <replaceable>InputElementType</replaceable> inputElementValue,
   io <replaceable>OutputElementType</replaceable> outputElementValue,
-  Index index
+  Size index
   );
 
 operator <replaceable>operatorName</replaceable>(
@@ -4160,7 +4160,7 @@ operator <replaceable>operatorName</replaceable>(
           </para>
  
           <example>
-            <title><code>createArrayTransform</code></title>
+            <title><code>createArrayMap</code></title>
             <programlisting language="KL"><![CDATA[
 operator map(
   Float32 inputValue,
@@ -4170,7 +4170,7 @@ operator map(
   Float32 shared
   )
 {
-  report "transform: inputValue=" + inputValue + " index=" + index + " count=" + count + " shared=" + shared;
+  report "map: inputValue=" + inputValue + " index=" + index + " count=" + count + " shared=" + shared;
   Float32 float32Value = inputValue * shared * (index + 1);
   if (abs(float32Value) < 1.0)
     outputValue = "small";
@@ -4200,11 +4200,11 @@ operator entry() {
             <screen><![CDATA[
 ArrayProducer<String>
 3
-transform: inputValue=5.6 index=0 count=3 shared=2.56
+map: inputValue=5.6 index=0 count=3 shared=2.56
 large
-transform: inputValue=-0.034 index=1 count=3 shared=2.56
+map: inputValue=-0.034 index=1 count=3 shared=2.56
 small
-transform: inputValue=1.4142 index=2 count=3 shared=2.56
+map: inputValue=1.4142 index=2 count=3 shared=2.56
 large
             ]]></screen>
           </informalfigure>
@@ -4258,6 +4258,121 @@ calling ap.flush()
 Generating output = 5.42
 ap.produce(2) = 5.42
 ap.produce(2) = 5.42
+            ]]></screen>
+          </informalfigure>
+        </section>
+      </section>
+
+      <section>
+        <title>Reduce Creation Functions</title>
+
+        <section>
+          <title><code>createReduce</code></title>
+
+          <para>
+            <code>createReduce</code> has one of the following <quote>prototypes</quote>:
+
+            <programlisting>
+function ValueProducer&lt;<replaceable>OutputValueType</replaceable>&gt; createReduce(
+  ArrayProducer&lt;InputElementType&gt; inputArrayProducer,
+  <replaceable>operatorName</replaceable>
+  )
+
+function ValueProducer&lt;<replaceable>OutputValueType</replaceable>&gt; createReduce(
+  ArrayProducer&lt;InputElementType&gt; inputArrayProducer,
+  <replaceable>operatorName</replaceable>,
+  ValueProducer&lt;<replaceable>SharedValueType</replaceable>&gt; sharedValueProducer
+  )
+            </programlisting>
+          </para>
+
+          <para>
+            <code>createReduce</code> creates a value producer with value type <code><replaceable>OutputValueType</replaceable></code> that reduces <code>inputArrayProducer</code> by calling the operator named <code><replaceable>operatorName</replaceable></code> to contribute the individual elements to the reduction.
+          </para>
+
+          <para>
+            If <code>sharedValueProducer</code> is provided, <code><replaceable>operatorName</replaceable></code> must name an operator with prototype
+
+            <programlisting>
+operator <replaceable>operatorName</replaceable>(
+  <replaceable>InputElementType</replaceable> inputElementValue,
+  io <replaceable>OutputValueType</replaceable> outputValue,
+  Size index,
+  Size count,
+  <replaceable>SharedValueType</replaceable> sharedValue
+  );
+            </programlisting>
+
+            Otherwise, it must name an operator with any of the following prototypes:
+
+            <programlisting>
+operator <replaceable>operatorName</replaceable>(
+  <replaceable>InputElementType</replaceable> inputElementValue,
+  io <replaceable>OutputValueType</replaceable> outputValue,
+  Size index,
+  Size count
+  );
+
+operator <replaceable>operatorName</replaceable>(
+  <replaceable>InputElementType</replaceable> inputElementValue,
+  io <replaceable>OutputValueType</replaceable> outputValue,
+  Size index
+  );
+
+operator <replaceable>operatorName</replaceable>(
+  <replaceable>InputElementType</replaceable> inputElementValue,
+  io <replaceable>OutputValueType</replaceable> outputValue
+  );
+            </programlisting>
+          </para>
+ 
+          <example>
+            <title><code>createReduce</code></title>
+            <programlisting language="KL"><![CDATA[
+operator generator(
+  io Integer outputValue,
+  Size index
+  )
+{
+  outputValue = index + 1;
+}
+
+operator reduce(
+  Integer inputValue,
+  io Integer outputValue
+  )
+{
+  report("reduce: inputValue=" + inputValue);
+  outputValue += inputValue;
+}
+
+operator entry() {
+  ValueProducer<Integer> sum = createReduce(
+    createArrayGenerator(
+      createConstValue(Size(10)),
+      generator
+      ),
+    reduce
+    );
+  report("sum.produce() = " + sum.produce());
+}
+            ]]></programlisting>
+          </example>
+
+          <informalfigure>
+            <simpara>Output:</simpara>
+            <screen><![CDATA[
+reduce: inputValue=1
+reduce: inputValue=2
+reduce: inputValue=3
+reduce: inputValue=4
+reduce: inputValue=5
+reduce: inputValue=6
+reduce: inputValue=7
+reduce: inputValue=8
+reduce: inputValue=9
+reduce: inputValue=10
+sum.produce() = 55
             ]]></screen>
           </informalfigure>
         </section>
