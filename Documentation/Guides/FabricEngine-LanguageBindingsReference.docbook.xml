@@ -175,7 +175,7 @@ getMemoryUsage: [Function] }
           <title>
             <filename>Examples/Node/Tutorial/trivialHTTPServer.js</filename>
           </title>
-          <programlisting language="js">
+          <programlisting language="javascript">
             <![CDATA[
 var fabric = require('Fabric');
 var http = require('http');
@@ -239,7 +239,7 @@ host~ user$
           <title>
             <filename>Examples/Node/Tutorial/Series/Series-Display.js</filename>
           </title>
-          <programlisting language="js">
+          <programlisting language="javascript">
             <![CDATA[
 var fabricClient = require('Fabric').createClient();
 var fs = require('fs');
@@ -421,7 +421,7 @@ host:Series user$
           <title>
             <filename>Examples/Node/Tutorial/Series/Series-HTTP.js</filename>
           </title>
-          <programlisting language="KL">
+          <programlisting language="javascript">
             <![CDATA[
 var fabric = require('Fabric');
 var fs = require('fs');
