@@ -236,6 +236,7 @@ host~ user$
         </para>
 
         <example>
+          <?dbfo keep-together="auto" ?>
           <title>
             <filename>Examples/Node/Tutorial/Series/Series-Display.js</filename>
           </title>
@@ -345,11 +346,11 @@ fabricClient.close();
           <programlisting language="KL">
             <![CDATA[
 operator computeTerm(
-Size index,
-io Scalar result
-)
+  Size index,
+  io Scalar result
+  )
 {
-result = 1.0 / (Scalar(index+1) * Scalar(index+1));
+  result = 1.0 / (Scalar(index+1) * Scalar(index+1));
 }
             ]]>
           </programlisting>
@@ -362,14 +363,14 @@ result = 1.0 / (Scalar(index+1) * Scalar(index+1));
           <programlisting language="KL">
             <![CDATA[
 operator sumTerms(
-Size numTerms,
-io Scalar terms<>,
-io Scalar result
-)
+  Size numTerms,
+  io Scalar terms<>,
+  io Scalar result
+  )
 {
-result = 0.0;
-for (Size i=0; i<numTerms; ++i)
-  result += terms[i];
+  result = 0.0;
+  for (Size i=0; i<numTerms; ++i)
+    result += terms[i];
 }
             ]]>
           </programlisting>
@@ -418,6 +419,7 @@ host:Series user$
         </para>
 
         <example>
+          <?dbfo keep-together="auto" ?>
           <title>
             <filename>Examples/Node/Tutorial/Series/Series-HTTP.js</filename>
           </title>
@@ -822,6 +824,7 @@ andrew@variable:~$
         </para>
 
         <example>
+          <?dbfo keep-together="auto" ?>
           <title><filename>Examples/Python/Tutorial/Series/Series-Display.py</filename></title>
           <programlisting language="python">
             <![CDATA[
@@ -1002,6 +1005,7 @@ user@host~$
         </para>
 
         <example>
+          <?dbfo keep-together="auto" ?>
           <title><filename>Examples/Python/Tutorials/Series/Series-HTTP.py</filename></title>
           <programlisting language="python">
             <![CDATA[
