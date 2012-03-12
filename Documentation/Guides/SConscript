@@ -118,6 +118,15 @@ def Docbook(env, inputDocbookXMLs):
 	return outputs
 AddMethod(docbookEnv, Docbook)
 
+docbookEnv.Append(BUILDERS = {
+  'HAMLtoXML': Builder(
+  	action = [[
+	  	'haml', '$SOURCE', '$TARGET'
+	  ]],
+	  suffix = '.docbook.xml',
+	  src_suffix = '.docbook.haml'
+  )})
+
 notePNG = env.Dir('images').File('note.png')
 warningPNG = env.Dir('images').File('warning.png')
 images = [notePNG, warningPNG]
@@ -133,7 +142,7 @@ guides = [
 	docbookEnv.Install(
 		docsDistDir,
 		[
-			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml')),
+			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml') + docbookEnv.HAMLtoXML(docbookEnv.Glob('*.docbook.haml'))),
 			htmlCSS
 			]
 		),
