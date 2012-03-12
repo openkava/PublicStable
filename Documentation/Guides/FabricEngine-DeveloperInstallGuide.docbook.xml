@@ -260,9 +260,9 @@
       If you will be working with the Fabric Javascript SceneGraph you'll need to install some additional resources in addition to a web server for local testing.
     </para>
       
-    <section xml:id="setup.scenegraph">
+    <section xml:id="scenegraph.resources">
       <title>Install SceneGraph Resources</title>
-      <section xml:id="setup.scenegraph.maclinux">
+      <section xml:id="scenegraph.resources.maclinux">
         <title>Mac OS X and Linux</title>
         <para>
           You'll need to install Subversion via MacPorts or your distributions package manager. Once installed, you will need to check them out into your <prompt>$FABRIC_CORE_PATH/Web</prompt> folder by running:
@@ -276,13 +276,13 @@
         </note>
       </section>
 
-      <section xml:id="setup.scenegraph.windows">
+      <section xml:id="scenegraph.resources.windows">
         <title>Windows</title>
         <para>
           These instructions are specific to Tortoise SVN; other clients might be as good or better (since Tortoise SVN has command line issues). You may use any SVN client you prefer but these instructions will outline how to configure Tortoise.
         </para>
 
-        <section xml:id="setup.scenegraph.windows.tortoise">
+        <section xml:id="scenegraph.resources.windows.tortoise">
           <title>Install Tortoise SVN</title>
           <para>
             Tortoise SVN Windows installers are available from their <link xlink:href="http://sourceforge.net/projects/tortoisesvn/files">Sourceforge files page</link>.
@@ -292,12 +292,12 @@
           </para></note>
         </section>
 
-        <section xml:id="setup.scenegraph.windows.ssh">
+        <section xml:id="scenegraph.resources.windows.ssh">
           <title>(Optional) Setup SSH for write access</title>
           <note><para>
             <emphasis>Note:</emphasis> This only applies if you have been granted write access to the resources repository by Fabric.
           </para></note>
-          <section xml:id="setup.scenegraph.windows.openssh">
+          <section xml:id="scenegraph.resources.windows.openssh">
             <title>Configure Tortoise SVN for OpenSSH (not required if you use PuTTY for SSH)</title>
             <para>
               If you are using OpenSSH for git SSH:
@@ -325,7 +325,7 @@
             </para>
           </section>
 
-          <section xml:id="setup.scenegraph.windows.ssh.putty">
+          <section xml:id="scenegraph.resources.windows.ssh.putty">
             <title>Setup a PuTTY session for svn+ssh</title>
             <itemizedlist>
               <listitem><para>
@@ -347,7 +347,7 @@
           </section>
         </section>
 
-        <section xml:id="setup.scenegraph.windows.checkout">
+        <section xml:id="scenegraph.resources.windows.checkout">
           <title>Checking out the JSSceneGraphResources repository</title>
           <para>
             For some reason, operations over the SSH tunnel don't work from the command line. Until someone finds how to fix that, all SVN operations are done with Turtoise's customized Windows Explorer menu.
@@ -369,7 +369,7 @@
           </itemizedlist>
         </section>
 
-        <section xml:id="setup.scenegraph.windows.references">
+        <section xml:id="scenegraph.resources.windows.references">
           <title>References</title>
           <para>
             If you are unfamiliar with SVN or run into trouble with the above, the following resources may be useful:
@@ -385,6 +385,257 @@
           </para>
         </section>
       </section>
+    </section>
+
+    <section xml:id="scenegraph.webserver">
+      <title>Setting up a local Fabric web server</title>
+      <para>
+        In order to the SceneGraph locally you will need to install a local web server. The web server used will depend on your operating system.
+      </para>
+
+      <section xml:id="scenegraph.webserver.windows">
+        <title>Windows</title>
+        <para>
+          The following describes how to setup a local web server using Windows's Internet Information Services (IIS). Other web server services, such as Apache, work too however we don't have precise steps for these.
+        </para>
+        <itemizedlist>
+
+          <listitem><para>
+            Activating IIS:
+            <itemizedlist>
+              <listitem><para>
+                Click Start and then click Control Panel
+              </para></listitem>
+              <listitem><para>
+                In Control Panel, click Programs And Features and then click Turn Windows features on or off
+              </para></listitem>
+              <listitem><para>
+                In the Windows Features dialog box, click Internet Information Services and then click OK (you can use the default sub-feature selection)
+              </para></listitem>
+            </itemizedlist>
+          </para></listitem>
+
+          <listitem><para>
+            Configuring IIS:
+            <itemizedlist>
+              <listitem><para>
+                From the Windows Start Menu search field, type 'inetmgr' and run it, this will open the IIS configuration tool
+              </para></listitem>
+              <listitem><para>
+                On the left pane, expand to -+Sites-+Default Web Site
+                <itemizedlist>
+                  <listitem><para>
+                    Right-click over the "Default Web Site" item, and select 'Add Virtual Directory...'
+                    <itemizedlist>
+                      <listitem><para>
+                        Alias = Fabric
+                      </para></listitem>
+                      <listitem><para>
+                        Physical path = FABRICDIR\Web (eg: C:\Fabric\Web)
+                      </para></listitem>
+                    </itemizedlist>
+                  </para></listitem>
+                  <listitem><para>
+                    Click Ok
+                  </para></listitem>
+                </itemizedlist>
+              </para></listitem>
+              <listitem><para>
+                On the left pane, select Fabric, under 'Default Web Site'
+              </para></listitem>
+              <listitem><para>
+                On the center pane, open the 'Directory Browsing' item
+                <itemizedlist>
+                  <listitem><para>
+                    On the right pane, click 'Enable'
+                  </para></listitem>
+                </itemizedlist>
+              </para></listitem>
+              <listitem><para>
+                On the left pane, select Fabric, under 'Default Web Site'
+              </para></listitem>
+              <listitem><para>
+                On the center pane, open the 'MIME Types' item
+                <itemizedlist>
+                  <listitem><para>
+                    On the right pane, click 'Add...' to add all of these
+                    <itemizedlist>
+                      <listitem><para>
+                        File name extension: .kl MIME Type: text/plain
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .obj MIME Type: text/plain
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .dae MIME Type: text/plain
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .cl MIME Type: text/plain
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .glsl MIME Type: text/plain
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .ply MIME Type: text/plain
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .abc MIME Type: application/octet-stream
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .laz MIME Type: application/octet-stream
+                      </para></listitem>
+                      <listitem><para>
+                        File name extension: .nrrd MIME Type: application/octet-stream
+                      </para></listitem>
+                    </itemizedlist>
+                  </para></listitem>
+                  <listitem><para>
+                    In order to avoid clearing browser cache when modifying files, caching should be disabled. On the left pane, select Fabric, under 'Default Web Site'
+                    <itemizedlist>
+                      <listitem><para>
+                        On the center pane, open the 'Output Caching' item
+                      </para></listitem>
+                      <listitem><para>
+                        On the right pane, click 'Edit Feature Settings...'
+                      </para></listitem>
+                      <listitem><para>
+                        Uncheck 'Enable cache'
+                      </para></listitem>
+                    </itemizedlist>
+                  </para></listitem>
+                </itemizedlist>
+              </para></listitem>
+            </itemizedlist>
+          </para></listitem>
+
+        </itemizedlist>
+
+        <note>
+          <para>
+            <emphasis>Note:</emphasis> In some cases, Skype can conflict with localhost. Localhost will not be available and clicking 'Start' for localhost in the inetmgr.exe will give an error about a file being used by another process. To avoid the problem, turn off: Skype -> Tools -> Options -> Advanced -> Connection -> Use port 80 and 443 as alternative for incoming connections.
+          </para>
+        </note>
+
+      </section>
+
+      <section xml:id="scenegraph.webserver.mac">
+        <title>Mac OS X</title>
+        <para>
+          Note that in the follow steps, <prompt>$USER</prompt> should be replaced with your UNIX username on your Mac OS X system. If you're unsure what your UNIX username is, in Terminal run <command>echo $USER</command>.
+        </para>
+
+        <itemizedlist>
+          <listitem><para>
+            Ensure that "Web Sharing" is enabled in the System Settings
+          </para></listitem>
+          <listitem><para>
+            As root (ie. using sudo), edit the text file <filename>/private/etc/apache2/users/$USER.conf</filename>
+          </para></listitem>
+          <listitem><para>
+            Change the <prompt>AllowOverride</prompt> directive to <prompt>All</prompt> (it defaults to <prompt>None</prompt>). The file will look something like this:
+            <informalfigure>
+              <programlisting>
+                <![CDATA[
+<Directory "/Users/$USER/Sites/">
+    Options Indexes MultiViews
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+</Directory>
+                ]]>
+              </programlisting>
+            </informalfigure>
+          </para></listitem>
+          <listitem><para>
+            Create a new text file <filename>~/Sites/.htaccess</filename> with the following content:
+            <informalfigure>
+              <programlisting>
+                <![CDATA[
+Options +FollowSymLinks
+Header add Cache-Control "no-cache, no-store, max-age=0, must-revalidate"
+Header add Pragma "no-cache"
+Header add Expires "Fri, 01 Jan 1990 00:00:00 GMT"
+                ]]>
+              </programlisting>
+            </informalfigure>
+          </para></listitem>
+          <listitem><para>
+            Restart the web server by running: <command>sudo apachectl graceful</command>
+          </para></listitem>
+          <listitem><para>
+            the URL http://localhost/~$USER/Fabric direct to <filename>~/Fabric/Web</filename> by running <command>ln -s ~/Fabric/Web ~/Sites/Fabric</command>
+          </para></listitem>
+        </itemizedlist>
+      </section>
+
+      <section xml:id="scenegraph.webserver.linux">
+        <title>Linux</title>
+        <para>For the following instructions, replace <prompt>$USER</prompt> with your username.</para>
+        <itemizedlist>
+          <listitem><para>
+            Ensure that Apache is installed by running:
+            <informalfigure>
+              <programlisting>
+                <![CDATA[
+sudo apt-get install apache2
+                ]]>
+              </programlisting>
+            </informalfigure>
+          </para></listitem>
+
+          <listitem><para>
+            Enable user directories and header control on Apache2 by running:
+            <informalfigure>
+              <programlisting>
+                <![CDATA[
+sudo ln -s /etc/apache2/mods-available/userdir.load /etc/apache2/mods-enabled/
+sudo ln -s /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-enabled/
+sudo ln -s /etc/apache2/mods-available/headers.load /etc/apache2/mods-enabled/
+sudo /etc/init.d/apache2 restart
+                ]]>
+              </programlisting>
+            </informalfigure>
+          </para></listitem>
+
+          <listitem><para>
+            Create a new text file <filename>~/public_html/.htaccess</filename> with the following content:
+            <informalfigure>
+              <programlisting>
+                <![CDATA[
+Header add Cache-Control "no-cache, no-store, max-age=0, must-revalidate"
+Header add Pragma "no-cache"
+Header add Expires "Fri, 01 Jan 1990 00:00:00 GMT"
+                ]]>
+              </programlisting>
+            </informalfigure>
+          </para></listitem>
+
+          <listitem><para>
+            Make the URL http://localhost/~$USER/Fabric serve <filename>~/Fabric/Web</filename> by running:
+            <informalfigure>
+              <programlisting>
+                <![CDATA[
+ln -s ~/Fabric/Web ~/public_html/Fabric
+                ]]>
+              </programlisting>
+            </informalfigure>
+          </para></listitem>
+
+        </itemizedlist>
+      </section>
+
+    </section>
+
+    <section xml:id="scenegraph.run">
+      <title>Run Sample Fabric Applications</title>
+      <itemizedlist>
+        <listitem><para>
+          In Google Chrome, navigate to <link xlink:href="http://localhost/Fabric">http://localhost/Fabric</link>.
+        </para></listitem>
+        <listitem><para>
+          Run any of the demos in your browser.
+        </para></listitem>
+      </itemizedlist>
     </section>
 
   </chapter>
