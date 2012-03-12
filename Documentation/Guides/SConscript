@@ -121,7 +121,7 @@ AddMethod(docbookEnv, Docbook)
 docbookEnv.Append(BUILDERS = {
   'HAMLtoXML': Builder(
   	action = [[
-	  	'haml', '$SOURCE', '$TARGET'
+	  	'haml', '--style', 'ugly', '$SOURCE', '$TARGET'
 	  ]],
 	  suffix = '.docbook.xml',
 	  src_suffix = '.docbook.haml'
