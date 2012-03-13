@@ -86,3 +86,16 @@ event.getName()
 eventHandler = FABRIC.DG.createEventHandler("trivialEventHandler")
 event.appendEventHandler(eventHandler)
 event.getEventHandlers()
+
+# Operator creation
+op = FABRIC.DG.createOperator("doSomething")
+
+# Setting operator source code
+op.setSourceCode("operator entry( io Scalar result, in Size index, in Size count ) { result = 3.14 }")
+op.getDiagnostics()
+op.setSourceCode("operator entry( io Scalar result, in Size index, in Size count ) { result = 3.14; }")
+op.getDiagnostics()
+
+# Setting the operator entry point
+op.setEntryFunctionName('entry')
+op.getEntryFunctionName()
