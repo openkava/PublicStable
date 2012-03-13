@@ -150,9 +150,7 @@ else:
 
 docbookEnv.Append(BUILDERS = {
   'HAMLtoXML': Builder(
-  	action = [
-			hamlCommand + ['--style', 'ugly', '$SOURCE', '$TARGET'
-		]],
+  	action = [hamlCommand + ['--style', 'ugly', '$SOURCE', '$TARGET']],
 		suffix = '.docbook.xml',
 		src_suffix = '.docbook.haml'
   )})
