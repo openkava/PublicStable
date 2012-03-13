@@ -355,7 +355,12 @@
         %para Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> vars(node.getData('position', 0))
+            {'y': 0, 'x': 0, 'z': 0}
+            >>> node.setData('position', 0, Vec3(1.0, 2.0, 3.0))
+            >>> vars(node.getData('position', 0))
+            {'y': 2, 'x': 1, 'z': 3}
+            >>>
 
     %section
       %title Node Slice Counts
@@ -387,7 +392,23 @@
         %para Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> node.getCount()
+            1
+            >>> node.getData('position', 1)
+            Traceback (most recent call last):
+              File "<stdin>", line 1, in <module>
+              File "/home/andrew/src/python_modules/fabric/__init__.py", line 883, in getData
+                self._dg._executeQueuedCommands()
+              File "/home/andrew/src/python_modules/fabric/__init__.py", line 460, in _executeQueuedCommands
+                self.__client.executeQueuedCommands()
+              File "/home/andrew/src/python_modules/fabric/__init__.py", line 315, in executeQueuedCommands
+                raise Exception( 'Fabric core exception: ' + result[ 'exception' ] )
+            Exception: Fabric core exception: DG.verticies.getData('{"sliceIndex": 1, "memberName": ...'): index (1) out of range (1)
+            >>> node.setCount(2)
+            >>> node.getCount()
+            2
+            >>> vars(node.getData('position', 1))
+            {'y': 0, 'x': 0, 'z': 0}
 
     %section
       %title Node Dependencies
@@ -514,7 +535,21 @@
         %para Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> op = FABRIC.DG.createOperator("offsetPosition")
+            >>> op.setEntryFunctionName("offset")
+            >>> op.setSourceCode("require Vec3; operator offset(io Vec3 position, io Vec3 newPosition) { newPosition = position + Vec3(1.0,1.0,1.0); }")
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(op)
+            >>> binding.setParameterLayout(["self.position", "self.newPosition"])
+            >>> node.addMember("newPosition", "Vec3")
+            >>> node.bindings.append(binding)
+            >>> vars(node.getData("position", 0))
+            {'y': 2, 'x': 1, 'z': 3}
+            >>> vars(node.getData( "newPosition", 0 ))
+            {'y': 0, 'x': 0, 'z': 0}
+            >>> node.evaluate();
+            >>> vars(node.getData( "newPosition", 0 ))
+            {'y': 3, 'x': 2, 'z': 4}
 
   %chapter{'xml:id'=>"events-event-handlers"}
     %title Event Graphs, Events and EventHandlers
@@ -545,7 +580,9 @@
         %simpara Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> event = FABRIC.DG.createEvent("anEvent")
+            >>> event.getName()
+            'anEvent'
 
     %section
       %title EventHandler Creation
@@ -576,7 +613,10 @@
         %simpara Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> eventHandler = FABRIC.DG.createEventHandler("trivialEventHandler")
+            >>> event.appendEventHandler(eventHandler)
+            >>> event.getEventHandlers()
+            [<fabric._EVENTHANDLER object at 0x2cebfd0>]
 
     %section
       %title Operators and EventHandlers
@@ -644,7 +684,26 @@
         %simpara Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> op = FABRIC.DG.createOperator("trivialOperator")
+            >>> op.setSourceCode("operator entry() { report 'Ran trivialOperator'; }")
+            >>> op.setEntryFunctionName('entry')
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(op)
+            >>> binding.setParameterLayout([])
+            >>> eventHandler.preDescendBindings.append(binding)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            >>> anotherOp = FABRIC.DG.createOperator("trivialOperatorTwo")
+            >>> anotherOp.setSourceCode("operator entry() { report 'Ran trivialOperatorTwo'; }")
+            >>> anotherOp.setEntryFunctionName('entry')
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(anotherOp)
+            >>> binding.setParameterLayout([])
+            >>> eventHandler.postDescendBindings.append(binding)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperatorTwo
+            >>> 
 
       %para
         EventHandlers in turn can have child EventHandlers.  The child EventHandlers of a given EventHandler are fired, in order, after the pre-descend operators are executed and before the post-descend operators are executed.  Child EventHandlers are added by calling the EventHandler's <code>appendChildEventHandler</code> method:
@@ -684,7 +743,16 @@
         %simpara Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(op)
+            >>> binding.setParameterLayout([])
+            >>> ceh = FABRIC.DG.createEventHandler("childEventHandler")
+            >>> ceh.preDescendBindings.append(binding)
+            >>> eventHandler.appendChildEventHandler(ceh)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperatorTwo
 
       %para
         EventHandlers can access data stored in Nodes by using their <code>setScope</code> method.  Once a Node is bound to an EventHandler, that Node is guaranteed to be evaluated (if it is dirty) before any Event that could fire the EventHandler is fired.  The name given in the <code>setScope</code> method is also available to child EventHandlers, their children, and so on, for binding.  If a child EventHandler binds a scope with the same name, it overrides the parent's scope.
@@ -768,7 +836,36 @@
         %simpara Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> node = FABRIC.DG.createNode("someNode")
+            >>> node.addMember( "x", "Scalar" )
+            >>> node.addMember( "y", "Scalar" )
+            >>> squareOp = FABRIC.DG.createOperator("squareOp")
+            >>> squareOp.setSourceCode("operator entry( io Scalar x, io Scalar y ) { y = x * x; }")
+            >>> squareOp.setEntryFunctionName("entry")
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(squareOp)
+            >>> binding.setParameterLayout(['self.x','self.y'])
+            >>> node.bindings.append(binding)
+            >>> displayOp = FABRIC.DG.createOperator("displayOp")
+            >>> displayOp.setSourceCode( "operator entry( io Scalar x, io Scalar y ) { report x + ' squared is ' + y; }" )
+            >>> displayOp.setEntryFunctionName("entry")
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(displayOp)
+            >>> binding.setParameterLayout(['mynode.x','mynode.y'])
+            >>> eventHandler.setScope("mynode",node)
+            >>> eventHandler.postDescendBindings.append(binding)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperatorTwo
+            [FABRIC] [MT] 0 squared is 0
+            >>> node.setData('x',5.0)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperatorTwo
+            [FABRIC] [MT] 5 squared is 25
+            >>> 
 
     %section
       %title EventHandler Data
@@ -831,7 +928,31 @@
         %simpara Python:
         %screen<
           :cdata
-            !!!FIXME!!!
+            >>> eventHandler.setScopeName("childEventHandler")
+            >>> eventHandler.addMember("x","Scalar")
+            >>> eventHandler.addMember("y","Scalar")
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(squareOp)
+            >>> binding.setParameterLayout(['childEventHandler.x','childEventHandler.y'])
+            >>> ceh.preDescendBindings.append(binding)
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(displayOp)
+            >>> binding.setParameterLayout(['childEventHandler.x','childEventHandler.y'])
+            >>> ceh.preDescendBindings.append(binding)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] 0 squared is 0
+            [FABRIC] [MT] Ran trivialOperatorTwo
+            [FABRIC] [MT] 5 squared is 25
+            >>> eventHandler.setData("x",7.31)
+            >>> event.fire()
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] Ran trivialOperator
+            [FABRIC] [MT] 7.31 squared is 53.4361
+            [FABRIC] [MT] Ran trivialOperatorTwo
+            [FABRIC] [MT] 5 squared is 25
+            >>> 
 
   %chapter{'xml:id'=>'operators-bindings'}
     %title Operators and Bindings
@@ -859,6 +980,11 @@
               setEntryFunctionName: [Function],
               getDiagnostics: [Function] }
             > 
+        %simpara Python:
+        %screen<
+          :cdata
+            >>> op = FABRIC.DG.createOperator("doSomething")
+            >>> 
 
     %section
       %title Setting Operator Source Code
@@ -878,7 +1004,7 @@
         %simpara JavaScript:
         %screen<
           :cdata
-            > op.setSourceCode("operator entry( io Scalar result, in Size index, in Size count ) { result = 3.14 }");
+            > op.setSourceCode("operator entry( io Scalar result, in Size index, in Container self ) { result = 3.14 }");
             undefined
             > op.getDiagnostics();
             [ { filename: '(unknown)',
@@ -886,11 +1012,21 @@
                 column: 82,
                 level: 'error',
                 desc: 'syntax error, unexpected }, expecting ;' } ]
-            > op.setSourceCode("operator entry( io Scalar result, in Size index, in Size count ) { result = 3.14; }");
+            > op.setSourceCode("operator entry( io Scalar result, in Size index, in Container self ) { result = 3.14; }");
             undefined
             > op.getDiagnostics();
             []
             > 
+        %simpara Python:
+        %screen<
+          :cdata
+            >>> op.setSourceCode("operator entry( io Scalar result, in Size index, in Container self ) { result = 3.14 }")
+            >>> op.getDiagnostics()
+            [{u'column': 82, u'line': 1, u'level': u'error', u'desc': u'syntax error, unexpected }, expecting ;', u'filename': u'(unknown)'}]
+            >>> op.setSourceCode("operator entry( io Scalar result, in Size index, in Container self ) { result = 3.14; }")
+            >>> op.getDiagnostics()
+            []
+            >>> 
 
     %section
       %title Setting the Operator Entry Point
@@ -910,6 +1046,13 @@
             > op.getEntryFunctionName();
             'entry'
             > 
+        %simpara Python:
+        %screen<
+          :cdata
+            >>> op.setEntryFunctionName('entry')
+            >>> op.getEntryFunctionName()
+            'entry'
+            >>> 
 
     %section
       %title Bindings
@@ -943,6 +1086,14 @@
               setEntryFunctionName: [Function],
               getDiagnostics: [Function] }
             > 
+        %simpara Python:
+        %screen<
+          :cdata
+            >>> binding = FABRIC.DG.createBinding()
+            >>> binding.setOperator(op)
+            >>> binding.getOperator()
+            <fabric._OPERATOR object at 0x1958e50>
+            >>> 
 
       %section
         %title Binding Parameter Layouts
@@ -976,7 +1127,7 @@
         %example
           :plain
             <?dbfo keep-together="auto" ?>
-          %title Binding creation
+          %title Binding parameters
           %simpara JavaScript:
           %screen<
             :cdata
@@ -997,6 +1148,18 @@
               > node.getErrors();
               []
               > 
+          %simpara Python:
+          %screen<
+            :cdata
+              >>> binding.setParameterLayout( ["self.result","self.index","self"] )
+              >>> node = FABRIC.DG.createNode("foo")
+              >>> node.bindings.append(binding)
+              >>> node.getErrors()
+              [u"binding 0: operator 'doSomething': node 'self': parameter 1: member 'result': 'result': no such member"]
+              >>> node.addMember("result","Scalar")
+              >>> node.getErrors()
+              []
+              >>> 
 
         %note
           %para Even when a Binding binds a parameter to a member of a dependency of a Node, rather than a member of the Node itself, the parameter must still be declared as an <code>io</code> parameter in KL.  This is a limitation of the system which will be removed in the future; in fact, it will become required that members of non-<code>self</code> objects be bound to <code>in</code> parameters.
