@@ -138,13 +138,23 @@ def Docbook(env, inputDocbookXMLs):
 	return outputs
 AddMethod(docbookEnv, Docbook)
 
+if buildOS == 'Windows':
+	try:
+		hamlPath = os.environ['HAML_PATH']
+	except:
+		print "Missing environment variable HAML_PATH (should point to a folder containing file 'haml'"
+		sys.exit(1)
+	hamlCommand = ['ruby', os.path.join(hamlPath, 'haml')]
+else:
+	hamlCommand = ['haml']
+
 docbookEnv.Append(BUILDERS = {
   'HAMLtoXML': Builder(
-  	action = [[
-	  	'haml', '--style', 'ugly', '$SOURCE', '$TARGET'
-	  ]],
-	  suffix = '.docbook.xml',
-	  src_suffix = '.docbook.haml'
+  	action = [
+			hamlCommand + ['--style', 'ugly', '$SOURCE', '$TARGET'
+		]],
+		suffix = '.docbook.xml',
+		src_suffix = '.docbook.haml'
   )})
 
 htmlCSS = env.Command(
