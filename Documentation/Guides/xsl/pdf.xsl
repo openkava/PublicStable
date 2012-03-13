@@ -178,7 +178,6 @@ set       toc,title
 <!-- border and shade to screen and programlisting -->
 
 <xsl:param name="shade.verbatim" select="1"/>
-
 <xsl:attribute-set name="shade.verbatim.style">
   <xsl:attribute name="background-color">#eeeeee</xsl:attribute>
   <xsl:attribute name="border-width">0.5pt</xsl:attribute>
@@ -186,7 +185,6 @@ set       toc,title
   <xsl:attribute name="border-color">#575757</xsl:attribute>
   <xsl:attribute name="padding">3pt</xsl:attribute>
   <xsl:attribute name="margin-left">2pt</xsl:attribute>
-  
 </xsl:attribute-set>
 
 

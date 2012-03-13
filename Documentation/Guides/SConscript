@@ -138,6 +138,15 @@ def Docbook(env, inputDocbookXMLs):
 	return outputs
 AddMethod(docbookEnv, Docbook)
 
+docbookEnv.Append(BUILDERS = {
+  'HAMLtoXML': Builder(
+  	action = [[
+	  	'haml', '--style', 'ugly', '$SOURCE', '$TARGET'
+	  ]],
+	  suffix = '.docbook.xml',
+	  src_suffix = '.docbook.haml'
+  )})
+
 htmlCSS = env.Command(
 	env.File('style.css'),
 	env.Dir('xsl').File('html.css'),
@@ -149,7 +158,7 @@ guides = [
 	docbookEnv.Install(
 		docsDistDir,
 		[
-			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml')),
+			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml') + docbookEnv.HAMLtoXML(docbookEnv.Glob('*.docbook.haml'))),
 			htmlCSS
 			]
 		)
