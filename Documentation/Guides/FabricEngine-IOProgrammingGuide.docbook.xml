@@ -161,7 +161,7 @@
             The following code is an example of using a ResourceLoadNode in the context of a node.js Fabric client. In order to trace both the client and the KL runtime aspect of ResourceLoadNode's behavior, an operator is bound to the ResourceLoadNode to provide a trace, and the client registers to the ResourceLoadNode notification callbacks. Although the example was built for the node.js Fabric client, it is relevant to other Fabric clients types.
             <example xml:id="resourceloadnode.ex">
             <title>Building and using a ResourceLoadNode</title>
-            <programlisting>
+            <programlisting language="JavaScript">
               <![CDATA[
 FABRIC = require('Fabric').createClient();
 node = FABRIC.DependencyGraph.createResourceLoadNode("node");
@@ -280,7 +280,7 @@ Loaded data written to file ./loadedImage.jpeg
           <para>
             This example illustrates the use of most of the Fabric.IO helper functions, in the context of a browser plug-in Fabric client (secure model).
           </para>
-          <programlisting>
+          <programlisting language="JavaScript">
             <![CDATA[
 var handles = FABRIC.IO.queryUserFileAndFolderHandle( FABRIC.IO.forSave, "Fabric IO text file test", "txt", "testfile" );
 console.log( "Returned file & folder cryptic file handles (random): " + JSON.stringify( handles ) );
@@ -321,7 +321,7 @@ Other file content: Test file body with appended content
           IO.queryUserFileHandle
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <type>FabricFileHandle</type>
           <methodname>queryUserFileHandle</methodname>
           <methodparam>
@@ -392,7 +392,7 @@ Other file content: Test file body with appended content
           IO.queryUserFileAndFolderHandle
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <type>Object</type>
           <methodname>queryUserFileAndFolderHandle</methodname>
           <methodparam>
@@ -476,7 +476,7 @@ Other file content: Test file body with appended content
           IO.buildFileHandleFromRelativePath
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <type>FabricFileHandle</type>
           <methodname>buildFileHandleFromRelativePath</methodname>
           <methodparam>
@@ -506,7 +506,7 @@ Other file content: Test file body with appended content
           IO.buildFolderHandleFromRelativePath
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <type>FabricFileHandle</type>
           <methodname>buildFolderHandleFromRelativePath</methodname>
           <methodparam>
@@ -535,7 +535,7 @@ Other file content: Test file body with appended content
           IO.getFileHandleInfo
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <type>Object</type>
           <methodname>getFileHandleInfo</methodname>
           <methodparam>
@@ -591,7 +591,7 @@ Other file content: Test file body with appended content
           IO.getTextFileContent
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <type>String</type>
           <methodname>getTextFileContent</methodname>
           <methodparam>
@@ -620,7 +620,7 @@ Other file content: Test file body with appended content
           IO.putTextFileContent
         </title>
 
-        <methodsynopsis>
+        <methodsynopsis language="JavaScript">
           <methodname>putTextFileContent</methodname>
           <methodparam>
             <parameter>fabricFileHandle</parameter>
