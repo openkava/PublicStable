@@ -244,6 +244,9 @@
       <para>
         This can be added to your <filename>~/.bash_profile</filename> or <filename>~/.profile</filename> file so that it will always run on the command line if you want.
       </para>
+      <note><para>
+        <emphasis>Important note:</emphasis> If you are building on Windows, you will need to copy two resource headers from your Visual Studio Professional install into Fabric before compiling. In your VS install path, under <filename>VC\atlmfc\include\</filename> there should be files named <filename>afxres.h</filename> and <filename>winres.h</filename>, these will need to be copied to your <filename>$FABRIC_CORE_PATH\Native\Clients\NPAPI\Windows\</filename> folder.
+      </para></note>
       <para>
         The build can now be run:
       </para>
@@ -272,7 +275,7 @@
           <para>
             If you have been granted write access to the resources repository via ssh, you'll only need to change your checkout command to use ssh rather than http:
           </para>
-          <para><command>svn co --force ssh://svn.fabric-engine.com/JSSceneGraphResources/stable $FABRIC_CORE_PATH/Web</command></para>
+          <para><command>svn co --force svn+ssh://svn.fabric-engine.com/JSSceneGraphResources/stable $FABRIC_CORE_PATH/Web</command></para>
         </note>
       </section>
 

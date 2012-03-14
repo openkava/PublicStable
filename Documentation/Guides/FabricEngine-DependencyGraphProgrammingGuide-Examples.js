@@ -42,9 +42,9 @@ FABRIC.RT.getRegisteredTypes().Vec3;
 op = FABRIC.DG.createOperator( "doSomething" );
 
 // Setting operator source code
-op.setSourceCode("operator entry( io Scalar result, in Size index, in Size count ) { result = 3.14 }");
+op.setSourceCode("operator entry( io Scalar result, in Size index, in Container self ) { result = 3.14 }");
 op.getDiagnostics();
-op.setSourceCode("operator entry( io Scalar result, in Size index, in Size count ) { result = 3.14; }");
+op.setSourceCode("operator entry( io Scalar result, in Size index, in Conatiner self ) { result = 3.14; }");
 op.getDiagnostics();
 
 // Setting the operator entry point
