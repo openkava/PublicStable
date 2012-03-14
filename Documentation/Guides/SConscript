@@ -162,11 +162,15 @@ htmlCSS = env.Command(
 	)
 
 docsDistDir = distDir.Dir('docs')
+hamlFilesXml = []
+for hamlFile in docbookEnv.Glob('*.docbook.haml'):
+  hamlFilesXml += docbookEnv.HAMLtoXML(hamlFile)
+
 guides = [
 	docbookEnv.Install(
 		docsDistDir,
 		[
-			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml') + docbookEnv.HAMLtoXML(docbookEnv.Glob('*.docbook.haml'))),
+			docbookEnv.Docbook(docbookEnv.Glob('*.docbook.xml') + hamlFilesXml),
 			htmlCSS
 			]
 		)
