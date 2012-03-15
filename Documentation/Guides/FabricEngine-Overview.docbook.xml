@@ -14,7 +14,7 @@
   <chapter>
     <title>Introduction</title>
     <para>
-      Fabric Engine is a high performance processing engine that integrates with dynamic languages, exposing a interface for defining multi-threaded native code operations. Fabric Engine enables high-performance applications to be built using dynamic languages by providing an environment where processor-intensive tasks can be offloaded and processed using multi-threaded native code.
+      Fabric Engine is a high performance processing engine that integrates with dynamic languages, exposing an interface for defining multi-threaded native code operations. Fabric Engine enables high-performance applications to be built using dynamic languages by providing an environment where processor-intensive tasks can be offloaded and processed using multi-threaded native code.
     </para>
     <section>
       <title>Ease Of Use</title>
@@ -22,7 +22,7 @@
         Fabric has been designed for developers comfortable building tools and services using dynamic languages. Developers working with Fabric do not require experience in high performance software development, or knowledge of complex languages such as C++. 
       </para>
       <para>
-        Developers working with dynamic languages can continue to work using the same tools they are already familiar with and run their applications or services in the same way. Existing applications and services can be modified to Incorporate Fabric Engine for handling compute intensive tasks. The majority of code in most applications is not performance critical and can continue to be written in the developers choice of language. No custom IDE is required, or compilation tool chain as Fabric integrates a compiler and loads source code contained in text files. 
+        Developers working with dynamic languages can continue to work using the same tools they are already familiar with and run their applications or services in the same way. Existing applications and services can be modified to incorporate Fabric Engine for handling compute intensive tasks. The majority of code in most applications is not performance critical and can continue to be written in the developers' choice of language. No custom IDE, or compilation tool chain is required as Fabric integrates a compiler and loads source code contained in text files. 
       </para>
     </section>
     <section>
@@ -37,7 +37,7 @@
     <section>
       <title>Open Source</title>
       <para>
-        The Fabric Engine source code has been released under the AGLPV3 Open Source Licensing Agreement, with commercial licenses available on request. Developers have full access to all the source code used in Fabric, allowing all core systems to be reviewed, and modified if required. This makes integrating Fabric Engine into custom applications, or scripting languages a straight forward process with no black box code to hinder learning.
+        The Fabric Engine source code has been released under the AGLPV3 Open Source Licensing Agreement, with commercial licenses available on request. Developers have full access to all the source code used in Fabric, allowing all core systems to be reviewed, and modified if required. This makes integrating Fabric Engine into custom applications, or scripting languages a straightforward process with no black box code to hinder learning.
       </para>
     </section>
   </chapter>
@@ -49,7 +49,7 @@
     <section>
       <title>Ease of Use</title>
       <para>
-        KL is a language intended to be used in the context of dynamic languages. Developers familiar with higher level languages such as Python or JavaScript are able to learn the simple rules of KL quickly and become productive. The name ‘KL’ means ‘Kernel Language’, and refers to the scope of the language. KL is for writing kernels, which are small stateless blocks of code with an entry function. The syntax of KL is based on a the syntax of JavaScript, while introducing syntax critical to performance such as strong typing. This means that all variables in KL source code have a type, such as ‘Scalar’ or ‘Integer’ and this must be specified in the source code. 
+        KL is a language intended to be used in the context of dynamic languages. Developers familiar with higher level languages such as Python or JavaScript are able to learn the simple rules of KL quickly and become productive. The name ‘KL’ means ‘Kernel Language’, and refers to the scope of the language. KL is for writing kernels, which are small stateless blocks of code with an entry function. The syntax of KL is based on the syntax of JavaScript, while introducing syntax critical to performance such as strong typing. This means that all variables in KL source code have a type, such as ‘Scalar’ or ‘Integer’ and this must be specified in the source code. 
       </para>
       <para>
         The KL language is ‘pointer-less’ meaning that users cannot use or manipulate pointers to system memory. This restriction simplifies usage of KL significantly and makes it impossible for KL to create issues such as memory leaks. All heap memory allocation is managed by the Fabric Engine core, abstracting the details of memory management from the user.
@@ -76,7 +76,7 @@
     <section>
       <title>Security</title>
       <para>
-        Fabric Engine can be run in a range of environments including client side web applications. The KL language is constrained in such a way that it makes it impossible for malicious applications to hijack a running application using Fabric and used it to penetrate the browsers security. This makes it safe to run Fabric Engine in either client side JavaScript applications, or in online web services. 
+        Fabric Engine can be run in a range of environments including client side web applications. The KL language is constrained in such a way that it makes it impossible for malicious applications to hijack a running application using Fabric and used it to penetrate the browser's security. This makes it safe to run Fabric Engine in either client side JavaScript applications, or in online web services. 
       </para>
     </section>
   </chapter>
@@ -92,7 +92,7 @@
   <chapter>
     <title>Dependency Graph</title>
     <para>
-      Today high-performance applications must leverage modern multi-core CPUs and GPUs to fully exploit the available computation resources. The number of cores in a CPU continues to increase, while at the same time GPUs continue to gain power and flexibility.
+      Today's high-performance applications must leverage modern multi-core CPUs and GPUs to fully exploit the available computation resources. The number of cores in a CPU continues to increase, while at the same time GPUs continue to gain power and flexibility.
     </para>
     <para>
       The dependency graph model abstracts the concepts of thread management from the user, while enabling the construction of highly scalable multi-threaded applications.
@@ -106,7 +106,7 @@
     <section>
       <title>Task Based Parallelism</title>
       <para>
-        Each node in the dependency graph can have operators applied. The operators define how the data should be processed, and when it is propagated through the graph. The binding of an operator to a node represents a task to be executed. During evaluation of the graph the Fabric Engine core can evaluate node simultaneously that do not have dependencies on each other. 
+        Each node in the dependency graph can have operators applied. The operators define how the data should be processed, and when it is propagated through the graph. The binding of an operator to a node represents a task to be executed. During evaluation of the graph the Fabric Engine core can evaluate nodes simultaneously that do not have dependencies on each other. 
       </para>
     </section>
     <section>
@@ -128,7 +128,7 @@
       The Event graph is used to sequence the execution of a set of operators thought the construction of a tree structure. While the dependency graph is used for multi-threaded evaluation, the event graph is used for single-threaded evaluation. The event tree is built using a combination of a single event node, with a tree of event handlers arranges in a tree structure below it. Evaluation always starts at the event node, and traverses the tree in a depth first fashion evaluating operators during both descent and ascent. 
     </para>
     <para>
-      Event hander nodes in the event tree can have nodes in the dependency graph bound. When an event is fired, the nodes in the dependency graph are bound to the event garph are evaluated along with thier dependencies. This system of binding the event tree to the dependency graph, defines a dependency between the event tree, and any number of nodes in the dependecy graph. Firing the event will cause the bound sections of the dependency graph to be brought up to date.
+      Event hander nodes in the event tree can have nodes in the dependency graph bound. When an event is fired, the nodes in the dependency graph are bound to the event graph are evaluated along with their dependencies. This system of binding the event tree to the dependency graph defines a dependency between the event tree, and any number of nodes in the dependency graph. Firing the event will cause the bound sections of the dependency graph to be brought up to date.
     </para>
     <section>
       <title>Rendering</title>
@@ -140,9 +140,9 @@
       </para>
     </section>
     <section>
-      <title>Customm Events</title>
+      <title>Custom Events</title>
       <para>
-        Custom events can be constructed and tree structures built below. These events can be manually fired from the host language, causing the operators in the tree to evaluate, and also return data structures to the host language. This functionlity enables tools to query the data in the graph that may be distributed accross many nodes. In the SceneGraphs provided with Fabric, the event system is used to compute ray intersections with the geometry in the scene.
+        Custom events can be constructed and tree structures built below. These events can be manually fired from the host language, causing the operators in the tree to evaluate, and also return data structures to the host language. This functionality enables tools to query the data in the graph that may be distributed across many nodes. In the SceneGraphs provided with Fabric, the event system is used to compute ray intersections with the geometry in the scene.
       </para>
       <para>
       </para>
@@ -152,6 +152,8 @@
     <title>Map Reduce</title>
     <para>
       Fabric Engine provides a generic map-reduce framework that can be used to create recursively-parallel operations on large data sets. Map reduce is an ideal paradigm for solving problems that are solved recursively, or require a reduction step such as counting elements in large data sets. 
+    </para>
+    <para>
 The map-reduce framework can be used in isolation, without construction a dependency graph, and this can simplify the development of applications that do not maintain state, such as web services. 
     </para>
     <para>
@@ -169,7 +171,7 @@ The map-reduce framework can be used in isolation, without construction a depend
         Fabric Provides OpenGL bindings via an extension utilizing the GLEW OpenGL wrapper system. Similarly, any API such as Microsoft DirectX, or NVidia CUDA could be exposed via custom extensions.
       </para>
       <para>
-        All source code for the provided extensions is available in the Fabric Engine repository, and can be used as the basis of a users custom extensions.
+        All source code for the provided extensions is available in the Fabric Engine repository, and can be used as the basis of a user's custom extensions.
       </para>
     </section>
   </chapter>
@@ -184,7 +186,7 @@ The map-reduce framework can be used in isolation, without construction a depend
     <section>
       <title>PythonQt Scene Graph</title>
       <para>
-        The PytQy scene graph exposes an interface for building scenes that can be rendered using a custom Qt OpenGL widget. Qt is used for all GUI, layout and window management.
+        The PyQt scene graph exposes an interface for building scenes that can be rendered using a custom Qt OpenGL widget. Qt is used for all GUI, layout and window management.
       </para>
       <para>
         The Scene graph provides systems for Cameras, Materials, Geometry, and data loading, and simulation. Using the PyQt scenegraph users can quickly build sophisticated tools and use all of the available Python and Qt technologies available.
@@ -204,7 +206,7 @@ The map-reduce framework can be used in isolation, without construction a depend
       <section>
         <title>Rendering</title>
         <para>
-        The SceneGraph comes with support for forward based rendering, deferred rendering, and volume rendering. An XML based material system uses GLSL shaders to define rendering, and can utilize all the features of a modern graphics card. The data driven material system, written entirely in Python can be modified by users according to thier own requirements.
+        The SceneGraph comes with support for forward based rendering, deferred rendering, and volume rendering. An XML based material system uses GLSL shaders to define rendering, and can utilize all the features of a modern graphics card. The data driven material system, written entirely in Python can be modified by users according to their own requirements.
         </para>
       </section>
     </section>
