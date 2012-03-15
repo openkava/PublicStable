@@ -6,7 +6,7 @@
 ]>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
   <info>
-    <title>Fabric Engine Language Bindings Reference</title>
+    <title>Server Programming Guide</title>
     <copyright>
       <year>{{FABRIC_COPYRIGHT_YEARS}}</year>
       <holder>{{FABRIC_COMPANY_NAME}}</holder>
@@ -18,7 +18,7 @@
     <title>Introduction</title>
 
     <para>
-      This document outlines the installation and use of the language bindings that Fabric supports. Currently bindings exist for JavaScript using Node.js on Mac OS X and Linux, and for Python on Windows, Mac OS X, and Linux. Both Node.js and Python bindings are implemented as modules.
+      This document outlines the installation and use of Fabric from the command line, as is typically used in a server environment.  Currently, bindings exist for JavaScript using Node.js on Mac OS X and Linux, and for Python on Windows, Mac OS X, and Linux.  Both Node.js and Python bindings are implemented as modules.
     </para>
 
     <para>
