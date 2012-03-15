@@ -40,6 +40,13 @@
         The Fabric Engine source code has been released under the AGLPV3 Open Source Licensing Agreement, with commercial licenses available on request. Developers have full access to all the source code used in Fabric, allowing all core systems to be reviewed, and modified if required. This makes integrating Fabric Engine into custom applications, or scripting languages a straightforward process with no black box code to hinder learning.
       </para>
     </section>
+    <section>
+      <title>Installation</title>
+      <para>
+        The source code for Fabric Engine is available and can be used to build the engine and various clients and tools. For developers wishing to build Fabric Engine from source, the following guide prvides detailed instructions.
+      </para>
+      <link xlink:href="http://fabric-engine.com/learn/documentation">Developer Install Guide</link>
+    </section>
   </chapter>
   <chapter>
     <title>The KL Language</title>
@@ -78,6 +85,13 @@
       <para>
         Fabric Engine can be run in a range of environments including client side web applications. The KL language is constrained in such a way that it makes it impossible for malicious applications to hijack a running application using Fabric and used it to penetrate the browser's security. This makes it safe to run Fabric Engine in either client side JavaScript applications, or in online web services. 
       </para>
+    </section>
+    <section>
+      <title>Documentation</title>
+      <para>
+        Complete documentation for the KL language is provided including samples.
+      </para>
+      <link xlink:href="http://fabric-engine.com/learn/documentation">FabricEngine-KLProgrammingGuide</link>
     </section>
   </chapter>
   <chapter>
@@ -121,31 +135,38 @@
         The Fabric Engine core systems can be modified at runtime, enabling the behavior of a running application to change based on such things as user input, or network events. In between evaluations of the core, the dynamic language can add or remove data, nodes, or operators. The structure of the graph can be changed causing different behavior. After modifications, a validation is performed, before execution continues at full speed.
       </para>
     </section>
-  </chapter>
-  <chapter>
-    <title>Event Graph</title>
-    <para>
-      The Event graph is used to sequence the execution of a set of operators thought the construction of a tree structure. While the dependency graph is used for multi-threaded evaluation, the event graph is used for single-threaded evaluation. The event tree is built using a combination of a single event node, with a tree of event handlers arranges in a tree structure below it. Evaluation always starts at the event node, and traverses the tree in a depth first fashion evaluating operators during both descent and ascent. 
-    </para>
-    <para>
-      Event hander nodes in the event tree can have nodes in the dependency graph bound. When an event is fired, the nodes in the dependency graph are bound to the event graph are evaluated along with their dependencies. This system of binding the event tree to the dependency graph defines a dependency between the event tree, and any number of nodes in the dependency graph. Firing the event will cause the bound sections of the dependency graph to be brought up to date.
-    </para>
     <section>
-      <title>Rendering</title>
+      <title>Event Graph</title>
       <para>
-        The event graph is typically used to build rendering pipelines that draw to the screen using OpenGL. Each viewport in Fabric provides a custom event node that is fired whenever the viewport needs to be rendered, and this causes all of the operators in the tree to be evaluated in the sequence defined by the structure of the tree. 
+        The Event graph is used to sequence the execution of a set of operators thought the construction of a tree structure. While the dependency graph is used for multi-threaded evaluation, the event graph is used for single-threaded evaluation. The event tree is built using a combination of a single event node, with a tree of event handlers arranges in a tree structure below it. Evaluation always starts at the event node, and traverses the tree in a depth first fashion evaluating operators during both descent and ascent. 
       </para>
       <para>
-        The event graph tree structure and sequential evaluation enables complex rendering configurations to be built using the dynamic language such as Python or JavaScript. The resulting tree evaluates quickly and can be modified at runtime.
+        Event hander nodes in the event tree can have nodes in the dependency graph bound. When an event is fired, the nodes in the dependency graph are bound to the event graph are evaluated along with their dependencies. This system of binding the event tree to the dependency graph defines a dependency between the event tree, and any number of nodes in the dependency graph. Firing the event will cause the bound sections of the dependency graph to be brought up to date.
       </para>
+      <section>
+        <title>Rendering</title>
+        <para>
+          The event graph is typically used to build rendering pipelines that draw to the screen using OpenGL. Each viewport in Fabric provides a custom event node that is fired whenever the viewport needs to be rendered, and this causes all of the operators in the tree to be evaluated in the sequence defined by the structure of the tree. 
+        </para>
+        <para>
+          The event graph tree structure and sequential evaluation enables complex rendering configurations to be built using the dynamic language such as Python or JavaScript. The resulting tree evaluates quickly and can be modified at runtime.
+        </para>
+      </section>
+      <section>
+        <title>Custom Events</title>
+        <para>
+          Custom events can be constructed and tree structures built below. These events can be manually fired from the host language, causing the operators in the tree to evaluate, and also return data structures to the host language. This functionality enables tools to query the data in the graph that may be distributed across many nodes. In the SceneGraphs provided with Fabric, the event system is used to compute ray intersections with the geometry in the scene.
+        </para>
+        <para>
+        </para>
+      </section>
     </section>
     <section>
-      <title>Custom Events</title>
+      <title>Documentation</title>
       <para>
-        Custom events can be constructed and tree structures built below. These events can be manually fired from the host language, causing the operators in the tree to evaluate, and also return data structures to the host language. This functionality enables tools to query the data in the graph that may be distributed across many nodes. In the SceneGraphs provided with Fabric, the event system is used to compute ray intersections with the geometry in the scene.
+        Complete documentation for working with the dependency graph is provided.
       </para>
-      <para>
-      </para>
+      <link xlink:href="http://fabric-engine.com/learn/documentation">Dependency Graph Programming Guide</link>
     </section>
   </chapter>
   <chapter>
@@ -172,6 +193,12 @@ The map-reduce framework can be used in isolation, without construction a depend
       </para>
       <para>
         All source code for the provided extensions is available in the Fabric Engine repository, and can be used as the basis of a user's custom extensions.
+      </para>
+    </section>
+    <section>
+      <title>Documentation</title>
+      <para>
+        Documentation for the extensions provided with Fabric Engine can be found here: <link xlink:href="http://fabric-engine.com/learn/documentation">Fabric Engine-Extensions Reference</link>
       </para>
     </section>
   </chapter>
@@ -223,6 +250,9 @@ The map-reduce framework can be used in isolation, without construction a depend
         <para>
           The Fabric NPAPI plugin provides interfaces for opening and writing files on the users local machine. This enables web applications to write out files from online hosted web applications. Fabric protects the users security by only exposing this interface via user validated actions such as a file open dialog. 
         </para>
+        <para>
+          <link xlink:href="http://fabric-engine.com/learn/documentation">IO Programming Guide</link>
+        </para>
       </section>
       <section>
         <title>Rendering</title>
@@ -230,6 +260,73 @@ The map-reduce framework can be used in isolation, without construction a depend
           The JavaScript scene graph features the same XML based Material system as the Python Scene Graph and can also utilize all available features of the users GPU. Through Fabric, users running modern graphics cards can use the latest OpenGL 4.0 features, such as tessellating, and geometry instancing.
         </para>
       </section>
+      <section>
+        <title>Documentation</title>
+        <para>
+          Complete documentation for working with the Java Script is provided, along with a collection of examples whowing how to set up many common scenes and effects.
+        </para>
+        <para>
+        <link xlink:href="http://fabric-engine.com/learn/documentation">JavaScript Scene Graph Programming Guide</link>
+        </para>
+      </section>
     </section>
+  </chapter>
+  <chapter>
+    <title>Getting Started</title>
+      <section>
+        <title>Using Fabric in Server Side Applications</title>
+        <para>
+          Fabric Engine runs in server side configurations integrating with server side platforms such as Node.js.
+          <itemizedlist>
+            <listitem><para>
+              Build and Instal Node.js using the instructions provided on thier website. <link xlink:href="https://github.com/joyent/node/wiki/Installation">https://github.com/joyent/node/wiki/Installation</link>
+            </para></listitem>
+            <listitem><para>
+              Follow the instructions in the <link xlink:href="http://fabric-engine.com/learn/documentation">Developers Install Guide</link> to set up your development environment and build Fabric Engine.
+            </para></listitem>
+            <listitem><para>
+              Using Scons you can build the command line node module by running the following command from the root folder of the Fabric Engine repository: 
+              <para><command>scons node</command></para>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+      <section>
+        <title>Using Fabric in Client Side Web Applications</title>
+
+        <para>
+          To build client side web applications using the JavaScript scene graph, you will need to:
+          <itemizedlist>
+            <listitem><para>
+              Follow the instructions in the <link xlink:href="http://fabric-engine.com/learn/documentation">JS Developers Install Guide </link> to get set up for development using the NPAPI browser plugin.
+            </para></listitem>
+            <listitem><para>
+              Once you have the SceneGraph source code, you can browse the samples in the /Samples folder, and run them using your own local web server.
+              Many of the demos in the 'BasicDemos' folder are intentially simple providing examples of how to set up basic scenes. 
+            </para></listitem>
+            <listitem><para>
+              Read the documentation provided on how to work with the the JavaScript scene graph interfaces. 
+              <link xlink:href="http://fabric-engine.com/learn/documentation">JavaScript Scene Graph Programming Guide</link>
+            </para></listitem>
+            <listitem><para>
+            Using the browsers debugging features. Browsers such as Chrome and Firefox come with powerful debugging tools that enable developers ot inspect running applications and understand the code execution.
+              <link xlink:href="http://code.google.com/chrome/devtools/docs/overview.html">Google Chrome Developer Tools</link>
+            </para></listitem>
+            <listitem><para>
+              Fork the Fabric repository and build applications in your own repository. You can then propagate bug fixes and updates from the Fabric Engine repository into your own. Folow the instructions on GitHub to fork your won repo: <link xlink:href="http://help.github.com/fork-a-repo/">help.github.com/fork-a-repo/</link>
+            </para></listitem>
+          </itemizedlist>
+        </para>
+      </section>
+      <section>
+        <title>Using Fabric in Python Qt Applications</title>
+        <para>
+          The Fabric Engine Python Scene Graph is still in closed alpha.
+        </para>
+        <para>
+          To gain access to the Python Scene Graph, please request access via the Google Group
+          <link xlink:href="http://groups.google.com/group/FabricPyQt">http://groups.google.com/group/FabricPyQt</link>
+        </para>
+      </section>
   </chapter>
 </book>
