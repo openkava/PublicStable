@@ -749,18 +749,20 @@
       %para
         Creating a <code>client</code> object does differ between JavaScript and Python so we will describe it here once and then leave it out of further examples.
 
-      %example
-        %title Creating a <code>client</code> in JavaScript
-        %programlisting(language="javascript")<
-          :cdata
-            var client = require('Fabric').createClient();
+      %para
+        In JavaScript:
 
-      %example
-        %title Creating a <code>client</code> in Python
-        %programlisting(language="python")<
-          :cdata
-            import fabric
-            client = fabric.createClient()
+      %programlisting(language="javascript")<
+        :cdata
+          var client = require('Fabric').createClient();
+
+      %para
+        And in Python:
+
+      %programlisting(language="python")<
+        :cdata
+          import fabric
+          client = fabric.createClient()
 
       %para
         The client object is the base from which the rest of the Map Reduce objects are created.
@@ -826,11 +828,545 @@
       %para
         For more complex examples, it will make more sense to include one or more KL 'source files' into a single compilation unit and to then resolve the operators within. This is done using the <code>client.KLC.createCompilation()</code>, <code>compilation.addSourceFile(sourceName, sourceCode)</code>, <code>compilation.run()</code> and <code>executable.resolve...Operator()</code> functions. For example:
 
+      %programlisting(language="javascript")<
+        :cdata
+          > var compilation = fabricClient.KLC.createCompilation();
+          > compilation.addSource('generate.kl', 'operator generate(io Size value, Size index) { value = index + 1; }');
+          > compilation.addSource('reduce.kl', 'operator reduce(Size input, io Size output) { output += input; }');
+          > var executable = compilation.run();
+          > var reduce = executable.resolveReduceOperator('reduce');
+          > reduce.toJSON();
 
+      %para
+        results in:
 
-      
+      %screen<
+        :cdata
+          { kind: 'ReduceOperator',
+            entryName: 'reduce',
+            ast: 
+             [ { '+': 'Operator',
+                 returnExprType: '',
+                 body: [Object],
+                 friendlyName: 'generate',
+                 entryName: 'generate',
+                 params: [Object] },
+               { '+': 'Operator',
+                 returnExprType: '',
+                 body: [Object],
+                 friendlyName: 'reduce',
+                 entryName: 'reduce',
+                 params: [Object] } ] }
 
+      %para
+        Note that the AST in the JSON representation in this case is larger; this is because the two "source files" we combined in a single compilation unit. Similarly, we could call:
 
+      %programlisting(language="javascript")<
+        :cdata
+          > var generate = executable.resolveArrayGeneratorOperator('generate');
+          > generate.toJSON();
 
+      %para
+        which results in:
 
+      %screen<
+        :cdata
+          { kind: 'ArrayGeneratorOperator',
+            entryName: 'generate',
+            ast: 
+             [ { '+': 'Operator',
+                 returnExprType: '',
+                 body: [Object],
+                 friendlyName: 'generate',
+                 entryName: 'generate',
+                 params: [Object] },
+               { '+': 'Operator',
+                 returnExprType: '',
+                 body: [Object],
+                 friendlyName: 'reduce',
+                 entryName: 'reduce',
+                 params: [Object] } ] }
+
+    %section
+      %title Asynchronous Production
+
+      %para
+        In addition to the usual <code>produce()</code> methods on value and array producers, the JavaScript and Python bindings also support <code>produceAsync(callback)</code> methods. <code>produceAsync(callback)</code> causes the produce operation to happen asynchronously (ie. in the background); when the operation is complete, the function callback is called, passing the result of the <code>produce()</code> operation as the first parameter. This is very useful for servicing computation in the background without blocking the main thread.
+
+      %para
+        For example, in JavaScript:
+
+      %programlisting(language="javascript")<
+        :cdata
+          var cv = client.MR.createConstValue('Size', 42);
+          cv.produceAsync(function (result) {
+            console.log("Result is " + result);
+            fabricClient.close();
+          });
+          console.log("Waiting for result...");
+
+      %para
+        And in Python, since the syntax is slightly different:
+
+      %programlisting(language="python")<
+        :cdata
+          cv = client.MR.createConstValue('Size', 42);
+          def callback(result):
+            print 'Result is ' + result
+            client.close()
+          cv.produceAsync(callback)
+          print 'Waiting for result...'
+
+      %para
+        will both produce:
+
+      %screen<
+        :cdata
+          Waiting for result...
+          Result is 42
+
+      %para
+        Python programmers may ask how it is that the Python example doesn't simply exit immediately when it hits the end of file. This is because the Fabric Python module waits for all its clients to close before allowing the script to exit. If more control is required over when the clients will exit, the user can use the Fabric client's <code>running()</code> method to both test whether or not the client object is still running, as well as to service any pending actions.
+
+      %programlisting(language="python")<
+        :cdata
+          cv = client.MR.createConstValue('Size', 42);
+          def callback(result):
+            print 'Result is ' + result
+            client.close()
+          cv.produceAsync(callback)
+          print 'Waiting for result...'
+          while client.running():
+            # perform some other actions
+            pass
+          print 'Program exiting...'
+
+    %section
+      %title Using a Single Fabric Client for Multiple Computations
+
+      %para
+        Unlike the dependency graph, it is safe to use a single Fabric client for multiple computations, as long as you create separate producers and reduce operations for each computation. In this way, the operators can be shared between the computations. A simple Node.js HTTP server to generate the Fibonacci numbers might look like:
+
+      %programlisting(language="javascript")<
+        :cdata
+          fabric = require('Fabric');
+          http = require('http');
+          fs = require('fs');
+
+          var fabricClient = fabric.createClient();
+
+          var fibonacciGeneratorOperator = fabricClient.KLC.createValueGeneratorOperator(
+            "fibonacci-mr.kl",
+            fs.readFileSync("fibonacci-mr.kl", "utf8"),
+            "fibonacci"
+          );
+
+          http.createServer(function (req, res) {
+            var fibonacciGenerator = fabricClient.MR.createValueGenerator(
+              fibonacciGeneratorOperator,
+              fabricClient.MR.createConstValue('Integer', 40)
+            );
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end("\n"+fibonacciGenerator.produce()+"\n");
+          }).listen(1337, "127.0.0.1");
+
+    %section
+      %title Constant Producers
+
+      %para
+        In JavaScript and Python, a constant value producer is created using the <code>client.MR.createConstValue(typeName, value)</code> call. The <code>typeName</code> parameter is the name of the type of the value (eg. <code>Size</code>), and the <code>value</code> parameter is the value to use. The value is interpreted as the specified type; if no conversion is possible an error results. For example, the JavaScript code:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createConstValue(
+            'Scalar',
+            1.4142
+          ).produce();
+
+      %para
+        produces the result:
+
+      %screen<
+        :cdata
+          1.414199948310852
+
+      %para
+        (since floating-point numbers are 64-bit in JavaScript)
+
+      %para
+        A constant array producer is created using the <code>client.MR.createConstArray(elementTypeName, array)</code> function. The <code>elementTypeName</code> parameter is the name of the element type of the resulting array producer, and the <code>array</code> parameter must be an array of values that can be casted to the specified element type. For example, the JavaScript code:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createConstArray(
+            'Scalar',
+            [1.4142, 3.14159, 2.718281]
+          ).produce();
+
+      %para
+        produces the result:
+
+      %screen<
+        :cdata
+          [ 1.414199948310852,
+            3.141590118408203,
+            2.718281030654907 ]
+
+    %section
+      %title Generators
+
+      %para
+        A value generator in JavaScript or Python is created using the <code>client.MR.createValueGenerator(valueGeneratorOperator)</code>. <code>valueGeneratorOperator</code> must be a value generator operator returned from <code>client.KLC.createValueGeneratorOperator()</code> or <code>executable.resolveValueGeneratorOperator()</code>. For example, the JavaScript code:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createValueGenerator(
+            client.KLC.createValueGeneratorOperator(
+              "generate.kl",
+              "operator generate(io Scalar x) { x = 5.9; }",
+              "generate"
+            )
+          ).produce();
+
+      %para
+        produces the output:
+
+      %screen<
+        :cdata
+          5.900000095367432
+
+      %para
+        An array generator in KL is created using the <code>client.MR.createArrayGenerator(countValueGenerator, arrayGeneratorOperator)</code>. The <code>countValueProducer</code> parameter must be a value producer that produces a value of type <code>Size</code>. <code>arrayGeneratorOperator</code> must be an array generator operator returned from <code>client.KLC.createArrayGeneratorOperator()</code> or <code>executable.resolveArrayGeneratorOperator()</code>. An example of an array generator:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createArrayGenerator(
+            client.MR.createConstValue('Size', 1000000),
+            client.KLC.createArrayGeneratorOperator(
+              "generate.kl",
+              "operator generate(io Scalar x, Size index) { x = 3.141 * index; }",
+              "generate"
+            )
+          ).produce(9876, 16);
+
+      %para
+        produces:
+
+      %screen<
+        :cdata
+          [ 31020.515625,
+            31023.658203125,
+            31026.798828125,
+            31029.939453125,
+            31033.080078125,
+            31036.220703125,
+            31039.36328125,
+            31042.50390625,
+            31045.64453125,
+            31048.78515625,
+            31051.92578125,
+            31055.06640625,
+            31058.208984375,
+            31061.349609375,
+            31064.490234375,
+            31067.630859375 ]
+
+      %para
+        In both cases, you can optionally specify a shared value producer as the last parameter to the <code>client.MR.create...Generator()</code> call. When a shared value producer is provided, the operator receives an additional parameter whose type is the value type of the shared value producer, as in KL.
+
+    %section
+      %title Maps
+
+      %para
+        A value map in JavaScript or Python is created using the <code>client.MR.createValueMap(inputValueProducer, valueMapOperator)</code>. <code>inputValueProducer</code> must be a value producer, and <code>valueMapOperator</code> must be a value map operator returned from <code>client.KLC.createValueMapOperator()</code> or <code>executable.resolveValueMapOperator()</code>. For example, the JavaScript code:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createValueMap(
+            client.MR.createConstValue(
+              "String",
+              "Hello, world!"
+            ),
+            client.KLC.createValueMapOperator(
+              "map.kl",
+              "operator map(String input, io Size output) { output = input.length; }",
+              "map"
+            )
+          ).produce();
+
+      %para
+        produces the output:
+
+      %screen<
+        :cdata
+          13
+
+      %para
+        An array map in JavaScript or Python is created using the <code>client.MR.createArrayMap(inputArrayProducer, arrayMapOperator)</code>. An example of an array map:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createArrayMap(
+            client.MR.createConstArray(
+              "String",
+              ["Hello, world!", "Goodbye, cruel world!"]
+            ),
+            client.KLC.createArrayMapOperator(
+              "map.kl",
+              "operator map(String input, io Size output) { output = input.length; }",
+              "map"
+            )
+          ).produce();
+
+      %para
+        produces:
+
+      %screen<
+        :cdata
+          [ 13, 21 ]
+
+      %para
+        As in KL, you can optionally specify a shared value producer as the last parameter to the <code>client.MR.create...Map()</code> call. When a shared value producer is provided, the operator receives an additional parameter whose type is the value type of the shared value producer, as in KL.
+
+    %section
+      %title Transforms
+
+      %para
+        A value transform in JavaScript or Python is created using the <code>client.MR.createValueTransform(inputValueProducer, valueTransformOperator)</code>. The type of the first parameter of the operator must be the value type of the input producer. For example:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createValueTransform(
+            client.MR.createConstValue(
+              "String",
+              "Peter"
+            ),
+            client.KLC.createValueTransformOperator(
+              "trans.kl",
+              "operator trans(io String value) { value = 'Hello, ' + value + '!'; }",
+              "trans"
+            )
+          ).produce();
+
+      %para
+        produces the output:
+
+      %screen<
+        :cdata
+          'Hello, Peter!'
+
+      %para
+        An array transform in JavaScript or Python is created using the <code>client.MR.createArrayTransform(inputArrayProducer, arrayTransformOperator)</code>. The type of the first parameter of the operator must be the element type of the input producer. For example:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createArrayTransform(
+            client.MR.createConstArray(
+              "String",
+              ["Peter","Fred","Joe"]
+            ),
+            client.KLC.createArrayTransformOperator(
+              "trans.kl",
+              "operator trans(io String value) { value = 'Hello, ' + value + '!'; }",
+              "trans"
+            )
+          ).produce();
+
+      %para
+        produces:
+
+      %screen<
+        :cdata
+          [ 'Hello, Peter!',
+            'Hello, Fred!',
+            'Hello, Joe!' ]
+
+      %para
+        As in KL, you can optionally specify a shared value producer as the last parameter to the <code>client.MR.create...Transform()</code> call. When a shared value producer is provided, the operator receives an additional parameter whose type is the value type of the shared value producer, as in KL.
+
+    %section
+      %title Reduce
+
+      %para
+        To create a reduce operation in JavaScript or Python, use the <code>client.MR.createReduce(inputArrayProducer, reduceOperator)</code> call. <code>inputArrayProducer</code> must be an array producer; assume its element type is <code>InputType</code>. <code>reduceOperator</code> must be a reduce operator with one of prototypes:
+
+      %itemizedlist
+        %listitem
+          %para
+            %code operator operatorName(InputType input, io OutputType output)
+        %listitem
+          %para
+            %code operator operatorName(InputType input, io OutputType output, Size index)
+        %listitem
+          %para
+            %code operator operatorName(InputType input, io OutputType output, Size index, Size count)
+
+      %para
+        The result of the <code>client.MR.createReduce(...)</code> call is a value producer with value type <code>OutputType</code>. For example:
+
+      %programlisting(language="javascript")<
+        :cdata
+          client.MR.createReduce(
+            client.MR.createConstArray(
+              "String",
+              ["Peter","Fred","Joe"]
+            ),
+            client.KLC.createReduceOperator(
+              "reduce.kl",
+              "operator reduce(String input, io Size output) { output += input.length; }",
+              "reduce"
+            )
+          ).produce();
+          client.close();
+
+      %para
+        produces the result:
+
+      %screen<
+        :cdata
+          12
+
+      %para
+        You can optionally specify a shared value producer as the last parameter to the <code>client.MR.createReduce()</code> call. When a shared value producer is provided, the function receives an additional parameter whose type is the value type of the shared value producer. The prototype of the operator becomes:
+
+      %programlisting(language="kl")<
+        :cdata
+          operator reduce(InputType input, io OutputType output, Size index, Size count, SharedType sharedValue) {
+            ...
+          }
+
+      %para
+        Note that when using a shared value with an array map you must include the <code>index</code> and <code>count</code> parameters in the operator even if they are unused.
+
+    %section
+      %title Caches
+
+      %para
+        To create a value cache in JavaScript or Python, use the <code>client.MR.createValueCache(inputValueProducer)</code> call. The value type of the cache is the same as the value type of <code>inputValueProducer</code>. Example usage:
+
+      %programlisting(language="javascript")<
+        :cdata
+          var gen = 
+            client.MR.createValueCache(
+              client.MR.createValueGenerator(
+                client.KLC.createValueGeneratorOperator(
+                  "xfo.kl", "operator xfo(io Integer value) { report 'Running generator'; value = 121; }", "xfo"
+                  )
+                )
+              );
           
+          console.log("Should run generator");
+          console.log(gen.produce());
+          
+          console.log("Should not run generator (cached)");
+          console.log(gen.produce());
+          
+          gen.flush();
+          console.log("Should run generator");
+          console.log(gen.produce());
+          
+          client.close();
+
+      %para
+        results in:
+
+      %screen<
+        :cdata
+          Should run generator
+          [FABRIC] [MT] Running generator
+          121
+          Should not run generator (cached)
+          121
+          Should run generator
+          [FABRIC] [MT] Running generator
+          121
+
+      %para
+        To create an array cache in JavaScript or Python, use the <code>client.MR.createArrayCache(inputArrayProducer)</code> call. The element type of the resulting array provider is the same as the element type of <code>inputArrayProducer</code>. Example usage:
+
+      %programlisting(language="javascript")<
+        :cdata
+          cv = client.MR.createConstValue("Size", 10);
+          
+          ago = client.KLC.createArrayGeneratorOperator("foo.kl", "operator foo(io Scalar output, Size index) { report 'Running generator'; output = sqrt(Scalar(index)); }", "foo");
+          ag = client.MR.createArrayGenerator(cv, ago);
+          
+          var cache = client.MR.createArrayCache(ag);
+          
+          var count = ag.getCount();
+          console.log("cache.getCount() = " + count);
+          
+          console.log("Should run generator");
+          for (var i=0; i<count; ++i)
+            console.log("cache.produce("+i+") = "+cache.produce(i));
+          
+          console.log("Should not run generator (cached)");
+          for (var i=0; i<count; ++i)
+            console.log("cache.produce("+i+") = "+cache.produce(i));
+          
+          cache.flush();
+          console.log("Should run generator");
+          for (var i=0; i<count; ++i)
+            console.log("cache.produce("+i+") = "+cache.produce(i));
+          
+          client.close();
+
+      %para
+        results in:
+
+      %screen<
+        :cdata
+          cache.getCount() = 10
+          Should run generator
+          [FABRIC] [MT] Running generator
+          cache.produce(0) = 0
+          [FABRIC] [MT] Running generator
+          cache.produce(1) = 1
+          [FABRIC] [MT] Running generator
+          cache.produce(2) = 1.414213538169861
+          [FABRIC] [MT] Running generator
+          cache.produce(3) = 1.732050776481628
+          [FABRIC] [MT] Running generator
+          cache.produce(4) = 2
+          [FABRIC] [MT] Running generator
+          cache.produce(5) = 2.2360680103302
+          [FABRIC] [MT] Running generator
+          cache.produce(6) = 2.449489831924438
+          [FABRIC] [MT] Running generator
+          cache.produce(7) = 2.645751237869263
+          [FABRIC] [MT] Running generator
+          cache.produce(8) = 2.828427076339722
+          [FABRIC] [MT] Running generator
+          cache.produce(9) = 3
+          Should not run generator (cached)
+          cache.produce(0) = 0
+          cache.produce(1) = 1
+          cache.produce(2) = 1.414213538169861
+          cache.produce(3) = 1.732050776481628
+          cache.produce(4) = 2
+          cache.produce(5) = 2.2360680103302
+          cache.produce(6) = 2.449489831924438
+          cache.produce(7) = 2.645751237869263
+          cache.produce(8) = 2.828427076339722
+          cache.produce(9) = 3
+          Should run generator
+          [FABRIC] [MT] Running generator
+          cache.produce(0) = 0
+          [FABRIC] [MT] Running generator
+          cache.produce(1) = 1
+          [FABRIC] [MT] Running generator
+          cache.produce(2) = 1.414213538169861
+          [FABRIC] [MT] Running generator
+          cache.produce(3) = 1.732050776481628
+          [FABRIC] [MT] Running generator
+          cache.produce(4) = 2
+          [FABRIC] [MT] Running generator
+          cache.produce(5) = 2.2360680103302
+          [FABRIC] [MT] Running generator
+          cache.produce(6) = 2.449489831924438
+          [FABRIC] [MT] Running generator
+          cache.produce(7) = 2.645751237869263
+          [FABRIC] [MT] Running generator
+          cache.produce(8) = 2.828427076339722
+          [FABRIC] [MT] Running generator
+          cache.produce(9) = 3
