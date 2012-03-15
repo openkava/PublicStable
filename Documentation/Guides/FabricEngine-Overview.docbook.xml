@@ -45,7 +45,9 @@
       <para>
         The source code for Fabric Engine is available and can be used to build the engine and various clients and tools. For developers wishing to build Fabric Engine from source, the following guide prvides detailed instructions.
       </para>
-      <link xlink:href="http://fabric-engine.com/learn/documentation">Developer Install Guide</link>
+      <para>
+        For more information, see the <citetitle>Fabric Engine Developer Install Guide</citetitle> at <link xlink:href="http://fabric-engine.com/learn/documentation/"><uri>http://fabric-engine.com/learn/documentation/</uri></link>.
+      </para>
     </section>
   </chapter>
   <chapter>
@@ -91,7 +93,9 @@
       <para>
         Complete documentation for the KL language is provided including samples.
       </para>
-      <link xlink:href="http://fabric-engine.com/learn/documentation">FabricEngine-KLProgrammingGuide</link>
+      <para>
+        For more information see the <citetitle>Fabric Engine KL Programming Guide</citetitle> at <link xlink:href="http://fabric-engine.com/learn/documentation/"><uri>http://fabric-engine.com/learn/documentation/</uri></link>
+      </para>
     </section>
   </chapter>
   <chapter>
@@ -166,7 +170,9 @@
       <para>
         Complete documentation for working with the dependency graph is provided.
       </para>
-      <link xlink:href="http://fabric-engine.com/learn/documentation">Dependency Graph Programming Guide</link>
+      <para>
+        For more information, see the <citetitle>Fabric Engine Dependency Graph Programming Guide</citetitle> at <link xlink:href="http://fabric-engine.com/learn/documentation/"><uri>http://fabric-engine.com/learn/documentation/</uri></link>
+      </para>
     </section>
   </chapter>
   <chapter>

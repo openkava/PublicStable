@@ -76,11 +76,11 @@
           </para>
         </section>
 
-        <para>
-          The Fabric Engine source code is hosted in a GitHub repositroy, which uses SSH for security. You will need to set up Git and SSH on your windows machine to be able to clone the repository.
-        </para>
         <section xml:id="setup.prereqs.windows.git">
           <title>Install Git and Configure SSH</title>
+          <para>
+            The Fabric Engine source code is hosted in a GitHub repositroy, which uses SSH for security. You will need to set up Git and SSH on your windows machine to be able to clone the repository.
+          </para>
           <para>
             Install Git for Windows and (optionally) set up your github ssh key by following the instructions found here: <link xlink:href="http://help.github.com/win-set-up-git/"><uri>Set Up Git</uri></link>
           </para>
