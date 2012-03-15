@@ -112,12 +112,6 @@
     <section>
       <title>Data Based Parallelism</title>
       <para>
-        Each node in the dependency graph can have operators applied. The operators define how the data should be processed, and when it is propagated through the graph. The binding of an operator to a node represents a task to be executed. During evaluation of the graph the Fabric Engine core can evaluate node simultaneously that do not have dependencies on each other. 
-      </para>
-    </section>
-    <section>
-      <title>Data Based Parallelism</title>
-      <para>
         Each node in the dependency graph can be sliced, meaning that each member contained in a node is duplicated according to the number of node slices. This enables nodes to store large quantities of data across many slices, defining homogeneous data sets. Operators bound to the node can be invoked for each slice in parallel, enabling data based parallelism.
       </para>
     </section>
@@ -133,6 +127,9 @@
     <para>
       The Event graph is used to sequence the execution of a set of operators thought the construction of a tree structure. While the dependency graph is used for multi-threaded evaluation, the event graph is used for single-threaded evaluation. The event tree is built using a combination of a single event node, with a tree of event handlers arranges in a tree structure below it. Evaluation always starts at the event node, and traverses the tree in a depth first fashion evaluating operators during both descent and ascent. 
     </para>
+    <para>
+      Event hander nodes in the event tree can have nodes in the dependency graph bound. When an event is fired, the nodes in the dependency graph are bound to the event garph are evaluated along with thier dependencies. This system of binding the event tree to the dependency graph, defines a dependency between the event tree, and any number of nodes in the dependecy graph. Firing the event will cause the bound sections of the dependency graph to be brought up to date.
+    </para>
     <section>
       <title>Rendering</title>
       <para>
@@ -140,6 +137,14 @@
       </para>
       <para>
         The event graph tree structure and sequential evaluation enables complex rendering configurations to be built using the dynamic language such as Python or JavaScript. The resulting tree evaluates quickly and can be modified at runtime.
+      </para>
+    </section>
+    <section>
+      <title>Customm Events</title>
+      <para>
+        Custom events can be constructed and tree structures built below. These events can be manually fired from the host language, causing the operators in the tree to evaluate, and also return data structures to the host language. This functionlity enables tools to query the data in the graph that may be distributed accross many nodes. In the SceneGraphs provided with Fabric, the event system is used to compute ray intersections with the geometry in the scene.
+      </para>
+      <para>
       </para>
     </section>
   </chapter>
