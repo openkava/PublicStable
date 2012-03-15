@@ -273,27 +273,17 @@ The map-reduce framework can be used in isolation, without construction a depend
   </chapter>
   <chapter>
     <title>Getting Started</title>
+    
       <section>
         <title>Using Fabric in Server Side Applications</title>
         <para>
-          Fabric Engine runs in server side configurations integrating with server side platforms such as Node.js.
-          <itemizedlist>
-            <listitem><para>
-              Build and Instal Node.js using the instructions provided on thier website. <link xlink:href="https://github.com/joyent/node/wiki/Installation">https://github.com/joyent/node/wiki/Installation</link>
-            </para></listitem>
-            <listitem><para>
-              Follow the instructions in the <link xlink:href="http://fabric-engine.com/learn/documentation">Developers Install Guide</link> to set up your development environment and build Fabric Engine.
-            </para></listitem>
-            <listitem><para>
-              Using Scons you can build the command line node module by running the following command from the root folder of the Fabric Engine repository: 
-              <para><command>scons node</command></para>
-            </para></listitem>
-          </itemizedlist>
+          Fabric Engine runs in server side configurations integrating with server side platforms such as Node.js. The following guide provides setup instructions and tutorials in using Fabric: 
+          <link xlink:href="http://fabric-engine.com/learn/documentation">FabricEngine-LanguageBindingsReference</link>
         </para>
       </section>
+      
       <section>
         <title>Using Fabric in Client Side Web Applications</title>
-
         <para>
           To build client side web applications using the JavaScript scene graph, you will need to:
           <itemizedlist>
@@ -318,6 +308,7 @@ The map-reduce framework can be used in isolation, without construction a depend
           </itemizedlist>
         </para>
       </section>
+      
       <section>
         <title>Using Fabric in Python Qt Applications</title>
         <para>
@@ -326,6 +317,14 @@ The map-reduce framework can be used in isolation, without construction a depend
         <para>
           To gain access to the Python Scene Graph, please request access via the Google Group
           <link xlink:href="http://groups.google.com/group/FabricPyQt">http://groups.google.com/group/FabricPyQt</link>
+        </para>
+      </section>
+      
+      <section>
+        <title>Building Fabric from Source</title>
+        <para>
+          Fabric Engine can be built from source, and the following guide provides instructions on setting up your build environment and running the build scripts:
+          <link xlink:href="http://fabric-engine.com/learn/documentation">Developers Install Guide</link>
         </para>
       </section>
   </chapter>
