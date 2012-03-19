@@ -44,7 +44,8 @@
         %para
           Follow the instructions at
           %uri
-            %link(xlink:href='http://documentation.fabric-engine.com/latest/FabricEngine-LanguageBindingsReference.pdf')
+            %link(xlink:href='http://documentation.fabric-engine.com/latest/FabricEngine-LanguageBindingsReference.pdf' condition='pdf')
+            %link(xlink:href='http://documentation.fabric-engine.com/latest/FabricEngine-LanguageBindingsReference.html' condition='html')
           to install the Fabric Engine Node.js and/or Python module on your system and use Fabric Engine from the command line.
     %section
       %title Examples
@@ -142,7 +143,10 @@
           %term members
           %listitem
             %para
-              An object containing the members to be contained in the type.  The key names are the member names for the type and the key values are the names of already-registered types or built-in KL types (see the <link xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.pdf">KL Programming Guide</link> for more information on atomic types).
+              An object containing the members to be contained in the type.  The key names are the member names for the type and the key values are the names of already-registered types or built-in KL types (see the
+              <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.pdf">KL Programming Guide</link>
+              <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.html">KL Programming Guide</link>
+              for more information on atomic types).
               %note
                 %para
                   It is possible to append brackets to obtain variable- or fixed-length arrays as members, eg. <code>Scalar[2][2]</code>, <code>Scalar[][]</code> and <code>Scalar[2][][4]</code>.
@@ -1032,7 +1036,10 @@
       %title Setting the Operator Entry Point
 
       %para
-        In addition to source code, an operator needs an entry point, which is the name of the KL operator (see the <link xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.pdf">KL Programming Guide</link>) in the source code that should be called when the operator is invoked.  Note that this <emphasis>must</emphasis> be an KL operator and not a KL function.  The entry point is specified by calling the <code>setEntryFunctionName</code> method.  By specifying the source code and entry point separately, it is possible to have multiple possible entry points into the same source code.
+        In addition to source code, an operator needs an entry point, which is the name of the KL operator (see the
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.pdf">KL Programming Guide</link>
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.html">KL Programming Guide</link>
+        ) in the source code that should be called when the operator is invoked.  Note that this <emphasis>must</emphasis> be an KL operator and not a KL function.  The entry point is specified by calling the <code>setEntryFunctionName</code> method.  By specifying the source code and entry point separately, it is possible to have multiple possible entry points into the same source code.
 
       %example
         :plain
