@@ -17,7 +17,14 @@
     <section>
       <title>Installation</title>
       <para>
-        Installation instructions can be found in the <link xlink:href="http://fabric-engine.com/learn/documentation">JS Developers Install Guide </link>.
+        Installation instructions can be found here: 
+        
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSDeveloperInstallGuide.html">
+          <quote>JS Developers Install Guide</quote>
+        </link>
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSDeveloperInstallGuide.pdf">
+          <quote>JS Developers Install Guide</quote>
+        </link>
       </para>
     </section>
     <section>
