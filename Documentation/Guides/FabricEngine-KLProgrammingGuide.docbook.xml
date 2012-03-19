@@ -3504,7 +3504,14 @@ operator entry() {
     </para>
 
     <para>
-      This chapter does not attempt to explain the concepts behind and usage of the Fabric Engine map-reduce framework; it serves purely to enumerate the types and functions that are provided in KL to support the framework.  For more information on concepts and usage of the map-reduce framework, refer to the <quote>Map-Reduce Programming Guide</quote>, available at <link xlink:href="http://documentation.fabric-engine.com/latest/"><uri>http://documentation.fabric-engine.com/latest/</uri></link>.
+      This chapter does not attempt to explain the concepts behind and usage of the Fabric Engine map-reduce framework; it serves purely to enumerate the types and functions that are provided in KL to support the framework.  For more information on concepts and usage of the map-reduce framework, refer to the 
+      <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.html">
+        <quote>Map-Reduce Programming Guide</quote>
+      </link>
+      <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.pdf">
+        <quote>Map-Reduce Programming Guide</quote>
+      </link>
+      .
     </para>
 
     <section xml:id="mr-types">
@@ -3813,7 +3820,14 @@ ValueProducer<Scalar>
           <programlisting language="kl">ValueProducer&lt;<replaceable>ValueType</replaceable>&gt; createValueCache(ValueProducer&lt;<replaceable>ValueType</replaceable>&gt;)</programlisting>
 
           <para>
-            Creates a value producer with value type <replaceable>ValueType</replaceable> that caches the result of another value producer of the same type.  For more information on producer caches, see refer to the <quote>Map-Reduce Programming Guide</quote>, available at <link xlink:href="http://documentation.fabric-engine.com/latest/"><uri>http://documentation.fabric-engine.com/latest/</uri></link>.
+            Creates a value producer with value type <replaceable>ValueType</replaceable> that caches the result of another value producer of the same type.  For more information on producer caches, see refer to the
+            <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.html">
+              <quote>Map-Reduce Programming Guide</quote>
+            </link>
+            <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.pdf">
+              <quote>Map-Reduce Programming Guide</quote>
+            </link>
+            .
           </para>
 
           <example>
@@ -4214,7 +4228,14 @@ large
           <programlisting language="kl">ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt; createArrayCache(ArrayProducer&lt;<replaceable>ElementType</replaceable>&gt;)</programlisting>
 
           <para>
-            Creates an array producer with array type <replaceable>ElementType</replaceable> that caches the result of another array producer of the same type.  For more information on producer caches, refer to the <quote>Map-Reduce Programming Guide</quote>, available at <link xlink:href="http://documentation.fabric-engine.com/latest/"><uri>http://documentation.fabric-engine.com/latest/</uri></link>.
+            Creates an array producer with array type <replaceable>ElementType</replaceable> that caches the result of another array producer of the same type.  For more information on producer caches, refer to the
+            <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.html">
+              <quote>Map-Reduce Programming Guide</quote>
+            </link>
+            <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.pdf">
+              <quote>Map-Reduce Programming Guide</quote>
+            </link>
+            .
           </para>
 
           <example>

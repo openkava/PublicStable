@@ -343,7 +343,7 @@ fabricClient.close();
           <title>
             <filename>Examples/Node/Tutorial/Series/computeTerm.kl</filename>
           </title>
-          <programlisting language="KL">
+          <programlisting language="kl">
             <![CDATA[
 operator computeTerm(
   Size index,
@@ -360,7 +360,7 @@ operator computeTerm(
           <title>
             <filename>Examples/Node/Tutorial/Series/sumTerms.kl</filename>
           </title>
-          <programlisting language="KL">
+          <programlisting language="kl">
             <![CDATA[
 operator sumTerms(
   Size numTerms,
@@ -931,7 +931,7 @@ fabricClient.close()
 
         <example>
           <title><filename>Examples/Python/Tutorial/Series/computeTerm.kl</filename></title>
-          <programlisting language="KL">
+          <programlisting language="kl">
             <![CDATA[
 operator computeTerm(
   Size index,
@@ -946,7 +946,7 @@ operator computeTerm(
 
         <example>
           <title><filename>Examples/Python/Tutorial/Series/sumTerms.kl</filename></title>
-          <programlisting language="KL">
+          <programlisting language="kl">
             <![CDATA[
 operator sumTerms(
   Size numTerms,

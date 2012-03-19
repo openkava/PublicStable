@@ -204,7 +204,7 @@
           <example xml:id="resourceloadnode.ex">
             <?dbfo keep-together="auto" ?>
             <title>Building and using a ResourceLoadNode</title>
-            <programlisting language="JavaScript">
+            <programlisting language="javascript">
             <![CDATA[
 FABRIC = require('Fabric').createClient();
 node = FABRIC.DependencyGraph.createResourceLoadNode("node");
@@ -319,7 +319,7 @@ Loaded data written to file ./loadedImage.jpeg
         <para>
           This example illustrates the use of most of the Fabric.IO helper functions, in the context of a browser plugin Fabric client (secure model).
         </para>
-        <programlisting language="JavaScript">
+        <programlisting language="javascript">
           <![CDATA[
 var handles = FABRIC.IO.queryUserFileAndFolderHandle( FABRIC.IO.forSave, "Fabric IO text file test", "txt", "testfile" );
 console.log( "Returned file & folder cryptic file handles (random): " + JSON.stringify( handles ) );
