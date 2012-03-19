@@ -13,6 +13,13 @@
   </info>
   <chapter>
     <title>Introduction</title>
+    
+    <section>
+      <title>Installation</title>
+      <para>
+        Installation instructions can be found in the <link xlink:href="http://fabric-engine.com/learn/documentation">JS Developers Install Guide </link>.
+      </para>
+    </section>
     <section>
       <title>What's Fabric Engine's SceneGraph?</title>
       <para>The <emphasis role="bold">SceneGraph</emphasis> is a wrapper for its counterpart, the
