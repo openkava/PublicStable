@@ -17,5 +17,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ---
 
 Fabric Engine is a development platform that provides a high-performance
-layer for dynamic languages such as JavaScript and Pythong.  For more
+layer for dynamic languages such as JavaScript and Python.  For more
 information on Fabric Engine, see <http://fabricengine.com/>.
