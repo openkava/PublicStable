@@ -194,7 +194,7 @@ if 'uploadDocs' in COMMAND_LINE_TARGETS:
 		guides,
 		[
 			['ssh', remoteHost, 'mkdir', '-p', remoteDir],
-			['rsync', '-e', 'ssh', '--progress', '--recursive', str(docsDistDir), remoteHost+':'+remoteDir+'/']
+			['rsync', '-e', 'ssh', '--progress', '--recursive', '--delete', str(docsDistDir), remoteHost+':'+remoteDir+'/']
 			]
 		))
 	Alias('uploadDocs', uploadDocs)
