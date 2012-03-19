@@ -46,7 +46,13 @@
         The source code for Fabric Engine is available and can be used to build the engine and various clients and tools. For developers wishing to build Fabric Engine from source, the following guide prvides detailed instructions.
       </para>
       <para>
-        For more information, see the <citetitle>Fabric Engine Developer Install Guide</citetitle> at <link xlink:href="http://fabric-engine.com/learn/documentation/"><uri>http://fabric-engine.com/learn/documentation/</uri></link>.
+        For more information, see the
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-DeveloperInstallGuide.html">
+          <quote>Fabric Engine Developer Install Guide</quote>
+        </link>
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-DeveloperInstallGuide.pdf">
+          <quote>Fabric Engine Developer Install Guide</quote>
+        </link>
       </para>
     </section>
   </chapter>
@@ -94,7 +100,15 @@
         Complete documentation for the KL language is provided including samples.
       </para>
       <para>
-        For more information see the <citetitle>Fabric Engine KL Programming Guide</citetitle> at <link xlink:href="http://fabric-engine.com/learn/documentation/"><uri>http://fabric-engine.com/learn/documentation/</uri></link>
+        For more information see the 
+        
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.html">
+          <quote>Fabric Engine KL Programming Guide</quote>
+        </link>
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-KLProgrammingGuide.pdf">
+          <quote>Fabric Engine KL Programming Guide</quote>
+        </link>
+        
       </para>
     </section>
   </chapter>
@@ -171,7 +185,15 @@
         Complete documentation for working with the dependency graph is provided.
       </para>
       <para>
-        For more information, see the <citetitle>Fabric Engine Dependency Graph Programming Guide</citetitle> at <link xlink:href="http://fabric-engine.com/learn/documentation/"><uri>http://fabric-engine.com/learn/documentation/</uri></link>
+        For more information, see the 
+        
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-DependencyGraphProgrammingGuide.html">
+          <quote>Fabric Engine Dependency Graph Programming Guide</quote>
+        </link>
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-DependencyGraphProgrammingGuide.pdf">
+          <quote>Fabric Engine Dependency Graph Programming Guide</quote>
+        </link>
+        
       </para>
     </section>
   </chapter>
@@ -186,6 +208,21 @@ The map-reduce framework can be used in isolation, without construction a depend
     <para>
       the Fabric Engine implementation of map-reduce expands on the concepts of the classic map reduce model, providing a more flexible tool. By allowing the results of a map reduce call do be used to drive further map reduce calls, problems that are difficult to parallelise become solvable in this multi-threaded context.
     </para>
+    
+    <section>
+      <title>Documentation</title>
+      <para>
+        Complete documentation on using Map Reduce in your applications can be found here:
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.html">
+          <quote>Map Reduce Programming Guide</quote>
+        </link>
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-MapReduceProgrammingGuide.pdf">
+          <quote>Map Reduce Programming Guide</quote>
+        </link>
+        
+      </para>
+    </section>
+    
   </chapter>
   <chapter>
     <title>Extensions</title>
@@ -204,7 +241,15 @@ The map-reduce framework can be used in isolation, without construction a depend
     <section>
       <title>Documentation</title>
       <para>
-        Documentation for the extensions provided with Fabric Engine can be found here: <link xlink:href="http://fabric-engine.com/learn/documentation">Fabric Engine-Extensions Reference</link>
+        Documentation for the extensions provided with Fabric Engine can be found here:
+        
+        <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-ExtensionsReference.html">
+          <quote>Fabric Engine-Extensions Reference</quote>
+        </link>
+        <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-ExtensionsReference.pdf">
+          <quote>Fabric Engine-Extensions Reference</quote>
+        </link>
+        
       </para>
     </section>
   </chapter>
@@ -257,7 +302,15 @@ The map-reduce framework can be used in isolation, without construction a depend
           The Fabric NPAPI plugin provides interfaces for opening and writing files on the users local machine. This enables web applications to write out files from online hosted web applications. Fabric protects the users security by only exposing this interface via user validated actions such as a file open dialog. 
         </para>
         <para>
-          <link xlink:href="http://fabric-engine.com/learn/documentation">IO Programming Guide</link>
+          
+          Documentation covering the Data Loading API can be found here: 
+          <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-IOProgrammingGuide.html">
+            <quote>IO Programming Guide</quote>
+          </link>
+          <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-IOProgrammingGuide.pdf">
+            <quote>IO Programming Guide</quote>
+          </link>
+        
         </para>
       </section>
       <section>
@@ -272,7 +325,16 @@ The map-reduce framework can be used in isolation, without construction a depend
           Complete documentation for working with the Java Script is provided, along with a collection of examples whowing how to set up many common scenes and effects.
         </para>
         <para>
-        <link xlink:href="http://fabric-engine.com/learn/documentation">JavaScript Scene Graph Programming Guide</link>
+          
+          Documentation covering the JavaScript SceneGraph can be found here: 
+          <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSSceneGraphProgrammingGuide.html">
+            <quote>JS SceneGraph Programming Guide</quote>
+          </link>
+          <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSSceneGraphProgrammingGuide.pdf">
+            <quote>JS SceneGraph Programming Guide</quote>
+          </link>
+          
+        
         </para>
       </section>
     </section>
@@ -284,7 +346,12 @@ The map-reduce framework can be used in isolation, without construction a depend
         <title>Using Fabric in Server Side Applications</title>
         <para>
           Fabric Engine runs in server side configurations integrating with server side platforms such as Node.js. The following guide provides setup instructions and tutorials in using Fabric: 
-          <link xlink:href="http://fabric-engine.com/learn/documentation">FabricEngine-LanguageBindingsReference</link>
+          <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-ServerProgrammingGuide.html">
+            <quote>Server Programming Guide</quote>
+          </link>
+          <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-ServerProgrammingGuide.pdf">
+            <quote>Server Programming Guide</quote>
+          </link>
         </para>
       </section>
       
@@ -294,15 +361,28 @@ The map-reduce framework can be used in isolation, without construction a depend
           To build client side web applications using the JavaScript scene graph, you will need to:
           <itemizedlist>
             <listitem><para>
-              Follow the instructions in the <link xlink:href="http://fabric-engine.com/learn/documentation">JS Developers Install Guide </link> to get set up for development using the NPAPI browser plugin.
+              Follow the instructions on getting set up for development using the NPAPI browser plugin, read the following guide:
+              <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSDeveloperInstallGuide.html">
+                <quote>JS Developers Install Guide</quote>
+              </link>
+              <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSDeveloperInstallGuide.pdf">
+                <quote>JS Developers Install Guide</quote>
+              </link>
+              
             </para></listitem>
             <listitem><para>
               Once you have the SceneGraph source code, you can browse the samples in the /Samples folder, and run them using your own local web server.
               Many of the demos in the 'BasicDemos' folder are intentially simple providing examples of how to set up basic scenes. 
             </para></listitem>
             <listitem><para>
-              Read the documentation provided on how to work with the the JavaScript scene graph interfaces. 
-              <link xlink:href="http://fabric-engine.com/learn/documentation">JavaScript Scene Graph Programming Guide</link>
+              Read the documentation provided on how to work with the the JavaScript Scene Graph: 
+              <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSSceneGraphProgrammingGuide.html">
+                <quote>JS SceneGraph Programming Guide</quote>
+              </link>
+              <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-JSSceneGraphProgrammingGuide.pdf">
+                <quote>JS SceneGraph Programming Guide</quote>
+              </link>
+              
             </para></listitem>
             <listitem><para>
             Using the browsers debugging features. Browsers such as Chrome and Firefox come with powerful debugging tools that enable developers ot inspect running applications and understand the code execution.
@@ -329,8 +409,14 @@ The map-reduce framework can be used in isolation, without construction a depend
       <section>
         <title>Building Fabric from Source</title>
         <para>
-          Fabric Engine can be built from source, and the following guide provides instructions on setting up your build environment and running the build scripts:
-          <link xlink:href="http://fabric-engine.com/learn/documentation">Developers Install Guide</link>
+          Fabric Engine can be built from source, and the following guide provides instructions on setting up your build environment and building Fabirc Engine:
+          
+          <link condition="html" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-BuildingFabricEngineFromSource.html">
+            <quote>Building Fabric Engine From Source</quote>
+          </link>
+          <link condition="pdf" xlink:href="http://documentation.fabric-engine.com/latest/FabricEngine-BuildingFabricEngineFromSource.pdf">
+            <quote>Building Fabric Engine From Source</quote>
+          </link>
         </para>
       </section>
   </chapter>
