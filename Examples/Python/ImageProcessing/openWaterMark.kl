@@ -12,7 +12,8 @@ operator openWaterMark(
   if(pixels.size() == 0) {
     FabricFileHandleWrapper wrapper;
     wrapper.setAbsolutePath(filePath);
-    FabricCIMGOpenFileHandle(wrapper.getHandle(), width, height, pixels);
+    String ext;
+    FabricCIMGOpenFileHandle(wrapper.getHandle(), ext, width, height, pixels);
     report("Loaded Watermark image, resolution "+width+"x"+height+".");
     
     Size textWidth;

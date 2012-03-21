@@ -25,6 +25,11 @@ def createOperator( node, options ):
   operator.setSourceCode( options[ 'srcCode' ] )
   operator.setEntryFunctionName( options[ 'name' ] )
   operator.setMainThreadOnly( True )
+  diags = operator.getDiagnostics()
+  if len(diags) > 0:
+    for diag in diags:
+      print diag['filename']+":"+str(diag['line'])+":"+str(diag['column'])+": "+diag['level']+": "+diag['desc']
+    raise Exception("Errors compiling '" + options['name'] + "':")
   
   # create a binding between the node and the operator
   binding = F.DG.createBinding()
