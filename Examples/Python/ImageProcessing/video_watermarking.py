@@ -61,7 +61,7 @@ videoOutputNode.setDependency( watermarkNode, 'watermark' );
 
 # create the watermark image members
 watermarkNode.addMember('filePath','String',watermarkImage)
-watermarkNode.addMember('ext','String',outputMovie.rpartition('.')[2])
+watermarkNode.addMember('ext','String',watermarkImage.rpartition('.')[2])
 watermarkNode.addMember('clientData','String','Client Name & Address')
 watermarkNode.addMember('width','Size',0)
 watermarkNode.addMember('height','Size',0)
