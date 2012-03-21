@@ -3,9 +3,17 @@ import math
 import sys
 import time
 
-inputMovie = '/home/andrew/demo/input.mpg'
-watermarkImage = '/home/andrew/demo/watermark.png'
-outputMovie = '/home/andrew/demo/output.mpeg'
+args = sys.argv
+if not len(args) == 4:
+  print "---------"
+  print "Please specify the command line arguments like this:"
+  print "  python video_watermarking.py input_video_file watermark_image_file output_video_file"
+  print "---------"
+  exit()
+
+inputMovie = args[1]
+watermarkImage = args[2]
+outputMovie = args[3]
 
 # create a context and store it
 F = fabric.createClient()
